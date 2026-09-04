@@ -88,7 +88,7 @@ The question bank and study library are generated. Edit the shards or the notes,
 
 ```bash
 python tools/build_bank.py
-python tools/validate_bank.py
+python tools/validate_bank.py --bank exam_data.json
 python build_study_library.py
 ```
 
@@ -101,7 +101,7 @@ The curriculum viewer reads `curriculum_data.js`, which is generated from local 
 ```bash
 npm run check
 npm test
-python tools/validate_bank.py
+python tools/validate_bank.py --bank exam_data.json
 ```
 
 `npm test` runs every self-contained script in `tools/test_*.js` and `tools/verify_*.js`. CI runs the same three commands and also refuses any commit that tracks secrets, certificates or third-party media.

@@ -36,7 +36,7 @@ Run the app with `npm start` (desktop) or serve the folder with any static serve
 
 ```bash
 python tools/build_bank.py
-python tools/validate_bank.py
+python tools/validate_bank.py --bank exam_data.json
 ```
 
 4. Commit the shard change and the regenerated `exam_data.json` together.
@@ -52,7 +52,7 @@ Questions must be original. Do not copy questions from commercial practice tests
 ```bash
 npm run check
 npm test
-python tools/validate_bank.py
+python tools/validate_bank.py --bank exam_data.json
 ```
 
 4. Open a pull request using the template. Describe what changed and why. Link the issue if there is one.

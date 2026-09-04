@@ -34,7 +34,7 @@ jobs:
         run: npm test
 
       - name: Validate exam bank
-        run: python tools/validate_bank.py
+        run: python tools/validate_bank.py --bank exam_data.json
 
       - name: Guard against secrets and third-party media
         run: |

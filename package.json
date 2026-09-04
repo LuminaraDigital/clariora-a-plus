@@ -10,7 +10,7 @@
     "package-mac": "python3 tools/build_macos_app.py",
     "icons:mac": "python tools/make_macos_icon.py",
     "test": "node tools/run_tests.js",
-    "validate:bank": "python tools/validate_bank.py"
+    "validate:bank": "python tools/validate_bank.py --bank exam_data.json"
   },
   "keywords": [
     "comptia",

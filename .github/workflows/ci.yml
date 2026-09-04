@@ -27,6 +27,9 @@ jobs:
       - name: Syntax check Electron entry points
         run: npm run check
 
+      - name: Build web distribution
+        run: python tools/build_web_dist.py
+
       - name: Node self-tests
         run: npm test
 

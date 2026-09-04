@@ -298,6 +298,25 @@ def main():
     # index.html/media reference integrity check (missing files always fail;
     # oversize non-media files always fail; oversize media files are logged
     # below and simply left out of the build).
+    # curriculum_data.js is generated from local, non-redistributable course
+    # media (python tools/build_curriculum.py) and is not in the repository.
+    # A clean checkout gets an empty catalogue so the app loads and the
+    # curriculum viewer shows its rebuild notice instead of a missing script.
+    if "curriculum_data.js" in missing:
+        missing.remove("curriculum_data.js")
+        stub = (
+            'window.COMPTIA_CURRICULUM = {"version": "0", '
+            '"title": "Datacentre Academy A+ Curriculum", '
+            '"description": "Curriculum catalogue not built. Run python tools/build_curriculum.py.", '
+            '"stats": {"labs": 0, "slides": 0, "videos": 0, "total": 0, "video_size_mb": 0}, '
+            '"labs": [], "slides": [], "videos": []};' + chr(10)
+        )
+        DIST.mkdir(parents=True, exist_ok=True)
+        (DIST / "curriculum_data.js").write_text(stub, encoding="utf-8")
+        copied_rel_paths.append("curriculum_data.js")
+        print("[build_web_dist] NOTE: curriculum_data.js not present; emitted an "
+              "empty catalogue placeholder.")
+
     if missing:
         print("[build_web_dist] ERROR: referenced files do not exist, or")
         print("required root files are missing:")

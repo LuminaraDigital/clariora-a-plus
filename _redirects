@@ -1,0 +1,5 @@
+# Minimal redirect rules for Cloudflare Pages.
+# A "/" -> "/index.html" rule is unnecessary: Pages already serves index.html
+# for the root of a static site. Only add rules that are actually useful.
+
+/app  /index.html  302

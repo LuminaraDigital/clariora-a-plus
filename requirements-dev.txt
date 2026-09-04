@@ -1,0 +1,2 @@
+# Python tooling used by the build and validation scripts (Python 3.11+).
+pypdf>=4.0

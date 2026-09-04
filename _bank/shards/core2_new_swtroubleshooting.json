@@ -1,0 +1,1337 @@
+{
+  "questions": [
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "A workstation encounters repeated Blue Screen of Death (BSOD) stop errors shortly after a graphics driver update. Which tool or log should the technician examine first to identify the exact failing driver binary?",
+      "options": [
+        "Read the minidump with WinDbg or BlueScreenView to name the faulting driver",
+        "Run Disk Cleanup to clear the temporary setup files left by the update",
+        "Open Device Manager and disable the network adapter to isolate the fault",
+        "Rebuild the boot configuration data with bootrec /rebuildbcd"
+      ],
+      "answer": 0,
+      "explanation": "When Windows encounters a kernel panic (BSOD/bugcheck), it creates a crash dump file in the minidump folder or %SystemRoot%\\MEMORY.DMP. Analyzing this dump with debugging tools such as WinDbg or BlueScreenView pinpoints the precise driver file (e.g., nvlddmkm.sys) and memory address that caused the crash. Disk Cleanup removes temporary files but does not diagnose kernel panics, disabling network cards does not diagnose graphics driver faults, and BCD rebuilds are for boot-loader discovery issues.",
+      "distractor_analysis": {
+        "1": "Freeing disk space does not identify which driver module faulted.",
+        "2": "The crash followed a graphics update, so disabling the network adapter tests the wrong device.",
+        "3": "The machine boots far enough to bugcheck, so the boot configuration is intact."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": [
+        "windows-troubleshooting",
+        "bsod",
+        "driver",
+        "minidump"
+      ],
+      "id": "C2N-W-001"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A Windows 11 machine displays corrupt icon resources and crashes when opening system dialogs. The technician runs `sfc /scannow`, but it reports: 'Windows Resource Protection found corrupt files but was unable to fix some of them.' Which command should the technician execute next?",
+      "options": [
+        "DISM /Online /Cleanup-Image /RestoreHealth",
+        "chkdsk /f /r on the system volume",
+        "sfc /scannow again from Safe Mode",
+        "bootrec /rebuildbcd from recovery"
+      ],
+      "answer": 0,
+      "explanation": "When the System File Checker (`sfc /scannow`) cannot repair corrupt system binaries because its local component store cache (WinSxS) is also corrupted, running the Deployment Image Servicing and Management tool (`DISM /Online /Cleanup-Image /RestoreHealth`) repairs the Windows component store by downloading pristine replacement files from Windows Update. `chkdsk` repairs NTFS filesystem metadata and disk sectors, `gpupdate` refreshes Group Policy, and `ipconfig` manages DHCP leases.",
+      "distractor_analysis": {
+        "1": "chkdsk repairs file system structures and bad sectors, not the protected file payload.",
+        "2": "Rerunning SFC fails the same way because its source, the component store, is the damaged part.",
+        "3": "bootrec repairs boot records. The machine boots fine; the component store does not."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": [
+        "windows-troubleshooting",
+        "sfc",
+        "dism",
+        "system-integrity"
+      ],
+      "id": "C2N-W-002"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "Upon powering on a desktop, the screen displays: 'BOOTMGR is missing. Press Ctrl+Alt+Del to restart.' What is the MOST effective method to repair the boot sequence?",
+      "options": [
+        "Boot into WinRE and run Startup Repair, or bootrec /fixboot and /rebuildbcd",
+        "Flash the motherboard UEFI to the current firmware revision",
+        "Replace the power supply, since BOOTMGR loads before POST",
+        "Run Disk Defragmenter in Safe Mode to relocate the boot files"
+      ],
+      "answer": 0,
+      "explanation": "The 'BOOTMGR is missing' error indicates that the BIOS/UEFI cannot find the Windows Boot Manager file or the Boot Configuration Data (BCD) pointer is corrupted. Booting into WinRE and executing automated Startup Repair or using the Command Prompt with `bootrec /fixmbr`, `bootrec /fixboot`, and `bootrec /rebuildbcd` repairs the master boot record and rebuilds the BCD store. Motherboard flashing, PSU replacement, and disk defragmentation do not repair boot sector files.",
+      "distractor_analysis": {
+        "1": "A firmware update does not recreate a missing boot manager entry and risks bricking a working board.",
+        "2": "The message appears after POST completes, so the supply is delivering power correctly.",
+        "3": "Safe Mode needs a bootable system, which is exactly what is missing, and defrag does not repair the BCD."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": [
+        "windows-troubleshooting",
+        "bootmgr",
+        "bcd",
+        "startup-repair"
+      ],
+      "id": "C2N-W-003"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "Immediately following an automatic driver update for a network interface card (NIC), a workstation loses all network connectivity. What is the fastest and least disruptive method to restore connectivity?",
+      "options": [
+        "Open Device Manager, view the NIC properties, and select 'Roll Back Driver'",
+        "Format the C: drive and reinstall Windows from scratch",
+        "Replace the motherboard network interface hardware",
+        "Delete the `System32` directory from Command Prompt"
+      ],
+      "answer": 0,
+      "explanation": "Device Manager includes a dedicated 'Roll Back Driver' button on the Driver tab of any hardware device's properties dialog. This feature immediately restores the previously working driver package and registry settings without requiring a full system restore or OS reinstall. Reinstalling Windows is unnecessarily disruptive, hardware replacement is premature, and deleting system directories causes complete system destruction.",
+      "distractor_analysis": {
+        "1": "Reinstalling the entire operating system causes severe downtime and data loss when a simple 10-second driver rollback solves the issue.",
+        "2": "Replacing hardware is unwarranted when the fault was directly triggered by a software driver installation.",
+        "3": "Deleting `System32` destroys core operating system executables and permanently bricks the Windows installation."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": [
+        "windows-troubleshooting",
+        "driver-rollback",
+        "device-manager",
+        "video"
+      ],
+      "id": "C2N-W-004"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "A user logs into Windows and receives the message: 'You have been logged on with a temporary profile.' Any files saved to the desktop disappear after rebooting. How should the technician permanently fix this corrupted profile?",
+      "options": [
+        "Back up the user data, rename the corrupt ProfileList key, and let Windows rebuild the profile",
+        "Increase the paging file on C: so the profile hive can load",
+        "Run netstat -ano to find the socket holding the profile open",
+        "Turn off User Account Control and sign the user back in"
+      ],
+      "answer": 0,
+      "explanation": "When Windows cannot load a user's `NTUSER.DAT` registry hive, it loads a temporary profile and renames the user's ProfileList SID key in `HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList` with a `.bak` extension. To resolve it permanently, the technician backs up data from the old user directory, removes the corrupted `.bak` registry reference, and allows Windows to regenerate a clean profile upon the next logon. Paging files, netstat, and UAC have no impact on profile registry locks.",
+      "distractor_analysis": {
+        "1": "The paging file has nothing to do with loading NTUSER.DAT. The hive is corrupt or locked, not short of memory.",
+        "2": "netstat lists network sockets. A profile hive is a local file, not a network connection.",
+        "3": "Disabling UAC lowers protection and leaves the corrupt ProfileList entry exactly where it was."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": [
+        "windows-troubleshooting",
+        "profile-corruption",
+        "registry",
+        "user-profile"
+      ],
+      "id": "C2N-W-005"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user complains that their Windows 11 laptop takes over five minutes to reach a usable desktop after entering their password. Which tool should the technician use to identify and disable high-impact startup applications?",
+      "options": [
+        "Task Manager under the Startup apps tab",
+        "Windows Memory Diagnostic",
+        "Disk Management",
+        "Disk Cleanup"
+      ],
+      "answer": 0,
+      "explanation": "The 'Startup apps' tab in Windows Task Manager (or Settings -> Apps -> Startup) displays all applications configured to launch during user login, along with their measured 'Startup impact' (High, Medium, Low, or None). Disabling non-essential high-impact startup applications directly reduces boot and login times. Windows Memory Diagnostic tests physical RAM cells, Disk Management manages partitions, and Disk Cleanup removes temporary files.",
+      "distractor_analysis": {
+        "1": "Windows Memory Diagnostic executes offline memory pattern tests to detect faulty physical RAM chips, not slow application startups.",
+        "2": "Disk Management is used for partitioning, drive letter assignment, and volume resizing, having no visibility into startup apps.",
+        "3": "Disk Cleanup deletes cache and log files but does not manage the list of applications configured to execute upon user login."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": [
+        "windows-troubleshooting",
+        "slow-boot",
+        "task-manager",
+        "startup-apps"
+      ],
+      "id": "C2N-W-006"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A critical line-of-business accounting database service fails to start automatically upon Windows boot, preventing users from connecting. In `services.msc`, the service startup type is set to 'Automatic'. What configuration change ensures the service starts even if dependent network services take longer to initialize?",
+      "options": [
+        "Set the startup type to Automatic (Delayed Start) and configure Recovery restart actions",
+        "Set the startup type to Disabled and start it by hand each morning",
+        "Change the service logon account to the local Guest account",
+        "Delete and reregister the service with sc.exe from an elevated prompt"
+      ],
+      "answer": 0,
+      "explanation": "Setting the startup type to 'Automatic (Delayed Start)' instructs the Windows Service Control Manager to launch the service shortly after the main boot cycle completes, giving prerequisite network and database infrastructure time to fully initialize. Additionally, configuring the 'Recovery' tab enables Windows to automatically restart the service upon first and second failures. Setting it to Disabled stops it permanently, Guest accounts lack necessary service permissions, and deleting the binary destroys the service.",
+      "distractor_analysis": {
+        "1": "Disabling the service guarantees the outage rather than fixing the start order.",
+        "2": "Guest has no rights to the database files, so the service fails immediately on start.",
+        "3": "Reregistering rebuilds the entry but keeps the same race against its dependencies at boot."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": [
+        "windows-troubleshooting",
+        "services",
+        "services-msc",
+        "service-startup"
+      ],
+      "id": "C2N-W-007"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "A custom financial reporting tool crashes on startup with the error: 'Component custom_math.dll failed to load or is not registered.' The DLL file exists in the application directory. Which command-line utility registers the DLL with the Windows subsystem?",
+      "options": [
+        "`regsvr32 custom_math.dll`",
+        "`sfc /scannow custom_math.dll`",
+        "`bcdedit /set custom_math.dll`",
+        "`chkdsk /f custom_math.dll`"
+      ],
+      "answer": 0,
+      "explanation": "The Microsoft Register Server tool (`regsvr32.exe`) is used to register and unregister COM DLLs and ActiveX controls in the Windows Registry (under HKEY_CLASSES_ROOT). Running `regsvr32 custom_math.dll` from an elevated prompt writes the required class IDs and interfaces. `sfc` scans protected Windows system files, `bcdedit` edits the boot database, and `chkdsk` verifies disk sectors.",
+      "distractor_analysis": {
+        "1": "`sfc /scannow` checks only core protected Microsoft Windows binaries against system manifest hashes; it does not register third-party COM DLLs.",
+        "2": "`bcdedit` manages Windows Boot Configuration Data store parameters and has no functionality related to DLL registration.",
+        "3": "`chkdsk` accepts drive letters (e.g., C:) to check disk volume structures, not individual DLL registration parameters."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": [
+        "windows-troubleshooting",
+        "dll-missing",
+        "regsvr32",
+        "application-crash"
+      ],
+      "id": "C2N-W-008"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A technician needs to isolate whether an application crash is caused by third-party startup software and background services versus the core operating system. Which utility is used to perform a 'clean boot' by selectively disabling non-Microsoft startup services?",
+      "options": [
+        "System Configuration (`msconfig`)",
+        "Registry Editor (`regedit`)",
+        "Disk Defragmenter (`dfrgui`)",
+        "Driver Verifier (`verifier`)"
+      ],
+      "answer": 0,
+      "explanation": "System Configuration (`msconfig`) allows technicians to perform a clean boot by going to the 'Services' tab, checking 'Hide all Microsoft services', and clicking 'Disable all', combined with disabling startup items in Task Manager. This starts Windows with only core Microsoft services, isolating third-party software conflicts. Registry Editor edits raw hive keys, Disk Defragmenter reorganizes clusters, and Driver Verifier stresses kernel drivers.",
+      "distractor_analysis": {
+        "1": "Registry Editor modifies low-level configuration hives directly but lacks the automated clean-boot toggle workflow provided by `msconfig`.",
+        "2": "Disk Defragmenter optimizes hard drive storage layout and has no capability to manage service startup states.",
+        "3": "Driver Verifier is a developer tool that subjects kernel-mode drivers to extreme stress tests to catch memory leaks, rather than performing clean boots."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": [
+        "windows-troubleshooting",
+        "safe-mode",
+        "msconfig",
+        "clean-boot"
+      ],
+      "id": "C2N-W-009"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "A business-critical accounting program hangs randomly once per day without displaying an error dialog. Where in Event Viewer should the technician look to find the crash logs and faulting module details?",
+      "options": [
+        "Windows Logs -> Application (filtering for Event ID 1000 Error or Event ID 1002 Hang)",
+        "Windows Logs -> Security (filtering for Event ID 4624)",
+        "Applications and Services Logs -> Microsoft -> Windows -> Windows Defender -> Operational",
+        "Windows Logs -> Setup"
+      ],
+      "answer": 0,
+      "explanation": "In Windows Event Viewer, the `Application` log records application-level failures. Event ID 1000 indicates an Application Error (listing the faulting application name, version, faulting module, and exception code), and Event ID 1002 indicates an Application Hang. The Security log records audit events like successful logons (4624), the Defender log tracks antivirus malware detections, and the Setup log records OS upgrade and patch milestones.",
+      "distractor_analysis": {
+        "1": "The Security log tracks user authentication, privilege use, and object access (e.g., Event ID 4624 for successful logon), not software crashes.",
+        "2": "The Windows Defender Operational log records malware scans, threat remediations, and signature updates.",
+        "3": "The Setup log records operating system installation events, servicing stack updates, and feature updates."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": [
+        "windows-troubleshooting",
+        "event-viewer",
+        "system-log",
+        "application-hang"
+      ],
+      "id": "C2N-W-010"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user logs into Windows and the display turns completely black, showing only a working mouse cursor. Which key combination can the technician press to immediately restart the graphics driver subsystem in Windows 10/11?",
+      "options": [
+        "Win + Ctrl + Shift + B",
+        "Ctrl + Alt + Del followed by Escape",
+        "Alt + F4",
+        "Win + Pause/Break"
+      ],
+      "answer": 0,
+      "explanation": "In Windows 10 and 11, pressing `Win + Ctrl + Shift + B` triggers an instant beep and flashes the screen, signaling the OS to discard the graphics surface buffer and restart the video graphics display driver. This often resolves black screen issues caused by a hung graphics driver without rebooting the system. `Ctrl + Alt + Del` opens the security screen, `Alt + F4` closes the active window, and `Win + Pause/Break` opens the System About dialog.",
+      "distractor_analysis": {
+        "1": "`Ctrl + Alt + Del` interrupts processing to display the Windows Security screen (Lock, Switch User, Task Manager), but does not restart the display driver subsystem.",
+        "2": "`Alt + F4` sends a close command to the active foreground application window.",
+        "3": "`Win + Pause/Break` opens the Windows Settings About page showing system processor and RAM specifications."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": [
+        "windows-troubleshooting",
+        "black-screen",
+        "graphics-driver",
+        "keyboard-shortcut"
+      ],
+      "id": "C2N-W-011"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A workstation frequently freezes and reports read errors when opening large spreadsheet files on the D: drive. Which command should the technician run to scan the volume for file system metadata errors and recover readable data from bad sectors?",
+      "options": [
+        "`chkdsk D: /f /r`",
+        "`sfc /scanfile=D:\\`",
+        "`format D: /fs:NTFS`",
+        "`robocopy D:\\ C:\\ /mir`"
+      ],
+      "answer": 0,
+      "explanation": "The Check Disk command (`chkdsk D: /f /r`) scans the specified volume (D:). The `/f` switch fixes file system directory errors on disk, while the `/r` switch locates bad physical sectors and recovers readable information (which also implies `/f`). `sfc` only scans Windows OS system files on the boot drive, `format` wipes all data on the volume, and `robocopy /mir` mirrors directories without diagnosing disk health.",
+      "distractor_analysis": {
+        "1": "`sfc` is designed specifically to verify operating system core binaries and does not check general secondary data volumes for NTFS sector corruption.",
+        "2": "Formatting the drive destroys all existing data on the volume without attempting to repair or recover current files.",
+        "3": "`robocopy` is a file replication tool that will fail or hang when encountering the unreadable bad sectors."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": [
+        "windows-troubleshooting",
+        "chkdsk",
+        "ntfs",
+        "bad-sectors"
+      ],
+      "id": "C2N-W-012"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "Following the installation of an incompatible system utility, Windows fails to reach the login screen and continuously loops into the Automatic Repair screen. How can the technician revert Windows to its state prior to the utility installation without losing the user's personal documents?",
+      "options": [
+        "Open Advanced Options in WinRE and run System Restore to a point before the install",
+        "Choose Reset this PC with the Remove everything option",
+        "Run format C: from the WinRE command prompt and reinstall",
+        "Boot into UEFI setup and disable the TPM 2.0 device"
+      ],
+      "answer": 0,
+      "explanation": "Windows System Restore (accessible from WinRE under Troubleshoot -> Advanced Options -> System Restore, or `rstrui.exe`) reverts system files, registry keys, and installed drivers to a previously created snapshot (restore point) without altering, deleting, or overwriting user personal files (such as documents, photos, or emails). 'Reset this PC - Remove everything' and `format C:` destroy all data, and disabling TPM prevents secure booting entirely.",
+      "distractor_analysis": {
+        "1": "That wipes user data to solve a problem a restore point already covers.",
+        "2": "Formatting is the most destructive option available and is not needed here.",
+        "3": "Disabling the TPM breaks BitLocker unlock and does nothing about the bad utility."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": [
+        "windows-troubleshooting",
+        "system-restore",
+        "rstrui",
+        "winre"
+      ],
+      "id": "C2N-W-013"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A desktop computer experiences random application crashes and intermittent Blue Screen errors with stop codes `MEMORY_MANAGEMENT` and `PAGE_FAULT_IN_NONPAGED_AREA`. Which built-in Windows utility should be scheduled to test the physical RAM modules?",
+      "options": [
+        "Windows Memory Diagnostic (`mdsched.exe`)",
+        "Resource Monitor (`resmon.exe`)",
+        "Performance Monitor (`perfmon.exe`)",
+        "System Information (`msinfo32.exe`)"
+      ],
+      "answer": 0,
+      "explanation": "Windows Memory Diagnostic (`mdsched.exe`) prompts the user to restart the computer immediately or on the next boot, loading a specialized pre-boot diagnostic environment that writes test patterns to RAM cells to detect hardware memory defects. Resource Monitor and Performance Monitor track live runtime resource metrics, and System Information (`msinfo32`) reports hardware and software inventory without testing physical silicon integrity.",
+      "distractor_analysis": {
+        "1": "Resource Monitor provides real-time graphs and PID breakdown of memory usage but cannot test physical RAM silicon for defective memory cells.",
+        "2": "Performance Monitor logs historical performance counters and OS telemetry over time rather than executing low-level hardware memory tests.",
+        "3": "System Information (`msinfo32`) displays hardware summaries, BIOS versions, and environment variables without performing diagnostics."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": [
+        "windows-troubleshooting",
+        "memory-diagnostic",
+        "ram",
+        "hardware-fault"
+      ],
+      "id": "C2N-W-014"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "A user brings a corporate smartphone to the help desk, noting that the screen is bulging outwards and separating from the aluminum chassis. The phone feels warm even when powered off. What is the MANDATORY safety action the technician must take?",
+      "options": [
+        "Immediately power down the device, do not charge it, and place it in an airtight fireproof / sand-filled battery safety container",
+        "Press firmly on the glass display to snap the bezel back into the chassis",
+        "Connect the smartphone to a fast charger to test the power management IC",
+        "Pierce the battery pouch with a fine probe to release the trapped gas"
+      ],
+      "answer": 0,
+      "explanation": "A bulging screen or separated chassis indicates a swollen lithium-ion battery caused by internal shorting, thermal runaway, or gas accumulation. Swollen batteries pose a severe fire and explosion risk. The mandatory safety protocol is to immediately disconnect all power, turn off the device, handle it with care, and store it in a dedicated fireproof battery container or sand bucket away from flammable materials until safe disposal. Never puncture, charge, or apply pressure to a swollen battery.",
+      "distractor_analysis": {
+        "1": "Applying physical pressure to a swollen lithium-ion battery can puncture the separator membrane, triggering an explosive chemical fire.",
+        "2": "Charging a compromised lithium battery introduces additional current and heat, likely causing catastrophic thermal runaway.",
+        "3": "Puncturing a lithium battery pouch causes immediate air exposure, resulting in violent chemical combustion and toxic gas release."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": [
+        "mobile-troubleshooting",
+        "swollen-battery",
+        "safety",
+        "hardware"
+      ],
+      "id": "C2N-W-015"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A smartphone battery depletes from 100% to 15% in less than three hours while sitting idle in a pocket. Which diagnostic step should the technician perform first on the device?",
+      "options": [
+        "Open Settings, Battery, and look for rogue background apps and battery health",
+        "Replace the mainboard, since the charging circuit has failed",
+        "Factory reset the device before taking any backup of the data",
+        "Turn on the hotspot and full brightness to reproduce the drain"
+      ],
+      "answer": 0,
+      "explanation": "The built-in Battery utility in iOS and Android provides detailed telemetry showing which specific applications consume battery power in the background, along with overall Battery Health (maximum capacity percentage). A rogue app stuck in a background synchronization or location loop is the most common cause of sudden drain. Motherboard replacement and factory resets are extreme, and enabling hotspots and maximum brightness increases battery drain further.",
+      "distractor_analysis": {
+        "1": "The device holds charge and then loses it, which points at consumption rather than a charging fault.",
+        "2": "Resetting without a backup destroys user data before you have diagnosed anything.",
+        "3": "Deliberately adding load confirms nothing and empties the battery you were meant to test."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": [
+        "mobile-troubleshooting",
+        "battery-drain",
+        "background-apps",
+        "power"
+      ],
+      "id": "C2N-W-016"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user's tablet screen is fully illuminated and displaying the home screen, but the touchscreen does not respond to any touch, tap, or swipe gestures. What is the FIRST troubleshooting step the technician should perform?",
+      "options": [
+        "Force a hardware restart with the physical button combination",
+        "Replace the digitizer and LCD assembly on the bench",
+        "Reseat the display ribbon cable inside the chassis",
+        "Roll the cellular modem firmware back a revision"
+      ],
+      "answer": 0,
+      "explanation": "An unresponsive touchscreen on a functioning display is frequently caused by a frozen OS input handler or temporary software glitch. Performing a forced hard restart (using the device-specific physical button combination, e.g., Volume Up + Power) forces the OS and hardware digitizer controller to reinitialize. If the issue persists after rebooting and removing screen protectors, hardware digitizer replacement may be considered. Submerging devices or modifying modem firmware is destructive or irrelevant.",
+      "distractor_analysis": {
+        "1": "Parts replacement is the last step, not the first, and the panel is clearly still driving an image.",
+        "2": "Opening the chassis before a soft reset is disproportionate and voids the warranty.",
+        "3": "Modem firmware has no connection to touch input."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": [
+        "mobile-troubleshooting",
+        "touchscreen",
+        "unresponsive-screen",
+        "reboot"
+      ],
+      "id": "C2N-W-017"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A mobile device shuts down unexpectedly during video recording outdoors on a sunny day and displays a high-temperature warning icon upon attempting to power on. What is causing this behavior?",
+      "options": [
+        "Thermal protection safeguards shutting down the device to prevent permanent semiconductor and battery damage",
+        "The cellular carrier network disconnecting the SIM card",
+        "A corrupted display driver inside the operating system",
+        "A malicious ransomware encryption process completing"
+      ],
+      "answer": 0,
+      "explanation": "Mobile devices contain internal thermistors that monitor battery, CPU, and ambient temperatures. When operating in direct sunlight or under heavy compute loads (such as 4K video recording), the device triggers thermal throttling and eventually an automated thermal shutdown to protect the lithium-ion battery from fire and prevent silicon degradation. Moving the device to a cool, shaded environment allows it to recover once cooled. Carrier disconnects, display drivers, and ransomware do not cause physical temperature shutdowns.",
+      "distractor_analysis": {
+        "1": "Cellular SIM disconnects result in 'No Service' status indicators, not hardware thermal protection shutdowns.",
+        "2": "Display driver crashes cause screen flickers or OS reboots, not high-temperature thermal warning screens.",
+        "3": "Ransomware targets files for encryption; temperature cutoffs are hardware-driven thermal sensor protections."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": [
+        "mobile-troubleshooting",
+        "overheating",
+        "thermal-throttling",
+        "performance"
+      ],
+      "id": "C2N-W-018"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "A smartphone user reports that mobile apps crash immediately upon launching, camera photos fail to save, and system updates cannot download. Storage settings reveal 0 MB of available internal storage. What should the technician advise the user to do first?",
+      "options": [
+        "Offload unused apps, clear cached media and temporary files, and move photos to cloud storage",
+        "Replace the internal flash module, since the storage chip has worn out",
+        "Reset the APN so the carrier can push a storage expansion profile",
+        "Turn off the lock screen PIN to release the encrypted scratch space"
+      ],
+      "answer": 0,
+      "explanation": "When internal flash storage is completely exhausted (0 MB free), mobile operating systems cannot create temporary scratch files, write application state caches, or download update packages, leading to immediate app crashes and save errors. Freeing storage space by deleting unused large apps, clearing app caches, and offloading photos/videos to cloud storage immediately restores stability. Memory chips are soldered and cannot be replaced individually, APN settings manage cellular data, and PIN settings are unrelated.",
+      "distractor_analysis": {
+        "1": "Internal flash is not a serviceable part on a phone, and a full volume is not a worn volume.",
+        "2": "The APN configures data connectivity. Carriers do not provision local storage.",
+        "3": "Removing the PIN weakens security and frees no space; encryption does not reserve a scratch area."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": [
+        "mobile-troubleshooting",
+        "storage-full",
+        "app-crash",
+        "os-updates"
+      ],
+      "id": "C2N-W-019"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user's smartphone fails to connect to both corporate Wi-Fi and Bluetooth headsets simultaneously, showing erratic connection drops. What is the quickest first-level troubleshooting step to reset all local wireless radio stacks?",
+      "options": [
+        "Toggle Airplane Mode on for 15 seconds, or run a network settings reset",
+        "Factory wipe the handset and restore it from the last cloud backup",
+        "Swap the physical SIM for an eSIM profile from the carrier",
+        "Raise the display timeout so the radios are not powered down"
+      ],
+      "answer": 0,
+      "explanation": "Toggling Airplane Mode ON powers down all internal wireless transceivers (Wi-Fi, Bluetooth, Cellular, NFC, GPS) and turning it back OFF reinitializes the hardware radio controllers and restarts connection handshakes. If toggling fails, performing a 'Reset Network Settings' clears corrupted Wi-Fi profiles and Bluetooth pairings. Factory wipes are overly disruptive for basic radio glitches, SIM swaps do not fix Wi-Fi/Bluetooth, and display timeout is unrelated.",
+      "distractor_analysis": {
+        "1": "A wipe is the last resort, not a first-level step, and it costs the user a full restore.",
+        "2": "The SIM handles cellular registration and has no role in Wi-Fi or Bluetooth.",
+        "3": "Screen timeout does not gate the radios; modern handsets keep them alive when connected."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": [
+        "mobile-troubleshooting",
+        "connectivity",
+        "airplane-mode",
+        "bluetooth",
+        "wi-fi"
+      ],
+      "id": "C2N-W-020"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A mobile device only charges when the USB-C charging cable is held tightly at an upward angle. Trying multiple known-good cables produces the same loose, intermittent connection. What is the MOST likely cause?",
+      "options": [
+        "Lint and debris compacted inside the device charging port preventing the cable from seating completely",
+        "A corrupted battery driver inside the mobile operating system",
+        "The electrical wall outlet delivering incorrect AC frequency",
+        "A malware infection on the mobile device"
+      ],
+      "answer": 0,
+      "explanation": "Pocket lint and dust frequently accumulate and become compacted at the bottom of mobile charging ports (USB-C or Lightning). This physical barrier prevents charging cables from clicking fully into place, causing loose or angle-dependent connections. Carefully cleaning the port with a non-conductive wooden or plastic pick clears the obstruction. Battery drivers, AC wall frequencies, and malware do not cause mechanical cable loose-fit symptoms.",
+      "distractor_analysis": {
+        "1": "Battery software drivers cannot cause physical looseness or mechanical failure of the cable connector latch.",
+        "2": "AC wall frequency does not affect the physical fit or retention clips of the USB-C connector inside the smartphone.",
+        "3": "Malware is malicious software and cannot alter the mechanical tolerance of physical hardware ports."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": [
+        "mobile-troubleshooting",
+        "charging",
+        "lightning",
+        "usb-c",
+        "lint"
+      ],
+      "id": "C2N-W-021"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A single banking application crashes immediately upon launch on an Android device, while all other applications function perfectly. Which sequence of troubleshooting steps should the technician perform for this specific app?",
+      "options": [
+        "Clear the app cache and data, check for an app update, then reinstall the app",
+        "Wipe the device and replace the battery before testing again",
+        "Turn off mobile data and use the public Wi-Fi network instead",
+        "Change the system language and reboot to rebuild the app cache"
+      ],
+      "answer": 0,
+      "explanation": "When an isolated application crashes, the issue is almost always a corrupted local application cache/data store or a version bug. The standard troubleshooting sequence is: 1. Force stop the app, 2. Clear app cache and data in Settings, 3. Check the Google Play Store / App Store for an updated version, and 4. Uninstall and cleanly reinstall the application. Formatting devices or replacing batteries is unwarranted, and changing system language does not fix application crashes.",
+      "distractor_analysis": {
+        "1": "One app is failing while everything else works, so a device-wide wipe is disproportionate.",
+        "2": "The transport is not the fault. Other apps use the same connection without a problem.",
+        "3": "A language change does not clear that app's cache and can introduce new resource faults."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": [
+        "mobile-troubleshooting",
+        "app-crashes",
+        "app-cache",
+        "update"
+      ],
+      "id": "C2N-W-022"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "A delivery driver reports that their mobile mapping application places their location several miles away from their actual physical position. What troubleshooting steps should be checked to resolve inaccurate location tracking?",
+      "options": [
+        "Set Location Services to high accuracy, get a clear view of the sky, and calibrate the compass",
+        "Replace the SIM so the device re-registers with the carrier location service",
+        "Factory reset the handset to clear a corrupt assisted GPS almanac",
+        "Turn off Wi-Fi scanning so the device stops using access point positioning"
+      ],
+      "answer": 0,
+      "explanation": "Mobile location accuracy relies on assisted GPS (A-GPS), which combines satellite GPS signals, nearby Wi-Fi network BSSID scanning, and cellular tower triangulation. Setting Location to 'High Accuracy' / 'Precise Location', verifying that the vehicle's metallic roof or windshield tint is not blocking satellite line-of-sight, and calibrating the device compass resolves drift. SIM replacement does not improve GPS triangulation, and disabling Wi-Fi scanning degrades location precision.",
+      "distractor_analysis": {
+        "1": "The SIM handles carrier registration. Position comes from GNSS plus Wi-Fi and cell assistance, not from the SIM.",
+        "2": "A factory reset is far past a first step and loses the user data for a fault that settings usually fix.",
+        "3": "Wi-Fi scanning improves accuracy indoors. Turning it off usually makes the error worse."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": [
+        "mobile-troubleshooting",
+        "gps",
+        "location-services",
+        "cellular-triangulation"
+      ],
+      "id": "C2N-W-023"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "An iPhone user reports that the device vibrates for incoming calls and notifications, but no ringtone or audio plays through the internal speaker. Media in the Music app plays audio normally. What is the MOST likely cause?",
+      "options": [
+        "The Ring/Silent switch is set to Silent, or a Focus mode is enabled",
+        "The internal speaker has failed and needs replacement",
+        "The charging port is defective and has muted the audio path",
+        "The SIM is PIN locked, which disables the ringer"
+      ],
+      "answer": 0,
+      "explanation": "Because media audio plays normally through the speaker, the physical speaker hardware is completely functional. The separation between media audio and alert audio indicates that the physical Ring/Silent switch is set to Silent (showing the orange indicator) or software Focus / Do Not Disturb mode is silencing incoming calls and notification alerts. Physical speaker failure would affect all audio including music, port defects affect charging, and SIM locks block cellular connectivity entirely.",
+      "distractor_analysis": {
+        "1": "A failed speaker would mute Music playback too. Media plays fine, so the hardware works.",
+        "2": "A bad port affects charging and wired audio. It does not silence the internal speaker.",
+        "3": "A PIN locked SIM blocks the cellular radio entirely, so calls would not arrive at all."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": [
+        "mobile-troubleshooting",
+        "sound",
+        "speaker",
+        "dnd",
+        "mute-switch"
+      ],
+      "id": "C2N-W-024"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.3",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "A Mobile Device Management (MDM) console flags an executive's enrolled tablet as 'Non-Compliant' and automatically blocks access to Microsoft 365 email. The MDM agent reports an unauthorized superuser binary (`/system/xbin/su`). What has occurred?",
+      "options": [
+        "The tablet is rooted or jailbroken, so MDM revoked corporate data access",
+        "The device passcode was entered incorrectly three times",
+        "The device has dropped below the 20 percent battery policy",
+        "The corporate access point was offline during the compliance check"
+      ],
+      "answer": 0,
+      "explanation": "MDM agents actively monitor enrolled devices for indicators of compromise, specifically rooting (on Android) or jailbreaking (on iOS), evidenced by the presence of binaries like `su` or Cydia/Magisk. Because rooting breaks OS kernel sandboxing and exposes corporate data to malware, the MDM compliance policy automatically marks the device non-compliant and revokes access to corporate email and resources. Forgotten PINs trigger device lockouts, and low battery or Wi-Fi outages do not generate `su` binary alerts.",
+      "distractor_analysis": {
+        "1": "Repeated passcode failures lock the device locally; they do not raise a superuser binary finding.",
+        "2": "Battery level is not a compliance criterion in any standard MDM baseline.",
+        "3": "An access point outage stops check-in, which reports as stale rather than non-compliant."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Device Security - CompTIA A+ 220-1202 - 3.3",
+        "url": "https://www.youtube.com/watch?v=_nsBbRwyNMo",
+        "duration": "12:16",
+        "objective": "3.3"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": [
+        "mobile-security-troubleshooting",
+        "mdm-compliance",
+        "jailbreak-detection",
+        "byod"
+      ],
+      "id": "C2N-W-025"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user notices their corporate smartphone incurs massive cellular data overage charges (50 GB in three days) while remaining idle on their desk. The battery is constantly hot. What security issue should the technician investigate?",
+      "options": [
+        "Malicious spyware or crypto-mining malware running in the background and exfiltrating data or computing hashes",
+        "The user enabling Dark Mode in system settings",
+        "A defective SIM card sending duplicate cellular pings",
+        "The cellular carrier upgrading local cell towers to 5G"
+      ],
+      "answer": 0,
+      "explanation": "Sudden extreme data consumption combined with constant thermal heat and battery drain on an idle mobile device is a classic symptom of malicious background activity, such as spyware exfiltrating audio/video/files to a command-and-control server or a covert crypto-miner utilizing the GPU/CPU. Dark mode actually saves battery on OLED displays, SIM cards do not transfer gigabytes of payload data on their own, and carrier 5G upgrades do not cause unauthorized client data transmission.",
+      "distractor_analysis": {
+        "1": "Dark Mode reduces display power consumption on OLED screens and has zero effect on network data usage.",
+        "2": "A damaged SIM card produces cellular registration errors, not massive 50 GB background data transfers.",
+        "3": "Carrier network upgrades change radio tower frequencies without generating unauthorized data transmissions from client devices."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Device Security - CompTIA A+ 220-1202 - 3.3",
+        "url": "https://www.youtube.com/watch?v=_nsBbRwyNMo",
+        "duration": "12:16",
+        "objective": "3.3"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": [
+        "mobile-security-troubleshooting",
+        "data-usage",
+        "spyware",
+        "unauthorized-access"
+      ],
+      "id": "C2N-W-026"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.3",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "While connected to public airport Wi-Fi, a user's mobile browser begins displaying invalid SSL/TLS certificate warnings for major banking and search websites. What mobile security threat is the user experiencing?",
+      "options": [
+        "An on-path attack from a rogue access point intercepting TLS sessions",
+        "The device certificate store was cleared by the last OS update",
+        "The captive portal has not been accepted, so requests are redirected",
+        "The device clock is wrong, so valid certificates read as not yet valid"
+      ],
+      "answer": 0,
+      "explanation": "When connecting to untrusted public Wi-Fi, attackers can deploy an Evil Twin access point or ARP spoofing to intercept traffic. When the attacker attempts SSL stripping or decrypts HTTPS sessions with a fake proxy certificate, the user's browser detects that the certificate was not signed by a trusted root CA and triggers invalid certificate warnings. Battery health, camera hardware, and SMS carrier status have no relationship with TLS certificate validation on Wi-Fi.",
+      "distractor_analysis": {
+        "1": "A wiped trust store breaks every site everywhere, not only while on this one network.",
+        "2": "A captive portal redirect usually shows the portal page, and it would not target banking sites specifically.",
+        "3": "Clock skew is a real cause of certificate warnings, but it would follow the device off the airport network."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Device Security - CompTIA A+ 220-1202 - 3.3",
+        "url": "https://www.youtube.com/watch?v=_nsBbRwyNMo",
+        "duration": "12:16",
+        "objective": "3.3"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": [
+        "mobile-security-troubleshooting",
+        "rogue-certificates",
+        "mitm",
+        "ssl-inspection"
+      ],
+      "id": "C2N-W-027"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user discovers several unfamiliar game applications and utility toolbars installed on their corporate Android tablet that they never downloaded from the Google Play Store. What setting should the technician verify and disable to prevent this in the future?",
+      "options": [
+        "Disable 'Install unknown apps' / third-party sideloading permissions in Settings -> Security",
+        "Enable Bluetooth Discoverable mode permanently",
+        "Disable the screen lock passcode",
+        "Enable developer USB debugging and leave it unattended"
+      ],
+      "answer": 0,
+      "explanation": "Android security controls include the 'Install unknown apps' permission (or 'Unknown sources' in older versions). Disabling this permission prevents the device from installing `.apk` packages downloaded from web browsers, messaging apps, or unverified third-party repositories, restricting software installation strictly to vetted enterprise or official app stores. Enabling Bluetooth discoverability, removing passcodes, and enabling USB debugging all decrease device security.",
+      "distractor_analysis": {
+        "1": "Keeping Bluetooth in discoverable mode exposes the device to unauthorized pairing and Blueborne/Bluesnarfing attacks.",
+        "2": "Disabling screen lock passcodes leaves the device completely vulnerable to unauthorized physical access.",
+        "3": "Enabling USB debugging allows any connected computer to execute shell commands via Android Debug Bridge (ADB), creating a massive security risk."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Device Security - CompTIA A+ 220-1202 - 3.3",
+        "url": "https://www.youtube.com/watch?v=_nsBbRwyNMo",
+        "duration": "12:16",
+        "objective": "3.3"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": [
+        "mobile-security-troubleshooting",
+        "unauthorized-apps",
+        "sideloading",
+        "remediation"
+      ],
+      "id": "C2N-W-028"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user notices the green/orange privacy indicator dot at the top of their smartphone screen illuminates randomly when no applications are actively in use. What does this indicate, and how should it be investigated?",
+      "options": [
+        "An app is using the camera or microphone; check the permission manager and revoke access",
+        "The screen backlight is failing and the panel needs replacement",
+        "The battery has reached 100 percent and charging has stopped",
+        "The cellular radio has attached to a 4G LTE tower nearby"
+      ],
+      "answer": 0,
+      "explanation": "Modern mobile operating systems (iOS and Android) display visual privacy indicators (an orange or green dot in the status bar) whenever an application accesses the device's microphone or camera. If this occurs while the user is idle, a background app is recording audio or video. The technician should immediately open Privacy / Permission Manager, review the access log, revoke microphone/camera permissions from suspicious apps, and uninstall unauthorized software. It is not a backlight failure, charging indicator, or cellular beacon.",
+      "distractor_analysis": {
+        "1": "A failing backlight dims or flickers the whole panel. It does not paint a single coloured dot.",
+        "2": "Charge state shows in the status bar battery icon, not as a privacy indicator.",
+        "3": "Radio attachment is shown by the signal bars and network label."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Device Security - CompTIA A+ 220-1202 - 3.3",
+        "url": "https://www.youtube.com/watch?v=_nsBbRwyNMo",
+        "duration": "12:16",
+        "objective": "3.3"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": [
+        "mobile-security-troubleshooting",
+        "permissions",
+        "privacy",
+        "camera-microphone"
+      ],
+      "id": "C2N-W-029"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.3",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "A senior manager suddenly loses all cellular service on their smartphone, displaying 'No Service' or 'SOS only'. Minutes later, they receive email notifications that their bank password and cloud account recovery details were changed from an unknown location. What attack has occurred?",
+      "options": [
+        "SIM card swapping / port-out fraud by a social engineering threat actor targeting the carrier",
+        "A standard local micro-SIM mechanical failure",
+        "The smartphone's Wi-Fi antenna burning out",
+        "The mobile carrier performing scheduled tower maintenance"
+      ],
+      "answer": 0,
+      "explanation": "SIM swapping occurs when an attacker impersonates the victim to the cellular carrier (or bribes an insider) to transfer (port) the victim's phone number to a new SIM card under the attacker's control. Once transferred, the victim's phone immediately loses cellular connection ('No Service'), and the attacker receives all SMS-based 2FA codes and password reset tokens, enabling rapid account takeovers. Mechanical SIM failures and tower maintenance do not coincide with immediate targeted account takeovers.",
+      "distractor_analysis": {
+        "1": "A simple physical SIM failure disables cellular connectivity but would not result in simultaneous unauthorized password resets across external banking accounts.",
+        "2": "A burnt-out Wi-Fi antenna affects Wi-Fi connections only and has no effect on cellular tower reception or SIM registration.",
+        "3": "Carrier maintenance temporarily interrupts signal but does not trigger concurrent fraudulent account takeovers and credential resets."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Device Security - CompTIA A+ 220-1202 - 3.3",
+        "url": "https://www.youtube.com/watch?v=_nsBbRwyNMo",
+        "duration": "12:16",
+        "objective": "3.3"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": [
+        "mobile-security-troubleshooting",
+        "sim-swapping",
+        "account-takeover",
+        "cellular"
+      ],
+      "id": "C2N-W-030"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "An employee working in a public coffee shop receives multiple unsolicited Bluetooth pairing requests from unknown device names attempting to establish connections. What immediate actions should the employee take?",
+      "options": [
+        "Reject the pairing requests and turn off Bluetooth (or disable Bluetooth discoverability)",
+        "Accept the pairing requests to inspect the remote device identity",
+        "Factory reset the mobile device immediately",
+        "Enter '0000' or '1234' on the keypad"
+      ],
+      "answer": 0,
+      "explanation": "Receiving unsolicited Bluetooth pairing requests indicates a nearby attacker attempting Bluejacking (sending unsolicited messages) or Bluesnarfing (unauthorized access to contacts and data via Bluetooth). The user must immediately reject the requests and turn off Bluetooth or ensure the device is not set to discoverable mode. Accepting requests or entering default PINs gives the attacker an active paired connection into the device.",
+      "distractor_analysis": {
+        "1": "Accepting the pairing request establishes a trusted Bluetooth channel, allowing the attacker to access data or exploit protocol vulnerabilities.",
+        "2": "Factory resetting the smartphone is an extreme overreaction when simply disabling Bluetooth stops the attempt immediately.",
+        "3": "Entering default PINs completes pairing authentication with the attacker's unauthorized device."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Device Security - CompTIA A+ 220-1202 - 3.3",
+        "url": "https://www.youtube.com/watch?v=_nsBbRwyNMo",
+        "duration": "12:16",
+        "objective": "3.3"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": [
+        "mobile-security-troubleshooting",
+        "bluetooth-security",
+        "bluesnarfing",
+        "pairing"
+      ],
+      "id": "C2N-W-031"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user reports that whenever they open their web browser, dozens of pop-up windows appear claiming the PC is infected with 43 viruses and offering a toll-free number to purchase 'Tech Support Gold.' The default homepage has also been changed. What security issue is present?",
+      "options": [
+        "Rogue antivirus / Scareware and browser hijacking",
+        "A hardware failure of the network interface card",
+        "A legitimate Windows Defender security alert",
+        "A standard Windows operating system update prompt"
+      ],
+      "answer": 0,
+      "explanation": "Rogue antivirus (scareware) uses fake alert dialogs, artificial virus counts, and persistent pop-ups designed to frighten users into paying for fraudulent tech support or downloading malware payloads. This is frequently accompanied by browser hijacking (changing default homepages and search engines). Legitimate Windows Defender alerts appear in the Windows Notification Center and never ask users to call a phone number with payment information.",
+      "distractor_analysis": {
+        "1": "Network interface card hardware faults cause complete loss of network connectivity, not fake pop-up advertisement generation.",
+        "2": "Microsoft Defender Antivirus integrates directly into the Windows Security Center and never displays third-party phone numbers or payment demands.",
+        "3": "Windows Update prompts appear in Settings and system notifications, focusing exclusively on OS and security patch installations."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Security Issues - CompTIA A+ 220-1202 - 3.4",
+        "url": "https://www.youtube.com/watch?v=OCLOLvwgdMY",
+        "duration": "10:16",
+        "objective": "3.4"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": [
+        "security-troubleshooting",
+        "popups",
+        "adware",
+        "browser-redirects"
+      ],
+      "id": "C2N-W-032"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.4",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "Several corporate clients notify the help desk that they received phishing emails containing invoice attachments sent directly from a company account executive's email address. The executive states they never sent these messages. What is the FIRST step the technician should take?",
+      "options": [
+        "Immediately disable or reset the executive's domain/cloud account password, terminate all active login sessions, and enable MFA",
+        "Reformat the executive's desktop computer immediately",
+        "Delete the executive's entire email mailbox from the mail server",
+        "Reply to all recipient clients stating the emails were genuine"
+      ],
+      "answer": 0,
+      "explanation": "When an email account is actively sending unauthorized spam/phishing messages, the account credentials have been compromised (often via credential harvesting or session token theft). The immediate containment step is resetting the user's password, revoking/terminating all active OAuth tokens and web sessions, and verifying/enforcing multifactor authentication (MFA). Reformatting the PC does not stop cloud-based webmail access, deleting the mailbox destroys business records, and validating phishing emails causes further compromise.",
+      "distractor_analysis": {
+        "1": "Reformatting the local PC does not revoke stolen cloud session tokens or change compromised domain passwords being used by attackers remotely.",
+        "2": "Deleting the entire mailbox permanently erases vital company communications and forensic evidence required for the security investigation.",
+        "3": "Confirming phishing emails as genuine misleads clients and accelerates financial fraud against the organization's partners."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Security Issues - CompTIA A+ 220-1202 - 3.4",
+        "url": "https://www.youtube.com/watch?v=OCLOLvwgdMY",
+        "duration": "10:16",
+        "objective": "3.4"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": [
+        "security-troubleshooting",
+        "compromised-account",
+        "spam-email",
+        "incident-response"
+      ],
+      "id": "C2N-W-033"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "An administrator suspects an unauthorized user is accessing a shared accounting workstation after hours. Which Windows log in Event Viewer should be audited to inspect successful and failed logon attempts, and which Event IDs are relevant?",
+      "options": [
+        "Security Log (Event ID 4624 for Successful Logon and Event ID 4625 for Failed Logon)",
+        "Application Log (Event ID 1000 for Application Error)",
+        "System Log (Event ID 6005 for Event Log service started)",
+        "Setup Log (Event ID 1 for OS servicing update)"
+      ],
+      "answer": 0,
+      "explanation": "The Windows `Security` event log records all security audit events. Event ID 4624 documents every successful logon (including logon type, username, workstation name, and source IP address), while Event ID 4625 documents failed logon attempts. The Application log tracks program errors, the System log tracks OS service and driver events, and the Setup log tracks Windows installation and update events.",
+      "distractor_analysis": {
+        "1": "The Application log records software crashes (Event ID 1000) and application-level exceptions, not user authentication events.",
+        "2": "The System log records operating system kernel, hardware, and service milestones (such as Event ID 6005 for service startup).",
+        "3": "The Setup log records operating system feature installation and upgrade packages, having no user logon audit telemetry."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Security Issues - CompTIA A+ 220-1202 - 3.4",
+        "url": "https://www.youtube.com/watch?v=OCLOLvwgdMY",
+        "duration": "10:16",
+        "objective": "3.4"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": [
+        "security-troubleshooting",
+        "unauthorized-access",
+        "audit-logs",
+        "event-viewer"
+      ],
+      "id": "C2N-W-034"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.4",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "Users across an entire office cannot access the internal HR intranet portal, receiving browser alerts that the website's security certificate is invalid because the 'Valid to' date has passed. What is the root cause and proper remediation?",
+      "options": [
+        "The server certificate has expired; the administrator must renew it and bind the new one",
+        "The intranet DNS record now points at the wrong web server",
+        "The clients do not trust the internal CA that issued the certificate",
+        "The site is served over plain HTTP, so the browser marks it insecure"
+      ],
+      "answer": 0,
+      "explanation": "X.509 digital certificates have strict validity date ranges ('Valid from' and 'Valid to'). Once the expiration timestamp passes, browsers reject the certificate and warn users of a potential security breach. The resolution is for the web server administrator to generate a new Certificate Signing Request (CSR), obtain a renewed certificate from the Certificate Authority (CA), and bind it to the HTTPS service on the web server. Disk space, switch duplex, and user passwords do not cause certificate expiration.",
+      "distractor_analysis": {
+        "1": "A wrong DNS record gives a name mismatch warning or the wrong site, not an expiry date warning.",
+        "2": "An untrusted issuer reads as untrusted authority. The browser named the Valid to date instead.",
+        "3": "Plain HTTP shows a not secure label with no certificate to expire."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Security Issues - CompTIA A+ 220-1202 - 3.4",
+        "url": "https://www.youtube.com/watch?v=OCLOLvwgdMY",
+        "duration": "10:16",
+        "objective": "3.4"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": [
+        "security-troubleshooting",
+        "certificate-expired",
+        "pki",
+        "https-errors"
+      ],
+      "id": "C2N-W-035"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user notices that the Windows Defender Security Center icon has a red warning indicator. Opening the console reveals that 'Real-time protection' is turned off and the toggle switch is greyed out. What is the MOST likely cause?",
+      "options": [
+        "Malware or Group Policy has disabled Defender, or a third-party suite has taken over",
+        "The Security Center service is stopped and set to manual start",
+        "Tamper Protection is on, which greys out the toggle by design",
+        "The signature package is more than 30 days out of date"
+      ],
+      "answer": 0,
+      "explanation": "When Windows Defender real-time protection is disabled and greyed out, it typically indicates that malicious software has altered system registry keys (e.g., `DisableAntiSpyware` under HKLM) or Group Policy to prevent the antivirus from running. Alternatively, installing a registered third-party antivirus package intentionally disables Defender to prevent engine conflicts. Monitor refresh rates, CMOS batteries, and RAM channel modes have no control over Windows Security services.",
+      "distractor_analysis": {
+        "1": "A stopped Security Center service leaves the console unable to report at all, rather than showing a disabled toggle.",
+        "2": "Tamper Protection blocks changes made by other software, but the console itself still shows protection as on.",
+        "3": "Stale signatures raise an out-of-date warning while real-time protection stays enabled."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Security Issues - CompTIA A+ 220-1202 - 3.4",
+        "url": "https://www.youtube.com/watch?v=OCLOLvwgdMY",
+        "duration": "10:16",
+        "objective": "3.4"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": [
+        "security-troubleshooting",
+        "services-disabled",
+        "security-center",
+        "antivirus"
+      ],
+      "id": "C2N-W-036"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.4",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "During an investigation of an endpoint suspected of malware infection, a technician runs `netstat -ano` from an elevated prompt and spots an established TCP connection on port 4444 to an unknown external IP address with Process ID (PID) 3812. What action should the technician take to identify the executable?",
+      "options": [
+        "Map PID 3812 to its executable with tasklist or the Task Manager Details tab",
+        "Reboot into UEFI setup so the socket is torn down on restart",
+        "Run ipconfig /flushdns to clear the resolver entry for that host",
+        "Delete pagefile.sys so the process cannot page its payload back in"
+      ],
+      "answer": 0,
+      "explanation": "The `netstat -ano` command lists active network sockets along with their owning Process Identifier (PID). Using Task Manager (Details tab, sorting by PID) or executing `tasklist /fi \"PID eq 3812\"` correlates PID 3812 with the exact executable binary name, user account, and directory path. Right-clicking the process in Task Manager and selecting 'Open file location' reveals the binary for quarantine. BIOS reboots, DNS flushes, and pagefile deletions do not identify or analyze the running malicious process.",
+      "distractor_analysis": {
+        "1": "Rebooting destroys the volatile evidence you were just handed and may let the malware restart cleanly.",
+        "2": "Flushing the resolver cache does not stop a process or reveal which binary opened the socket.",
+        "3": "The paging file is not where malware lives, and it is locked while Windows is running."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Security Issues - CompTIA A+ 220-1202 - 3.4",
+        "url": "https://www.youtube.com/watch?v=OCLOLvwgdMY",
+        "duration": "10:16",
+        "objective": "3.4"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": [
+        "security-troubleshooting",
+        "open-ports",
+        "netstat",
+        "c2-traffic"
+      ],
+      "id": "C2N-W-037"
+    },
+    {
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user notices that files in their Documents folder are rapidly changing to have `.cryptolocker` file extensions and icons are turning blank. What is the IMMEDIATE containment action the technician must instruct the user to take?",
+      "options": [
+        "Disconnect the machine from the network immediately, wired and wireless",
+        "Open one file in Notepad to confirm the encryption is genuine",
+        "Email a sample encrypted file to the whole team as a warning",
+        "Run Disk Defragmenter so the original clusters can be recovered"
+      ],
+      "answer": 0,
+      "explanation": "Active file renaming with ransomware extensions indicates a live encryption process that will rapidly spread across mapped network drives and shared enterprise storage. The immediate emergency containment action is physically disconnecting the machine from the network (pulling the Ethernet cable and disabling Wi-Fi/Bluetooth) to isolate the infection and stop lateral encryption across network shares. Opening files in Notepad, emailing infected attachments, and running defragmentation worsen the disaster.",
+      "distractor_analysis": {
+        "1": "Opening a file wastes time while encryption spreads to mapped drives.",
+        "2": "Mailing the sample risks spreading the payload and clogs mailboxes during an incident.",
+        "3": "Defragmenting overwrites the free space where deleted originals might still be recoverable."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Security Issues - CompTIA A+ 220-1202 - 3.4",
+        "url": "https://www.youtube.com/watch?v=OCLOLvwgdMY",
+        "duration": "10:16",
+        "objective": "3.4"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": [
+        "security-troubleshooting",
+        "file-renamed",
+        "ransomware",
+        "containment"
+      ],
+      "id": "C2N-W-038"
+    }
+  ]
+}

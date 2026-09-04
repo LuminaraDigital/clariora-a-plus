@@ -1,0 +1,759 @@
+{
+  "questions": [
+    {
+      "id": "C2N-I-001",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.2",
+      "type": "multi",
+      "difficulty": "medium",
+      "question": "A technician is imaging new Windows 11 Pro workstations that must join Active Directory, BitLocker-encrypt the OS volume, and support Remote Desktop for help-desk. Which TWO edition/feature choices are required versus Home? (Select TWO.)",
+      "explanation": "Domain join and BitLocker for OS volumes are Pro/Enterprise capabilities that Home lacks in normal business deployments. Home does not unlock domain join, FAT32 is wrong for modern OS volumes, and disabling Workstation breaks SMB client behavior rather than enabling domain membership.",
+      "video_reference": null,
+      "notes_reference": "23_Windows_Editions_and_OS_Installation.md",
+      "tags": [
+        "windows",
+        "editions",
+        "bitlocker",
+        "domain"
+      ],
+      "options": [
+        "Windows 11 Pro (or Enterprise) for domain join support",
+        "BitLocker drive encryption available on Pro/Enterprise SKUs",
+        "Windows 11 Home because it includes Hyper-V Server Manager by default",
+        "Replacing NTFS with FAT32 so BitLocker keys store in the MBR",
+        "Disabling the Workstation service to force domain join"
+      ],
+      "answers": [
+        0,
+        1
+      ],
+      "distractor_analysis": {
+        "2": "Windows 11 Home does not provide business domain join the way Pro/Enterprise does.",
+        "3": "FAT32 is unsuitable for modern Windows system volumes and is not how BitLocker stores keys.",
+        "4": "The Workstation service supports SMB client access; disabling it does not force domain join."
+      }
+    },
+    {
+      "id": "C2N-I-002",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.4",
+      "type": "multi",
+      "difficulty": "medium",
+      "question": "A help-desk engineer must collect a failing service's dependencies and export a filtered Event Viewer log for escalation. Which TWO Windows tools should they use? (Select TWO.)",
+      "explanation": "Service dependencies are visible in services.msc/sc.exe, and Event Viewer is the standard path to filter and export logs for escalation. Disk Cleanup, Character Map, and Paint 3D do not replace those admin consoles.",
+      "video_reference": null,
+      "notes_reference": "19_Windows_Management_Consoles_and_CLI.md",
+      "tags": [
+        "windows",
+        "services",
+        "event-viewer"
+      ],
+      "options": [
+        "Services console (services.msc or sc.exe) to inspect service state and dependencies",
+        "Event Viewer to filter and export Application/System log entries",
+        "Disk Cleanup solely to rebuild the service dependency graph",
+        "Character Map to encode event XML into clipboard glyphs",
+        "Paint 3D to screenshot registry hives instead of exporting logs"
+      ],
+      "answers": [
+        0,
+        1
+      ],
+      "distractor_analysis": {
+        "2": "Disk Cleanup frees temporary files; it does not map or repair service dependency trees.",
+        "3": "Character Map inserts glyphs; it is not an event log export tool.",
+        "4": "Screenshots of hives are not a substitute for proper Event Viewer exports."
+      }
+    },
+    {
+      "id": "C2N-I-003",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.5",
+      "type": "multi",
+      "difficulty": "hard",
+      "question": "On a Server Core style admin jump box, a technician must map a drive, test TCP 445 to a file server, and force a Group Policy refresh. Which TWO CLI utilities fit? (Select TWO.)",
+      "explanation": "net use maps and authenticates the drive, and gpupdate /force pulls both computer and user policy on demand instead of waiting out the 90 minute refresh cycle. To prove TCP 445 is open before you blame policy, use Test-NetConnection -Port 445 rather than a ping, because ICMP is often blocked while SMB is fine. chkdsk repairs local volumes and has nothing to do with remote SMB paths. format targets a local volume and would destroy data if aimed at production storage. winver only prints the Windows build banner and changes no firewall or share configuration.",
+      "video_reference": null,
+      "notes_reference": "19_Windows_Management_Consoles_and_CLI.md",
+      "tags": [
+        "cli",
+        "net-use",
+        "gpupdate"
+      ],
+      "options": [
+        "net use to map/authenticate a network drive",
+        "gpupdate /force to refresh computer and user policy",
+        "chkdsk /r as the only way to map SMB shares",
+        "format.com to reinitialize the remote file server volume over the WAN",
+        "winver to open inbound firewall ports for SMB"
+      ],
+      "answers": [
+        0,
+        1
+      ],
+      "distractor_analysis": {
+        "2": "chkdsk checks local disks; it does not map remote SMB paths.",
+        "3": "format targets local volumes and would be destructive if misused against production storage.",
+        "4": "winver displays version information and does not configure firewall or SMB access."
+      }
+    },
+    {
+      "id": "C2N-I-004",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.9",
+      "type": "multi",
+      "difficulty": "medium",
+      "question": "A Linux admin on an Ubuntu jump host needs to install packages from the distribution repos and inspect listening TCP sockets after a change. Which TWO commands are appropriate? (Select TWO.)",
+      "explanation": "apt (or apt-get) installs from the repositories configured under /etc/apt, and ss -tuln lists listening TCP and UDP sockets so you can confirm the service actually bound to the interface you expected. netstat -tuln does the same job on older builds. The other three are destructive, not diagnostic. chmod 777 /etc/shadow exposes every password hash on the box and is not an install prerequisite. Writing zeros to /boot with dd wipes the bootloader area and leaves an unbootable host. Deleting the root password with passwd -d removes authentication entirely and is never required by apt update.",
+      "video_reference": null,
+      "notes_reference": "24_Linux.md",
+      "tags": [
+        "linux",
+        "apt",
+        "ss"
+      ],
+      "options": [
+        "apt (or apt-get) to install packages from configured repositories",
+        "ss -tuln (or netstat -tuln) to list listening sockets",
+        "chmod 777 /etc/shadow to unlock package installs",
+        "dd if=/dev/zero of=/boot to refresh APT indexes",
+        "passwd -d root as a required step before apt update"
+      ],
+      "answers": [
+        0,
+        1
+      ],
+      "distractor_analysis": {
+        "2": "chmod 777 on /etc/shadow destroys credential confidentiality and is not an install step.",
+        "3": "Writing zeros to /boot destroys the bootloader area instead of refreshing package indexes.",
+        "4": "Removing the root password weakens security and is not required for apt update."
+      }
+    },
+    {
+      "id": "C2N-I-005",
+      "exam": "core2",
+      "domain": "2.0 Security",
+      "objective": "2.1",
+      "type": "multi",
+      "difficulty": "medium",
+      "question": "A colocation cage upgrade requires stronger physical access control for contractors who only need escorted daytime entry. Which TWO controls best fit that requirement? (Select TWO.)",
+      "explanation": "Contractors who only need escorted daytime entry get badge credentials scoped by time of day on the cage door controller, plus a written escort and sign-in policy logged at the NOC desk. That pairing gives you both prevention and an audit trail when someone asks who was in the cage at 02:00. Publishing a photo of the master mechanical key defeats key control, because a usable copy can be cut from a clear image. Turning off CCTV removes the deterrent and the only recording of who touched what. Leaving an emergency exit unlatched creates an uncontrolled door that bypasses the badge reader entirely.",
+      "video_reference": null,
+      "notes_reference": "28_Physical_Security.md",
+      "tags": [
+        "physical-security",
+        "badge",
+        "escort"
+      ],
+      "options": [
+        "Badge access with time-of-day restrictions on the cage door controller",
+        "Visitor escort policy logged at the NOC desk for contractor visits",
+        "Posting the master mechanical key photo on a public SharePoint site",
+        "Disabling all CCTV to protect contractor privacy inside the cage",
+        "Leaving the emergency exit permanently unlatched for convenience"
+      ],
+      "answers": [
+        0,
+        1
+      ],
+      "distractor_analysis": {
+        "2": "Publishing key photos defeats physical key control and invites unauthorized copies.",
+        "3": "CCTV is a standard deterrent and audit control; disabling it reduces accountability.",
+        "4": "Unlatching emergency exits for convenience creates an uncontrolled entry path."
+      }
+    },
+    {
+      "id": "C2N-I-006",
+      "exam": "core2",
+      "domain": "2.0 Security",
+      "objective": "2.2",
+      "type": "multi",
+      "difficulty": "hard",
+      "question": "Auditors find a shared Windows folder where Authenticated Users have Modify on the share and Full control on NTFS. Which TWO changes restore least privilege for a read-only finance report drop? (Select TWO.)",
+      "explanation": "Effective access is the more restrictive of share and NTFS permissions. Restrict NTFS for readers and remove overly broad share Modify for Authenticated Users. Broad Everyone Full control, ignoring NTFS, or USB drops increase exposure.",
+      "video_reference": null,
+      "notes_reference": "22_Windows_Security_Accounts_Shares_Permissions.md",
+      "tags": [
+        "ntfs",
+        "share-permissions",
+        "least-privilege"
+      ],
+      "options": [
+        "Tighten NTFS ACLs so the finance readers group has Read & execute only",
+        "Reduce share permissions so Authenticated Users are not granted Modify",
+        "Grant Everyone Full control on both share and NTFS to simplify access",
+        "Disable the entire NTFS ACL and rely only on share permissions",
+        "Store the reports on a world-writable USB stick in the lobby"
+      ],
+      "answers": [
+        0,
+        1
+      ],
+      "distractor_analysis": {
+        "2": "Everyone Full control is the opposite of least privilege for financial data.",
+        "3": "NTFS ACLs are required for file-level least privilege; share permissions alone are insufficient.",
+        "4": "A lobby USB stick has no authentication boundary suitable for finance reports."
+      }
+    },
+    {
+      "id": "C2N-I-007",
+      "exam": "core2",
+      "domain": "2.0 Security",
+      "objective": "2.4",
+      "type": "multi",
+      "difficulty": "medium",
+      "question": "Users receive emails that urge immediate password changes via a link that spoofs the company SSO portal. Which TWO security awareness or technical controls help most? (Select TWO.)",
+      "explanation": "Phishing that targets the SSO portal is beaten by two layers: users trained to check the address bar before typing credentials, and MFA on SSO so a stolen password alone does not open a session. Prefer number matching or a hardware key over SMS, since SIM swap defeats SMS codes. Disabling TLS puts every credential and message body in cleartext on the wire and helps the attacker, not the user. A shared break-glass password on a sticky note destroys accountability, because every action maps to one anonymous login. Whitelisting external .exe attachments hands malware a delivery path.",
+      "video_reference": null,
+      "notes_reference": "26_Threats_Attacks_Social_Engineering.md",
+      "tags": [
+        "phishing",
+        "mfa",
+        "social-engineering"
+      ],
+      "options": [
+        "User training to recognize phishing and verify URLs before entering credentials",
+        "MFA on SSO so stolen passwords alone are less useful to attackers",
+        "Disabling all TLS so users can see plaintext email headers more easily",
+        "Sharing one break-glass password in a sticky note on each monitor",
+        "Whitelist every external .exe attachment to speed help-desk resets"
+      ],
+      "answers": [
+        0,
+        1
+      ],
+      "distractor_analysis": {
+        "2": "Disabling TLS exposes credentials and content in transit rather than helping users.",
+        "3": "Shared break-glass passwords on monitors defeat authentication controls.",
+        "4": "Whitelisting external executables invites malware delivery alongside phishing."
+      }
+    },
+    {
+      "id": "C2N-I-008",
+      "exam": "core2",
+      "domain": "2.0 Security",
+      "objective": "2.6",
+      "type": "multi",
+      "difficulty": "medium",
+      "question": "A workstation shows unexpected browser redirects and a new toolbar the user did not install. Which TWO actions are appropriate early malware response steps? (Select TWO.)",
+      "explanation": "Containment plus a full scan, along with removing rogue extensions, are standard early steps for browser hijacks. Spreading the sample, freezing updates, or opening the firewall for C2 worsens the incident.",
+      "video_reference": null,
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": [
+        "malware",
+        "browser",
+        "incident-response"
+      ],
+      "options": [
+        "Isolate the host from the network if policy allows, then run a full antimalware scan",
+        "Review installed programs/extensions and remove unknown browser add-ons",
+        "Email the suspicious executable to all staff so they can inspect it locally",
+        "Disable Windows Update permanently to keep the malware signature frozen",
+        "Turn off the host firewall to let the C2 callback complete for easier capture on the LAN"
+      ],
+      "answers": [
+        0,
+        1
+      ],
+      "distractor_analysis": {
+        "2": "Emailing malware samples to staff multiplies exposure instead of containing it.",
+        "3": "Disabling Windows Update prevents security patches and signature improvements.",
+        "4": "Disabling the firewall to allow C2 callbacks increases lateral movement risk."
+      }
+    },
+    {
+      "id": "C2N-I-009",
+      "exam": "core2",
+      "domain": "2.0 Security",
+      "objective": "2.10",
+      "type": "multi",
+      "difficulty": "hard",
+      "question": "A SOHO router still uses the factory admin password and broadcasts an open guest SSID bridged into the LAN. Which TWO hardening changes should be applied first? (Select TWO.)",
+      "explanation": "Default passwords and open SSIDs bridged to the LAN are critical SOHO flaws. Unique admin credentials plus encrypted, isolated guest wireless are the first fixes. Killing DHCP, exposing Telnet, or weak location-based passphrases remain insecure.",
+      "video_reference": null,
+      "notes_reference": "27_Wireless_Security_SOHO_Router_Hardening.md",
+      "tags": [
+        "soho",
+        "wireless",
+        "hardening"
+      ],
+      "options": [
+        "Change the default administrator password to a unique strong secret",
+        "Segment or isolate guest Wi-Fi from the LAN and require WPA2/WPA3 encryption",
+        "Disable all DHCP so every IoT device uses public RFC1918 conflicts intentionally",
+        "Forward WAN TCP 23 to the router UI for easier remote Telnet admin",
+        "Set the Wi-Fi passphrase to the company street address for memorability"
+      ],
+      "answers": [
+        0,
+        1
+      ],
+      "distractor_analysis": {
+        "2": "Disabling DHCP does not isolate guest traffic and creates addressing chaos.",
+        "3": "WAN Telnet to the admin UI exposes cleartext remote control of the router.",
+        "4": "Address-based passphrases are easily guessed and fail wireless hardening guidance."
+      }
+    },
+    {
+      "id": "C2N-I-010",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "multi",
+      "difficulty": "medium",
+      "question": "A Windows laptop is slow after login: disk queue length spikes, and Task Manager shows constant Antimalware Service Executable CPU. Which TWO troubleshooting actions are reasonable first moves? (Select TWO.)",
+      "explanation": "Heavy Defender scanning during peak hours plus a stressed or nearly full disk commonly explain post-login slowness. Deleting System32, removing the pagefile on low-RAM systems, or removing the battery are harmful or irrelevant.",
+      "video_reference": null,
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": [
+        "performance",
+        "defender",
+        "disk"
+      ],
+      "options": [
+        "Confirm whether a full scan is running and reschedule it off business peak hours",
+        "Check for disk health issues and ensure adequate free space on the system volume",
+        "Delete System32 to stop the antimalware service from scanning",
+        "Disable the paging file permanently on a 4 GB RAM laptop to speed boot",
+        "Set the power plan to High Performance by removing the battery permanently"
+      ],
+      "answers": [
+        0,
+        1
+      ],
+      "distractor_analysis": {
+        "2": "Deleting System32 destroys the OS rather than tuning scans.",
+        "3": "Disabling the pagefile on a low-RAM laptop often increases failures under memory pressure.",
+        "4": "Removing the battery does not fix scan scheduling or disk health."
+      }
+    },
+    {
+      "id": "C2N-I-011",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.4",
+      "type": "multi",
+      "difficulty": "medium",
+      "question": "Chrome on a shared kiosk keeps restoring a hijacked homepage and blocked-plugin prompts after every reboot. Which TWO fixes target common software causes? (Select TWO.)",
+      "explanation": "Persistent homepage hijacks usually come from extensions, shortcuts, or PUP policies. Resetting the browser and scanning for PUPs address those causes. Random VBIOS flashes, partial EFI formats, or zeroing DNS break the device without removing the hijack.",
+      "video_reference": null,
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": [
+        "browser",
+        "pup",
+        "kiosk"
+      ],
+      "options": [
+        "Reset browser settings and remove unauthorized extensions",
+        "Scan for PUPs/malware that rewrite shortcuts and policies",
+        "Flash the GPU VBIOS from an unrelated laptop model",
+        "Format only the EFI partition while leaving malware on C:",
+        "Set the kiosk DNS to 0.0.0.0 to stop homepage redirects"
+      ],
+      "answers": [
+        0,
+        1
+      ],
+      "distractor_analysis": {
+        "2": "Cross-flashing GPU firmware risks a brick and does not remove browser hijacks.",
+        "3": "Formatting EFI while leaving malware on the OS volume will not clear the infection.",
+        "4": "Pointing DNS at 0.0.0.0 breaks name resolution rather than removing hijack components."
+      }
+    },
+    {
+      "id": "C2N-I-012",
+      "exam": "core2",
+      "domain": "4.0 Operational Procedures",
+      "objective": "4.1",
+      "type": "multi",
+      "difficulty": "medium",
+      "question": "Before changing a production firewall rule set during business hours, which TWO change-management practices should the technician follow? (Select TWO.)",
+      "explanation": "Formal change requests, risk/rollback notes, and approvals/windows are core operational procedure controls. Silent mass changes, skipping config backup, and shared unlogged accounts break auditability and recovery.",
+      "video_reference": null,
+      "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+      "tags": [
+        "change-management",
+        "firewall",
+        "operations"
+      ],
+      "options": [
+        "Submit a change request with risk assessment and rollback plan",
+        "Obtain required approvals and schedule a maintenance window when mandated",
+        "Apply the change silently on all sites first, then write documentation later",
+        "Skip backup of the current config because rules are easy to remember",
+        "Use the same unlogged shared admin account for every engineer on the change"
+      ],
+      "answers": [
+        0,
+        1
+      ],
+      "distractor_analysis": {
+        "2": "Undocumented silent changes prevent review and complicate rollback when traffic breaks.",
+        "3": "Without a saved prior config, rollback becomes guesswork during an outage.",
+        "4": "Shared admin accounts destroy individual accountability required by change audits."
+      }
+    },
+    {
+      "id": "C2N-I-013",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.2",
+      "type": "order",
+      "difficulty": "medium",
+      "question": "Order the steps to perform a clean Windows 11 installation on a new NVMe workstation that must boot in UEFI mode.",
+      "explanation": "UEFI/GPT must be correct before partitioning. Only after the OS is installed do domain join, baselines, and BitLocker make sense. Installing in legacy CSM mode often creates MBR layouts that fight modern security features.",
+      "video_reference": null,
+      "notes_reference": "23_Windows_Editions_and_OS_Installation.md",
+      "tags": [
+        "windows-install",
+        "uefi",
+        "gpt"
+      ],
+      "sequence": [
+        "Enter UEFI setup, enable UEFI boot, and set the install media first in the boot order",
+        "Boot the Windows installer and delete/create a GPT partition layout on the NVMe drive",
+        "Complete setup, install drivers/updates, and join the device to the required domain or Azure AD",
+        "Apply baseline security policies, BitLocker if required, and verify activation"
+      ]
+    },
+    {
+      "id": "C2N-I-014",
+      "exam": "core2",
+      "domain": "2.0 Security",
+      "objective": "2.5",
+      "type": "order",
+      "difficulty": "hard",
+      "question": "Order the preferred response when a receptionist reports a convincing urgent call from \"the CEO\" demanding gift-card codes.",
+      "explanation": "Vishing works on urgency and authority, so the first move is to not comply: buy nothing, read nothing back, and stay off the caller's script. Verify out of band next, using the published internal number from the directory rather than any callback number the caller supplied. Then document the call detail and escalate to security so the pattern gets tracked across the site. Finally warn nearby staff per policy and preserve the voicemail or email, because that recording is the evidence the incident responder needs. Arguing on the same call or paying first gives the attacker exactly what they want.",
+      "video_reference": null,
+      "notes_reference": "26_Threats_Attacks_Social_Engineering.md",
+      "tags": [
+        "vishing",
+        "social-engineering",
+        "incident"
+      ],
+      "sequence": [
+        "Remain calm, do not purchase cards, and avoid sharing secrets or codes",
+        "Verify the request through a known-good channel using published contact procedures",
+        "Document the call details and escalate to security/help desk immediately",
+        "Warn nearby staff per policy and preserve any related voicemail or email evidence"
+      ]
+    },
+    {
+      "id": "C2N-I-015",
+      "exam": "core2",
+      "domain": "2.0 Security",
+      "objective": "2.8",
+      "type": "order",
+      "difficulty": "medium",
+      "question": "Order the steps to enroll a corporate iPhone into MDM after a device wipe for a new hire.",
+      "explanation": "Enrollment runs in a fixed order because each step depends on the last. Basic setup and a trusted network path come first, since the device cannot reach the MDM endpoint without connectivity. Authenticating the enrollment profile against corporate identity ties the hardware to a real user, so the device shows up under the right owner in the console. Only then can MDM push management profiles, certificates and required apps. Confirm the compliance posture last: passcode policy, encryption and VPN profile. Handing over an unverified device is how unmanaged endpoints get onto the network.",
+      "video_reference": null,
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": [
+        "mdm",
+        "ios",
+        "enrollment"
+      ],
+      "sequence": [
+        "Power on, choose language/region, and connect to a trusted network or cellular path",
+        "Authenticate the enrollment profile with corporate identity credentials or QR/token",
+        "Allow MDM to install management profiles, certificates, and required apps",
+        "Confirm compliance policies (passcode, encryption, VPN) before handing the device to the user"
+      ]
+    },
+    {
+      "id": "C2N-I-016",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "order",
+      "difficulty": "medium",
+      "question": "Order the steps to recover a Windows workstation that fails to boot after a bad driver update, using least-destructive options first.",
+      "explanation": "Work least destructive to most. Boot into the Windows Recovery Environment and try Startup Repair or Safe Mode first, because Safe Mode loads a minimal driver set and usually gets you a desktop. From there roll the driver back in Device Manager or use System Restore to return to the pre-update checkpoint. If the system boots but files remain damaged, run DISM /Online /Cleanup-Image /RestoreHealth then sfc /scannow to repair the component store and protected files. Reimaging or rebuilding and rejoining the domain is the last resort, because it costs the user their local state.",
+      "video_reference": null,
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": [
+        "startup-repair",
+        "drivers",
+        "winre"
+      ],
+      "sequence": [
+        "Attempt Startup Repair / Safe Mode from Windows Recovery Environment",
+        "Uninstall the recent driver or roll back via Device Manager / System Restore in Safe Mode",
+        "Run SFC/DISM offline or from recovery if system files remain corrupted",
+        "If still unbootable, restore from image backup or rebuild and rejoin per procedure"
+      ]
+    },
+    {
+      "id": "C2N-I-017",
+      "exam": "core2",
+      "domain": "4.0 Operational Procedures",
+      "objective": "4.2",
+      "type": "order",
+      "difficulty": "medium",
+      "question": "Order the safety steps for replacing a hot-swap PSU in a live rack under LOTO-aware datacenter policy for that chassis type.",
+      "explanation": "Confirm the chassis is rated for hot swap and identify the failed module and its circuit before you touch anything. iDRAC, iLO or the front panel LED will name the failed supply, so you are not going by guesswork. Wear ESD protection, tell the NOC the redundancy is about to drop, and follow site lockout and tagout rules for that chassis. Then pull the failed module and seat the replacement until it latches and the status LED goes healthy. Verify load sharing across both supplies on the PDU and the management controller, clear the alert, and log the swap. Pulling the wrong module drops the host.",
+      "video_reference": null,
+      "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+      "tags": [
+        "safety",
+        "psu",
+        "datacenter"
+      ],
+      "sequence": [
+        "Confirm the chassis supports hot-swap and identify the failed PSU module and circuit",
+        "Wear ESD protection, communicate with NOC, and follow site LOTO/energy isolation rules as required",
+        "Remove the failed module and insert the replacement until latched with status LEDs healthy",
+        "Verify redundant load sharing, clear alerts, and update the maintenance log"
+      ]
+    },
+    {
+      "id": "C2N-I-018",
+      "exam": "core2",
+      "domain": "4.0 Operational Procedures",
+      "objective": "4.3",
+      "type": "order",
+      "difficulty": "medium",
+      "question": "Order the steps to implement a 3-2-1 style backup plan for a small office file server before a major application upgrade.",
+      "explanation": "Start with the business, not the tooling. Agree the critical data sets and the recovery point and recovery time objectives with the owner, because those numbers decide job frequency and retention. Then configure a local backup to separate media plus a second distinct target, which gives you the three copies on two media that the rule calls for. Send the third copy offsite or to immutable cloud storage so ransomware cannot reach it from the same credentials. Finally restore sample files and a test VM and record the result. A backup job that has never been restored is a report, not a recovery plan.",
+      "video_reference": null,
+      "notes_reference": "31_Backup_Data_Handling_AI.md",
+      "tags": [
+        "backup",
+        "3-2-1",
+        "restore-test"
+      ],
+      "sequence": [
+        "Identify critical data sets and recovery point/time objectives with the business owner",
+        "Configure local backups to a separate medium and a second distinct storage target",
+        "Replicate or vault a third copy offsite or to immutable cloud storage",
+        "Run a restore test of sample files/VMs and document the results before the upgrade"
+      ]
+    },
+    {
+      "id": "C2N-I-019",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.3",
+      "type": "match",
+      "difficulty": "medium",
+      "question": "Match each Windows Settings area to the task a technician most often performs there.",
+      "explanation": "Technicians navigate Settings constantly: About for edition/activation, Network for connectivity, Accounts for identity, Windows Update for patching, and Apps for uninstalls. Knowing the map reduces time on remote sessions.",
+      "video_reference": null,
+      "notes_reference": "18_Windows_Settings_and_Configuration.md",
+      "tags": [
+        "windows-settings",
+        "match"
+      ],
+      "pairs": [
+        {
+          "left": "System > About / Activation",
+          "right": "Verify Windows edition and activation state"
+        },
+        {
+          "left": "Network & internet",
+          "right": "Configure IP, VPN, and proxy connectivity"
+        },
+        {
+          "left": "Accounts",
+          "right": "Manage local/Microsoft account sign-in options"
+        },
+        {
+          "left": "Update & security / Windows Update",
+          "right": "Check for OS patches and pause updates"
+        },
+        {
+          "left": "Apps",
+          "right": "Uninstall or modify installed desktop applications"
+        }
+      ]
+    },
+    {
+      "id": "C2N-I-020",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.8",
+      "type": "match",
+      "difficulty": "medium",
+      "question": "A designer on a Mac calls the help desk and you have to talk them through the built-in tools over the phone. Match each macOS tool or feature to its purpose.",
+      "explanation": "These four cover most of what you talk a Mac user through over the phone. Finder is the file manager for local volumes and network shares, and Go to Folder is how you reach a path a Windows technician would type in Explorer. Time Machine takes incremental snapshots to an external or network target and restores individual files or a whole system. Keychain Access stores passwords and certificates for the user, and a corrupt login keychain is a common cause of repeated credential prompts. Mission Control manages Spaces, full-screen apps and the window overview, so it is a display question, not a storage one.",
+      "video_reference": null,
+      "notes_reference": "25_macOS.md",
+      "tags": [
+        "macos",
+        "time-machine",
+        "keychain"
+      ],
+      "pairs": [
+        {
+          "left": "Finder",
+          "right": "Browse files, volumes, and network shares"
+        },
+        {
+          "left": "Time Machine",
+          "right": "Local/external incremental backups and restores"
+        },
+        {
+          "left": "Keychain Access",
+          "right": "Store passwords and certificates for the user"
+        },
+        {
+          "left": "Mission Control",
+          "right": "Manage Spaces, full-screen apps, and window overview"
+        }
+      ]
+    },
+    {
+      "id": "C2N-I-021",
+      "exam": "core2",
+      "domain": "2.0 Security",
+      "objective": "2.3",
+      "type": "match",
+      "difficulty": "hard",
+      "question": "You are rebuilding a branch office wireless network and have to justify the security mode in the change record. Match each wireless security mode to its defining characteristic.",
+      "explanation": "WPA3-Personal replaces the WPA2 four-way handshake with SAE, which kills the offline dictionary attack against a captured handshake. WPA2-Enterprise uses 802.1X with a RADIUS server, so every user authenticates with their own credential or certificate and you can revoke one person without changing a shared key. An open network applies no link-layer encryption at all, so anything not wrapped in TLS is readable by anyone in range. WEP uses RC4 with a weak IV scheme and is recovered in minutes with off-the-shelf tools, so treat it as a finding to remediate whenever you meet it on a survey.",
+      "video_reference": null,
+      "notes_reference": "27_Wireless_Security_SOHO_Router_Hardening.md",
+      "tags": [
+        "wireless-security",
+        "wpa3",
+        "802.1x"
+      ],
+      "pairs": [
+        {
+          "left": "WPA3-Personal",
+          "right": "SAE-based passphrase authentication for modern SOHO Wi-Fi"
+        },
+        {
+          "left": "WPA2-Enterprise",
+          "right": "802.1X with RADIUS-backed per-user credentials"
+        },
+        {
+          "left": "Open network",
+          "right": "No encryption; traffic readable by local eavesdroppers"
+        },
+        {
+          "left": "WEP",
+          "right": "Obsolete RC4 scheme that must not be used on production WLANs"
+        }
+      ]
+    },
+    {
+      "id": "C2N-I-022",
+      "exam": "core2",
+      "domain": "2.0 Security",
+      "objective": "2.7",
+      "type": "match",
+      "difficulty": "medium",
+      "question": "A user reports they can open a share but cannot delete anything in it, and you are working the permission stack. Match each Windows permission concept to its meaning.",
+      "explanation": "Permission problems get solved by walking the stack in order. NTFS Modify grants read, write and delete inside a folder but not the right to change the ACL, which is Full control. Share Read caps what comes across the wire, and the effective access is the more restrictive of the share and NTFS permissions, which is why a user with NTFS Modify still cannot write through a read-only share. An explicit Deny beats a conflicting Allow at the same level. Inheritance passes ACEs from parent to child. C$ is the hidden administrative share on a volume root, available to local administrators only.",
+      "video_reference": null,
+      "notes_reference": "22_Windows_Security_Accounts_Shares_Permissions.md",
+      "tags": [
+        "ntfs",
+        "shares",
+        "acl"
+      ],
+      "pairs": [
+        {
+          "left": "NTFS Modify",
+          "right": "Read, write, and delete files within a folder"
+        },
+        {
+          "left": "Share Read",
+          "right": "Connect to the share with read-only share-level rights"
+        },
+        {
+          "left": "Explicit Deny",
+          "right": "Overrides conflicting Allow entries for that permission"
+        },
+        {
+          "left": "Inheritance",
+          "right": "Child objects receive ACEs from a parent folder"
+        },
+        {
+          "left": "Administrative share (C$)",
+          "right": "Hidden default share for admins on a volume root"
+        }
+      ]
+    },
+    {
+      "id": "C2N-I-023",
+      "exam": "core2",
+      "domain": "4.0 Operational Procedures",
+      "objective": "4.4",
+      "type": "match",
+      "difficulty": "medium",
+      "question": "Match each scripting or automation artifact to its typical use on Windows support desks.",
+      "explanation": "PowerShell dominates modern Windows automation, batch files remain for legacy needs, shell scripts serve Unix hosts, and Scheduled Tasks time the runs. Matching the artifact prevents picking the wrong runtime.",
+      "video_reference": null,
+      "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+      "tags": [
+        "scripting",
+        "powershell",
+        "scheduled-tasks"
+      ],
+      "pairs": [
+        {
+          "left": ".ps1 PowerShell script",
+          "right": "Automate admin tasks with rich Windows APIs"
+        },
+        {
+          "left": ".bat / .cmd",
+          "right": "Legacy Command Prompt batch automation"
+        },
+        {
+          "left": ".sh shell script",
+          "right": "Bash automation on Linux/macOS jump hosts"
+        },
+        {
+          "left": "Scheduled Task",
+          "right": "Run scripts at logon/time triggers under a service account"
+        }
+      ]
+    },
+    {
+      "id": "C2N-I-024",
+      "exam": "core2",
+      "domain": "4.0 Operational Procedures",
+      "objective": "4.7",
+      "type": "match",
+      "difficulty": "easy",
+      "question": "You are coaching a new technician through their first week on the service desk floor. Match each professionalism scenario to the appropriate technician response.",
+      "explanation": "These behaviors are graded on the exam and watched on the floor. Take an angry user out of the lobby and away from an audience, stay calm and stick to facts. An unclear ticket gets clarifying questions and a restatement of the problem before you change anything, because guessing generates rework and a second outage. Personal data on screen is not yours to read; access only what the job requires. If you have to escalate mid-change, stop at a safe point, document the exact state and hand off cleanly. With a language barrier, speak plainly, confirm understanding and never talk down to the customer.",
+      "video_reference": null,
+      "notes_reference": "17_Support_Procedures_Professionalism_OS_Types.md",
+      "tags": [
+        "professionalism",
+        "communication"
+      ],
+      "pairs": [
+        {
+          "left": "Angry user in a public lobby",
+          "right": "Stay calm, move to a private area if possible, and focus on facts"
+        },
+        {
+          "left": "Unclear ticket description",
+          "right": "Ask clarifying questions and restate the problem before changing systems"
+        },
+        {
+          "left": "Personal data visible on screen",
+          "right": "Avoid snooping; access only what the job requires"
+        },
+        {
+          "left": "Escalation needed mid-change",
+          "right": "Stop at a safe point, document state, and hand off cleanly"
+        },
+        {
+          "left": "Cultural or language barrier",
+          "right": "Speak plainly, confirm understanding, and avoid condescension"
+        }
+      ]
+    }
+  ]
+}

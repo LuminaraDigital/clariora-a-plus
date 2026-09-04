@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Lint, test, validate bank
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Syntax check Electron entry points
+        run: npm run check
+
+      - name: Node self-tests
+        run: npm test
+
+      - name: Validate exam bank
+        run: python tools/validate_bank.py
+
+      - name: Guard against secrets and third-party media
+        run: |
+          set -e
+          if git ls-files | grep -Ei '\.(pfx|p12|jwk|pem|key|mp4|pptx|docx)$|(^|/)\.env$'; then
+            echo "Forbidden file type is tracked."; exit 1; fi
+          if git ls-files | grep -Ei 'OceanofPDF'; then
+            echo "Non-redistributable content is tracked."; exit 1; fi
+          echo "Tree is clean."

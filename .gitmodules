@@ -1,0 +1,15 @@
+[submodule "TOTAL-CompTIA-A-Core-1-220-1201-v15-Course"]
+	path = TOTAL-CompTIA-A-Core-1-220-1201-v15-Course
+	url = https://github.com/PacktPublishing/TOTAL-CompTIA-A-Core-1-220-1201-v15-Course.git
+[submodule "CompTIA-A-Core-1-220-1201-Certification-Training-Exam-Prep"]
+	path = CompTIA-A-Core-1-220-1201-Certification-Training-Exam-Prep
+	url = https://github.com/PacktPublishing/CompTIA-A-Core-1-220-1201-Certification-Training-Exam-Prep.git
+[submodule "CompTIA-A-Certification-Core-1---220-1101"]
+	path = CompTIA-A-Certification-Core-1---220-1101
+	url = https://github.com/PacktPublishing/CompTIA-A-Certification-Core-1---220-1101.git
+[submodule "CompTIA-A-Certification-220-1001-The-Total-Course"]
+	path = CompTIA-A-Certification-220-1001-The-Total-Course
+	url = https://github.com/PacktPublishing/CompTIA-A-Certification-220-1001-The-Total-Course.git
+[submodule "CompTIA-A-Plus-Practice-Questions"]
+	path = CompTIA-A-Plus-Practice-Questions
+	url = https://github.com/siennafaleiro/CompTIA-A-Plus-Practice-Questions.git

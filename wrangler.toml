@@ -1,0 +1,12 @@
+# CompTIA A+ Master - Cloudflare deploy
+# Primary path: Workers static assets (workers.dev URL).
+# Pages remains available once the API token has Cloudflare Pages: Edit.
+
+name = "comptia-a-plus-master"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+[assets]
+directory = "./dist_web"
+not_found_handling = "single-page-application"
+html_handling = "auto-trailing-slash"

@@ -1,0 +1,1627 @@
+[
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "A datacenter engineer must image 200 identical Windows 11 Enterprise workstations overnight with zero local technician touch. Which deployment method BEST meets this requirement?",
+    "options": [
+      "Manual USB media install on each unit",
+      "Zero-touch / Autopilot or MDT-WDS PXE deployment with answer files",
+      "Windows To Go USB drives left at each desk",
+      "Clean install from retail ISO with local product keys"
+    ],
+    "answer": 1,
+    "explanation": "Zero-touch and network deployment (Autopilot, MDT, WDS/PXE with unattended answer files) scales mass OS installs without visiting each machine."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "Which Windows edition is required to join an Active Directory domain for corporate workstations in a datacenter operations team?",
+    "options": [
+      "Windows 11 Home",
+      "Windows 11 Pro or Enterprise",
+      "Windows 11 S Mode only",
+      "Windows 10 IoT Core"
+    ],
+    "answer": 1,
+    "explanation": "Domain join requires Pro, Enterprise, or Education editions. Home cannot join an AD domain."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "A technician needs to view real-time CPU, memory, disk, and network utilization while investigating a sluggish file server. Which built-in tool is BEST?",
+    "options": [
+      "Notepad",
+      "Task Manager or Resource Monitor",
+      "Disk Cleanup",
+      "Character Map"
+    ],
+    "answer": 1,
+    "explanation": "Task Manager and Resource Monitor provide live performance counters for CPU, RAM, disk, and network."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "Which MMC snap-in opens Event Viewer to review Application, System, and Security logs on a Windows server?",
+    "options": [
+      "eventvwr.msc",
+      "devmgmt.msc",
+      "diskmgmt.msc",
+      "services.msc"
+    ],
+    "answer": 0,
+    "explanation": "eventvwr.msc launches Event Viewer for Windows logging analysis."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "A help desk technician must force a Group Policy refresh on a domain-joined laptop after a GPO change. Which command is correct?",
+    "options": [
+      "ipconfig /renew",
+      "gpupdate /force",
+      "chkdsk /f",
+      "netstat -ano"
+    ],
+    "answer": 1,
+    "explanation": "gpupdate /force immediately reapplies computer and user Group Policy."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "Which command displays detailed TCP/UDP listening ports and owning process IDs on Windows?",
+    "options": [
+      "ping -t",
+      "netstat -ano",
+      "tracert",
+      "nslookup"
+    ],
+    "answer": 1,
+    "explanation": "netstat -ano shows connections/ports with PIDs useful for troubleshooting listeners and malware."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "A Linux rack server must show which process is consuming the most CPU right now. Which command is MOST appropriate?",
+    "options": [
+      "chmod",
+      "top or htop",
+      "mkfs",
+      "passwd"
+    ],
+    "answer": 1,
+    "explanation": "top/htop list live process CPU and memory usage on Linux."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "Which Linux permission set allows owner full control, group read/execute, and others no access on a script?",
+    "options": [
+      "chmod 777",
+      "chmod 750",
+      "chmod 644",
+      "chmod 000"
+    ],
+    "answer": 1,
+    "explanation": "750 is rwx for owner, r-x for group, --- for others."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "A macOS admin needs encrypted full-disk protection for a laptop storing datacenter jump-host credentials. Which feature should be enabled?",
+    "options": [
+      "Time Machine only",
+      "FileVault",
+      "Spotlight",
+      "Mission Control"
+    ],
+    "answer": 1,
+    "explanation": "FileVault provides full-disk encryption on macOS."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "Which Windows utility can wipe free space during secure decommission prep (not a substitute for physical destruction of classified media)?",
+    "options": [
+      "format with quick format only",
+      "diskpart clean or cipher /w after proper wipe procedures",
+      "ipconfig /flushdns",
+      "msconfig"
+    ],
+    "answer": 1,
+    "explanation": "diskpart clean and cipher /w address residual free-space data; high-security disposal still may require degauss/shred and certificates of destruction."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "A technician maps a persistent network drive to \\\\filesrv01\\backups that reconnects at logon. Which command achieves this?",
+    "options": [
+      "net use Z: \\\\filesrv01\\backups /persistent:yes",
+      "ping filesrv01",
+      "nslookup backups",
+      "tracert filesrv01"
+    ],
+    "answer": 0,
+    "explanation": "net use with /persistent:yes creates a reconnecting drive mapping."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "Which Windows Settings area is used to manage startup apps that slow boot on technician laptops?",
+    "options": [
+      "Time and Language only",
+      "Apps > Startup (or Task Manager Startup)",
+      "Fonts",
+      "Ease of Access Magnifier only"
+    ],
+    "answer": 1,
+    "explanation": "Startup apps are managed in Settings > Apps > Startup or Task Manager Startup tab."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "An APIPA address on a Windows workstation indicates which primary condition?",
+    "options": [
+      "Successful DHCP lease from corporate DHCP",
+      "DHCP failure leading to 169.254.x.x autoconfiguration",
+      "Static public IP assignment",
+      "IPv6-only dual stack success"
+    ],
+    "answer": 1,
+    "explanation": "169.254.0.0/16 APIPA addresses appear when DHCP is unreachable."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "Which file system is the default for modern Windows system volumes and supports ACLs, encryption, and large volumes?",
+    "options": [
+      "FAT32",
+      "exFAT",
+      "NTFS",
+      "ext2"
+    ],
+    "answer": 2,
+    "explanation": "NTFS is the standard Windows system file system with permissions and advanced features."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "A Linux admin must recursively change group ownership of /opt/apps to opsgroup. Which command is correct?",
+    "options": [
+      "chgrp -R opsgroup /opt/apps",
+      "chmod -R 777 /opt/apps",
+      "killall opsgroup",
+      "systemctl restart opsgroup"
+    ],
+    "answer": 0,
+    "explanation": "chgrp -R changes group ownership recursively."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "Which Windows boot option loads a minimal set of drivers and services for malware cleanup?",
+    "options": [
+      "Hibernate",
+      "Safe Mode / Safe Mode with Networking",
+      "Fast Startup only",
+      "Airplane Mode"
+    ],
+    "answer": 1,
+    "explanation": "Safe Mode loads minimal drivers to aid troubleshooting and malware removal."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "A technician needs hostname, OS version, and hotfixes on a Windows Server. Which command is BEST?",
+    "options": [
+      "hostname only",
+      "systeminfo",
+      "cls",
+      "dir /s"
+    ],
+    "answer": 1,
+    "explanation": "systeminfo reports OS build, hotfixes, memory, and related inventory."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "Which Windows tool schedules a nightly robocopy backup job?",
+    "options": [
+      "Task Scheduler (taskschd.msc)",
+      "Paint",
+      "Snipping Tool",
+      "Sticky Notes"
+    ],
+    "answer": 0,
+    "explanation": "Task Scheduler runs scripts and programs on a defined schedule."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "In Linux, which command prints the current working directory path?",
+    "options": [
+      "pwd",
+      "whoami",
+      "uname -r",
+      "df -h"
+    ],
+    "answer": 0,
+    "explanation": "pwd prints the present working directory."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "A Windows workstation cannot resolve internal hostnames but can ping 8.8.8.8 by IP. Which setting should be checked FIRST?",
+    "options": [
+      "DNS server configuration",
+      "Display resolution",
+      "Printer spooler",
+      "Sound mixer"
+    ],
+    "answer": 0,
+    "explanation": "Name resolution failures with working IP connectivity point to DNS configuration."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "Which macOS feature provides system-wide search across apps, documents, and settings?",
+    "options": [
+      "Keychain",
+      "Spotlight",
+      "Disk Utility First Aid only",
+      "Boot Camp"
+    ],
+    "answer": 1,
+    "explanation": "Spotlight is the macOS system-wide search feature."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "A datacenter jump box requires PowerShell remoting enabled for automation. Which service underpins WinRM remoting?",
+    "options": [
+      "Telnet port 23 only",
+      "Windows Remote Management (WinRM) typically over HTTP 5985 / HTTPS 5986",
+      "FTP port 21",
+      "SMTP port 25"
+    ],
+    "answer": 1,
+    "explanation": "PowerShell remoting uses WinRM on 5985/5986."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "Which Linux init system is common on modern distributions and manages services via systemctl?",
+    "options": [
+      "systemd",
+      "MS-DOS CONFIG.SYS",
+      "Windows SCM exclusively",
+      "BIOS POST"
+    ],
+    "answer": 0,
+    "explanation": "systemd with systemctl is the dominant Linux service manager today."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "Windows Defender Firewall inbound rules should default to which posture for unused services on a hardened workstation?",
+    "options": [
+      "Allow all inbound",
+      "Block inbound unless explicitly allowed",
+      "Disable the firewall entirely",
+      "Allow only Telnet"
+    ],
+    "answer": 1,
+    "explanation": "Least privilege firewall posture blocks inbound by default and opens only required ports."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "A user needs an offline incremental backup on macOS to an external SSD. Which built-in tool is designed for this?",
+    "options": [
+      "Time Machine",
+      "BitLocker",
+      "gpresult",
+      "diskpart"
+    ],
+    "answer": 0,
+    "explanation": "Time Machine creates incremental backups on macOS."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "Which command clears the local DNS resolver cache on Windows after a record change?",
+    "options": [
+      "ipconfig /flushdns",
+      "netsh winsock reset only",
+      "chkdsk /r",
+      "sfc /verifyonly"
+    ],
+    "answer": 0,
+    "explanation": "ipconfig /flushdns clears the DNS client cache."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "An enterprise app requires .NET Desktop Runtime before install. Where should a technician verify software prerequisites?",
+    "options": [
+      "Vendor system requirements and Windows Apps and Features / installed runtimes",
+      "Monitor refresh rate only",
+      "BIOS splash theme",
+      "Keyboard language exclusively"
+    ],
+    "answer": 0,
+    "explanation": "Application installs fail without matching CPU, RAM, OS, and runtime prerequisites listed by the vendor."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "Which Windows utility consolidates Device Manager, Disk Management, and Event Viewer under one console?",
+    "options": [
+      "Computer Management (compmgmt.msc)",
+      "Calculator",
+      "WordPad",
+      "Magnifier"
+    ],
+    "answer": 0,
+    "explanation": "Computer Management hosts multiple administrative snap-ins."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "A Linux technician must follow new lines appended to /var/log/syslog in real time during an outage. Which command is BEST?",
+    "options": [
+      "tail -f /var/log/syslog",
+      "rm -rf /var/log/syslog",
+      "mkfs /var/log/syslog",
+      "passwd syslog"
+    ],
+    "answer": 0,
+    "explanation": "tail -f streams appended log lines live."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "Which partition style supports disks larger than 2 TB and more than four primary partitions on Windows?",
+    "options": [
+      "MBR",
+      "GPT",
+      "FAT12 only",
+      "CSM legacy exclusively"
+    ],
+    "answer": 1,
+    "explanation": "GPT supports large disks and many partitions; MBR is limited to 2 TB and four primary partitions."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "Which Windows command-line tool manages disks, partitions, and volumes interactively?",
+    "options": [
+      "diskpart",
+      "mspaint",
+      "write.exe",
+      "charmap"
+    ],
+    "answer": 0,
+    "explanation": "diskpart is the Windows disk partitioning utility."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "A technician enables Hyper-V on Windows 11 Pro for lab VMs. This requires?",
+    "options": [
+      "Hardware virtualization support (VT-x/AMD-V) enabled in firmware",
+      "Disabling NX bit only",
+      "FAT16 system volume",
+      "Removing all RAM above 4 GB"
+    ],
+    "answer": 0,
+    "explanation": "Hypervisors need CPU virtualization extensions enabled."
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "question": "Which Linux command fetches URL content and is useful for API checks from the CLI?",
+    "options": [
+      "curl",
+      "chown",
+      "fdisk",
+      "visudo"
+    ],
+    "answer": 0,
+    "explanation": "curl transfers data from URLs and APIs."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "A visitor follows an employee through a badge-controlled datacenter door without badging. What attack is this?",
+    "options": [
+      "Phishing",
+      "Tailgating / piggybacking",
+      "SQL injection",
+      "XSS"
+    ],
+    "answer": 1,
+    "explanation": "Tailgating is unauthorized physical entry by following an authorized person."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "Which control BEST implements least privilege for a junior operator who only needs to reboot a monitoring VM?",
+    "options": [
+      "Domain Admin membership",
+      "Dedicated limited role or JIT privileged access for reboot rights only",
+      "Shared root password on a sticky note",
+      "Disable all logging"
+    ],
+    "answer": 1,
+    "explanation": "Least privilege grants only the minimum rights required, often via roles or just-in-time access."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "Corporate Wi-Fi for staff laptops should use which modern enterprise wireless security approach?",
+    "options": [
+      "Open network with no password",
+      "WPA3-Enterprise or WPA2-Enterprise with 802.1X (RADIUS)",
+      "WEP 64-bit",
+      "Hidden SSID only with WEP"
+    ],
+    "answer": 1,
+    "explanation": "Enterprise WPA2/WPA3 with 802.1X/RADIUS is the standard for corporate wireless authentication."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "Ransomware that encrypts files and demands Bitcoin is BEST classified as which malware type?",
+    "options": [
+      "Adware",
+      "Ransomware",
+      "Firmware rootkit only",
+      "Spam relay exclusively"
+    ],
+    "answer": 1,
+    "explanation": "Ransomware encrypts or locks data and demands payment."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "An email asks a CFO to urgently wire funds to a new vendor account. This is MOST likely?",
+    "options": [
+      "Business Email Compromise (BEC) / social engineering",
+      "Hardware ESD failure",
+      "DHCP exhaustion",
+      "GPU artifacting"
+    ],
+    "answer": 0,
+    "explanation": "BEC uses impersonation and urgency to redirect payments or credentials."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "Which Windows feature encrypts entire volumes to protect data at rest on stolen laptops?",
+    "options": [
+      "BitLocker",
+      "Snipping Tool",
+      "Sticky Notes",
+      "Character Map"
+    ],
+    "answer": 0,
+    "explanation": "BitLocker provides full-volume encryption on Windows."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "After confirming malware on a workstation, what is the FIRST isolation step before remediation?",
+    "options": [
+      "Immediately rebuild every server in the rack",
+      "Disconnect/quarantine the host from the network",
+      "Post credentials to a public chat",
+      "Disable all backups"
+    ],
+    "answer": 1,
+    "explanation": "Quarantine/isolation stops lateral movement before cleanup."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "Which authentication approach requires something you know plus something you have?",
+    "options": [
+      "Single-factor password only",
+      "Multifactor authentication (MFA)",
+      "Open guest Wi-Fi",
+      "Shared local Administrator with blank password"
+    ],
+    "answer": 1,
+    "explanation": "MFA combines multiple factors such as password and hardware token/phone."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "Degaussing or physical shredding of enterprise HDDs is an example of?",
+    "options": [
+      "Logical ACL tuning",
+      "Physical data destruction",
+      "WPA3 rotation",
+      "Certificate pinning only"
+    ],
+    "answer": 1,
+    "explanation": "Physical destruction/degaussing permanently destroys media."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "A certificate warning in the browser for an internal HTTPS admin portal MOST likely indicates?",
+    "options": [
+      "Expired, untrusted, or mismatched TLS certificate",
+      "Correctly pinned EV certificate",
+      "Successful OCSP staple only",
+      "DNSSEC success exclusively"
+    ],
+    "answer": 0,
+    "explanation": "Browser certificate warnings signal trust chain, name mismatch, or expiration problems."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "Which Active Directory object applies password and desktop lockdown policies across an OU of workstations?",
+    "options": [
+      "Group Policy Object (GPO)",
+      "DHCP scope option 3 only",
+      "PTR record",
+      "MX record"
+    ],
+    "answer": 0,
+    "explanation": "GPOs enforce security and configuration baselines via AD."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "Evil twin access points primarily enable which attack class?",
+    "options": [
+      "On-path / wireless interception via rogue AP",
+      "Toner vacuum failure",
+      "POST beep codes",
+      "RAID rebuild"
+    ],
+    "answer": 0,
+    "explanation": "Evil twins trick clients onto attacker-controlled APs for interception."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "Which mobile control allows IT to erase a lost company phone remotely?",
+    "options": [
+      "Remote wipe via MDM",
+      "Increasing screen brightness",
+      "Disabling Bluetooth media codecs",
+      "Changing wallpaper"
+    ],
+    "answer": 0,
+    "explanation": "MDM remote wipe clears corporate data on lost/stolen devices."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "Default admin passwords on a new SOHO firewall should be?",
+    "options": [
+      "Left as factory default for vendor support",
+      "Changed immediately and documented in a secure vault",
+      "Printed on the device bezel permanently",
+      "Shared in a public README"
+    ],
+    "answer": 1,
+    "explanation": "Default credentials must be changed during hardening."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "A zero-day exploit is characterized by?",
+    "options": [
+      "Use of a previously unknown vulnerability without an available patch",
+      "Only using passwords longer than 8 characters",
+      "Exclusive reliance on FTP",
+      "Mandatory use of Telnet"
+    ],
+    "answer": 0,
+    "explanation": "Zero-days abuse vulnerabilities before vendors ship fixes."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "NTFS Modify permission without Full Control still typically prevents a user from?",
+    "options": [
+      "Reading files",
+      "Changing ownership / changing permissions in many cases reserved for Full Control",
+      "Writing files",
+      "Deleting files they own"
+    ],
+    "answer": 1,
+    "explanation": "Full Control includes change-permission/ownership capabilities beyond Modify."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "Which protocol is commonly used for centralized AAA with wireless 802.1X enterprise networks?",
+    "options": [
+      "RADIUS",
+      "TFTP",
+      "SNMPv1 community public only",
+      "IMAP"
+    ],
+    "answer": 0,
+    "explanation": "RADIUS is standard for 802.1X enterprise authentication."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "Keyloggers are MOST associated with stealing?",
+    "options": [
+      "Typed credentials and sensitive input",
+      "POST memory counts",
+      "PCIe lane bifurcation",
+      "Toner density"
+    ],
+    "answer": 0,
+    "explanation": "Keyloggers capture keystrokes including passwords."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "A supply chain attack compromises security by targeting?",
+    "options": [
+      "Trusted vendors, updates, or hardware/software providers",
+      "Only offline printers with no network",
+      "CRT degauss coils",
+      "VGA cable length"
+    ],
+    "answer": 0,
+    "explanation": "Supply chain attacks abuse trusted delivery channels and vendors."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "Which practice BEST secures a browser used for cloud admin consoles?",
+    "options": [
+      "Unverified extensions from random sites",
+      "Keep browser patched, limit extensions, use password manager and phishing-resistant MFA",
+      "Disable all TLS",
+      "Ignore certificate errors permanently"
+    ],
+    "answer": 1,
+    "explanation": "Hardened browsers reduce extension and phishing risk for privileged sessions."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "Shoulder surfing is BEST mitigated by?",
+    "options": [
+      "Privacy screens and awareness of onlookers",
+      "Increasing fan RPM",
+      "Using RAID 0",
+      "Disabling Secure Boot only"
+    ],
+    "answer": 0,
+    "explanation": "Privacy filters and situational awareness reduce shoulder surfing."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "Which Windows capability provides built-in signature-based and behavior-based malware protection?",
+    "options": [
+      "Microsoft Defender Antivirus",
+      "Disk Defragmenter",
+      "Narrator",
+      "Math Input Panel"
+    ],
+    "answer": 0,
+    "explanation": "Microsoft Defender Antivirus is the built-in antimalware stack."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "A rootkit is dangerous primarily because it?",
+    "options": [
+      "Hides deep in the system and conceals other malware",
+      "Only affects toner cartridges",
+      "Only changes desktop wallpaper",
+      "Only slows DNS TTL"
+    ],
+    "answer": 0,
+    "explanation": "Rootkits conceal presence and other malicious components."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "Certificate of destruction is important when?",
+    "options": [
+      "Third parties destroy media and you need proof for compliance",
+      "Installing a GPU driver",
+      "Changing mouse DPI",
+      "Updating wallpaper"
+    ],
+    "answer": 0,
+    "explanation": "Certificates of destruction document compliant media disposal."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "SQL injection attacks succeed when applications?",
+    "options": [
+      "Concatenate untrusted input into database queries without parameterization",
+      "Use parameterized queries exclusively",
+      "Disable all databases",
+      "Only use static HTML"
+    ],
+    "answer": 0,
+    "explanation": "Unsanitized concatenated SQL enables injection."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "Cross-site scripting (XSS) primarily targets?",
+    "options": [
+      "Browser sessions by injecting malicious scripts into trusted pages",
+      "BIOS flash chips exclusively",
+      "UPS battery chemistry",
+      "SAS expander firmware only"
+    ],
+    "answer": 0,
+    "explanation": "XSS injects scripts that run in victims browsers in a trusted origin."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "For SOHO router hardening, firmware updates primarily address?",
+    "options": [
+      "Known security vulnerabilities and bugs",
+      "Monitor color profiles",
+      "Keyboard rollover",
+      "Audio sample rates"
+    ],
+    "answer": 0,
+    "explanation": "Firmware patches close vulnerabilities on network appliances."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "Just-in-time (JIT) access reduces risk by?",
+    "options": [
+      "Granting elevated rights only when needed for a limited time",
+      "Leaving Domain Admin permanent for all users",
+      "Sharing one break-glass account widely",
+      "Disabling MFA"
+    ],
+    "answer": 0,
+    "explanation": "JIT limits standing privileges."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "An insider threat originates from?",
+    "options": [
+      "Authorized personnel misusing access",
+      "Only nation-state remote zero-days",
+      "Only UPS brownouts",
+      "Only cable plant rodents"
+    ],
+    "answer": 0,
+    "explanation": "Insider threats involve people with legitimate access."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "Screen lock and auto-lock timeouts on workstations enforce?",
+    "options": [
+      "Physical/logical access control when users step away",
+      "Faster RAID rebuilds",
+      "Higher Wi-Fi channel width",
+      "Lower UPS load"
+    ],
+    "answer": 0,
+    "explanation": "Auto screen locks protect unattended sessions."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "Password spraying differs from classic brute force by?",
+    "options": [
+      "Trying few common passwords across many accounts to avoid lockouts",
+      "Trying infinite passwords on one account only as fast as possible always",
+      "Only using rainbow tables offline",
+      "Only attacking WEP IVs"
+    ],
+    "answer": 0,
+    "explanation": "Spraying uses common passwords across many users to evade lockout thresholds."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "Disabling unused local Administrator and renaming default accounts are examples of?",
+    "options": [
+      "Security hardening best practices",
+      "Performance overclocking",
+      "Cable certification",
+      "Color calibration"
+    ],
+    "answer": 0,
+    "explanation": "Hardening reduces predictable default account attacks."
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "question": "Full device encryption on smartphones protects data if?",
+    "options": [
+      "The device is lost or stolen while powered off/locked per platform design",
+      "The SIM PIN is empty and screen is unlocked forever",
+      "USB debugging is open to strangers",
+      "Unknown sources are enabled widely"
+    ],
+    "answer": 0,
+    "explanation": "Encryption protects at-rest data when the device is locked/lost."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "A Windows workstation shows a recurring BSOD with MEMORY_MANAGEMENT. Which hardware should be tested FIRST?",
+    "options": [
+      "RAM with diagnostics / reseat known-good modules",
+      "USB headset EQ presets",
+      "Monitor ICC profile",
+      "Mouse polling rate"
+    ],
+    "answer": 0,
+    "explanation": "Memory-related stop codes commonly indicate faulty or incompatible RAM."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "Applications crash immediately on launch after a recent update. Which step is MOST appropriate early in troubleshooting?",
+    "options": [
+      "Reimage the entire datacenter",
+      "Check Event Viewer Application logs and repair/reinstall the app or roll back the update",
+      "Replace the ToR switch",
+      "Increase UPS battery count"
+    ],
+    "answer": 1,
+    "explanation": "Application logs and repair/rollback isolate software faults without unnecessary hardware swaps."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "A mobile app freezes and force-closes repeatedly. FIRST user-level step?",
+    "options": [
+      "Force stop/clear cache or reinstall the app",
+      "Replace the datacenter PDU",
+      "Reflash all TOR ASICs",
+      "Degauss the phone"
+    ],
+    "answer": 0,
+    "explanation": "Force stop, cache clear, and reinstall resolve many mobile app faults."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "Windows Update fails repeatedly with the same error code. Which built-in recovery approach is commonly tried?",
+    "options": [
+      "Windows Update Troubleshooter / reset update components; check free disk space",
+      "Disable the NIC permanently",
+      "Remove all RAM",
+      "Set BIOS date to 1995"
+    ],
+    "answer": 0,
+    "explanation": "Update troubleshooters and component resets address stuck Windows Update states."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "A user reports very slow performance with disk at 100% in Task Manager on an HDD system. BEST quick software mitigation while planning an SSD upgrade?",
+    "options": [
+      "Disable unnecessary startup apps and check for malware/indexing storms",
+      "Unplug the CPU cooler",
+      "Set pagefile to zero permanently without analysis",
+      "Disable all power"
+    ],
+    "answer": 0,
+    "explanation": "Startup bloat, malware, and indexing can saturate slow disks."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "Mobile device cannot install OS updates due to insufficient storage. BEST first action?",
+    "options": [
+      "Free space by removing unused apps/media or offloading photos",
+      "Replace motherboard chipset",
+      "Change DNS to 127.0.0.1",
+      "Enable airplane mode forever"
+    ],
+    "answer": 0,
+    "explanation": "OS updates require free storage; cleanup enables patching."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "Browser redirects to fake antivirus scareware pages. Likely cause?",
+    "options": [
+      "Adware/malware or malicious extension",
+      "Healthy Secure Boot",
+      "Correct certificate pinning",
+      "Successful HSTS only"
+    ],
+    "answer": 0,
+    "explanation": "Scareware redirects often come from adware, PUPs, or bad extensions."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "A domain user profile fails to load and a temporary profile is used. Which area should be investigated?",
+    "options": [
+      "User profile corruption / profile service events and profile folder permissions",
+      "GPU shader cache only",
+      "Monitor EDID only",
+      "Fan curve BIOS only"
+    ],
+    "answer": 0,
+    "explanation": "Temp profile issues are profile service/corruption/permission problems."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "Windows boot loops before login. Which environment is commonly used for repair?",
+    "options": [
+      "Windows Recovery Environment (WinRE) with Startup Repair / Safe Mode",
+      "Only macOS Recovery on another brand",
+      "Printer alignment utility",
+      "IPMI SOL exclusively without local recovery"
+    ],
+    "answer": 0,
+    "explanation": "WinRE provides Startup Repair, Safe Mode, and command-line recovery tools."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "Mobile battery drains unusually fast with a hot chassis at idle. Software checks should include?",
+    "options": [
+      "Runaway apps, outdated OS, and possible malware; review battery usage stats",
+      "Increasing brightness to 100% permanently",
+      "Disabling all radios while gaming at max",
+      "Ignoring thermal warnings"
+    ],
+    "answer": 0,
+    "explanation": "Battery usage screens reveal abusive apps and update/malware issues."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "An application cannot write to Program Files and fails with access denied for standard users. BEST enterprise fix?",
+    "options": [
+      "Adjust app to use per-user AppData or grant least-privilege permissions properly",
+      "Give all users Domain Admin",
+      "Disable UAC globally forever without review",
+      "Turn off NTFS"
+    ],
+    "answer": 0,
+    "explanation": "Apps should write to user-writable locations; privilege grants must stay minimal."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "Jailbroken or rooted phones in a BYOD fleet often cause?",
+    "options": [
+      "MDM compliance failures and elevated malware risk",
+      "Faster BitLocker recovery",
+      "Automatic TPM attestation success",
+      "Stronger Secure Boot guarantees"
+    ],
+    "answer": 0,
+    "explanation": "Jailbreak/root breaks compliance and weakens platform security controls."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "False antivirus pop-ups appear even after Defender is healthy. Technician should?",
+    "options": [
+      "Treat as scareware/malware; scan with trusted tools and remove PUPs",
+      "Purchase the fake AV immediately",
+      "Disable Defender permanently",
+      "Format the SAN LUNs"
+    ],
+    "answer": 0,
+    "explanation": "Fake AV alerts are social-engineering malware, not legitimate Defender UI."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "A Windows service marked Automatic fails to start and dependent apps break. Where to inspect?",
+    "options": [
+      "services.msc and System event logs for the service error",
+      "Only Display Color Calibration",
+      "Only mouse pointer trails",
+      "Only emoji panel"
+    ],
+    "answer": 0,
+    "explanation": "Service Control Manager and event logs diagnose failed services."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "Time sync skew causes Kerberos logon failures on workstations. Fix involves?",
+    "options": [
+      "Correcting system time/NTP sync with domain controllers",
+      "Disabling the NIC team",
+      "Removing the TPM",
+      "Switching to FAT32"
+    ],
+    "answer": 0,
+    "explanation": "Kerberos is time-sensitive; skew breaks authentication."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "Mobile Wi-Fi works but cellular data does not after travel. FIRST checks?",
+    "options": [
+      "Airplane mode, SIM/eSIM status, carrier APN, and data toggle",
+      "RAID controller cache policy",
+      "GPU VRAM size",
+      "POST card codes"
+    ],
+    "answer": 0,
+    "explanation": "Cellular data issues start with radio/SIM/APN basics."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "DLL missing errors after incomplete uninstall/reinstall cycles suggest?",
+    "options": [
+      "Broken application dependencies; repair install or reinstall runtime/redistributables",
+      "Healthy SFC state guaranteed",
+      "Only cable cert failures",
+      "Only DHCP scope exhaustion"
+    ],
+    "answer": 0,
+    "explanation": "Missing DLLs indicate dependency/runtime problems."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "User cannot open encrypted email attachments offline. Likely requirement?",
+    "options": [
+      "Network access to keys/IRM service or cached credentials per policy",
+      "A larger heatsink",
+      "Cat 3 cabling",
+      "ISA slot"
+    ],
+    "answer": 0,
+    "explanation": "IRM/encrypted mail often needs online key access or prior caching."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "Print jobs stall with Error Printing on a shared queue. Software action?",
+    "options": [
+      "Restart Print Spooler and clear stuck spool files",
+      "Replace CPU thermal paste immediately",
+      "Change BIOS logo",
+      "Disable NX bit"
+    ],
+    "answer": 0,
+    "explanation": "Spooler restarts clear many stuck print queues."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "Windows reports low memory warnings with many browser tabs. BEST immediate software step?",
+    "options": [
+      "Close heavy apps; review Task Manager; consider RAM upgrade long-term",
+      "Delete System32",
+      "Disable paging without measuring",
+      "Uninstall the NIC driver while online"
+    ],
+    "answer": 0,
+    "explanation": "Free memory pressure first; plan hardware upgrade if chronic."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "A managed phone shows unmanaged after OS downgrade attempt. Likely MDM response?",
+    "options": [
+      "Device falls out of compliance until restored to supported OS/security patch level",
+      "Automatic Domain Admin rights",
+      "Permanent wipe of AD",
+      "Disable of corporate firewalls"
+    ],
+    "answer": 0,
+    "explanation": "MDM compliance requires supported OS versions and patches."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "System Restore is BEST used when?",
+    "options": [
+      "Recent software/driver changes caused instability and restore points exist",
+      "Replacing failed DIMMs as the only step",
+      "Configuring BGP on a router",
+      "Certifying fiber loss budgets"
+    ],
+    "answer": 0,
+    "explanation": "System Restore rolls back system files/settings to a prior point."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "Corrupted Windows user fonts causing app UI glitches may be addressed by?",
+    "options": [
+      "Restoring default fonts / removing bad third-party fonts",
+      "Replacing PSU cables only",
+      "Changing RAID stripe size only",
+      "Flashing BMC exclusively"
+    ],
+    "answer": 0,
+    "explanation": "Bad fonts can break application rendering."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "An expired client certificate blocks 802.1X network access. Resolution?",
+    "options": [
+      "Renew/re-enroll the certificate via the enterprise PKI/MDM process",
+      "Disable Ethernet permanently",
+      "Set static APIPA",
+      "Turn off all encryption"
+    ],
+    "answer": 0,
+    "explanation": "802.1X client certs must be valid and renewed."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "Black screen after login with explorer.exe not starting. Recovery approach?",
+    "options": [
+      "Ctrl+Shift+Esc Task Manager to start explorer.exe; repair system files if needed",
+      "Immediate shred of the SSD without imaging",
+      "Only replace the monitor cable first forever",
+      "Disable keyboard"
+    ],
+    "answer": 0,
+    "explanation": "Restarting shell/explorer and SFC/DISM repairs address shell startup failures."
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "question": "DISM /Online /Cleanup-Image /RestoreHealth is commonly used when?",
+    "options": [
+      "Windows component store corruption blocks SFC repairs",
+      "Replacing a failed PSU",
+      "Balancing RAID 1",
+      "Tuning BGP timers"
+    ],
+    "answer": 0,
+    "explanation": "DISM repairs the Windows image/component store used by SFC."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "A change to firewall rules in production requires approval before implementation. Which process governs this?",
+    "options": [
+      "Change management with CAB/approval and rollback plan",
+      "Shadow IT undocumented edits",
+      "Random weekend freelancing",
+      "Skipping tickets for speed"
+    ],
+    "answer": 0,
+    "explanation": "Change management requires review, approval, scheduling, and backout plans."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "Which backup strategy keeps three copies on two media types with one offsite/offline copy?",
+    "options": [
+      "3-2-1 backup rule",
+      "RAID 0 alone",
+      "Single USB left on the server",
+      "Screenshot of files"
+    ],
+    "answer": 0,
+    "explanation": "3-2-1: 3 copies, 2 media types, 1 offsite."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "Before handling RAM in a server, a technician should?",
+    "options": [
+      "Use ESD strap/mat and avoid touching contacts",
+      "Wear wool sweater and shuffle on carpet",
+      "Place boards on foil while powered",
+      "Spray liquid cleaner on DIMMs"
+    ],
+    "answer": 0,
+    "explanation": "ESD precautions protect sensitive components."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "MSDS/SDS documents are used for?",
+    "options": [
+      "Safe handling and spill response for chemicals like solvents/toner",
+      "GPU overclock profiles",
+      "DNS zone transfers",
+      "VLAN pruning"
+    ],
+    "answer": 0,
+    "explanation": "Safety Data Sheets cover hazardous material handling."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "Chain of custody documentation is critical during?",
+    "options": [
+      "Incident response and forensic evidence handling",
+      "Wallpaper updates",
+      "Fan curve tuning",
+      "Cable color aesthetic choice"
+    ],
+    "answer": 0,
+    "explanation": "Chain of custody preserves evidentiary integrity."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "A ticketing system primarily helps IT teams by?",
+    "options": [
+      "Tracking incidents, priorities, SLAs, and history",
+      "Replacing all monitoring",
+      "Eliminating documentation needs",
+      "Providing free public IP space"
+    ],
+    "answer": 0,
+    "explanation": "Tickets capture work, accountability, and metrics."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "Asset tags and CMDB records support?",
+    "options": [
+      "Lifecycle tracking of hardware/software inventory",
+      "Faster pixel response only",
+      "Louder beep codes",
+      "Higher toner heat"
+    ],
+    "answer": 0,
+    "explanation": "Asset management/CMDB tracks configuration items through procurement to disposal."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "When communicating with a frustrated user, a technician should?",
+    "options": [
+      "Stay calm, avoid jargon, set clear expectations, and listen",
+      "Mock the user",
+      "Hang up immediately",
+      "Share unrelated personal opinions"
+    ],
+    "answer": 0,
+    "explanation": "Professional communication de-escalates and clarifies."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "PowerShell and Bash scripts are commonly used to?",
+    "options": [
+      "Automate repetitive admin tasks like backups and remediations",
+      "Replace physical locks",
+      "Cool the cold aisle passively",
+      "Certify fiber connectors"
+    ],
+    "answer": 0,
+    "explanation": "Scripting automates operational tasks."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "RMM tools in an MSP context primarily provide?",
+    "options": [
+      "Remote monitoring and management of many endpoints",
+      "Only local console access on-site",
+      "Toner refill scheduling exclusively",
+      "PUE calculation alone"
+    ],
+    "answer": 0,
+    "explanation": "RMM platforms monitor and manage distributed devices remotely."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "Incremental backups copy?",
+    "options": [
+      "Data changed since the last backup of any type (commonly since last incremental)",
+      "Only full system every time with no change tracking",
+      "Only DNS TTLs",
+      "Only BIOS settings"
+    ],
+    "answer": 0,
+    "explanation": "Incrementals capture changes since the previous incremental/full per design."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "Differential backups copy?",
+    "options": [
+      "Changes since the last full backup",
+      "Only memory contents",
+      "Only ARP tables",
+      "Only syslog rotate stubs"
+    ],
+    "answer": 0,
+    "explanation": "Differentials accumulate changes since the last full."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "Proper lifting technique for heavy rack equipment includes?",
+    "options": [
+      "Team lift or mechanical lift; bend knees; keep load close",
+      "Twist spine under load alone",
+      "Lift with arms fully extended",
+      "Yank by power cords"
+    ],
+    "answer": 0,
+    "explanation": "Ergonomic team/mechanical lifts prevent injury."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "EULA and software licensing compliance matters because?",
+    "options": [
+      "Unauthorized use can violate contracts and law",
+      "It increases fan noise",
+      "It changes PCIe generation",
+      "It alters fiber wavelength"
+    ],
+    "answer": 0,
+    "explanation": "Licensing governs legal software use."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "Order of volatility in incident response prioritizes capturing?",
+    "options": [
+      "Most volatile data first (CPU/cache/memory before disk/archives)",
+      "Offline tape only first",
+      "Printed manuals first",
+      "Chassis stickers first"
+    ],
+    "answer": 0,
+    "explanation": "Volatile evidence disappears first and must be collected early."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "A rollback plan in change management is used when?",
+    "options": [
+      "The change fails or causes unacceptable impact",
+      "The change succeeds perfectly",
+      "No monitoring exists",
+      "Users are happy"
+    ],
+    "answer": 0,
+    "explanation": "Rollback restores the prior known-good state."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "Remote Desktop vs VPN: which statement is accurate for secure remote support?",
+    "options": [
+      "VPN creates a secure tunnel to the network; RDP provides remote desktop sessions (often used together)",
+      "RDP replaces all physical security",
+      "VPN deletes malware automatically",
+      "Neither should ever be logged"
+    ],
+    "answer": 0,
+    "explanation": "VPN secures network access; RDP remotes a desktop; both are often combined."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "Appropriate use of AI copilots in IT operations includes?",
+    "options": [
+      "Assisting with drafts/analysis while verifying outputs and protecting confidential data",
+      "Pasting production secrets into public models",
+      "Blindly executing unverified destructive commands",
+      "Replacing all human change approval"
+    ],
+    "answer": 0,
+    "explanation": "AI can assist but requires verification and data-handling controls; hallucinations are a risk."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "Onboarding documentation should include?",
+    "options": [
+      "Account provisioning steps, access requests, and acceptable use acknowledgment",
+      "Only the cafeteria menu",
+      "Only GPU SKUs",
+      "Only paint colors"
+    ],
+    "answer": 0,
+    "explanation": "Onboarding covers identity, access, and policy acknowledgment."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "SLA in a support contract defines?",
+    "options": [
+      "Expected service levels such as response/resolve times",
+      "CPU microcode only",
+      "Exact RAM timings",
+      "Monitor gamma"
+    ],
+    "answer": 0,
+    "explanation": "Service level agreements set measurable support commitments."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "Cable management in racks improves?",
+    "options": [
+      "Safety, airflow, and troubleshooting clarity",
+      "Only aesthetics with no operational value",
+      "RAID parity calculations",
+      "Certificate expiration"
+    ],
+    "answer": 0,
+    "explanation": "Managed cabling reduces trip hazards and cooling issues."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "Toner and battery disposal should follow?",
+    "options": [
+      "Local environmental regulations and SDS guidance; recycle programs",
+      "Trash in regular landfill without review",
+      "Flush to drain",
+      "Burn outdoors"
+    ],
+    "answer": 0,
+    "explanation": "Hazardous IT waste needs regulated disposal/recycling."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "Professional appearance and punctuality matter because?",
+    "options": [
+      "They build trust and reflect organizational standards",
+      "They raise link speed",
+      "They increase wattage capacity",
+      "They change QoS DSCP"
+    ],
+    "answer": 0,
+    "explanation": "Professionalism is an A+ operational soft skill."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "A standard operating procedure (SOP) is?",
+    "options": [
+      "A documented repeatable method for performing a task",
+      "An optional rumor",
+      "A random CLI experiment",
+      "An unsigned sticky note only"
+    ],
+    "answer": 0,
+    "explanation": "SOPs standardize operations and training."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "Full backup followed by daily incrementals minimizes?",
+    "options": [
+      "Daily backup window/size versus repeating fulls every day",
+      "Need for any restore testing",
+      "Need for offsite copies",
+      "Need for encryption"
+    ],
+    "answer": 0,
+    "explanation": "Incremental schemes reduce daily backup volume after a full."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "When a change window is scheduled at 02:00, technicians should?",
+    "options": [
+      "Notify stakeholders, follow the plan, monitor, and be ready to rollback",
+      "Surprise the business at noon instead",
+      "Skip monitoring",
+      "Disable tickets"
+    ],
+    "answer": 0,
+    "explanation": "Controlled windows with communication reduce risk."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "Privacy policies restrict?",
+    "options": [
+      "How personal and customer data may be collected, used, and shared",
+      "Only fan directions",
+      "Only rack unit numbering",
+      "Only patch panel colors"
+    ],
+    "answer": 0,
+    "explanation": "Privacy policies govern personal data handling."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "Grounding electrical equipment reduces risk of?",
+    "options": [
+      "Shock and equipment damage from fault currents",
+      "DNS cache misses",
+      "Slow ARP",
+      "Low toner alerts"
+    ],
+    "answer": 0,
+    "explanation": "Proper grounding is a core electrical safety control."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "Remote support session recording and consent practices support?",
+    "options": [
+      "Accountability, training, and compliance",
+      "Faster PCIe renegotiation",
+      "Higher refresh rates",
+      "Lower ping to loopback"
+    ],
+    "answer": 0,
+    "explanation": "Recorded consented sessions aid quality and compliance."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "Synthetic full backups are useful because they?",
+    "options": [
+      "Construct a full image from existing incremental chains to shorten backup windows",
+      "Delete all incrementals permanently without restore path",
+      "Disable encryption",
+      "Remove offsite copies"
+    ],
+    "answer": 0,
+    "explanation": "Synthetic fulls assemble fulls from prior data to save production backup time."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "An incident severity matrix in a ticketing system helps by?",
+    "options": [
+      "Prioritizing response based on impact and urgency",
+      "Choosing HDMI vs DisplayPort",
+      "Setting fan curves",
+      "Picking desk chair height"
+    ],
+    "answer": 0,
+    "explanation": "Severity/priority matrices drive SLA response order."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "Offboarding a terminated admin must include?",
+    "options": [
+      "Disabling accounts, revoking tokens/MFA, recovering assets, and documenting access removal",
+      "Leaving VPN certs active for convenience",
+      "Sharing their password with the team",
+      "Skipping ticket closure"
+    ],
+    "answer": 0,
+    "explanation": "Offboarding promptly removes access and recovers company property."
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "question": "A post-change review (PCR) meeting is held to?",
+    "options": [
+      "Evaluate outcomes, issues, and lessons learned after a change",
+      "Install more RAM only",
+      "Replace all SSDs blindly",
+      "Disable monitoring"
+    ],
+    "answer": 0,
+    "explanation": "Post-implementation reviews improve future changes."
+  }
+]

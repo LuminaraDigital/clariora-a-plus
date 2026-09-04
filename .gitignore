@@ -1,0 +1,63 @@
+# ---------------------------------------------------------------------------
+# CompTIA A+ Master  -  .gitignore
+# Rule of thumb: source, generated exam data, and docs are tracked.
+# Secrets, build output, and third-party course media are never tracked.
+# ---------------------------------------------------------------------------
+
+# Secrets and credentials
+.env
+.env.*
+!.env.example
+.groq_key
+**/groq-secrets.local.js
+**/groq_secrets.local.json
+build/certs/
+**/*.pfx
+**/*.p12
+**/*.jwk
+**/*.pem
+**/*.key
+
+# Build output and packaged apps
+release/
+dist/
+dist_web/
+**/dist/
+CompTIA_A_Plus_Desktop_App/
+node_modules/
+.wrangler/
+_backup/
+
+# Generated from local media (rebuild with: python tools/build_curriculum.py)
+curriculum_data.js
+curriculum_data.json
+
+# Third-party course media (not redistributable; kept local only)
+Videos For A+/
+PowerPoint for A+/
+Labs for A+/
+CompTIA A+/
+media/videos/
+media/slides/
+media/labs/
+*.pdf
+*.pptx
+*.docx
+*.mp4
+*.mkv
+*.zip
+
+# Scratch dumps from bank authoring sessions
+tools/c2_raw_dump.json
+tools/group*_raw.txt
+
+# Editor and tooling noise
+.cursor/
+.vscode/
+.idea/
+__pycache__/
+*.pyc
+*.log
+.DS_Store
+Thumbs.db
+desktop.ini

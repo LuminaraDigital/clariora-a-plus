@@ -1,0 +1,192 @@
+[
+  {
+    "file": "00_README_INDEX.md",
+    "title": "CompTIA A+ Deep Dive - Complete Study Guide Index",
+    "core": "shared"
+  },
+  {
+    "file": "01_Exam_Blueprint_and_Strategy.md",
+    "title": "Exam Blueprint and Strategy",
+    "core": "shared"
+  },
+  {
+    "file": "02_Troubleshooting_Methodology.md",
+    "title": "The CompTIA Troubleshooting Methodology",
+    "core": "shared"
+  },
+  {
+    "file": "03_Cables_Connectors_Peripherals.md",
+    "title": "Cables, Connectors and Peripherals",
+    "core": "core1"
+  },
+  {
+    "file": "04_Motherboards_Expansion_Cards.md",
+    "title": "Motherboards and Expansion Cards",
+    "core": "core1"
+  },
+  {
+    "file": "05_Power_Supplies_Cooling.md",
+    "title": "Power Supplies and Cooling",
+    "core": "core1"
+  },
+  {
+    "file": "06_Storage_and_RAID.md",
+    "title": "Storage Devices and RAID",
+    "core": "core1"
+  },
+  {
+    "file": "07_RAM_and_CPUs.md",
+    "title": "System Memory and CPUs",
+    "core": "core1"
+  },
+  {
+    "file": "08_BIOS_UEFI_Hardware_Troubleshooting.md",
+    "title": "BIOS/UEFI and Hardware Troubleshooting",
+    "core": "core1"
+  },
+  {
+    "file": "09_Network_Types_Hardware_Cabling.md",
+    "title": "Network Types, Hardware and Cabling",
+    "core": "core1"
+  },
+  {
+    "file": "10_Wireless_Networking.md",
+    "title": "Wireless Networking",
+    "core": "core1"
+  },
+  {
+    "file": "11_Internet_Connections_TCPIP_Addressing.md",
+    "title": "Internet Connections, TCP/IP and IP Addressing",
+    "core": "core1"
+  },
+  {
+    "file": "12_Ports_Protocols_Network_Services.md",
+    "title": "Ports, Protocols and Network Services",
+    "core": "core1"
+  },
+  {
+    "file": "13_DHCP_DNS_VLAN_VPN_Network_Troubleshooting.md",
+    "title": "DHCP, DNS, VLANs, VPNs and Network Troubleshooting",
+    "core": "core1"
+  },
+  {
+    "file": "14_Virtualization_and_Cloud.md",
+    "title": "Virtualization and Cloud Concepts",
+    "core": "core1"
+  },
+  {
+    "file": "15_Mobile_Devices_and_Laptops.md",
+    "title": "Mobile Devices and Laptops",
+    "core": "core1"
+  },
+  {
+    "file": "16_Printers.md",
+    "title": "Printers and Multifunction Devices",
+    "core": "core1"
+  },
+  {
+    "file": "17_Support_Procedures_Professionalism_OS_Types.md",
+    "title": "Support Procedures, Professional Communication and OS Types",
+    "core": "core2"
+  },
+  {
+    "file": "18_Windows_Settings_and_Configuration.md",
+    "title": "Windows Settings and Configuration",
+    "core": "core2"
+  },
+  {
+    "file": "19_Windows_Management_Consoles_and_CLI.md",
+    "title": "Windows Management Consoles and Command-Line Tools",
+    "core": "core2"
+  },
+  {
+    "file": "20_Windows_Networking_and_Troubleshooting_Tools.md",
+    "title": "Windows Networking and Network Troubleshooting Tools",
+    "core": "shared"
+  },
+  {
+    "file": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+    "title": "Remote Access, Performance Tools and Windows OS Troubleshooting",
+    "core": "core2"
+  },
+  {
+    "file": "22_Windows_Security_Accounts_Shares_Permissions.md",
+    "title": "Windows Security - Logical Security, Accounts, Domains, Shares and Permissions",
+    "core": "core2"
+  },
+  {
+    "file": "23_Windows_Editions_and_OS_Installation.md",
+    "title": "Windows Editions and OS Installation/Upgrade",
+    "core": "core2"
+  },
+  {
+    "file": "24_Linux.md",
+    "title": "Linux Client Features and Commands",
+    "core": "core2"
+  },
+  {
+    "file": "25_macOS.md",
+    "title": "macOS Features",
+    "core": "core2"
+  },
+  {
+    "file": "26_Threats_Attacks_Social_Engineering.md",
+    "title": "Threats, Attacks and Social Engineering",
+    "core": "core2"
+  },
+  {
+    "file": "27_Wireless_Security_SOHO_Router_Hardening.md",
+    "title": "Wireless Security Protocols and SOHO Router Hardening",
+    "core": "core2"
+  },
+  {
+    "file": "28_Physical_Security.md",
+    "title": "Physical Security and Additional Security Measures",
+    "core": "core2"
+  },
+  {
+    "file": "29_Workstation_Browser_Security_Malware.md",
+    "title": "Workstation Security, Browser Security and Malware",
+    "core": "core2"
+  },
+  {
+    "file": "30_Mobile_Security_and_Troubleshooting.md",
+    "title": "Mobile OS Security and Troubleshooting",
+    "core": "shared"
+  },
+  {
+    "file": "31_Backup_Data_Handling_AI.md",
+    "title": "Backup and Recovery, Data Handling, Data Destruction and AI Basics",
+    "core": "core2"
+  },
+  {
+    "file": "32_Change_Management_Safety_Environment_Scripting.md",
+    "title": "Change Management, Asset Management, Safety, Environment and Scripting",
+    "core": "core2"
+  },
+  {
+    "file": "33_Labs_Detailed_Walkthrough.md",
+    "title": "All 34 Labs - Detailed Walkthrough",
+    "core": "shared"
+  },
+  {
+    "file": "34_Master_Recall_Tables.md",
+    "title": "Master Recall Tables - Everything that must be memorised, one page",
+    "core": "shared"
+  },
+  {
+    "file": "35_Practice_Questions.md",
+    "title": "Practice Questions - 120 items with answers and explanations",
+    "core": "shared"
+  },
+  {
+    "file": "36_Datacentre_Capstone_Track.md",
+    "title": "Datacentre Capstone Track - Checklist-project.docx decoded",
+    "core": "shared"
+  },
+  {
+    "file": "37_Glossary.md",
+    "title": "Glossary - Every acronym in the course",
+    "core": "shared"
+  }
+]

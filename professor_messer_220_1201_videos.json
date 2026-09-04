@@ -1,0 +1,506 @@
+[
+  {
+    "index": 1,
+    "title": "How to Pass Your CompTIA A+ Exams in 2026",
+    "videoId": "AIfIA7hEgrw",
+    "url": "https://www.youtube.com/watch?v=AIfIA7hEgrw",
+    "duration": "15:22",
+    "objective": "Overview"
+  },
+  {
+    "index": 2,
+    "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+    "videoId": "zODZ0i-Iark",
+    "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+    "duration": "16:42",
+    "objective": "1.1"
+  },
+  {
+    "index": 3,
+    "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+    "videoId": "Iis2-_89YvQ",
+    "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+    "duration": "6:08",
+    "objective": "1.2"
+  },
+  {
+    "index": 4,
+    "title": "Mobile Device Accessories - CompTIA A+ 220-1201 - 1.2",
+    "videoId": "14iM8lLBS0c",
+    "url": "https://www.youtube.com/watch?v=14iM8lLBS0c",
+    "duration": "7:18",
+    "objective": "1.2"
+  },
+  {
+    "index": 5,
+    "title": "Mobile Device Networks - CompTIA A+ 220-1201 - 1.3",
+    "videoId": "1LADZLBV3vo",
+    "url": "https://www.youtube.com/watch?v=1LADZLBV3vo",
+    "duration": "10:14",
+    "objective": "1.3"
+  },
+  {
+    "index": 6,
+    "title": "Mobile Device Management - CompTIA A+ 220-1201 - 1.3",
+    "videoId": "NhGi9M4JP7g",
+    "url": "https://www.youtube.com/watch?v=NhGi9M4JP7g",
+    "duration": "8:31",
+    "objective": "1.3"
+  },
+  {
+    "index": 7,
+    "title": "Introduction to IP - CompTIA A+ 220-1201 - 2.1",
+    "videoId": "RRFjKXxYJdM",
+    "url": "https://www.youtube.com/watch?v=RRFjKXxYJdM",
+    "duration": "19:04",
+    "objective": "2.1"
+  },
+  {
+    "index": 8,
+    "title": "Common Ports - CompTIA A+ 220-1201 - 2.1",
+    "videoId": "_qGlbfZ44hg",
+    "url": "https://www.youtube.com/watch?v=_qGlbfZ44hg",
+    "duration": "12:52",
+    "objective": "2.1"
+  },
+  {
+    "index": 9,
+    "title": "Wireless Network Technologies - CompTIA A+ 220-1201 - 2.2",
+    "videoId": "aTuaEk5hnAs",
+    "url": "https://www.youtube.com/watch?v=aTuaEk5hnAs",
+    "duration": "7:16",
+    "objective": "2.2"
+  },
+  {
+    "index": 10,
+    "title": "Network Services - CompTIA A+ 220-1201 - 2.3",
+    "videoId": "Z-9mkqi2ELI",
+    "url": "https://www.youtube.com/watch?v=Z-9mkqi2ELI",
+    "duration": "17:03",
+    "objective": "2.3"
+  },
+  {
+    "index": 11,
+    "title": "DNS Configuration - CompTIA A+ 220-1201 - 2.4",
+    "videoId": "lAHqO9sDVy4",
+    "url": "https://www.youtube.com/watch?v=lAHqO9sDVy4",
+    "duration": "18:18",
+    "objective": "2.4"
+  },
+  {
+    "index": 12,
+    "title": "DHCP - CompTIA A+ 220-1201 - 2.4",
+    "videoId": "HwUqCZFx6wk",
+    "url": "https://www.youtube.com/watch?v=HwUqCZFx6wk",
+    "duration": "10:45",
+    "objective": "2.4"
+  },
+  {
+    "index": 13,
+    "title": "VLANs and VPNs - CompTIA A+ 220-1201 - 2.4",
+    "videoId": "Z1wPgxsx4GI",
+    "url": "https://www.youtube.com/watch?v=Z1wPgxsx4GI",
+    "duration": "7:32",
+    "objective": "2.4"
+  },
+  {
+    "index": 14,
+    "title": "Network Devices - CompTIA A+ 220-1201 - 2.5",
+    "videoId": "0hd6_bx0ydo",
+    "url": "https://www.youtube.com/watch?v=0hd6_bx0ydo",
+    "duration": "18:01",
+    "objective": "2.5"
+  },
+  {
+    "index": 15,
+    "title": "IPv4 and IPv6 - CompTIA A+ 220-1201 - 2.6",
+    "videoId": "yubEz-ZEVwY",
+    "url": "https://www.youtube.com/watch?v=yubEz-ZEVwY",
+    "duration": "8:45",
+    "objective": "2.6"
+  },
+  {
+    "index": 16,
+    "title": "Assigning IP Addresses - CompTIA A+ 220-1201 - 2.6",
+    "videoId": "nU5ko6cQWmc",
+    "url": "https://www.youtube.com/watch?v=nU5ko6cQWmc",
+    "duration": "8:26",
+    "objective": "2.6"
+  },
+  {
+    "index": 17,
+    "title": "Internet Connection Types - CompTIA A+ 220-1201 - 2.7",
+    "videoId": "iN2QnGFl06E",
+    "url": "https://www.youtube.com/watch?v=iN2QnGFl06E",
+    "duration": "7:33",
+    "objective": "2.7"
+  },
+  {
+    "index": 18,
+    "title": "Network Types - CompTIA A+ 220-1201 - 2.7",
+    "videoId": "PBEXIMeqRNY",
+    "url": "https://www.youtube.com/watch?v=PBEXIMeqRNY",
+    "duration": "4:46",
+    "objective": "2.7"
+  },
+  {
+    "index": 19,
+    "title": "Network Tools - CompTIA A+ 220-1201 - 2.8",
+    "videoId": "CHQQgjtrhYU",
+    "url": "https://www.youtube.com/watch?v=CHQQgjtrhYU",
+    "duration": "11:48",
+    "objective": "2.8"
+  },
+  {
+    "index": 20,
+    "title": "Display Types - CompTIA A+ 220-1201 - 3.1",
+    "videoId": "xOyialyd4JU",
+    "url": "https://www.youtube.com/watch?v=xOyialyd4JU",
+    "duration": "9:13",
+    "objective": "3.1"
+  },
+  {
+    "index": 21,
+    "title": "Display Attributes - CompTIA A+ 220-1201 - 3.1",
+    "videoId": "fmrWo8swzyU",
+    "url": "https://www.youtube.com/watch?v=fmrWo8swzyU",
+    "duration": "11:49",
+    "objective": "3.1"
+  },
+  {
+    "index": 22,
+    "title": "Network Cables - CompTIA A+ 220-1201 - 3.2",
+    "videoId": "29X5Ho3m2KU",
+    "url": "https://www.youtube.com/watch?v=29X5Ho3m2KU",
+    "duration": "12:14",
+    "objective": "3.2"
+  },
+  {
+    "index": 23,
+    "title": "568A and 568B Colors - CompTIA A+ 220-1201 - 3.2",
+    "videoId": "1w42VC2_JYo",
+    "url": "https://www.youtube.com/watch?v=1w42VC2_JYo",
+    "duration": "5:41",
+    "objective": "3.2"
+  },
+  {
+    "index": 24,
+    "title": "Optical Fiber - CompTIA A+ 220-1201 - 3.2",
+    "videoId": "poQdq2APqic",
+    "url": "https://www.youtube.com/watch?v=poQdq2APqic",
+    "duration": "4:14",
+    "objective": "3.2"
+  },
+  {
+    "index": 25,
+    "title": "Peripheral Cables - CompTIA A+ 220-1201 - 3.2",
+    "videoId": "JGuVE-3CvT4",
+    "url": "https://www.youtube.com/watch?v=JGuVE-3CvT4",
+    "duration": "8:59",
+    "objective": "3.2"
+  },
+  {
+    "index": 26,
+    "title": "Video Cables - CompTIA A+ 220-1201 - 3.2",
+    "videoId": "FK1b4stA2hk",
+    "url": "https://www.youtube.com/watch?v=FK1b4stA2hk",
+    "duration": "6:54",
+    "objective": "3.2"
+  },
+  {
+    "index": 27,
+    "title": "Storage Cables - CompTIA A+ 220-1201 - 3.2",
+    "videoId": "YM4pig2XYCo",
+    "url": "https://www.youtube.com/watch?v=YM4pig2XYCo",
+    "duration": "4:10",
+    "objective": "3.2"
+  },
+  {
+    "index": 28,
+    "title": "Adapters and Converters - CompTIA A+ 220-1201 - 3.2",
+    "videoId": "3GkSvmeuhe8",
+    "url": "https://www.youtube.com/watch?v=3GkSvmeuhe8",
+    "duration": "4:05",
+    "objective": "3.2"
+  },
+  {
+    "index": 29,
+    "title": "Copper Connectors - CompTIA A+ 220-1201 - 3.2",
+    "videoId": "VO8C3lrWlVU",
+    "url": "https://www.youtube.com/watch?v=VO8C3lrWlVU",
+    "duration": "8:33",
+    "objective": "3.2"
+  },
+  {
+    "index": 30,
+    "title": "Fiber Connectors - CompTIA A+ 220-1201 - 3.2",
+    "videoId": "Qxbp-c23cYY",
+    "url": "https://www.youtube.com/watch?v=Qxbp-c23cYY",
+    "duration": "2:49",
+    "objective": "3.2"
+  },
+  {
+    "index": 31,
+    "title": "An Overview of Memory - CompTIA A+ 220-1201 - 3.3",
+    "videoId": "JylKt1N6o0I",
+    "url": "https://www.youtube.com/watch?v=JylKt1N6o0I",
+    "duration": "8:38",
+    "objective": "3.3"
+  },
+  {
+    "index": 32,
+    "title": "Memory Technologies - CompTIA A+ 220-1201 - 3.3",
+    "videoId": "HU-qsVtpnM0",
+    "url": "https://www.youtube.com/watch?v=HU-qsVtpnM0",
+    "duration": "8:44",
+    "objective": "3.3"
+  },
+  {
+    "index": 33,
+    "title": "Storage Devices - CompTIA A+ 220-1201 - 3.4",
+    "videoId": "UfLNl8-c9VM",
+    "url": "https://www.youtube.com/watch?v=UfLNl8-c9VM",
+    "duration": "14:54",
+    "objective": "3.4"
+  },
+  {
+    "index": 34,
+    "title": "RAID - CompTIA A+ 220-1201 - 3.4",
+    "videoId": "5E16qftlfRY",
+    "url": "https://www.youtube.com/watch?v=5E16qftlfRY",
+    "duration": "8:08",
+    "objective": "3.4"
+  },
+  {
+    "index": 35,
+    "title": "Motherboards - CompTIA A+ 220-1201 - 3.5",
+    "videoId": "dbxM_LFMXpw",
+    "url": "https://www.youtube.com/watch?v=dbxM_LFMXpw",
+    "duration": "6:18",
+    "objective": "3.5"
+  },
+  {
+    "index": 36,
+    "title": "Motherboard Expansion Slots - CompTIA A+ 220-1201 - 3.5",
+    "videoId": "QvPX1XJwJH8",
+    "url": "https://www.youtube.com/watch?v=QvPX1XJwJH8",
+    "duration": "7:14",
+    "objective": "3.5"
+  },
+  {
+    "index": 37,
+    "title": "Motherboard Connections - CompTIA A+ 220-1201 - 3.5",
+    "videoId": "UjJwjjwa6Q0",
+    "url": "https://www.youtube.com/watch?v=UjJwjjwa6Q0",
+    "duration": "5:45",
+    "objective": "3.5"
+  },
+  {
+    "index": 38,
+    "title": "Motherboard Compatibility - CompTIA A+ 220-1201 - 3.5",
+    "videoId": "O5wA53NYv1M",
+    "url": "https://www.youtube.com/watch?v=O5wA53NYv1M",
+    "duration": "3:29",
+    "objective": "3.5"
+  },
+  {
+    "index": 39,
+    "title": "The BIOS - CompTIA A+ 220-1201 - 3.5",
+    "videoId": "TgUxAM8rjyg",
+    "url": "https://www.youtube.com/watch?v=TgUxAM8rjyg",
+    "duration": "4:42",
+    "objective": "3.5"
+  },
+  {
+    "index": 40,
+    "title": "BIOS Settings - CompTIA A+ 220-1201 - 3.5",
+    "videoId": "QfJkU0vD3gg",
+    "url": "https://www.youtube.com/watch?v=QfJkU0vD3gg",
+    "duration": "19:29",
+    "objective": "3.5"
+  },
+  {
+    "index": 41,
+    "title": "HSM and TPM - CompTIA A+ 220-1201 - 3.5",
+    "videoId": "qLSV_lpM_Mk",
+    "url": "https://www.youtube.com/watch?v=qLSV_lpM_Mk",
+    "duration": "7:47",
+    "objective": "3.5"
+  },
+  {
+    "index": 42,
+    "title": "CPU Features - CompTIA A+ 220-1201 - 3.5",
+    "videoId": "4RPVQQd2sOM",
+    "url": "https://www.youtube.com/watch?v=4RPVQQd2sOM",
+    "duration": "5:13",
+    "objective": "3.5"
+  },
+  {
+    "index": 43,
+    "title": "Expansion Cards - CompTIA A+ 220-1201 - 3.5",
+    "videoId": "KtipbKR8rqo",
+    "url": "https://www.youtube.com/watch?v=KtipbKR8rqo",
+    "duration": "6:17",
+    "objective": "3.5"
+  },
+  {
+    "index": 44,
+    "title": "Cooling - CompTIA A+ 220-1201 - 3.5",
+    "videoId": "qC306MGytR8",
+    "url": "https://www.youtube.com/watch?v=qC306MGytR8",
+    "duration": "6:37",
+    "objective": "3.5"
+  },
+  {
+    "index": 45,
+    "title": "Computer Power - CompTIA A+ 220-1201 - 3.6",
+    "videoId": "gK0SYCnWoIM",
+    "url": "https://www.youtube.com/watch?v=gK0SYCnWoIM",
+    "duration": "15:31",
+    "objective": "3.6"
+  },
+  {
+    "index": 46,
+    "title": "Multifunction Devices - CompTIA A+ 220-1201 - 3.7",
+    "videoId": "ctAOL7WyEUY",
+    "url": "https://www.youtube.com/watch?v=ctAOL7WyEUY",
+    "duration": "14:25",
+    "objective": "3.7"
+  },
+  {
+    "index": 47,
+    "title": "Laser Printer Maintenance - CompTIA A+ 220-1201 - 3.8",
+    "videoId": "hp2DfL6KxwA",
+    "url": "https://www.youtube.com/watch?v=hp2DfL6KxwA",
+    "duration": "7:30",
+    "objective": "3.8"
+  },
+  {
+    "index": 48,
+    "title": "Inkjet Printers - CompTIA A+ 220-1201 - 3.8",
+    "videoId": "qIIiTWNnWuQ",
+    "url": "https://www.youtube.com/watch?v=qIIiTWNnWuQ",
+    "duration": "3:29",
+    "objective": "3.8"
+  },
+  {
+    "index": 49,
+    "title": "Inkjet Printer Maintenance - CompTIA A+ 220-1201 - 3.8",
+    "videoId": "yRjKpaQQw1k",
+    "url": "https://www.youtube.com/watch?v=yRjKpaQQw1k",
+    "duration": "3:54",
+    "objective": "3.8"
+  },
+  {
+    "index": 50,
+    "title": "Thermal Printers - CompTIA A+ 220-1201 - 3.8",
+    "videoId": "izk4zbSkUTg",
+    "url": "https://www.youtube.com/watch?v=izk4zbSkUTg",
+    "duration": "3:39",
+    "objective": "3.8"
+  },
+  {
+    "index": 51,
+    "title": "Thermal Printer Maintenance - CompTIA A+ 220-1201 - 3.8",
+    "videoId": "emKON9CAjks",
+    "url": "https://www.youtube.com/watch?v=emKON9CAjks",
+    "duration": "4:16",
+    "objective": "3.8"
+  },
+  {
+    "index": 52,
+    "title": "Impact Printers - CompTIA A+ 220-1201 - 3.8",
+    "videoId": "wkSlTGmPlWU",
+    "url": "https://www.youtube.com/watch?v=wkSlTGmPlWU",
+    "duration": "6:19",
+    "objective": "3.8"
+  },
+  {
+    "index": 53,
+    "title": "Impact Printer Maintenance - CompTIA A+ 220-1201 - 3.8",
+    "videoId": "KCLqKxFsEOM",
+    "url": "https://www.youtube.com/watch?v=KCLqKxFsEOM",
+    "duration": "3:11",
+    "objective": "3.8"
+  },
+  {
+    "index": 54,
+    "title": "Virtualization Concepts - CompTIA A+ 220-1201 - 4.1",
+    "videoId": "xXOIdDWUNGU",
+    "url": "https://www.youtube.com/watch?v=xXOIdDWUNGU",
+    "duration": "5:45",
+    "objective": "4.1"
+  },
+  {
+    "index": 55,
+    "title": "Virtualization Services - CompTIA A+ 220-1201 - 4.1",
+    "videoId": "wPB_C7hOY-8",
+    "url": "https://www.youtube.com/watch?v=wPB_C7hOY-8",
+    "duration": "11:23",
+    "objective": "4.1"
+  },
+  {
+    "index": 56,
+    "title": "Cloud Models - CompTIA A+ 220-1201 - 4.2",
+    "videoId": "KZxAY5ssUxc",
+    "url": "https://www.youtube.com/watch?v=KZxAY5ssUxc",
+    "duration": "9:48",
+    "objective": "4.2"
+  },
+  {
+    "index": 57,
+    "title": "Cloud Characteristics - CompTIA A+ 220-1201 - 4.2",
+    "videoId": "XzNnFbY0dMQ",
+    "url": "https://www.youtube.com/watch?v=XzNnFbY0dMQ",
+    "duration": "6:50",
+    "objective": "4.2"
+  },
+  {
+    "index": 58,
+    "title": "Troubleshooting Hardware - CompTIA A+ 220-1201 - 5.1",
+    "videoId": "HgeURynWn_w",
+    "url": "https://www.youtube.com/watch?v=HgeURynWn_w",
+    "duration": "25:15",
+    "objective": "5.1"
+  },
+  {
+    "index": 59,
+    "title": "Troubleshooting Storage Devices - CompTIA A+ 220-1201 - 5.2",
+    "videoId": "aVIuyHCNPCE",
+    "url": "https://www.youtube.com/watch?v=aVIuyHCNPCE",
+    "duration": "17:04",
+    "objective": "5.2"
+  },
+  {
+    "index": 60,
+    "title": "Troubleshooting Display Issues - CompTIA A+ 220-1201 - 5.3",
+    "videoId": "KXZu72i1eX8",
+    "url": "https://www.youtube.com/watch?v=KXZu72i1eX8",
+    "duration": "18:52",
+    "objective": "5.3"
+  },
+  {
+    "index": 61,
+    "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1201 - 5.4",
+    "videoId": "huQwiY4kiko",
+    "url": "https://www.youtube.com/watch?v=huQwiY4kiko",
+    "duration": "17:52",
+    "objective": "5.4"
+  },
+  {
+    "index": 62,
+    "title": "Troubleshooting Networks - CompTIA A+ 220-1201 - 5.5",
+    "videoId": "VBDS_kOHhVk",
+    "url": "https://www.youtube.com/watch?v=VBDS_kOHhVk",
+    "duration": "15:15",
+    "objective": "5.5"
+  },
+  {
+    "index": 63,
+    "title": "Troubleshooting Printers - CompTIA A+ 220-1201 - 5.6",
+    "videoId": "_BhO_nYod0o",
+    "url": "https://www.youtube.com/watch?v=_BhO_nYod0o",
+    "duration": "11:55",
+    "objective": "5.6"
+  }
+]

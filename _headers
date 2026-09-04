@@ -1,0 +1,47 @@
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://i.ytimg.com; media-src 'self' https://comptia-a-plus-master.pages.dev; connect-src 'self' https://api.groq.com https://*.supabase.co https://cdn.jsdelivr.net https://comptia-a-plus-master.pages.dev; frame-src https://www.youtube.com https://www.youtube-nocookie.com; font-src 'self'; object-src 'none'; base-uri 'self'
+
+# media-src/connect-src above include the mediaBaseUrl host from
+# release.config.json (https://comptia-a-plus-master.pages.dev/media/).
+# PLACEHOLDER: if release.config.json is absent or mediaBaseUrl changes,
+# update the host in the CSP line above to match.
+
+# The app currently relies on inline <script> blocks and inline onclick=""
+# handlers, so script-src/style-src must allow 'unsafe-inline' for now.
+# Hardening this to nonces or hashes is future work - see
+# docs/CLOUDFLARE_FREE_DEPLOYMENT_GUIDE.md.
+
+# js/, css/, fonts/ are not filename-versioned, so a long immutable cache is
+# not safe here. Use a short max-age plus stale-while-revalidate and let the
+# service worker (sw.js) own the real offline caching and invalidation.
+/js/*
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+
+/css/*
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+
+/fonts/*
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+
+# Never let the CDN or browser cache these - the service worker must always
+# see a fresh copy to detect and roll out updates.
+/sw.js
+  Cache-Control: no-cache
+
+/index.html
+  Cache-Control: no-cache
+
+/precache-manifest.json
+  Cache-Control: no-cache
+
+# Course media (slides, labs, brand video/poster) - served with byte-range
+# support so <video> seeking works, a long cache lifetime since files here
+# are content-addressed by filename, and CORS scoped to this app's own
+# origin only (not a wildcard).
+/media/*
+  Accept-Ranges: bytes
+  Access-Control-Allow-Origin: https://comptia-a-plus-master.pages.dev
+  Cache-Control: public, max-age=604800

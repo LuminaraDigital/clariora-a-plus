@@ -1,0 +1,40 @@
+{
+  "exam": "220-1201",
+  "title": "CompTIA A+ Core 1 (220-1201) v15 Official Objectives",
+  "blueprint": {
+    "1.0 Mobile Devices": 13,
+    "2.0 Networking": 23,
+    "3.0 Hardware": 25,
+    "4.0 Virtualization and Cloud Computing": 11,
+    "5.0 Hardware and Network Troubleshooting": 28
+  },
+  "objectives": {
+    "1.1": {"domain": "1.0 Mobile Devices", "desc": "Laptop hardware components and features"},
+    "1.2": {"domain": "1.0 Mobile Devices", "desc": "Mobile device accessories and connection types"},
+    "1.3": {"domain": "1.0 Mobile Devices", "desc": "Mobile device networks, synchronization, and management"},
+    "2.1": {"domain": "2.0 Networking", "desc": "Introduction to IP, common ports and protocols"},
+    "2.2": {"domain": "2.0 Networking", "desc": "Wireless network technologies"},
+    "2.3": {"domain": "2.0 Networking", "desc": "Network services"},
+    "2.4": {"domain": "2.0 Networking", "desc": "DNS, DHCP, VLANs, and VPNs"},
+    "2.5": {"domain": "2.0 Networking", "desc": "Network devices"},
+    "2.6": {"domain": "2.0 Networking", "desc": "IPv4 and IPv6 addressing and assignment"},
+    "2.7": {"domain": "2.0 Networking", "desc": "Internet connection types and network types"},
+    "2.8": {"domain": "2.0 Networking", "desc": "Network tools"},
+    "3.1": {"domain": "3.0 Hardware", "desc": "Display types and attributes"},
+    "3.2": {"domain": "3.0 Hardware", "desc": "Cables, connectors, and adapters"},
+    "3.3": {"domain": "3.0 Hardware", "desc": "Memory technologies"},
+    "3.4": {"domain": "3.0 Hardware", "desc": "Storage devices and RAID"},
+    "3.5": {"domain": "3.0 Hardware", "desc": "Motherboards, CPUs, BIOS/UEFI, TPM, expansion cards, and cooling"},
+    "3.6": {"domain": "3.0 Hardware", "desc": "Computer power and 80 PLUS efficiency"},
+    "3.7": {"domain": "3.0 Hardware", "desc": "Multifunction devices"},
+    "3.8": {"domain": "3.0 Hardware", "desc": "Printer types and maintenance"},
+    "4.1": {"domain": "4.0 Virtualization and Cloud Computing", "desc": "Virtualization concepts, hypervisors, and services"},
+    "4.2": {"domain": "4.0 Virtualization and Cloud Computing", "desc": "Cloud models and characteristics"},
+    "5.1": {"domain": "5.0 Hardware and Network Troubleshooting", "desc": "Troubleshooting hardware"},
+    "5.2": {"domain": "5.0 Hardware and Network Troubleshooting", "desc": "Troubleshooting storage devices"},
+    "5.3": {"domain": "5.0 Hardware and Network Troubleshooting", "desc": "Troubleshooting display issues"},
+    "5.4": {"domain": "5.0 Hardware and Network Troubleshooting", "desc": "Troubleshooting mobile devices"},
+    "5.5": {"domain": "5.0 Hardware and Network Troubleshooting", "desc": "Troubleshooting networks"},
+    "5.6": {"domain": "5.0 Hardware and Network Troubleshooting", "desc": "Troubleshooting printers"}
+  }
+}

@@ -1,0 +1,13 @@
+* text=auto eol=lf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+*.png binary
+*.ico binary
+*.woff2 binary
+*.webm binary
+*.json linguist-generated=false
+exam_data.js linguist-generated=true
+exam_data.json linguist-generated=true
+study_library.js linguist-generated=true
+study_library.json linguist-generated=true
+objectives_data.js linguist-generated=true

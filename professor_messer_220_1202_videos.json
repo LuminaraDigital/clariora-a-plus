@@ -1,0 +1,594 @@
+[
+  {
+    "index": 1,
+    "title": "Operating Systems Overview - CompTIA A+ 220-1202 - 1.1",
+    "videoId": "IhcZqUs1IF8",
+    "url": "https://www.youtube.com/watch?v=IhcZqUs1IF8",
+    "duration": "12:59",
+    "objective": "1.1"
+  },
+  {
+    "index": 2,
+    "title": "File Systems - CompTIA A+ 220-1202 - 1.1",
+    "videoId": "lwCu2rpXP1E",
+    "url": "https://www.youtube.com/watch?v=lwCu2rpXP1E",
+    "duration": "5:51",
+    "objective": "1.1"
+  },
+  {
+    "index": 3,
+    "title": "Installing Operating Systems - CompTIA A+ 220-1202 - 1.2",
+    "videoId": "SoDrALxWWTg",
+    "url": "https://www.youtube.com/watch?v=SoDrALxWWTg",
+    "duration": "16:50",
+    "objective": "1.2"
+  },
+  {
+    "index": 4,
+    "title": "Upgrading Windows - CompTIA A+ 220-1202 - 1.2",
+    "videoId": "KUD7v9nHiL4",
+    "url": "https://www.youtube.com/watch?v=KUD7v9nHiL4",
+    "duration": "8:34",
+    "objective": "1.2"
+  },
+  {
+    "index": 5,
+    "title": "An Overview of Windows - CompTIA A+ 220-1202 - 1.3",
+    "videoId": "B7JZ6rfH06Q",
+    "url": "https://www.youtube.com/watch?v=B7JZ6rfH06Q",
+    "duration": "9:09",
+    "objective": "1.3"
+  },
+  {
+    "index": 6,
+    "title": "Windows Features - CompTIA A+ 220-1202 - 1.3",
+    "videoId": "uvreKWR__FA",
+    "url": "https://www.youtube.com/watch?v=uvreKWR__FA",
+    "duration": "8:54",
+    "objective": "1.3"
+  },
+  {
+    "index": 7,
+    "title": "Task Manager - CompTIA A+ 220-1202 - 1.4",
+    "videoId": "iyUyHTelPeQ",
+    "url": "https://www.youtube.com/watch?v=iyUyHTelPeQ",
+    "duration": "4:52",
+    "objective": "1.4"
+  },
+  {
+    "index": 8,
+    "title": "The Microsoft Management Console - CompTIA A+ 220-1202 - 1.4",
+    "videoId": "e0KInDq-6Pw",
+    "url": "https://www.youtube.com/watch?v=e0KInDq-6Pw",
+    "duration": "15:40",
+    "objective": "1.4"
+  },
+  {
+    "index": 9,
+    "title": "Additional Windows Tools - CompTIA A+ 220-1202 - 1.4",
+    "videoId": "kLIUVFTTdcA",
+    "url": "https://www.youtube.com/watch?v=kLIUVFTTdcA",
+    "duration": "12:25",
+    "objective": "1.4"
+  },
+  {
+    "index": 10,
+    "title": "Windows Command Line Tools - CompTIA A+ 220-1202 - 1.5",
+    "videoId": "iLgAwxmTSzI",
+    "url": "https://www.youtube.com/watch?v=iLgAwxmTSzI",
+    "duration": "31:07",
+    "objective": "1.5"
+  },
+  {
+    "index": 11,
+    "title": "The Windows Network Command Line - CompTIA A+ 220-1202 - 1.5",
+    "videoId": "FOaw5aPO0ZI",
+    "url": "https://www.youtube.com/watch?v=FOaw5aPO0ZI",
+    "duration": "20:00",
+    "objective": "1.5"
+  },
+  {
+    "index": 12,
+    "title": "The Windows Control Panel - CompTIA A+ 220-1202 - 1.6",
+    "videoId": "AhGWshIRcKw",
+    "url": "https://www.youtube.com/watch?v=AhGWshIRcKw",
+    "duration": "23:09",
+    "objective": "1.6"
+  },
+  {
+    "index": 13,
+    "title": "Windows Settings - CompTIA A+ 220-1202 - 1.6",
+    "videoId": "0qfZtEZCvn0",
+    "url": "https://www.youtube.com/watch?v=0qfZtEZCvn0",
+    "duration": "6:34",
+    "objective": "1.6"
+  },
+  {
+    "index": 14,
+    "title": "Windows Network Technologies - CompTIA A+ 220-1202 - 1.7",
+    "videoId": "1OlbYiS-xHY",
+    "url": "https://www.youtube.com/watch?v=1OlbYiS-xHY",
+    "duration": "8:37",
+    "objective": "1.7"
+  },
+  {
+    "index": 15,
+    "title": "Configuring Windows Firewall - CompTIA A+ 220-1202 - 1.7",
+    "videoId": "ZmtkzwzVDaE",
+    "url": "https://www.youtube.com/watch?v=ZmtkzwzVDaE",
+    "duration": "6:32",
+    "objective": "1.7"
+  },
+  {
+    "index": 16,
+    "title": "Windows IP Address Configuration - CompTIA A+ 220-1202 - 1.7",
+    "videoId": "wA0BV7FzH9Q",
+    "url": "https://www.youtube.com/watch?v=wA0BV7FzH9Q",
+    "duration": "6:45",
+    "objective": "1.7"
+  },
+  {
+    "index": 17,
+    "title": "Windows Network Connections - CompTIA A+ 220-1202 - 1.7",
+    "videoId": "Ir1Yhigsdtw",
+    "url": "https://www.youtube.com/watch?v=Ir1Yhigsdtw",
+    "duration": "13:08",
+    "objective": "1.7"
+  },
+  {
+    "index": 18,
+    "title": "macOS Overview - CompTIA A+ 220-1202 - 1.8",
+    "videoId": "6Xg4VbEfx88",
+    "url": "https://www.youtube.com/watch?v=6Xg4VbEfx88",
+    "duration": "11:24",
+    "objective": "1.8"
+  },
+  {
+    "index": 19,
+    "title": "macOS System Preferences - CompTIA A+ 220-1202 - 1.8",
+    "videoId": "vhf6FMK1BOk",
+    "url": "https://www.youtube.com/watch?v=vhf6FMK1BOk",
+    "duration": "6:36",
+    "objective": "1.8"
+  },
+  {
+    "index": 20,
+    "title": "macOS Features - CompTIA A+ 220-1202 - 1.8",
+    "videoId": "J5aZyz-ng7A",
+    "url": "https://www.youtube.com/watch?v=J5aZyz-ng7A",
+    "duration": "11:17",
+    "objective": "1.8"
+  },
+  {
+    "index": 21,
+    "title": "Linux - CompTIA A+ 220-1202 - 1.9",
+    "videoId": "cpc3bHzWKG4",
+    "url": "https://www.youtube.com/watch?v=cpc3bHzWKG4",
+    "duration": "11:11",
+    "objective": "1.9"
+  },
+  {
+    "index": 22,
+    "title": "Linux Commands Part 1 - CompTIA A+ 220-1202 - 1.9",
+    "videoId": "ig0X_dR68Ac",
+    "url": "https://www.youtube.com/watch?v=ig0X_dR68Ac",
+    "duration": "35:31",
+    "objective": "1.9"
+  },
+  {
+    "index": 23,
+    "title": "Linux Commands Part 2 - CompTIA A+ 220-1202 - 1.9",
+    "videoId": "rtL8aKAFlqc",
+    "url": "https://www.youtube.com/watch?v=rtL8aKAFlqc",
+    "duration": "21:30",
+    "objective": "1.9"
+  },
+  {
+    "index": 24,
+    "title": "Installing Applications - CompTIA A+ 220-1202 - 1.10",
+    "videoId": "G2Equ2pG7aY",
+    "url": "https://www.youtube.com/watch?v=G2Equ2pG7aY",
+    "duration": "16:27",
+    "objective": "1.10"
+  },
+  {
+    "index": 25,
+    "title": "Cloud Productivity Tools - CompTIA A+ 220-1202 - 1.11",
+    "videoId": "FTRbdIjK1DU",
+    "url": "https://www.youtube.com/watch?v=FTRbdIjK1DU",
+    "duration": "5:47",
+    "objective": "1.11"
+  },
+  {
+    "index": 26,
+    "title": "Physical Security - CompTIA A+ 220-1202 - 2.1",
+    "videoId": "ZseOfNiOaYM",
+    "url": "https://www.youtube.com/watch?v=ZseOfNiOaYM",
+    "duration": "10:06",
+    "objective": "2.1"
+  },
+  {
+    "index": 27,
+    "title": "Physical Access Security - CompTIA A+ 220-1202 - 2.1",
+    "videoId": "X1v63NhrcP4",
+    "url": "https://www.youtube.com/watch?v=X1v63NhrcP4",
+    "duration": "8:37",
+    "objective": "2.1"
+  },
+  {
+    "index": 28,
+    "title": "Logical Security - CompTIA A+ 220-1202 - 2.1",
+    "videoId": "xU_OoSXTVHA",
+    "url": "https://www.youtube.com/watch?v=xU_OoSXTVHA",
+    "duration": "10:38",
+    "objective": "2.1"
+  },
+  {
+    "index": 29,
+    "title": "Authentication and Access - CompTIA A+ 220-1202 - 2.1",
+    "videoId": "4U0WRPkDPhM",
+    "url": "https://www.youtube.com/watch?v=4U0WRPkDPhM",
+    "duration": "12:05",
+    "objective": "2.1"
+  },
+  {
+    "index": 30,
+    "title": "Defender Antivirus - CompTIA A+ 220-1202 - 2.2",
+    "videoId": "zAArPlmVssU",
+    "url": "https://www.youtube.com/watch?v=zAArPlmVssU",
+    "duration": "5:01",
+    "objective": "2.2"
+  },
+  {
+    "index": 31,
+    "title": "Windows Firewall - CompTIA A+ 220-1202 - 2.2",
+    "videoId": "VecgTIZTG1g",
+    "url": "https://www.youtube.com/watch?v=VecgTIZTG1g",
+    "duration": "5:20",
+    "objective": "2.2"
+  },
+  {
+    "index": 32,
+    "title": "Windows Security Settings - CompTIA A+ 220-1202 - 2.2",
+    "videoId": "SR7tw10W5YU",
+    "url": "https://www.youtube.com/watch?v=SR7tw10W5YU",
+    "duration": "13:44",
+    "objective": "2.2"
+  },
+  {
+    "index": 33,
+    "title": "Active Directory - CompTIA A+ 220-1202 - 2.2",
+    "videoId": "GuWMKVTMD7k",
+    "url": "https://www.youtube.com/watch?v=GuWMKVTMD7k",
+    "duration": "27:40",
+    "objective": "2.2"
+  },
+  {
+    "index": 34,
+    "title": "Wireless Encryption - CompTIA A+ 220-1202 - 2.3",
+    "videoId": "oQV7ZLu25KI",
+    "url": "https://www.youtube.com/watch?v=oQV7ZLu25KI",
+    "duration": "6:19",
+    "objective": "2.3"
+  },
+  {
+    "index": 35,
+    "title": "Authentication Methods - CompTIA A+ 220-1202 - 2.3",
+    "videoId": "zj9bqo_s0yE",
+    "url": "https://www.youtube.com/watch?v=zj9bqo_s0yE",
+    "duration": "7:58",
+    "objective": "2.3"
+  },
+  {
+    "index": 36,
+    "title": "Malware - CompTIA A+ 220-1202 - 2.4",
+    "videoId": "lB5VwnsUG3E",
+    "url": "https://www.youtube.com/watch?v=lB5VwnsUG3E",
+    "duration": "17:23",
+    "objective": "2.4"
+  },
+  {
+    "index": 37,
+    "title": "Anti-malware Tools - CompTIA A+ 220-1202 - 2.4",
+    "videoId": "u2oKe31twIU",
+    "url": "https://www.youtube.com/watch?v=u2oKe31twIU",
+    "duration": "12:45",
+    "objective": "2.4"
+  },
+  {
+    "index": 38,
+    "title": "Social Engineering - CompTIA A+ 220-1202 - 2.5",
+    "videoId": "9xtzpbY1n9I",
+    "url": "https://www.youtube.com/watch?v=9xtzpbY1n9I",
+    "duration": "13:37",
+    "objective": "2.5"
+  },
+  {
+    "index": 39,
+    "title": "Denial of Service - CompTIA A+ 220-1202 - 2.5",
+    "videoId": "00dFDSv03EQ",
+    "url": "https://www.youtube.com/watch?v=00dFDSv03EQ",
+    "duration": "4:52",
+    "objective": "2.5"
+  },
+  {
+    "index": 40,
+    "title": "On-Path Attacks - CompTIA A+ 220-1202 - 2.5",
+    "videoId": "STiRgWoRtI4",
+    "url": "https://www.youtube.com/watch?v=STiRgWoRtI4",
+    "duration": "7:02",
+    "objective": "2.5"
+  },
+  {
+    "index": 41,
+    "title": "Zero-Day Attacks - CompTIA A+ 220-1202 - 2.5",
+    "videoId": "H3mG-ovnXJc",
+    "url": "https://www.youtube.com/watch?v=H3mG-ovnXJc",
+    "duration": "3:18",
+    "objective": "2.5"
+  },
+  {
+    "index": 42,
+    "title": "Password Attacks - CompTIA A+ 220-1202 - 2.5",
+    "videoId": "JEBzY5QjYAY",
+    "url": "https://www.youtube.com/watch?v=JEBzY5QjYAY",
+    "duration": "10:23",
+    "objective": "2.5"
+  },
+  {
+    "index": 43,
+    "title": "Insider Threats - CompTIA A+ 220-1202 - 2.5",
+    "videoId": "3cgrALf45zs",
+    "url": "https://www.youtube.com/watch?v=3cgrALf45zs",
+    "duration": "2:30",
+    "objective": "2.5"
+  },
+  {
+    "index": 44,
+    "title": "SQL Injection Attacks - CompTIA A+ 220-1202 - 2.5",
+    "videoId": "yAt4DO8dUNM",
+    "url": "https://www.youtube.com/watch?v=yAt4DO8dUNM",
+    "duration": "6:18",
+    "objective": "2.5"
+  },
+  {
+    "index": 45,
+    "title": "Cross-site Scripting - CompTIA A+ 220-1202 - 2.5",
+    "videoId": "BIO49rnHCQM",
+    "url": "https://www.youtube.com/watch?v=BIO49rnHCQM",
+    "duration": "7:54",
+    "objective": "2.5"
+  },
+  {
+    "index": 46,
+    "title": "Business Email Compromise - CompTIA A+ 220-1202 - 2.5",
+    "videoId": "8HoIOlYk82g",
+    "url": "https://www.youtube.com/watch?v=8HoIOlYk82g",
+    "duration": "5:59",
+    "objective": "2.5"
+  },
+  {
+    "index": 47,
+    "title": "Supply Chain Attacks - CompTIA A+ 220-1202 - 2.5",
+    "videoId": "iw3aytkhi_I",
+    "url": "https://www.youtube.com/watch?v=iw3aytkhi_I",
+    "duration": "8:04",
+    "objective": "2.5"
+  },
+  {
+    "index": 48,
+    "title": "Security Vulnerabilities - CompTIA A+ 220-1202 - 2.5",
+    "videoId": "bReDIugJDyA",
+    "url": "https://www.youtube.com/watch?v=bReDIugJDyA",
+    "duration": "8:47",
+    "objective": "2.5"
+  },
+  {
+    "index": 49,
+    "title": "Removing Malware - CompTIA A+ 220-1202 - 2.6",
+    "videoId": "job81SfpQNU",
+    "url": "https://www.youtube.com/watch?v=job81SfpQNU",
+    "duration": "11:30",
+    "objective": "2.6"
+  },
+  {
+    "index": 50,
+    "title": "Security Best Practices - CompTIA A+ 220-1202 - 2.7",
+    "videoId": "6OR_EiHoG8k",
+    "url": "https://www.youtube.com/watch?v=6OR_EiHoG8k",
+    "duration": "15:15",
+    "objective": "2.7"
+  },
+  {
+    "index": 51,
+    "title": "Mobile Device Security - CompTIA A+ 220-1202 - 2.8",
+    "videoId": "WNWFV4r_6Wk",
+    "url": "https://www.youtube.com/watch?v=WNWFV4r_6Wk",
+    "duration": "10:28",
+    "objective": "2.8"
+  },
+  {
+    "index": 52,
+    "title": "Data Destruction - CompTIA A+ 220-1202 - 2.9",
+    "videoId": "VCQpo2pas1o",
+    "url": "https://www.youtube.com/watch?v=VCQpo2pas1o",
+    "duration": "6:04",
+    "objective": "2.9"
+  },
+  {
+    "index": 53,
+    "title": "Securing a SOHO Network - CompTIA A+ 220-1202 - 2.10",
+    "videoId": "pq_CKhYYYVQ",
+    "url": "https://www.youtube.com/watch?v=pq_CKhYYYVQ",
+    "duration": "15:03",
+    "objective": "2.10"
+  },
+  {
+    "index": 54,
+    "title": "Browser Security - CompTIA A+ 220-1202 - 2.11",
+    "videoId": "aIcO1ZMj92U",
+    "url": "https://www.youtube.com/watch?v=aIcO1ZMj92U",
+    "duration": "18:56",
+    "objective": "2.11"
+  },
+  {
+    "index": 55,
+    "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+    "videoId": "qIenQsBAg2U",
+    "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+    "duration": "17:30",
+    "objective": "3.1"
+  },
+  {
+    "index": 56,
+    "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+    "videoId": "F5NxaV7t6Bc",
+    "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+    "duration": "11:30",
+    "objective": "3.2"
+  },
+  {
+    "index": 57,
+    "title": "Troubleshooting Mobile Device Security - CompTIA A+ 220-1202 - 3.3",
+    "videoId": "_nsBbRwyNMo",
+    "url": "https://www.youtube.com/watch?v=_nsBbRwyNMo",
+    "duration": "12:16",
+    "objective": "3.3"
+  },
+  {
+    "index": 58,
+    "title": "Troubleshooting Security Issues - CompTIA A+ 220-1202 - 3.4",
+    "videoId": "OCLOLvwgdMY",
+    "url": "https://www.youtube.com/watch?v=OCLOLvwgdMY",
+    "duration": "10:16",
+    "objective": "3.4"
+  },
+  {
+    "index": 59,
+    "title": "Ticketing Systems - CompTIA A+ 220-1202 - 4.1",
+    "videoId": "EzjHn6vvrsI",
+    "url": "https://www.youtube.com/watch?v=EzjHn6vvrsI",
+    "duration": "13:48",
+    "objective": "4.1"
+  },
+  {
+    "index": 60,
+    "title": "Asset Management - CompTIA A+ 220-1202 - 4.1",
+    "videoId": "aYp60Y9_bbg",
+    "url": "https://www.youtube.com/watch?v=aYp60Y9_bbg",
+    "duration": "4:51",
+    "objective": "4.1"
+  },
+  {
+    "index": 61,
+    "title": "Document Types - CompTIA A+ 220-1202 - 4.1",
+    "videoId": "LVNSo06uPqM",
+    "url": "https://www.youtube.com/watch?v=LVNSo06uPqM",
+    "duration": "7:29",
+    "objective": "4.1"
+  },
+  {
+    "index": 62,
+    "title": "Change Management - CompTIA A+ 220-1202 - 4.2",
+    "videoId": "AhcQlR73Bo4",
+    "url": "https://www.youtube.com/watch?v=AhcQlR73Bo4",
+    "duration": "21:42",
+    "objective": "4.2"
+  },
+  {
+    "index": 63,
+    "title": "Managing Backups - CompTIA A+ 220-1202 - 4.3",
+    "videoId": "xJc7-KM-Fsk",
+    "url": "https://www.youtube.com/watch?v=xJc7-KM-Fsk",
+    "duration": "15:01",
+    "objective": "4.3"
+  },
+  {
+    "index": 64,
+    "title": "Managing Electrostatic Discharge - CompTIA A+ 220-1202 - 4.4",
+    "videoId": "sDlVVU3oAlA",
+    "url": "https://www.youtube.com/watch?v=sDlVVU3oAlA",
+    "duration": "5:28",
+    "objective": "4.4"
+  },
+  {
+    "index": 65,
+    "title": "Safety Procedures - CompTIA A+ 220-1202 - 4.4",
+    "videoId": "JZ5Ht_wzyt8",
+    "url": "https://www.youtube.com/watch?v=JZ5Ht_wzyt8",
+    "duration": "4:45",
+    "objective": "4.4"
+  },
+  {
+    "index": 66,
+    "title": "Environmental Impacts - CompTIA A+ 220-1202 - 4.5",
+    "videoId": "FqWHM4Sws1M",
+    "url": "https://www.youtube.com/watch?v=FqWHM4Sws1M",
+    "duration": "6:28",
+    "objective": "4.5"
+  },
+  {
+    "index": 67,
+    "title": "Incident Response - CompTIA A+ 220-1202 - 4.6",
+    "videoId": "jKhIYQioCE8",
+    "url": "https://www.youtube.com/watch?v=jKhIYQioCE8",
+    "duration": "6:43",
+    "objective": "4.6"
+  },
+  {
+    "index": 68,
+    "title": "Privacy, Licensing, and Policies - CompTIA A+ 220-1202 - 4.6",
+    "videoId": "FnRB3yS_Qxo",
+    "url": "https://www.youtube.com/watch?v=FnRB3yS_Qxo",
+    "duration": "10:55",
+    "objective": "4.6"
+  },
+  {
+    "index": 69,
+    "title": "Professionalism - CompTIA A+ 220-1202 - 4.7",
+    "videoId": "8kKg8RJHAFQ",
+    "url": "https://www.youtube.com/watch?v=8kKg8RJHAFQ",
+    "duration": "4:47",
+    "objective": "4.7"
+  },
+  {
+    "index": 70,
+    "title": "Communication - CompTIA A+ 220-1202 - 4.7",
+    "videoId": "1mIkDOfjd_I",
+    "url": "https://www.youtube.com/watch?v=1mIkDOfjd_I",
+    "duration": "7:00",
+    "objective": "4.7"
+  },
+  {
+    "index": 71,
+    "title": "Scripting Languages - CompTIA A+ 220-1202 - 4.8",
+    "videoId": "nJKUP1twjbY",
+    "url": "https://www.youtube.com/watch?v=nJKUP1twjbY",
+    "duration": "6:00",
+    "objective": "4.8"
+  },
+  {
+    "index": 72,
+    "title": "Scripting Use Cases - CompTIA A+ 220-1202 - 4.8",
+    "videoId": "YTi7jALWueg",
+    "url": "https://www.youtube.com/watch?v=YTi7jALWueg",
+    "duration": "8:29",
+    "objective": "4.8"
+  },
+  {
+    "index": 73,
+    "title": "Remote Access - CompTIA A+ 220-1202 - 4.9",
+    "videoId": "B-xa0hjmuAs",
+    "url": "https://www.youtube.com/watch?v=B-xa0hjmuAs",
+    "duration": "12:49",
+    "objective": "4.9"
+  },
+  {
+    "index": 74,
+    "title": "Managing AI - CompTIA A+ 220-1202 - 4.10",
+    "videoId": "oofb6ROU7LM",
+    "url": "https://www.youtube.com/watch?v=oofb6ROU7LM",
+    "duration": "10:38",
+    "objective": "4.10"
+  }
+]

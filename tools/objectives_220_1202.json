@@ -1,0 +1,157 @@
+{
+  "exam": "220-1202",
+  "title": "CompTIA A+ Core 2 (220-1202) v15 Objectives",
+  "note": "Verified by the MESSER agent against the Professor Messer 220-1202 course index (https://professormesser.com/free-a-plus-training/220-1202/220-1202-video/220-1202-training-course, 74 videos) and Messer's 220-1102 vs 220-1202 differences article. Reality differs from the provisional file: domain 4.0 runs 4.1-4.10 (10 objectives), not 4.1-4.7. New v15 objectives: 4.8 Scripting, 4.9 Remote Access, 4.10 Artificial Intelligence. Total objectives: 36 (provisional said 33). Domain weights 28/28/23/21 confirmed.",
+  "blueprint": {
+    "1.0 Operating Systems": 28,
+    "2.0 Security": 28,
+    "3.0 Software Troubleshooting": 23,
+    "4.0 Operational Procedures": 21
+  },
+  "objectives": {
+    "1.1": {
+      "domain": "1.0 Operating Systems",
+      "desc": "Operating systems overview and file systems"
+    },
+    "1.2": {
+      "domain": "1.0 Operating Systems",
+      "desc": "Installing and upgrading operating systems"
+    },
+    "1.3": {
+      "domain": "1.0 Operating Systems",
+      "desc": "Windows overview and features"
+    },
+    "1.4": {
+      "domain": "1.0 Operating Systems",
+      "desc": "Task Manager, MMC, and additional Windows tools"
+    },
+    "1.5": {
+      "domain": "1.0 Operating Systems",
+      "desc": "Windows command line and network command line"
+    },
+    "1.6": {
+      "domain": "1.0 Operating Systems",
+      "desc": "Control Panel and Windows Settings"
+    },
+    "1.7": {
+      "domain": "1.0 Operating Systems",
+      "desc": "Windows networking, firewall, and IP configuration"
+    },
+    "1.8": {
+      "domain": "1.0 Operating Systems",
+      "desc": "macOS overview, System Preferences, and features"
+    },
+    "1.9": {
+      "domain": "1.0 Operating Systems",
+      "desc": "Linux overview and Linux commands"
+    },
+    "1.10": {
+      "domain": "1.0 Operating Systems",
+      "desc": "Installing applications"
+    },
+    "1.11": {
+      "domain": "1.0 Operating Systems",
+      "desc": "Cloud productivity tools"
+    },
+    "2.1": {
+      "domain": "2.0 Security",
+      "desc": "Physical, logical, and authentication-based access security"
+    },
+    "2.2": {
+      "domain": "2.0 Security",
+      "desc": "Windows security: Defender, firewall, security settings, Active Directory"
+    },
+    "2.3": {
+      "domain": "2.0 Security",
+      "desc": "Wireless encryption and authentication methods"
+    },
+    "2.4": {
+      "domain": "2.0 Security",
+      "desc": "Malware types and anti-malware tools"
+    },
+    "2.5": {
+      "domain": "2.0 Security",
+      "desc": "Social engineering, attacks, and security vulnerabilities"
+    },
+    "2.6": {
+      "domain": "2.0 Security",
+      "desc": "Malware removal"
+    },
+    "2.7": {
+      "domain": "2.0 Security",
+      "desc": "Security best practices"
+    },
+    "2.8": {
+      "domain": "2.0 Security",
+      "desc": "Mobile device security"
+    },
+    "2.9": {
+      "domain": "2.0 Security",
+      "desc": "Data destruction and disposal"
+    },
+    "2.10": {
+      "domain": "2.0 Security",
+      "desc": "Securing a SOHO network"
+    },
+    "2.11": {
+      "domain": "2.0 Security",
+      "desc": "Browser security"
+    },
+    "3.1": {
+      "domain": "3.0 Software Troubleshooting",
+      "desc": "Troubleshooting Windows"
+    },
+    "3.2": {
+      "domain": "3.0 Software Troubleshooting",
+      "desc": "Troubleshooting mobile devices"
+    },
+    "3.3": {
+      "domain": "3.0 Software Troubleshooting",
+      "desc": "Troubleshooting mobile device security"
+    },
+    "3.4": {
+      "domain": "3.0 Software Troubleshooting",
+      "desc": "Troubleshooting security issues"
+    },
+    "4.1": {
+      "domain": "4.0 Operational Procedures",
+      "desc": "Documentation, ticketing, and asset management"
+    },
+    "4.2": {
+      "domain": "4.0 Operational Procedures",
+      "desc": "Change management"
+    },
+    "4.3": {
+      "domain": "4.0 Operational Procedures",
+      "desc": "Backup and recovery"
+    },
+    "4.4": {
+      "domain": "4.0 Operational Procedures",
+      "desc": "Safety procedures and ESD"
+    },
+    "4.5": {
+      "domain": "4.0 Operational Procedures",
+      "desc": "Environmental impacts and controls"
+    },
+    "4.6": {
+      "domain": "4.0 Operational Procedures",
+      "desc": "Privacy, licensing, policies, and incident response"
+    },
+    "4.7": {
+      "domain": "4.0 Operational Procedures",
+      "desc": "Professionalism and communication"
+    },
+    "4.8": {
+      "domain": "4.0 Operational Procedures",
+      "desc": "Scripting languages and use cases"
+    },
+    "4.9": {
+      "domain": "4.0 Operational Procedures",
+      "desc": "Remote access technologies"
+    },
+    "4.10": {
+      "domain": "4.0 Operational Procedures",
+      "desc": "Managing artificial intelligence"
+    }
+  }
+}

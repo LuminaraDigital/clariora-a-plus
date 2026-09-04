@@ -1,0 +1,587 @@
+window.COMPTIA_OBJECTIVES_DATA = {
+  "version": "1.0",
+  "title": "CompTIA A+ Official Objectives Checklist",
+  "description": "Core 1 (220-1201) and Core 2 (220-1202) domain/objective checklist. Progress persists in localStorage key comptia_objectives_progress_v1.",
+  "storage_key": "comptia_objectives_progress_v1",
+  "exams": {
+    "core1": {
+      "code": "220-1201",
+      "name": "Core 1",
+      "count": 27
+    },
+    "core2": {
+      "code": "220-1202",
+      "name": "Core 2",
+      "count": 36
+    }
+  },
+  "objectives": [
+    {
+      "id": "c1-1-1",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "1.0 Mobile Devices",
+      "code": "1.1",
+      "title": "Laptop hardware",
+      "checked": false
+    },
+    {
+      "id": "c1-1-2",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "1.0 Mobile Devices",
+      "code": "1.2",
+      "title": "Mobile accessories and connectors",
+      "checked": false
+    },
+    {
+      "id": "c1-1-3",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "1.0 Mobile Devices",
+      "code": "1.3",
+      "title": "Mobile networks and sync",
+      "checked": false
+    },
+    {
+      "id": "c1-2-1",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "2.0 Networking",
+      "code": "2.1",
+      "title": "Ports and protocols",
+      "checked": false
+    },
+    {
+      "id": "c1-2-2",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "2.0 Networking",
+      "code": "2.2",
+      "title": "Wireless standards",
+      "checked": false
+    },
+    {
+      "id": "c1-2-3",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "2.0 Networking",
+      "code": "2.3",
+      "title": "Network services",
+      "checked": false
+    },
+    {
+      "id": "c1-2-4",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "2.0 Networking",
+      "code": "2.4",
+      "title": "DNS, DHCP, VLANs and VPNs",
+      "checked": false
+    },
+    {
+      "id": "c1-2-5",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "2.0 Networking",
+      "code": "2.5",
+      "title": "Network devices",
+      "checked": false
+    },
+    {
+      "id": "c1-2-6",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "2.0 Networking",
+      "code": "2.6",
+      "title": "IPv4 and IPv6 addressing",
+      "checked": false
+    },
+    {
+      "id": "c1-2-7",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "2.0 Networking",
+      "code": "2.7",
+      "title": "Internet and network types",
+      "checked": false
+    },
+    {
+      "id": "c1-2-8",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "2.0 Networking",
+      "code": "2.8",
+      "title": "Network tools",
+      "checked": false
+    },
+    {
+      "id": "c1-3-1",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "3.0 Hardware",
+      "code": "3.1",
+      "title": "Displays",
+      "checked": false
+    },
+    {
+      "id": "c1-3-2",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "3.0 Hardware",
+      "code": "3.2",
+      "title": "Cables and connectors",
+      "checked": false
+    },
+    {
+      "id": "c1-3-3",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "3.0 Hardware",
+      "code": "3.3",
+      "title": "Memory (RAM)",
+      "checked": false
+    },
+    {
+      "id": "c1-3-4",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "3.0 Hardware",
+      "code": "3.4",
+      "title": "Storage and RAID",
+      "checked": false
+    },
+    {
+      "id": "c1-3-5",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "3.0 Hardware",
+      "code": "3.5",
+      "title": "Motherboards, CPUs and BIOS",
+      "checked": false
+    },
+    {
+      "id": "c1-3-6",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "3.0 Hardware",
+      "code": "3.6",
+      "title": "Power supplies",
+      "checked": false
+    },
+    {
+      "id": "c1-3-7",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "3.0 Hardware",
+      "code": "3.7",
+      "title": "Multifunction devices",
+      "checked": false
+    },
+    {
+      "id": "c1-3-8",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "3.0 Hardware",
+      "code": "3.8",
+      "title": "Printers and maintenance",
+      "checked": false
+    },
+    {
+      "id": "c1-4-1",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "code": "4.1",
+      "title": "Virtualization and hypervisors",
+      "checked": false
+    },
+    {
+      "id": "c1-4-2",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "code": "4.2",
+      "title": "Cloud models",
+      "checked": false
+    },
+    {
+      "id": "c1-5-1",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "code": "5.1",
+      "title": "Troubleshooting hardware",
+      "checked": false
+    },
+    {
+      "id": "c1-5-2",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "code": "5.2",
+      "title": "Troubleshooting storage",
+      "checked": false
+    },
+    {
+      "id": "c1-5-3",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "code": "5.3",
+      "title": "Troubleshooting displays",
+      "checked": false
+    },
+    {
+      "id": "c1-5-4",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "code": "5.4",
+      "title": "Troubleshooting mobile devices",
+      "checked": false
+    },
+    {
+      "id": "c1-5-5",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "code": "5.5",
+      "title": "Troubleshooting networks",
+      "checked": false
+    },
+    {
+      "id": "c1-5-6",
+      "exam": "core1",
+      "exam_code": "220-1201",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "code": "5.6",
+      "title": "Troubleshooting printers",
+      "checked": false
+    },
+    {
+      "id": "c2-1-1",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "1.0 Operating Systems",
+      "code": "1.1",
+      "title": "Operating systems and file systems",
+      "checked": false
+    },
+    {
+      "id": "c2-1-2",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "1.0 Operating Systems",
+      "code": "1.2",
+      "title": "OS install and upgrade",
+      "checked": false
+    },
+    {
+      "id": "c2-1-3",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "1.0 Operating Systems",
+      "code": "1.3",
+      "title": "Windows editions",
+      "checked": false
+    },
+    {
+      "id": "c2-1-4",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "1.0 Operating Systems",
+      "code": "1.4",
+      "title": "Windows admin tools",
+      "checked": false
+    },
+    {
+      "id": "c2-1-5",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "1.0 Operating Systems",
+      "code": "1.5",
+      "title": "Windows command line",
+      "checked": false
+    },
+    {
+      "id": "c2-1-6",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "1.0 Operating Systems",
+      "code": "1.6",
+      "title": "Control Panel and Settings",
+      "checked": false
+    },
+    {
+      "id": "c2-1-7",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "1.0 Operating Systems",
+      "code": "1.7",
+      "title": "Windows networking and firewall",
+      "checked": false
+    },
+    {
+      "id": "c2-1-8",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "1.0 Operating Systems",
+      "code": "1.8",
+      "title": "macOS",
+      "checked": false
+    },
+    {
+      "id": "c2-1-9",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "1.0 Operating Systems",
+      "code": "1.9",
+      "title": "Linux command line",
+      "checked": false
+    },
+    {
+      "id": "c2-1-10",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "1.0 Operating Systems",
+      "code": "1.10",
+      "title": "Installing applications",
+      "checked": false
+    },
+    {
+      "id": "c2-1-11",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "1.0 Operating Systems",
+      "code": "1.11",
+      "title": "Cloud collaboration tools",
+      "checked": false
+    },
+    {
+      "id": "c2-2-1",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "2.0 Security",
+      "code": "2.1",
+      "title": "Physical and logical security",
+      "checked": false
+    },
+    {
+      "id": "c2-2-2",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "2.0 Security",
+      "code": "2.2",
+      "title": "Windows security and Active Directory",
+      "checked": false
+    },
+    {
+      "id": "c2-2-3",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "2.0 Security",
+      "code": "2.3",
+      "title": "Wireless encryption",
+      "checked": false
+    },
+    {
+      "id": "c2-2-4",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "2.0 Security",
+      "code": "2.4",
+      "title": "Malware and anti-malware",
+      "checked": false
+    },
+    {
+      "id": "c2-2-5",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "2.0 Security",
+      "code": "2.5",
+      "title": "Social engineering and attacks",
+      "checked": false
+    },
+    {
+      "id": "c2-2-6",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "2.0 Security",
+      "code": "2.6",
+      "title": "Malware removal",
+      "checked": false
+    },
+    {
+      "id": "c2-2-7",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "2.0 Security",
+      "code": "2.7",
+      "title": "Security best practices",
+      "checked": false
+    },
+    {
+      "id": "c2-2-8",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "2.0 Security",
+      "code": "2.8",
+      "title": "Mobile device security",
+      "checked": false
+    },
+    {
+      "id": "c2-2-9",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "2.0 Security",
+      "code": "2.9",
+      "title": "Data destruction and disposal",
+      "checked": false
+    },
+    {
+      "id": "c2-2-10",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "2.0 Security",
+      "code": "2.10",
+      "title": "Securing a SOHO network",
+      "checked": false
+    },
+    {
+      "id": "c2-2-11",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "2.0 Security",
+      "code": "2.11",
+      "title": "Browser security",
+      "checked": false
+    },
+    {
+      "id": "c2-3-1",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "3.0 Software Troubleshooting",
+      "code": "3.1",
+      "title": "Troubleshooting Windows",
+      "checked": false
+    },
+    {
+      "id": "c2-3-2",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "3.0 Software Troubleshooting",
+      "code": "3.2",
+      "title": "Troubleshooting mobile OS and apps",
+      "checked": false
+    },
+    {
+      "id": "c2-3-3",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "3.0 Software Troubleshooting",
+      "code": "3.3",
+      "title": "Troubleshooting mobile security",
+      "checked": false
+    },
+    {
+      "id": "c2-3-4",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "3.0 Software Troubleshooting",
+      "code": "3.4",
+      "title": "Troubleshooting security issues",
+      "checked": false
+    },
+    {
+      "id": "c2-4-1",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "4.0 Operational Procedures",
+      "code": "4.1",
+      "title": "Ticketing and documentation",
+      "checked": false
+    },
+    {
+      "id": "c2-4-2",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "4.0 Operational Procedures",
+      "code": "4.2",
+      "title": "Change management",
+      "checked": false
+    },
+    {
+      "id": "c2-4-3",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "4.0 Operational Procedures",
+      "code": "4.3",
+      "title": "Backup and recovery",
+      "checked": false
+    },
+    {
+      "id": "c2-4-4",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "4.0 Operational Procedures",
+      "code": "4.4",
+      "title": "Safety and ESD",
+      "checked": false
+    },
+    {
+      "id": "c2-4-5",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "4.0 Operational Procedures",
+      "code": "4.5",
+      "title": "Environmental controls",
+      "checked": false
+    },
+    {
+      "id": "c2-4-6",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "4.0 Operational Procedures",
+      "code": "4.6",
+      "title": "Incident response and policy",
+      "checked": false
+    },
+    {
+      "id": "c2-4-7",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "4.0 Operational Procedures",
+      "code": "4.7",
+      "title": "Communication",
+      "checked": false
+    },
+    {
+      "id": "c2-4-8",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "4.0 Operational Procedures",
+      "code": "4.8",
+      "title": "Scripting basics",
+      "checked": false
+    },
+    {
+      "id": "c2-4-9",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "4.0 Operational Procedures",
+      "code": "4.9",
+      "title": "Remote access tools",
+      "checked": false
+    },
+    {
+      "id": "c2-4-10",
+      "exam": "core2",
+      "exam_code": "220-1202",
+      "domain": "4.0 Operational Procedures",
+      "code": "4.10",
+      "title": "AI in IT operations",
+      "checked": false
+    }
+  ]
+};

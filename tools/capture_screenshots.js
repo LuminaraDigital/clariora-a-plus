@@ -21,7 +21,7 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const DEFAULT_EXE = path.join(ROOT, 'release', 'portable', 'CompTIA_A_Plus_Simulator.exe');
 const OUT_DIR = path.join(ROOT, 'docs', 'screenshots');
-const PORT = 9566;
+const PORT = Number(process.env.APLUS_SHOT_PORT) || 9566;
 const WIDTH = 1440;
 const HEIGHT = 900;
 
@@ -145,6 +145,10 @@ async function main() {
     process.exit(1);
   }
   fs.mkdirSync(OUT_DIR, { recursive: true });
+  if (await waitForTarget(500)) {
+    console.error('Port ' + PORT + ' already has a debug target. Close the other app instance or set APLUS_SHOT_PORT.');
+    process.exit(1);
+  }
 
   /* One process for the whole run. The desktop store lives in the main
      process, so seeding and then reloading the renderer gives every module

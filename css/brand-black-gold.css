@@ -4863,3 +4863,96 @@ header .brand {
   flex: 0 0 auto;
   align-items: start;
 }
+
+/* ============================================================
+   22. Confidence display and the home coach mission
+   ============================================================ */
+
+.gap-scale .track {
+  position: relative;
+}
+
+.gap-scale .band {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  border-radius: 999px;
+  background: rgba(212, 175, 55, 0.14);
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  pointer-events: none;
+}
+
+.hero-confidence {
+  margin: var(--sp-1) 0 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.hero-card[data-confidence="low"] .score-ring .progress {
+  opacity: 0.6;
+}
+
+.home-mission {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  margin-bottom: var(--sp-2);
+  border: 1px solid var(--border-light);
+  border-left: 2px solid var(--gold-primary);
+  border-radius: var(--radius-card);
+  background: var(--bg-card);
+}
+
+.home-mission[hidden] {
+  display: none;
+}
+
+.home-mission-copy {
+  min-width: 0;
+}
+
+.home-mission-title {
+  margin: 4px 0 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.home-mission-summary {
+  margin: 0 0 6px;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.home-mission-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.home-mission-link {
+  color: var(--gold-text);
+  text-decoration: none;
+}
+
+.home-mission-link:hover {
+  text-decoration: underline;
+}
+
+.home-mission-actions {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 720px) {
+  .home-mission {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

@@ -1,0 +1,899 @@
+{
+  "questions": [
+    {
+      "id": "C2N-OS-001",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.6",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "A user wants to change which program opens PDF files by default in Windows. Where is this configured?",
+      "options": [
+        "Settings, Apps, Default apps",
+        "Device Manager",
+        "Disk Management",
+        "Windows Defender Firewall"
+      ],
+      "answer": 0,
+      "explanation": "Default apps in Windows Settings lets a user choose the application associated with each file type and protocol, either per application or by picking a file extension such as .pdf and selecting the handler. Device Manager lists hardware, Disk Management handles volumes and partitions, and the firewall controls network traffic; none of them govern file associations. Technicians see this after a new program installs itself as the default and the user wants the old one back.",
+      "distractor_analysis": {
+        "1": "Device Manager manages drivers and hardware.",
+        "2": "Disk Management handles storage volumes.",
+        "3": "The firewall filters network connections."
+      },
+      "video_reference": {
+        "title": "Windows Settings - CompTIA A+ 220-1202 - 1.6",
+        "url": "https://www.youtube.com/watch?v=0qfZtEZCvn0",
+        "duration": "6:34",
+        "objective": "1.6"
+      },
+      "notes_reference": "18_Windows_Settings_and_Configuration.md",
+      "tags": ["windows", "settings", "default-apps"]
+    },
+    {
+      "id": "C2N-OS-002",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.6",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A technician needs to remove a program that does not appear in the Windows Settings Apps list but is visible in the classic Control Panel. Which Control Panel applet is used?",
+      "options": [
+        "Programs and Features",
+        "Devices and Printers",
+        "Internet Options",
+        "Ease of Access Center"
+      ],
+      "answer": 0,
+      "explanation": "Programs and Features is the long-standing Control Panel applet for uninstalling, changing or repairing installed applications and for turning Windows features on or off. Some older installers register only there. Devices and Printers manages hardware, Internet Options configures legacy browser and proxy settings, and Ease of Access holds accessibility options. Knowing both the Settings and Control Panel locations matters because Windows still splits functions between them.",
+      "distractor_analysis": {
+        "1": "Devices and Printers handles peripherals.",
+        "2": "Internet Options sets proxy, security zones and browser defaults.",
+        "3": "Ease of Access covers accessibility features."
+      },
+      "video_reference": {
+        "title": "The Windows Control Panel - CompTIA A+ 220-1202 - 1.6",
+        "url": "https://www.youtube.com/watch?v=AhGWshIRcKw",
+        "duration": "23:09",
+        "objective": "1.6"
+      },
+      "notes_reference": "18_Windows_Settings_and_Configuration.md",
+      "tags": ["windows", "control-panel", "programs-and-features"]
+    },
+    {
+      "id": "C2N-OS-003",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.6",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user's laptop goes to sleep after two minutes of inactivity during presentations. Which Control Panel applet or Settings page adjusts this?",
+      "options": [
+        "Power Options, or Settings, System, Power and battery",
+        "Sound",
+        "Network and Sharing Center",
+        "User Accounts"
+      ],
+      "answer": 0,
+      "explanation": "Sleep and display timeouts live in the power plan. The classic Power Options applet exposes plan settings including sleep timers, lid actions and advanced options, and the modern Settings equivalent is System, Power and battery. Creating a presentation plan with sleep disabled on mains power solves the complaint without leaving the laptop awake forever. Sound, network and account applets have no control over power behaviour.",
+      "distractor_analysis": {
+        "1": "Sound manages audio devices.",
+        "2": "Network and Sharing Center configures connections.",
+        "3": "User Accounts manages local accounts and credentials."
+      },
+      "video_reference": {
+        "title": "The Windows Control Panel - CompTIA A+ 220-1202 - 1.6",
+        "url": "https://www.youtube.com/watch?v=AhGWshIRcKw",
+        "duration": "23:09",
+        "objective": "1.6"
+      },
+      "notes_reference": "18_Windows_Settings_and_Configuration.md",
+      "tags": ["windows", "control-panel", "power-options"]
+    },
+    {
+      "id": "C2N-OS-004",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.6",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "An office requires all browsers on a PC to send web traffic through a corporate proxy. Which legacy Control Panel applet holds the system-wide proxy setting that Windows and many applications use?",
+      "options": [
+        "Internet Options, on the Connections tab under LAN settings",
+        "Programs and Features",
+        "Administrative Tools",
+        "Indexing Options"
+      ],
+      "answer": 0,
+      "explanation": "The system proxy is configured in Internet Options under Connections, LAN settings, or equivalently in Settings, Network and internet, Proxy. Windows components and most browsers read that setting, so it is the single place to point a machine at a proxy or a configuration script. In managed environments it is usually pushed by Group Policy. Programs and Features uninstalls software, Administrative Tools is a collection of consoles, and Indexing Options controls search indexing.",
+      "distractor_analysis": {
+        "1": "Programs and Features manages installed software.",
+        "2": "Administrative Tools is a folder of management consoles.",
+        "3": "Indexing Options governs Windows Search."
+      },
+      "video_reference": {
+        "title": "The Windows Control Panel - CompTIA A+ 220-1202 - 1.6",
+        "url": "https://www.youtube.com/watch?v=AhGWshIRcKw",
+        "duration": "23:09",
+        "objective": "1.6"
+      },
+      "notes_reference": "18_Windows_Settings_and_Configuration.md",
+      "tags": ["windows", "control-panel", "internet-options", "proxy"]
+    },
+    {
+      "id": "C2N-OS-005",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.6",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user with low vision needs larger text and a high-contrast colour scheme across Windows. Where should the technician configure this?",
+      "options": [
+        "Settings, Accessibility (Ease of Access), for text size and contrast themes",
+        "Device Manager",
+        "Disk Cleanup",
+        "Task Scheduler"
+      ],
+      "answer": 0,
+      "explanation": "Accessibility settings, called Ease of Access in older versions, gather text scaling, contrast themes, Magnifier, Narrator, colour filters and mouse and keyboard aids in one place. Text size applies system-wide without changing resolution, and contrast themes replace the colour scheme for readability. Configuring accessibility correctly is a routine part of supporting users with disabilities. The other tools manage hardware, disk space and scheduled jobs.",
+      "distractor_analysis": {
+        "1": "Device Manager is for hardware and drivers.",
+        "2": "Disk Cleanup frees storage.",
+        "3": "Task Scheduler runs jobs at set times."
+      },
+      "video_reference": {
+        "title": "Windows Settings - CompTIA A+ 220-1202 - 1.6",
+        "url": "https://www.youtube.com/watch?v=0qfZtEZCvn0",
+        "duration": "6:34",
+        "objective": "1.6"
+      },
+      "notes_reference": "18_Windows_Settings_and_Configuration.md",
+      "tags": ["windows", "settings", "accessibility"]
+    },
+    {
+      "id": "C2N-OS-006",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.6",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A technician needs to view a PC's processor, installed memory, Windows edition and whether it is joined to a domain. Which single location displays every one of those details?",
+      "options": [
+        "Settings, System, About (or the System applet in Control Panel)",
+        "Sound settings",
+        "Default apps",
+        "Personalization"
+      ],
+      "answer": 0,
+      "explanation": "The About page summarises device specifications and Windows specifications: processor, RAM, device name, system type, edition, version and build, and provides links to rename the PC and to domain or workgroup settings. It replaces the classic System applet and is the first stop when confirming a machine meets an application's requirements or checking which update branch it is on. Audio, application defaults and appearance pages do not show system specifications.",
+      "distractor_analysis": {
+        "1": "Sound settings manage audio.",
+        "2": "Default apps handle file associations.",
+        "3": "Personalization controls appearance."
+      },
+      "video_reference": {
+        "title": "Windows Settings - CompTIA A+ 220-1202 - 1.6",
+        "url": "https://www.youtube.com/watch?v=0qfZtEZCvn0",
+        "duration": "6:34",
+        "objective": "1.6"
+      },
+      "notes_reference": "18_Windows_Settings_and_Configuration.md",
+      "tags": ["windows", "settings", "system-about"]
+    },
+    {
+      "id": "C2N-OS-007",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.6",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A shared office PC must be configured so that a second local user can sign in with their own profile. Where does the technician add the account?",
+      "options": [
+        "Settings, Accounts, Other users (or the User Accounts applet)",
+        "Settings, Privacy",
+        "Settings, Time and language",
+        "Settings, Gaming"
+      ],
+      "answer": 0,
+      "explanation": "Local and Microsoft accounts are added under Accounts, Other users, where the technician chooses a local account or an online account and sets the account type to standard or administrator. Standard accounts are the default for shared machines so one user cannot alter system settings for everyone. The classic User Accounts applet does the same. Privacy, regional and gaming settings do not create users.",
+      "distractor_analysis": {
+        "1": "Privacy controls app permissions and diagnostics.",
+        "2": "Time and language sets region, clock and keyboards.",
+        "3": "Gaming settings concern the Game Bar and captures."
+      },
+      "video_reference": {
+        "title": "Windows Settings - CompTIA A+ 220-1202 - 1.6",
+        "url": "https://www.youtube.com/watch?v=0qfZtEZCvn0",
+        "duration": "6:34",
+        "objective": "1.6"
+      },
+      "notes_reference": "18_Windows_Settings_and_Configuration.md",
+      "tags": ["windows", "settings", "accounts", "local-user"]
+    },
+    {
+      "id": "C2N-OS-008",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.6",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user reports that Windows automatically restarted overnight to install updates and they lost unsaved work. Which setting reduces the chance of this happening again?",
+      "options": [
+        "Active hours in Settings, Windows Update, so restarts are not scheduled during the user's working times",
+        "Disabling the firewall",
+        "Changing the desktop wallpaper",
+        "Removing the user's account"
+      ],
+      "answer": 0,
+      "explanation": "Windows Update allows the user or administrator to define active hours during which the system will not restart automatically, and to schedule or pause restarts. Setting realistic active hours, and reminding users to save work, avoids overnight surprises without leaving the machine unpatched. Security settings, appearance and account changes are irrelevant, and updates should never be disabled entirely on a production PC.",
+      "distractor_analysis": {
+        "1": "The firewall has nothing to do with update scheduling and should stay on.",
+        "2": "Wallpaper is cosmetic.",
+        "3": "Removing the account solves nothing and loses the profile."
+      },
+      "video_reference": {
+        "title": "Windows Settings - CompTIA A+ 220-1202 - 1.6",
+        "url": "https://www.youtube.com/watch?v=0qfZtEZCvn0",
+        "duration": "6:34",
+        "objective": "1.6"
+      },
+      "notes_reference": "18_Windows_Settings_and_Configuration.md",
+      "tags": ["windows", "settings", "windows-update", "active-hours"]
+    },
+    {
+      "id": "C2N-OS-009",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.6",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A technician must find out which application is allowed to use the webcam and turn that access off for an untrusted program. Which Settings page controls this?",
+      "options": [
+        "Settings, Privacy and security, Camera",
+        "Settings, Personalization, Themes",
+        "Settings, System, Storage",
+        "Settings, Apps, Startup"
+      ],
+      "answer": 0,
+      "explanation": "The Privacy and security section lists each sensitive capability, such as camera, microphone and location, shows which apps have requested it and allows access to be switched off globally or per application. It also shows recent usage. This is the right place both for privacy concerns and for troubleshooting an application that cannot see the camera. Themes, storage and startup pages do not manage hardware permissions.",
+      "distractor_analysis": {
+        "1": "Themes change appearance.",
+        "2": "Storage shows disk usage.",
+        "3": "Startup controls which apps run at sign-in, not their camera access."
+      },
+      "video_reference": {
+        "title": "Windows Settings - CompTIA A+ 220-1202 - 1.6",
+        "url": "https://www.youtube.com/watch?v=0qfZtEZCvn0",
+        "duration": "6:34",
+        "objective": "1.6"
+      },
+      "notes_reference": "18_Windows_Settings_and_Configuration.md",
+      "tags": ["windows", "settings", "privacy", "camera"]
+    },
+    {
+      "id": "C2N-OS-010",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.6",
+      "type": "match",
+      "difficulty": "medium",
+      "question": "Match each Windows configuration task to the Control Panel applet or Settings page that performs it.",
+      "pairs": [
+        { "left": "Uninstall a legacy program", "right": "Programs and Features" },
+        { "left": "Set the system proxy", "right": "Internet Options" },
+        { "left": "Change sleep timers", "right": "Power Options" },
+        { "left": "Choose the default PDF viewer", "right": "Default apps" },
+        { "left": "Enable a high-contrast theme", "right": "Accessibility (Ease of Access)" }
+      ],
+      "explanation": "Windows keeps configuration in two places, the classic Control Panel and the modern Settings app, and a technician needs to know both. Programs and Features handles software removal, Internet Options holds the proxy and legacy browser settings, Power Options manages plans and timers, Default apps assigns file handlers, and Accessibility gathers vision, hearing and input aids. Going straight to the right location saves time on every support call.",
+      "video_reference": {
+        "title": "The Windows Control Panel - CompTIA A+ 220-1202 - 1.6",
+        "url": "https://www.youtube.com/watch?v=AhGWshIRcKw",
+        "duration": "23:09",
+        "objective": "1.6"
+      },
+      "notes_reference": "18_Windows_Settings_and_Configuration.md",
+      "tags": ["windows", "control-panel", "settings", "match"]
+    },
+    {
+      "id": "C2N-OS-011",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.7",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A technician must give a Windows server a fixed IP address, subnet mask, gateway and DNS servers. Where is this configured?",
+      "options": [
+        "The IPv4 properties of the network adapter, reached through Network Connections or Settings, Network and internet",
+        "Programs and Features",
+        "Device Manager's driver tab",
+        "Disk Management"
+      ],
+      "answer": 0,
+      "explanation": "Static addressing is set on the adapter itself. In Network Connections the adapter's properties expose Internet Protocol Version 4 settings where the address, mask, gateway and DNS servers are typed, and the modern Settings path offers the same through Edit IP assignment. Servers and printers get static addresses; workstations should stay on DHCP. Software removal, driver details and storage management do not touch IP configuration.",
+      "distractor_analysis": {
+        "1": "Programs and Features manages installed software.",
+        "2": "The driver tab updates or rolls back drivers, not addressing.",
+        "3": "Disk Management is for volumes."
+      },
+      "video_reference": {
+        "title": "Windows IP Address Configuration - CompTIA A+ 220-1202 - 1.7",
+        "url": "https://www.youtube.com/watch?v=wA0BV7FzH9Q",
+        "duration": "6:45",
+        "objective": "1.7"
+      },
+      "notes_reference": "20_Windows_Networking_and_Troubleshooting_Tools.md",
+      "tags": ["windows", "networking", "static-ip", "adapter-properties"]
+    },
+    {
+      "id": "C2N-OS-012",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.7",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A developer runs a web server on a Windows PC for testing and colleagues cannot connect to it, although the developer can browse it locally. What is the most likely fix?",
+      "options": [
+        "Create an inbound rule in Windows Defender Firewall allowing the server's port",
+        "Disable the network adapter",
+        "Change the PC's wallpaper",
+        "Uninstall the web server"
+      ],
+      "answer": 0,
+      "explanation": "Windows Firewall blocks unsolicited inbound connections by default, so a service that works locally but not from other machines is almost always being filtered. Adding an inbound rule for the specific port or program, scoped to the local network profile, allows colleagues in while keeping the default protection. Turning the whole firewall off is never the right answer. Disabling the adapter or removing the server defeats the purpose, and appearance settings are irrelevant.",
+      "distractor_analysis": {
+        "1": "Disabling the adapter removes all connectivity.",
+        "2": "Wallpaper has no effect on networking.",
+        "3": "Removing the server is the opposite of the goal."
+      },
+      "video_reference": {
+        "title": "Configuring Windows Firewall - CompTIA A+ 220-1202 - 1.7",
+        "url": "https://www.youtube.com/watch?v=ZmtkzwzVDaE",
+        "duration": "6:32",
+        "objective": "1.7"
+      },
+      "notes_reference": "20_Windows_Networking_and_Troubleshooting_Tools.md",
+      "tags": ["windows", "firewall", "inbound-rule", "networking"]
+    },
+    {
+      "id": "C2N-OS-013",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.7",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A laptop shows its Wi-Fi network profile as Public, and the user cannot see shared printers on the home network. What should be changed?",
+      "options": [
+        "Set the network profile to Private so network discovery and sharing rules apply",
+        "Reinstall the wireless driver",
+        "Change the Wi-Fi channel on the router",
+        "Turn off the laptop's Bluetooth"
+      ],
+      "answer": 0,
+      "explanation": "Windows applies different firewall and discovery rules depending on whether a network is marked Public or Private. On a Public network, discovery and file and printer sharing are blocked to protect the laptop in cafes and airports. Marking a trusted home or office network as Private enables discovery and the sharing rules. The choice is made in the network's properties. Drivers, router channels and Bluetooth do not influence the profile.",
+      "distractor_analysis": {
+        "1": "The adapter is connected and working.",
+        "2": "Channel selection affects radio performance, not discovery rules.",
+        "3": "Bluetooth is unrelated to network profiles."
+      },
+      "video_reference": {
+        "title": "Windows Network Technologies - CompTIA A+ 220-1202 - 1.7",
+        "url": "https://www.youtube.com/watch?v=1OlbYiS-xHY",
+        "duration": "8:37",
+        "objective": "1.7"
+      },
+      "notes_reference": "20_Windows_Networking_and_Troubleshooting_Tools.md",
+      "tags": ["windows", "networking", "network-profile", "discovery"]
+    },
+    {
+      "id": "C2N-OS-014",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.7",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user wants a shared folder on a server to appear as drive S: every time they sign in. Which action achieves this?",
+      "options": [
+        "Map a network drive to the UNC path and tick Reconnect at sign-in",
+        "Create a shortcut on the desktop",
+        "Copy the folder to the local disk",
+        "Add the server to the hosts file"
+      ],
+      "answer": 0,
+      "explanation": "Mapping a network drive assigns a letter to a UNC path such as a server share, and the reconnect option stores the mapping in the user's profile so it returns at each sign-in. In domains this is usually done centrally by Group Policy or a logon script so every user gets the same letters. A shortcut opens the share but gives no drive letter, copying breaks the single shared copy, and the hosts file only maps names to addresses.",
+      "distractor_analysis": {
+        "1": "A shortcut does not create a drive letter for applications that need one.",
+        "2": "A local copy diverges from the shared data.",
+        "3": "The hosts file does name resolution, not drive mapping."
+      },
+      "video_reference": {
+        "title": "Windows Network Technologies - CompTIA A+ 220-1202 - 1.7",
+        "url": "https://www.youtube.com/watch?v=1OlbYiS-xHY",
+        "duration": "8:37",
+        "objective": "1.7"
+      },
+      "notes_reference": "20_Windows_Networking_and_Troubleshooting_Tools.md",
+      "tags": ["windows", "networking", "mapped-drive", "unc"]
+    },
+    {
+      "id": "C2N-OS-015",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.7",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A remote worker must connect to the office network from a Windows laptop using the built-in client. Which Settings area is used to add the connection?",
+      "options": [
+        "Settings, Network and internet, VPN",
+        "Settings, Apps, Optional features",
+        "Settings, System, Display",
+        "Settings, Accounts, Sign-in options"
+      ],
+      "answer": 0,
+      "explanation": "Windows includes a VPN client supporting IKEv2, SSTP, L2TP over IPsec and PPTP, configured under Network and internet, VPN with the server address, protocol and credentials. Many organisations use a third-party client instead, but the built-in one is common for small deployments. The connection then appears alongside Wi-Fi in the network flyout. Optional features, display and sign-in options do not create network connections.",
+      "distractor_analysis": {
+        "1": "Optional features adds Windows components such as fonts or tools.",
+        "2": "Display settings manage screens.",
+        "3": "Sign-in options manage PINs and biometrics."
+      },
+      "video_reference": {
+        "title": "Windows Network Technologies - CompTIA A+ 220-1202 - 1.7",
+        "url": "https://www.youtube.com/watch?v=1OlbYiS-xHY",
+        "duration": "8:37",
+        "objective": "1.7"
+      },
+      "notes_reference": "20_Windows_Networking_and_Troubleshooting_Tools.md",
+      "tags": ["windows", "networking", "vpn", "settings"]
+    },
+    {
+      "id": "C2N-OS-016",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.7",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "A PC on a corporate network has a valid address but cannot reach a server on another subnet, while it can reach everything on its own subnet. Which setting on the PC is the most likely cause?",
+      "options": [
+        "An incorrect or missing default gateway",
+        "The wrong computer name",
+        "A disabled screen saver",
+        "The wrong time zone"
+      ],
+      "answer": 0,
+      "explanation": "Traffic to any address outside the local subnet is sent to the default gateway. If that setting is blank or points to the wrong router, local communication works perfectly and every remote destination fails. Checking the adapter's IPv4 configuration with ipconfig and correcting the gateway, or renewing the DHCP lease, fixes it. Names, screen savers and time zones cannot affect whether packets leave the subnet.",
+      "distractor_analysis": {
+        "1": "The computer name does not affect routing.",
+        "2": "Screen savers are unrelated to networking.",
+        "3": "Time zone affects clocks, not routing."
+      },
+      "video_reference": {
+        "title": "Windows IP Address Configuration - CompTIA A+ 220-1202 - 1.7",
+        "url": "https://www.youtube.com/watch?v=wA0BV7FzH9Q",
+        "duration": "6:45",
+        "objective": "1.7"
+      },
+      "notes_reference": "20_Windows_Networking_and_Troubleshooting_Tools.md",
+      "tags": ["windows", "networking", "default-gateway", "troubleshooting"]
+    },
+    {
+      "id": "C2N-OS-017",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.11",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "A team wants to write a document together at the same time, seeing each other's edits as they type. Which category of software provides this?",
+      "options": [
+        "Cloud productivity suites with real-time co-authoring, such as Microsoft 365 or Google Workspace",
+        "A local text editor",
+        "A disk imaging tool",
+        "A firmware update utility"
+      ],
+      "answer": 0,
+      "explanation": "Cloud productivity tools store the document in the provider's service and let several people edit simultaneously in a browser or desktop app, with changes merged live, comments and version history. Sharing is controlled by links and permissions. Technicians support sign-in, sharing permissions, sync clients and the occasional conflicted copy. A local editor holds one copy on one machine, and imaging and firmware tools have nothing to do with documents.",
+      "distractor_analysis": {
+        "1": "A local editor cannot merge simultaneous edits from several people.",
+        "2": "Imaging tools copy disks.",
+        "3": "Firmware utilities update device firmware."
+      },
+      "video_reference": {
+        "title": "Cloud Productivity Tools - CompTIA A+ 220-1202 - 1.11",
+        "url": "https://www.youtube.com/watch?v=FTRbdIjK1DU",
+        "duration": "5:47",
+        "objective": "1.11"
+      },
+      "notes_reference": "17_Support_Procedures_Professionalism_OS_Types.md",
+      "tags": ["cloud", "productivity", "co-authoring"]
+    },
+    {
+      "id": "C2N-OS-018",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.11",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user shared a cloud document with a colleague using a link, and the colleague can read it but cannot make changes. What should the user do?",
+      "options": [
+        "Change the sharing permission on the link or the person from view to edit",
+        "Email the file as an attachment every time it changes",
+        "Reinstall the office application",
+        "Convert the document to a PDF"
+      ],
+      "answer": 0,
+      "explanation": "Cloud sharing separates access from permission level. A link or a named share can grant view only, comment or edit rights, and the default for many organisations is view. Changing the permission in the share dialog gives the colleague edit access without creating copies. Emailing attachments loses the single-source benefit, the application is working, and a PDF is designed not to be edited.",
+      "distractor_analysis": {
+        "1": "Attachments create diverging copies.",
+        "2": "The application is not at fault.",
+        "3": "PDFs are for fixed-layout distribution, not collaborative editing."
+      },
+      "video_reference": {
+        "title": "Cloud Productivity Tools - CompTIA A+ 220-1202 - 1.11",
+        "url": "https://www.youtube.com/watch?v=FTRbdIjK1DU",
+        "duration": "5:47",
+        "objective": "1.11"
+      },
+      "notes_reference": "17_Support_Procedures_Professionalism_OS_Types.md",
+      "tags": ["cloud", "productivity", "sharing", "permissions"]
+    },
+    {
+      "id": "C2N-OS-019",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.11",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user overwrote an important section of a shared cloud spreadsheet and saved. How can the earlier content be recovered?",
+      "options": [
+        "Open the file's version history and restore or copy from an earlier version",
+        "Recover it from the local recycle bin",
+        "Reinstall the browser",
+        "Ask the internet provider for a backup"
+      ],
+      "answer": 0,
+      "explanation": "Cloud productivity services keep a version history for every document, recording each saved state with the author and time. Opening the history allows a previous version to be viewed, restored in place or copied out, so an overwritten section is recoverable in minutes. The recycle bin holds deleted files rather than earlier versions, the browser is not at fault, and providers do not hold customers' document versions.",
+      "distractor_analysis": {
+        "1": "The file was not deleted; it was changed.",
+        "2": "The browser is a viewer, not the store of the document.",
+        "3": "Internet providers have no access to a cloud document's contents."
+      },
+      "video_reference": {
+        "title": "Cloud Productivity Tools - CompTIA A+ 220-1202 - 1.11",
+        "url": "https://www.youtube.com/watch?v=FTRbdIjK1DU",
+        "duration": "5:47",
+        "objective": "1.11"
+      },
+      "notes_reference": "17_Support_Procedures_Professionalism_OS_Types.md",
+      "tags": ["cloud", "productivity", "version-history", "recovery"]
+    },
+    {
+      "id": "C2N-OS-020",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.11",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A company moves from locally installed office software to a subscription cloud suite. Which support change should the help desk expect?",
+      "options": [
+        "Fewer installation and patching tasks, and more identity, licensing and sharing-permission requests",
+        "No change at all",
+        "More work replacing hard drives",
+        "The end of all password resets"
+      ],
+      "answer": 0,
+      "explanation": "With a cloud suite the provider hosts the applications and applies updates, so the help desk spends less time installing and patching. In exchange, the common tickets become sign-in and multi-factor issues, licence assignment, sharing permissions, sync client problems and questions about where files live. Understanding the shift lets a support team retrain and adjust its knowledge base. Hardware failures and password resets continue much as before.",
+      "distractor_analysis": {
+        "1": "The workload changes in character even if not in volume.",
+        "2": "Cloud suites do not affect disk failure rates.",
+        "3": "Identity issues increase rather than disappear."
+      },
+      "video_reference": {
+        "title": "Cloud Productivity Tools - CompTIA A+ 220-1202 - 1.11",
+        "url": "https://www.youtube.com/watch?v=FTRbdIjK1DU",
+        "duration": "5:47",
+        "objective": "1.11"
+      },
+      "notes_reference": "17_Support_Procedures_Professionalism_OS_Types.md",
+      "tags": ["cloud", "productivity", "support", "saas"]
+    },
+    {
+      "id": "C2N-OS-021",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.11",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user cannot open a cloud document on a train and asks why, since the same document opened fine at the office. What is the most likely explanation?",
+      "options": [
+        "The document is not marked for offline access and the train has no internet connection",
+        "The document was deleted by the provider",
+        "The laptop's battery is too low to open documents",
+        "The file is too large for the laptop's screen"
+      ],
+      "answer": 0,
+      "explanation": "Cloud documents live on the provider's servers and are fetched on demand. Without connectivity they open only if the app or sync client has been told to keep an offline copy. Enabling offline access for the needed files before travelling, or using the sync client's always-available option, prevents this. The document still exists, battery level does not prevent opening files, and screen size is irrelevant to whether a file loads.",
+      "distractor_analysis": {
+        "1": "The provider does not delete customer documents.",
+        "2": "A laptop that is on can open documents regardless of charge level.",
+        "3": "File size and screen size are unrelated."
+      },
+      "video_reference": {
+        "title": "Cloud Productivity Tools - CompTIA A+ 220-1202 - 1.11",
+        "url": "https://www.youtube.com/watch?v=FTRbdIjK1DU",
+        "duration": "5:47",
+        "objective": "1.11"
+      },
+      "notes_reference": "17_Support_Procedures_Professionalism_OS_Types.md",
+      "tags": ["cloud", "productivity", "offline-access"]
+    },
+    {
+      "id": "C2N-OS-022",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.10",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "Before installing a new design application, the technician checks its requirements: 16 GB of RAM, a 64-bit processor, 20 GB of disk space and a graphics card with 4 GB of memory. The target PC has 8 GB of RAM. What should the technician do?",
+      "options": [
+        "Do not install until the PC meets the minimum requirements, because running below them causes poor performance or failure",
+        "Install anyway and hope it works",
+        "Uninstall the antivirus to free memory",
+        "Reduce the screen resolution to save RAM"
+      ],
+      "answer": 0,
+      "explanation": "Application system requirements state the minimum hardware the vendor supports. A machine with half the required memory will thrash, crash or refuse to install, and the vendor will not support it. The correct action is to upgrade the RAM, if the machine allows it, or choose different hardware. Installing regardless wastes time, removing security software is dangerous and frees little memory, and resolution has no meaningful effect on the memory the application needs.",
+      "distractor_analysis": {
+        "1": "Ignoring requirements leads to instability and unsupported configurations.",
+        "2": "Antivirus uses a small fraction of memory and must not be removed.",
+        "3": "Resolution changes negligible memory use."
+      },
+      "video_reference": {
+        "title": "Installing Applications - CompTIA A+ 220-1202 - 1.10",
+        "url": "https://www.youtube.com/watch?v=G2Equ2pG7aY",
+        "duration": "16:27",
+        "objective": "1.10"
+      },
+      "notes_reference": "23_Windows_Editions_and_OS_Installation.md",
+      "tags": ["applications", "system-requirements", "installation"]
+    },
+    {
+      "id": "C2N-OS-023",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.10",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user tries to install a 64-bit application on a Windows PC and the installer refuses. The PC has a 64-bit processor but the operating system is 32-bit. What is the situation?",
+      "options": [
+        "A 32-bit operating system cannot run 64-bit applications; the OS would need to be reinstalled as 64-bit",
+        "The application only needs a reboot",
+        "The processor must be replaced",
+        "The application is incompatible with all Windows versions"
+      ],
+      "answer": 0,
+      "explanation": "The operating system's architecture decides which applications can run. A 64-bit Windows runs both 64-bit and most 32-bit programs, but a 32-bit Windows can run only 32-bit programs regardless of how capable the processor is. Because the CPU is 64-bit, the fix is a clean installation of 64-bit Windows, which also unlocks more than 4 GB of memory. The processor is fine, a reboot changes nothing, and the application would run on a 64-bit installation.",
+      "distractor_analysis": {
+        "1": "Rebooting does not change the operating system architecture.",
+        "2": "The processor already supports 64-bit.",
+        "3": "The application is compatible with 64-bit Windows."
+      },
+      "video_reference": {
+        "title": "Installing Applications - CompTIA A+ 220-1202 - 1.10",
+        "url": "https://www.youtube.com/watch?v=G2Equ2pG7aY",
+        "duration": "16:27",
+        "objective": "1.10"
+      },
+      "notes_reference": "23_Windows_Editions_and_OS_Installation.md",
+      "tags": ["applications", "32-bit", "64-bit", "architecture"]
+    },
+    {
+      "id": "C2N-OS-024",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.10",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A department downloaded an installer from a file-sharing site because the vendor's download was slow. What is the primary risk and the correct practice?",
+      "options": [
+        "The installer may be tampered with or bundled with malware; always download from the vendor or an approved repository and verify the hash or signature",
+        "The download will be slower",
+        "The installer will be in the wrong language",
+        "There is no risk as long as the file name matches"
+      ],
+      "answer": 0,
+      "explanation": "Installers from unofficial sources are a standard malware delivery method: the program works, and something else is installed alongside it. Organisations should obtain software only from the vendor, an app store or a managed repository, and check the publisher's digital signature or published checksum before running it. Speed and language are not the concern, and a matching file name proves nothing about the file's contents.",
+      "distractor_analysis": {
+        "1": "Speed is a convenience issue, not the danger.",
+        "2": "Language would be an inconvenience, not a security risk.",
+        "3": "File names are trivially faked."
+      },
+      "video_reference": {
+        "title": "Installing Applications - CompTIA A+ 220-1202 - 1.10",
+        "url": "https://www.youtube.com/watch?v=G2Equ2pG7aY",
+        "duration": "16:27",
+        "objective": "1.10"
+      },
+      "notes_reference": "23_Windows_Editions_and_OS_Installation.md",
+      "tags": ["applications", "installation", "security", "distribution"]
+    },
+    {
+      "id": "C2N-OS-025",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.10",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "An organisation wants to install the same application on 200 PCs without visiting each one. Which approach should the technician recommend?",
+      "options": [
+        "Deploy the package centrally with a management tool such as Intune, Group Policy or a software deployment platform, using a silent install",
+        "Email the installer to every user with instructions",
+        "Carry a USB drive to each desk",
+        "Ask users to find it online"
+      ],
+      "answer": 0,
+      "explanation": "Enterprise application deployment uses management platforms that push a packaged installer with silent-install switches to targeted devices, report success and failure, and can also update and remove the software later. It is consistent, auditable and scales without staff time per machine. Emailing installers, walking around with media and telling users to search online produce inconsistent versions, security exposure and a large support load.",
+      "distractor_analysis": {
+        "1": "Users install inconsistently and often incorrectly.",
+        "2": "Two hundred desk visits is impractical and error-prone.",
+        "3": "Users searching online may download the wrong or a malicious version."
+      },
+      "video_reference": {
+        "title": "Installing Applications - CompTIA A+ 220-1202 - 1.10",
+        "url": "https://www.youtube.com/watch?v=G2Equ2pG7aY",
+        "duration": "16:27",
+        "objective": "1.10"
+      },
+      "notes_reference": "23_Windows_Editions_and_OS_Installation.md",
+      "tags": ["applications", "deployment", "installation", "management"]
+    },
+    {
+      "id": "C2N-OS-026",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.10",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A new application installed on a shared PC changed the file associations, added a startup entry and installed a browser extension. Which consideration did the technician skip?",
+      "options": [
+        "Reviewing the impact of the installation on the device, other applications and the network before and during installation",
+        "Checking the monitor's brightness",
+        "Cleaning the keyboard",
+        "Changing the desktop background"
+      ],
+      "answer": 0,
+      "explanation": "Installing software is not only about whether it runs. A technician should read what the installer will change, decline bundled extras and default changes, consider the effect on other users of a shared machine, and understand any network traffic or licensing implications. Reviewing these impacts, and testing on one machine before wide deployment, prevents exactly the side effects described. Physical cleaning and appearance settings are unrelated to installation practice.",
+      "distractor_analysis": {
+        "1": "Brightness has nothing to do with installation impact.",
+        "2": "Keyboard hygiene is unrelated.",
+        "3": "Wallpaper is cosmetic."
+      },
+      "video_reference": {
+        "title": "Installing Applications - CompTIA A+ 220-1202 - 1.10",
+        "url": "https://www.youtube.com/watch?v=G2Equ2pG7aY",
+        "duration": "16:27",
+        "objective": "1.10"
+      },
+      "notes_reference": "23_Windows_Editions_and_OS_Installation.md",
+      "tags": ["applications", "installation", "impact", "best-practice"]
+    },
+    {
+      "id": "C2N-OS-027",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user wants to format a 128 GB USB drive so it can be read and written on both Windows and macOS computers and hold files larger than 4 GB. Which file system should be chosen?",
+      "options": [
+        "exFAT",
+        "FAT32",
+        "NTFS",
+        "ext4"
+      ],
+      "answer": 0,
+      "explanation": "exFAT was designed for removable media and is read and written natively by Windows and macOS, with no 4 GB file size limit and support for very large volumes. FAT32 is universally readable but caps individual files at 4 GB, which rules out large videos and disk images. NTFS is read-only on macOS without third-party software, and ext4 is a Linux file system that neither Windows nor macOS mounts by default.",
+      "distractor_analysis": {
+        "1": "FAT32 cannot store a single file larger than 4 GB.",
+        "2": "macOS can read NTFS but not write to it natively.",
+        "3": "ext4 is for Linux systems."
+      },
+      "video_reference": {
+        "title": "File Systems - CompTIA A+ 220-1202 - 1.1",
+        "url": "https://www.youtube.com/watch?v=lwCu2rpXP1E",
+        "duration": "5:51",
+        "objective": "1.1"
+      },
+      "notes_reference": "17_Support_Procedures_Professionalism_OS_Types.md",
+      "tags": ["file-systems", "exfat", "removable-media"]
+    },
+    {
+      "id": "C2N-OS-028",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "Which Windows file system supports file-level permissions, encryption, compression and journaling, and is required for the system drive?",
+      "options": [
+        "NTFS",
+        "FAT32",
+        "exFAT",
+        "APFS"
+      ],
+      "answer": 0,
+      "explanation": "NTFS is the native Windows file system. Its access control lists provide per-file and per-folder permissions, it supports Encrypting File System and compression attributes, journals changes for recovery after a crash, and handles very large volumes and files. Windows must be installed on NTFS. FAT32 and exFAT have no permissions or journaling, and APFS is Apple's file system for macOS and iOS.",
+      "distractor_analysis": {
+        "1": "FAT32 has no security features and a 4 GB file limit.",
+        "2": "exFAT is for removable media and lacks permissions.",
+        "3": "APFS is Apple's file system."
+      },
+      "video_reference": {
+        "title": "File Systems - CompTIA A+ 220-1202 - 1.1",
+        "url": "https://www.youtube.com/watch?v=lwCu2rpXP1E",
+        "duration": "5:51",
+        "objective": "1.1"
+      },
+      "notes_reference": "17_Support_Procedures_Professionalism_OS_Types.md",
+      "tags": ["file-systems", "ntfs", "windows"]
+    },
+    {
+      "id": "C2N-OS-029",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A company standardises laptops on Windows but the design team needs macOS for a particular application, and a developer wants Linux. Which statement about supporting several operating systems is accurate?",
+      "options": [
+        "Each operating system has its own update cycle, management tooling and end-of-life schedule, so the support plan must cover all three",
+        "One operating system's updates automatically apply to the others",
+        "Only Windows requires security updates",
+        "Linux cannot be managed centrally"
+      ],
+      "answer": 0,
+      "explanation": "Mixed environments are normal, but each platform must be planned for separately: patching cadence, management agents, backup, security software and the date the vendor stops supporting a version. Running an operating system past its end of life leaves it unpatched and often out of compliance. Updates never cross platforms, every operating system needs security patches, and Linux is routinely managed at scale with configuration management tools.",
+      "distractor_analysis": {
+        "1": "Updates are platform-specific.",
+        "2": "macOS and Linux receive regular security updates too.",
+        "3": "Linux has mature central management options."
+      },
+      "video_reference": {
+        "title": "Operating Systems Overview - CompTIA A+ 220-1202 - 1.1",
+        "url": "https://www.youtube.com/watch?v=IhcZqUs1IF8",
+        "duration": "12:59",
+        "objective": "1.1"
+      },
+      "notes_reference": "17_Support_Procedures_Professionalism_OS_Types.md",
+      "tags": ["operating-systems", "end-of-life", "mixed-environment"]
+    },
+    {
+      "id": "C2N-OS-030",
+      "exam": "core2",
+      "domain": "1.0 Operating Systems",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A school runs a fleet of inexpensive laptops that boot straight into a browser-based environment with automatic updates and very little local storage. Which operating system is this?",
+      "options": [
+        "ChromeOS",
+        "Windows Server",
+        "macOS",
+        "iOS"
+      ],
+      "answer": 0,
+      "explanation": "ChromeOS is Google's lightweight operating system built around the Chrome browser and web applications, with data kept in cloud accounts, verified boot and automatic updates. It is popular in education because devices are cheap, easy to manage centrally and reset quickly. Windows Server is a data centre operating system, macOS runs on Apple laptops and desktops, and iOS is the operating system on iPhones.",
+      "distractor_analysis": {
+        "1": "Windows Server is for servers, not classroom laptops.",
+        "2": "macOS runs only on Apple hardware, which is not inexpensive.",
+        "3": "iOS is a phone operating system."
+      },
+      "video_reference": {
+        "title": "Operating Systems Overview - CompTIA A+ 220-1202 - 1.1",
+        "url": "https://www.youtube.com/watch?v=IhcZqUs1IF8",
+        "duration": "12:59",
+        "objective": "1.1"
+      },
+      "notes_reference": "17_Support_Procedures_Professionalism_OS_Types.md",
+      "tags": ["operating-systems", "chromeos", "education"]
+    }
+  ]
+}

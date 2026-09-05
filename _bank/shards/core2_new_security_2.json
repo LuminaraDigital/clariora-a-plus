@@ -1,0 +1,244 @@
+{
+  "questions": [
+    {
+      "id": "C2N-S2-001",
+      "exam": "core2",
+      "domain": "2.0 Security",
+      "objective": "2.11",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user wants to install a browser extension that promises free coupons. It requests permission to read and change all data on every website. What should the technician advise?",
+      "options": [
+        "Decline it, because that permission lets the extension read passwords and banking pages, and obtain extensions only from the official store with minimal permissions",
+        "Install it because extensions are always safe",
+        "Install it but only use it for shopping sites",
+        "Install it and disable the antivirus to avoid conflicts"
+      ],
+      "answer": 0,
+      "explanation": "Browser extensions run inside the browser with whatever permissions they are granted. An extension allowed to read and change data on all sites can capture credentials, inject advertisements and redirect traffic, and coupon and download-helper extensions are a common vehicle for this. Extensions should come from the official store, be from a trusted publisher, request only the permissions they need and be reviewed periodically. Turning off security software compounds the risk.",
+      "distractor_analysis": {
+        "1": "Extensions are software and can be malicious.",
+        "2": "The permission applies to every site regardless of how it is used.",
+        "3": "Disabling antivirus removes a layer of protection for no reason."
+      },
+      "video_reference": {
+        "title": "Browser Security - CompTIA A+ 220-1202 - 2.11",
+        "url": "https://www.youtube.com/watch?v=aIcO1ZMj92U",
+        "duration": "18:56",
+        "objective": "2.11"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": ["security", "browser", "extensions", "permissions"]
+    },
+    {
+      "id": "C2N-S2-002",
+      "exam": "core2",
+      "domain": "2.0 Security",
+      "objective": "2.11",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user is about to enter card details on a shopping website. Which browser indicator confirms the connection to the site is encrypted?",
+      "options": [
+        "A padlock icon and an address beginning with https, with a valid certificate for the site's domain",
+        "A colourful logo on the page",
+        "The presence of a shopping cart",
+        "A message on the page saying it is secure"
+      ],
+      "answer": 0,
+      "explanation": "The padlock and the https prefix mean the browser has verified the site's certificate and is encrypting the session, so card details cannot be read in transit. Clicking the padlock shows the certificate and the organisation it was issued to, which should match the shop. Anything the page itself displays, including logos and text claiming security, is under the site owner's control and proves nothing. The user should also confirm the domain is the genuine retailer, not a look-alike.",
+      "distractor_analysis": {
+        "1": "Logos are just images on the page.",
+        "2": "A cart is a feature, not a security indicator.",
+        "3": "Text on the page can say anything."
+      },
+      "video_reference": {
+        "title": "Browser Security - CompTIA A+ 220-1202 - 2.11",
+        "url": "https://www.youtube.com/watch?v=aIcO1ZMj92U",
+        "duration": "18:56",
+        "objective": "2.11"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": ["security", "browser", "https", "certificate"]
+    },
+    {
+      "id": "C2N-S2-003",
+      "exam": "core2",
+      "domain": "2.0 Security",
+      "objective": "2.11",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A shared kiosk PC in a library must not retain any browsing history, cookies or saved passwords between users. Which browser feature or setting supports this?",
+      "options": [
+        "Private or incognito browsing, or a policy that clears browsing data on exit and disables password saving",
+        "Enabling the bookmarks bar",
+        "Setting a colourful theme",
+        "Increasing the default zoom"
+      ],
+      "answer": 0,
+      "explanation": "Private browsing discards history, cookies and site data when the window closes, and browsers can be configured by policy to clear data on exit, block password saving and disable autofill. Together these stop one library user finding the previous user's accounts still signed in. Kiosk software often enforces this automatically. Appearance and layout settings have no effect on what the browser stores.",
+      "distractor_analysis": {
+        "1": "Bookmarks bar visibility does not affect stored data.",
+        "2": "Themes are cosmetic.",
+        "3": "Zoom changes display size only."
+      },
+      "video_reference": {
+        "title": "Browser Security - CompTIA A+ 220-1202 - 2.11",
+        "url": "https://www.youtube.com/watch?v=aIcO1ZMj92U",
+        "duration": "18:56",
+        "objective": "2.11"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": ["security", "browser", "private-browsing", "kiosk"]
+    },
+    {
+      "id": "C2N-S2-004",
+      "exam": "core2",
+      "domain": "2.0 Security",
+      "objective": "2.11",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user complains that a website they visit daily keeps showing a pop-up that they cannot close, and the browser warns that the site is trying to open new windows. Which browser feature is protecting the user and what else should be done?",
+      "options": [
+        "The pop-up blocker; the user should keep it enabled and the site should be checked for compromise or reported rather than allowed",
+        "The download manager; the user should download the pop-up",
+        "The bookmark manager; the user should bookmark the pop-up",
+        "The print dialog; the user should print the page"
+      ],
+      "answer": 0,
+      "explanation": "Browsers block scripted pop-up windows by default because they are used for advertising, scams and drive-by downloads. A legitimate site that suddenly generates aggressive pop-ups may itself be compromised or serving malicious advertisements. The user should not add it to the allow list, should close the tab using the tab control or Task Manager if necessary, and the technician can scan the PC and report the site. Downloading, bookmarking or printing a pop-up is nonsensical.",
+      "distractor_analysis": {
+        "1": "Downloading content from a suspicious pop-up is how malware arrives.",
+        "2": "Bookmarking a pop-up serves no purpose.",
+        "3": "Printing does not address the security issue."
+      },
+      "video_reference": {
+        "title": "Browser Security - CompTIA A+ 220-1202 - 2.11",
+        "url": "https://www.youtube.com/watch?v=aIcO1ZMj92U",
+        "duration": "18:56",
+        "objective": "2.11"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": ["security", "browser", "pop-up-blocker"]
+    },
+    {
+      "id": "C2N-S2-005",
+      "exam": "core2",
+      "domain": "2.0 Security",
+      "objective": "2.8",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A company allows staff to use personal phones for email. Which control ensures a lost phone does not expose company mail even if the finder guesses the phone is unlocked?",
+      "options": [
+        "Requiring a screen lock with a short timeout and device encryption, enforced by MDM, with the ability to wipe the corporate data remotely",
+        "Asking staff to be careful",
+        "Printing the emails instead",
+        "Using a shorter email signature"
+      ],
+      "answer": 0,
+      "explanation": "Mobile security for business data rests on a few enforced controls: a screen lock with a short auto-lock so the phone is rarely found unlocked, full device encryption so the storage cannot be read directly, and a management platform that can remove the corporate container or the whole device remotely. Policies that depend on user diligence alone fail, and the other options do not address the risk at all.",
+      "distractor_analysis": {
+        "1": "Good intentions are not a security control.",
+        "2": "Paper is harder to protect and does not remove the phone risk.",
+        "3": "Signatures are irrelevant to data protection."
+      },
+      "video_reference": {
+        "title": "Mobile Device Security - CompTIA A+ 220-1202 - 2.8",
+        "url": "https://www.youtube.com/watch?v=WNWFV4r_6Wk",
+        "duration": "10:28",
+        "objective": "2.8"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["security", "mobile", "screen-lock", "encryption", "mdm"]
+    },
+    {
+      "id": "C2N-S2-006",
+      "exam": "core2",
+      "domain": "2.0 Security",
+      "objective": "2.8",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A phone's settings offer a feature that erases the device after ten failed unlock attempts. What is the trade-off a technician should explain before enabling it?",
+      "options": [
+        "It defeats brute-force guessing of the passcode but risks accidental erasure, so a current backup is essential",
+        "It makes the phone charge faster",
+        "It disables the camera",
+        "It has no downside of any kind"
+      ],
+      "answer": 0,
+      "explanation": "The failed-attempts wipe stops an attacker cycling through passcodes, and combined with encryption it renders a stolen phone worthless. The cost is that a child pressing buttons or a phone bouncing in a bag can trigger it. With a verified cloud or computer backup, the erased device is restored in an hour and the protection is well worth it; without a backup the setting is dangerous. It has nothing to do with charging or the camera.",
+      "distractor_analysis": {
+        "1": "The setting is unrelated to charging.",
+        "2": "The camera is unaffected.",
+        "3": "Accidental erasure is a real downside."
+      },
+      "video_reference": {
+        "title": "Mobile Device Security - CompTIA A+ 220-1202 - 2.8",
+        "url": "https://www.youtube.com/watch?v=WNWFV4r_6Wk",
+        "duration": "10:28",
+        "objective": "2.8"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["security", "mobile", "failed-attempts", "wipe", "backup"]
+    },
+    {
+      "id": "C2N-S2-007",
+      "exam": "core2",
+      "domain": "2.0 Security",
+      "objective": "2.10",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A small business has just installed a new wireless router. Which first step most improves its security?",
+      "options": [
+        "Change the default administrator password and update the router firmware",
+        "Place the router near a window",
+        "Leave the default password so staff can remember it",
+        "Turn off the router's LEDs"
+      ],
+      "answer": 0,
+      "explanation": "Default credentials for every router model are published online, so any device left with them can be taken over from the LAN or, if remote management is on, from the internet. Setting a strong unique administrator password and applying the latest firmware, which fixes known vulnerabilities, are the first two actions on any new router. After that, WPA3 or WPA2 with a strong passphrase, a separate guest network and disabling remote administration complete the basic hardening.",
+      "distractor_analysis": {
+        "1": "Window placement affects coverage, not security.",
+        "2": "Default passwords are the single most common router compromise.",
+        "3": "LEDs have no security relevance."
+      },
+      "video_reference": {
+        "title": "Securing a SOHO Network - CompTIA A+ 220-1202 - 2.10",
+        "url": "https://www.youtube.com/watch?v=pq_CKhYYYVQ",
+        "duration": "15:03",
+        "objective": "2.10"
+      },
+      "notes_reference": "27_Wireless_Security_SOHO_Router_Hardening.md",
+      "tags": ["security", "soho", "router", "default-password", "firmware"]
+    },
+    {
+      "id": "C2N-S2-008",
+      "exam": "core2",
+      "domain": "2.0 Security",
+      "objective": "2.10",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A cafe wants customers to have Wi-Fi without any access to the till system and office PCs on the same router. Which router feature achieves this?",
+      "options": [
+        "A guest network that is isolated from the main LAN",
+        "Increasing the Wi-Fi transmit power",
+        "Changing the network name to something friendly",
+        "Disabling encryption for the customers"
+      ],
+      "answer": 0,
+      "explanation": "Most small-business routers offer a guest network: a separate wireless name with its own passphrase whose clients are placed on an isolated segment that can reach the internet but not the devices on the main network. It is the simplest way to share connectivity with visitors while protecting point-of-sale and office systems. Power, naming and removing encryption do nothing to separate customer traffic from the business network.",
+      "distractor_analysis": {
+        "1": "More power extends reach for everyone, including attackers.",
+        "2": "A friendly name is cosmetic.",
+        "3": "Open networks expose customers to eavesdropping and do not isolate them."
+      },
+      "video_reference": {
+        "title": "Securing a SOHO Network - CompTIA A+ 220-1202 - 2.10",
+        "url": "https://www.youtube.com/watch?v=pq_CKhYYYVQ",
+        "duration": "15:03",
+        "objective": "2.10"
+      },
+      "notes_reference": "27_Wireless_Security_SOHO_Router_Hardening.md",
+      "tags": ["security", "soho", "guest-network", "isolation"]
+    }
+  ]
+}

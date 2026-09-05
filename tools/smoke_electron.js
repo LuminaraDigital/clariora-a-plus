@@ -97,6 +97,25 @@ async function connect(target) {
   return { ws, send, evalJs, consoleErrors, exceptions };
 }
 
+/**
+ * The intro's once-only key is versioned inside boot-intro.js and is bumped
+ * by the intro's own workstream. Read it from the packaged copy next to the
+ * exe so this test never pins a stale key.
+ */
+function introSeenKey() {
+  const candidates = [
+    path.join(path.dirname(EXE), 'resources', 'app', 'js', 'boot-intro.js'),
+    path.join(ROOT, 'js', 'boot-intro.js')
+  ];
+  for (const file of candidates) {
+    try {
+      const m = fs.readFileSync(file, 'utf8').match(/SEEN_KEY\s*=\s*'([^']+)'/);
+      if (m) return m[1];
+    } catch (_) {}
+  }
+  return 'aplus3_boot_intro_seen_v2';
+}
+
 function findDatabaseFile() {
   // Electron puts userData under <user-data-dir>/<productName> when the dir is given.
   const roots = [USER_DATA];
@@ -159,7 +178,7 @@ async function firstRun() {
 
     // Dismiss the intro so the exam functions are reachable, then run one short exam.
     await cdp.evalJs(
-      '(function(){ try{ localStorage.setItem("aplus3_boot_intro_seen_v1","1"); }catch(e){}'
+      '(function(){ try{ localStorage.setItem(' + JSON.stringify(introSeenKey()) + ',"1"); }catch(e){}'
       + ' document.documentElement.classList.remove("boot-intro-active");'
       + ' var i=document.getElementById("aplusBootIntro"); if(i&&i.parentNode) i.parentNode.removeChild(i);'
       + ' return 1; })()'
@@ -194,10 +213,26 @@ async function firstRun() {
     await sleep(1500);
     return { fatal: false };
   } finally {
+    // Close the window the way a learner would. On Windows the last window
+    // closing quits the app, which lets Chromium commit localStorage and the
+    // learner database to disk. A forced kill can lose the last few seconds
+    // of writes and would make the relaunch check fail for the wrong reason.
+    if (cdp && cdp.evalJs) {
+      try { await cdp.evalJs('setTimeout(function(){ window.close(); }, 50); 1'); } catch (_) {}
+    }
     if (cdp && cdp.ws) { try { cdp.ws.close(); } catch (_) {} }
+    await waitForExit(child, 8000);
     killTree(child);
-    await sleep(2500);
+    await sleep(1500);
   }
+}
+
+function waitForExit(child, timeoutMs) {
+  return new Promise((resolve) => {
+    if (!child || child.exitCode !== null) return resolve();
+    const t = setTimeout(resolve, timeoutMs);
+    child.once('exit', () => { clearTimeout(t); resolve(); });
+  });
 }
 
 function checkDatabase() {

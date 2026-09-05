@@ -26,7 +26,7 @@ DEFAULT_SHARDS = os.path.join(ROOT, "_bank", "shards")
 DEFAULT_STUDY = os.path.join(ROOT, "_bank", "study")
 DEFAULT_OUT = os.path.join(ROOT, "CompTIA_A_Plus_Desktop_App", "resources", "app")
 
-VERSION = "3.0.0"
+VERSION = "3.1.0"
 BLUEPRINT = {
     "core1": {
         "1.0 Mobile Devices": 13,
@@ -187,7 +187,7 @@ def main():
     bank = {
         "version": VERSION,
         "title": "CompTIA A+ (220-1201 Core 1 & 220-1202 Core 2) Master Question Bank",
-        "description": "Enterprise-grade v15-aligned question bank with single, multi-select, matching, and ordering items. Scaled 100-900 scoring.",
+        "description": "Blueprint-aligned question bank with single, multi-select, matching, and ordering items. Scaled 100-900 scoring.",
         "passing_score_core1": 675,
         "passing_score_core2": 700,
         "max_time_minutes": 90,

@@ -744,7 +744,39 @@
       `;
     }
 
+    /**
+     * Compact copy of the mission on the home screen. The coach is the most
+     * targeted thing in the app, so it must not live only at the bottom of
+     * the More drawer. Hidden until a mission exists.
+     */
+    function renderHomeMission(mission) {
+      const mount = document.getElementById('homeMissionMount');
+      if (!mount) return;
+      if (!mission) { mount.hidden = true; return; }
+      const objective = mission.primaryObjective ? `Objective ${escapeHTML(String(mission.primaryObjective))}` : '';
+      const video = (mission.pinVideo && mission.pinVideo.url)
+        ? `<a class="home-mission-link" href="${escapeHTML(mission.pinVideo.url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(mission.pinVideo.title || 'Lesson video')}${mission.pinVideo.duration ? ' (' + escapeHTML(mission.pinVideo.duration) + ')' : ''}</a>`
+        : '';
+      mount.innerHTML = `
+        <div class="home-mission-copy">
+          <div class="label">Coach mission</div>
+          <h4 class="home-mission-title">${escapeHTML(mission.title)}</h4>
+          <p class="home-mission-summary">${escapeHTML(mission.summary)}</p>
+          <div class="home-mission-meta">
+            ${objective ? `<span>${objective}</span>` : ''}
+            <span>${escapeHTML(String(mission.size))} questions</span>
+            <span>${escapeHTML(String(mission.timeMinutes))} min</span>
+            ${video}
+          </div>
+        </div>
+        <div class="home-mission-actions">
+          <button type="button" class="btn btn-secondary" onclick="startGhostCoachMission()">Start mission</button>
+        </div>`;
+      mount.hidden = false;
+    }
+
     function renderMissionUi(mission, state) {
+      renderHomeMission(mission);
       const banner = document.getElementById('ghostCoachMission');
       if (!banner || !mission) return;
 

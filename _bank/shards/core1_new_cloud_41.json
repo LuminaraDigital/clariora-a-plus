@@ -1,0 +1,1195 @@
+{
+  "questions": [
+    {
+      "id": "C1N-C-001",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "A developer wants to run Linux inside a window on a Windows laptop for testing, without rebooting. Which software makes this possible?",
+      "options": [
+        "A hypervisor that runs a virtual machine",
+        "A disk defragmenter",
+        "A firewall",
+        "A driver update utility"
+      ],
+      "answer": 0,
+      "explanation": "A hypervisor creates virtual machines, each of which behaves like a separate computer with its own virtual processor, memory, disk and network adapter, and can run a different operating system from the host. On a laptop this is a Type 2 hypervisor such as VirtualBox, VMware Workstation or Hyper-V running on top of the host operating system, so the developer works in Windows and Linux at the same time. None of the other tools create an isolated operating environment.",
+      "distractor_analysis": {
+        "1": "Defragmentation reorganises files on disk.",
+        "2": "A firewall filters network traffic.",
+        "3": "Driver utilities update hardware drivers."
+      },
+      "video_reference": {
+        "title": "Virtualization Concepts - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=xXOIdDWUNGU",
+        "duration": "5:45",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "hypervisor", "virtual-machine"]
+    },
+    {
+      "id": "C1N-C-002",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "Which description matches a Type 2 hypervisor?",
+      "options": [
+        "An application installed on a host operating system that runs virtual machines",
+        "Firmware that boots before any operating system and manages hardware",
+        "Software that installs directly on server hardware with no host operating system",
+        "A container runtime that shares the host kernel"
+      ],
+      "answer": 0,
+      "explanation": "A Type 2, or hosted, hypervisor is an ordinary program on Windows, macOS or Linux. It asks the host operating system for memory, disk and network access and presents them to the guest as virtual hardware. Because it depends on the host it carries some overhead, but it is convenient for desktops and labs. A Type 1 hypervisor runs on bare metal without a host operating system, and containers are a different isolation technique that does not virtualise hardware at all.",
+      "distractor_analysis": {
+        "1": "Firmware describes UEFI or BIOS, not a hypervisor.",
+        "2": "Bare-metal installation defines a Type 1 hypervisor.",
+        "3": "Containers share the kernel and are not hypervisors."
+      },
+      "video_reference": {
+        "title": "Virtualization Concepts - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=xXOIdDWUNGU",
+        "duration": "5:45",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "hypervisor", "type-2"]
+    },
+    {
+      "id": "C1N-C-003",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A technician installs a hypervisor on a laptop but virtual machines refuse to start, reporting that hardware-assisted virtualization is unavailable. The processor supports it. What should the technician do?",
+      "options": [
+        "Enable the virtualization extension (Intel VT-x or AMD-V) in the firmware setup",
+        "Install more memory",
+        "Replace the processor",
+        "Format the hard drive"
+      ],
+      "answer": 0,
+      "explanation": "Modern hypervisors rely on processor extensions that let guests run most instructions directly on the hardware. Many systems ship with the feature switched off in firmware, so the hypervisor reports that the capability is missing even though the CPU has it. Rebooting into setup, enabling Intel VT-x or AMD-V (and often the related I/O virtualization option), and saving fixes the error. Memory, the processor itself and the disk are not the problem.",
+      "distractor_analysis": {
+        "1": "Insufficient memory produces a different error about allocation.",
+        "2": "The processor already supports the feature.",
+        "3": "Disk state has no bearing on CPU extensions."
+      },
+      "video_reference": {
+        "title": "Virtualization Concepts - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=xXOIdDWUNGU",
+        "duration": "5:45",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "vt-x", "amd-v", "firmware"]
+    },
+    {
+      "id": "C1N-C-004",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A workstation with 16 GB of RAM runs two virtual machines each assigned 8 GB. The host becomes unusable when both are running. What is the cause?",
+      "options": [
+        "The virtual machines consume all physical memory, leaving the host operating system starved",
+        "The virtual machines are sharing the same virtual disk",
+        "The network adapters are misconfigured",
+        "The processor lacks enough cores"
+      ],
+      "answer": 0,
+      "explanation": "Memory assigned to a running virtual machine is reserved from the host's physical RAM. Two guests at 8 GB each take the entire 16 GB, so the host operating system and the hypervisor itself are forced to swap to disk and everything grinds to a halt. The resource requirement for a virtualization host is the sum of every running guest's memory plus headroom for the host, so the fix is fewer or smaller guests or more RAM. Disks, network and cores would produce different symptoms.",
+      "distractor_analysis": {
+        "1": "Sharing a disk file is usually prevented by the hypervisor and would not stall the host.",
+        "2": "Network errors would affect connectivity, not overall responsiveness.",
+        "3": "Too few cores slows guests but does not exhaust host memory."
+      },
+      "video_reference": {
+        "title": "Virtualization Concepts - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=xXOIdDWUNGU",
+        "duration": "5:45",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "resource-requirements", "memory"]
+    },
+    {
+      "id": "C1N-C-005",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A support team needs to test a suspicious email attachment. Which use of virtualization is most appropriate?",
+      "options": [
+        "Open the attachment inside an isolated sandbox virtual machine with no access to the production network",
+        "Open the attachment on the help desk technician's own workstation",
+        "Forward the attachment to every user for a second opinion",
+        "Open the attachment on the file server"
+      ],
+      "answer": 0,
+      "explanation": "A sandbox is a disposable, isolated virtual machine used to observe what software does without risking real systems. The guest should have no connection to the corporate network, and once the test is done the machine is reverted to a clean snapshot or deleted, taking any malware with it. This is one of the classic reasons to use virtualization in support and security work. Every other option exposes real machines or more people to the potential threat.",
+      "distractor_analysis": {
+        "1": "Running unknown code on a real workstation risks infection.",
+        "2": "Spreading a suspicious file multiplies the risk.",
+        "3": "The file server is one of the worst possible places to run unknown code."
+      },
+      "video_reference": {
+        "title": "Virtualization Concepts - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=xXOIdDWUNGU",
+        "duration": "5:45",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "sandbox", "security", "testing"]
+    },
+    {
+      "id": "C1N-C-006",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A company still needs a program that only runs on an operating system no longer supported by the vendor. What is the safest way to keep using it?",
+      "options": [
+        "Run the legacy operating system in a virtual machine isolated from the network",
+        "Install the legacy operating system on every new laptop",
+        "Disable antivirus so the old program can run on the current operating system",
+        "Connect the old operating system directly to the internet for updates"
+      ],
+      "answer": 0,
+      "explanation": "Legacy and cross-platform software support is a core virtualization use case. Keeping the unsupported operating system inside a virtual machine confines its security weaknesses, allows snapshots for quick recovery, and lets the host run a modern, patched operating system. Restricting the guest's network access limits exposure. Installing an unsupported system on new hardware often does not even work and broadens the attack surface, and disabling protection or exposing it to the internet is reckless.",
+      "distractor_analysis": {
+        "1": "Old operating systems often lack drivers for new hardware and are insecure.",
+        "2": "Disabling antivirus does not make an incompatible program run and reduces security.",
+        "3": "No updates exist, and internet exposure invites compromise."
+      },
+      "video_reference": {
+        "title": "Virtualization Concepts - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=xXOIdDWUNGU",
+        "duration": "5:45",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "legacy-software", "isolation"]
+    },
+    {
+      "id": "C1N-C-007",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "Before installing a risky software update inside a virtual machine, what should the technician do so the change can be undone in seconds?",
+      "options": [
+        "Take a snapshot of the virtual machine",
+        "Defragment the host disk",
+        "Increase the guest's memory",
+        "Disable the virtual network adapter"
+      ],
+      "answer": 0,
+      "explanation": "A snapshot records the state of the virtual machine's disk and, optionally, its memory at a point in time. If the update misbehaves, reverting to the snapshot returns the guest to exactly how it was, which is far faster than reinstalling. Snapshots are not backups because they live with the virtual machine, and a long chain of them slows the guest, so they should be deleted or merged once the change is confirmed good.",
+      "distractor_analysis": {
+        "1": "Defragmenting the host has no rollback value.",
+        "2": "More memory does not allow undoing changes.",
+        "3": "Disconnecting the network does not preserve state."
+      },
+      "video_reference": {
+        "title": "Virtualization Concepts - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=xXOIdDWUNGU",
+        "duration": "5:45",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "snapshot", "rollback"]
+    },
+    {
+      "id": "C1N-C-008",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A virtual machine needs to be reachable from other computers on the office network as if it were a physical machine with its own address. Which virtual network mode should be used?",
+      "options": [
+        "Bridged networking",
+        "NAT networking",
+        "Host-only networking",
+        "Internal networking"
+      ],
+      "answer": 0,
+      "explanation": "In bridged mode the virtual machine's network adapter is connected directly to the host's physical network, so the guest obtains its own address from the office DHCP server and other machines can reach it directly. NAT hides the guest behind the host's address and blocks inbound connections by default, host-only creates a private network between the host and its guests, and internal networking connects guests only to each other.",
+      "distractor_analysis": {
+        "1": "NAT shares the host's address and needs port forwarding for inbound access.",
+        "2": "Host-only guests are reachable only from the host.",
+        "3": "Internal networks isolate guests from the physical network entirely."
+      },
+      "video_reference": {
+        "title": "Virtualization Services - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=wPB_C7hOY-8",
+        "duration": "11:23",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "networking", "bridged"]
+    },
+    {
+      "id": "C1N-C-009",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A technician wants a virtual machine to browse the internet but does not want it to be visible to any other device on the office network. Which network mode fits?",
+      "options": [
+        "NAT networking",
+        "Bridged networking",
+        "No network adapter",
+        "Promiscuous bridged networking"
+      ],
+      "answer": 0,
+      "explanation": "NAT mode places the guest on a private network inside the hypervisor and translates its traffic through the host's own address, exactly as a home router does. The guest can reach the internet and the office, but nothing on the office network can initiate a connection to it, so it stays effectively invisible. Bridged mode would give the guest a visible address, no adapter blocks browsing entirely, and promiscuous settings increase visibility rather than reduce it.",
+      "distractor_analysis": {
+        "1": "Bridged mode exposes the guest on the network.",
+        "2": "With no adapter the guest cannot browse at all.",
+        "3": "Promiscuous mode lets the adapter see more traffic; it is the opposite of hiding."
+      },
+      "video_reference": {
+        "title": "Virtualization Services - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=wPB_C7hOY-8",
+        "duration": "11:23",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "networking", "nat"]
+    },
+    {
+      "id": "C1N-C-010",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A hypervisor host with a single physical network port runs ten virtual machines, and they all communicate with each other and the outside world. Which virtual component makes this possible?",
+      "options": [
+        "A virtual switch inside the hypervisor",
+        "A physical network card in each virtual machine",
+        "A separate cable for each virtual machine",
+        "A modem"
+      ],
+      "answer": 0,
+      "explanation": "The hypervisor contains a software switch. Each virtual machine's virtual network adapter plugs into a port on that switch, traffic between guests never leaves the host, and one uplink to the physical adapter carries everything to and from the real network. Virtual switches also support VLAN tagging and multiple isolated networks. Virtual machines have no physical cards or cables of their own, and a modem is a WAN device.",
+      "distractor_analysis": {
+        "1": "Virtual machines have virtual, not physical, adapters.",
+        "2": "There is no cabling inside a hypervisor.",
+        "3": "A modem connects to an internet service provider, not guests to each other."
+      },
+      "video_reference": {
+        "title": "Virtualization Services - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=wPB_C7hOY-8",
+        "duration": "11:23",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "virtual-switch", "networking"]
+    },
+    {
+      "id": "C1N-C-011",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A developer creates a virtual machine with a 200 GB virtual disk, but the file on the host is only 12 GB. Why?",
+      "options": [
+        "The disk is thin provisioned and grows only as the guest writes data",
+        "The hypervisor compressed the guest's operating system",
+        "The guest is using the host's disk directly",
+        "The virtual disk is corrupt"
+      ],
+      "answer": 0,
+      "explanation": "A dynamically expanding, or thin provisioned, virtual disk presents its full size to the guest but allocates space on the host only as blocks are written, so a fresh installation occupies a fraction of its nominal capacity. Thick provisioning allocates all 200 GB up front and performs slightly better. The support implication is that several thin disks can together promise more space than the host actually has, so free space on the host must be monitored.",
+      "distractor_analysis": {
+        "1": "Compression is not the mechanism; unwritten space is simply not allocated.",
+        "2": "The guest uses a virtual disk file, not the host disk directly.",
+        "3": "A smaller-than-nominal file is normal for a thin disk, not a sign of damage."
+      },
+      "video_reference": {
+        "title": "Virtualization Services - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=wPB_C7hOY-8",
+        "duration": "11:23",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "virtual-disk", "thin-provisioning"]
+    },
+    {
+      "id": "C1N-C-012",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A technician is asked how a virtual machine differs from a container. Which statement is accurate?",
+      "options": [
+        "A virtual machine includes its own full operating system, while a container shares the host kernel and packages only the application and its dependencies",
+        "A container needs a hypervisor and a virtual machine does not",
+        "Containers can only run Windows applications",
+        "Virtual machines start faster than containers"
+      ],
+      "answer": 0,
+      "explanation": "Virtualization emulates hardware, so every virtual machine boots a complete operating system and carries that overhead. Containers isolate processes on a shared kernel using features such as namespaces, so they are much lighter, start in seconds and pack densely, but every container on a host must be compatible with that kernel. Both approaches are common and often combined, with containers running inside virtual machines in cloud environments.",
+      "distractor_analysis": {
+        "1": "It is the virtual machine that relies on a hypervisor.",
+        "2": "Containers originated on Linux and run on several platforms.",
+        "3": "Containers start far faster because no operating system boots."
+      },
+      "video_reference": {
+        "title": "Virtualization Concepts - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=xXOIdDWUNGU",
+        "duration": "5:45",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "containers", "comparison"]
+    },
+    {
+      "id": "C1N-C-013",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A virtual machine's mouse pointer is sluggish, its screen resolution is stuck at a low setting and copy and paste to the host does not work. What should the technician install?",
+      "options": [
+        "The hypervisor's guest additions or integration tools inside the virtual machine",
+        "A new graphics card in the host",
+        "A second virtual processor",
+        "A different antivirus product"
+      ],
+      "answer": 0,
+      "explanation": "Hypervisors provide a package of drivers and services for the guest, called guest additions, VMware Tools, integration services or similar. It supplies an optimised display driver with dynamic resolution, a paravirtualised mouse, clipboard sharing, drag and drop, shared folders and time synchronisation. Installing it is a routine step after building any virtual machine, and its absence produces exactly these symptoms. Hardware and antivirus changes do not address them.",
+      "distractor_analysis": {
+        "1": "The host graphics card is not the limit; the guest lacks a proper display driver.",
+        "2": "More CPU does not add clipboard or display features.",
+        "3": "Antivirus is unrelated to integration features."
+      },
+      "video_reference": {
+        "title": "Virtualization Services - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=wPB_C7hOY-8",
+        "duration": "11:23",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "guest-additions", "integration"]
+    },
+    {
+      "id": "C1N-C-014",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "An organisation wants to run a dozen servers on two physical machines to cut hardware, power and cooling costs. Which virtualization approach is designed for this?",
+      "options": [
+        "A Type 1 bare-metal hypervisor on each physical server",
+        "A Type 2 hypervisor on a technician's laptop",
+        "Running every service on one operating system without virtualization",
+        "A web browser sandbox"
+      ],
+      "answer": 0,
+      "explanation": "Server consolidation is the original business case for virtualization. A bare-metal hypervisor such as VMware ESXi, Hyper-V Server or KVM runs directly on the hardware with minimal overhead and hosts many isolated virtual servers, each with its own operating system, on a single physical machine. Two hosts also allow guests to be moved or restarted on the other host during maintenance. A laptop hypervisor is for desktops, and piling services onto one operating system loses isolation.",
+      "distractor_analysis": {
+        "1": "Type 2 hypervisors depend on a desktop host and are unsuitable for production servers.",
+        "2": "Without virtualization the services share one operating system and one failure domain.",
+        "3": "Browser sandboxes isolate web content, not servers."
+      },
+      "video_reference": {
+        "title": "Virtualization Concepts - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=xXOIdDWUNGU",
+        "duration": "5:45",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "type-1", "server-consolidation"]
+    },
+    {
+      "id": "C1N-C-015",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "A security team is concerned about running a customer-facing web server as a virtual machine on the same host as an internal finance database. Which virtualization-specific risk are they describing?",
+      "options": [
+        "A guest escape or hypervisor vulnerability that lets one virtual machine affect another on the same host",
+        "Virtual machines cannot be patched",
+        "Virtual machines cannot run antivirus software",
+        "A virtual machine's password is always shared with the host"
+      ],
+      "answer": 0,
+      "explanation": "Virtual machines on one host share the hypervisor, physical processor and memory. A flaw in that shared layer, or a side-channel attack on the hardware, could let a compromised guest read or influence another guest, which is called a virtual machine escape. Good practice separates workloads of different sensitivity onto different hosts or clusters, keeps the hypervisor patched, and isolates their networks. Guests can be patched and protected like any machine, and credentials are not shared with the host.",
+      "distractor_analysis": {
+        "1": "Guests receive updates exactly like physical machines.",
+        "2": "Endpoint protection runs normally inside virtual machines.",
+        "3": "Guest and host accounts are entirely separate."
+      },
+      "video_reference": {
+        "title": "Virtualization Concepts - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=xXOIdDWUNGU",
+        "duration": "5:45",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "security", "vm-escape"]
+    },
+    {
+      "id": "C1N-C-016",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A finance user needs to open a legacy application that behaves badly on the corporate build. The support team prefers not to touch the user's laptop at all. Which approach uses virtualization to solve this?",
+      "options": [
+        "Application virtualization, streaming the app to the user in an isolated package or from a remote session host",
+        "Installing the app on the user's laptop with administrator rights",
+        "Replacing the laptop with a desktop",
+        "Emailing the installer to the user"
+      ],
+      "answer": 0,
+      "explanation": "Application virtualization packages an application with its own registry and file system view so it runs without installing into the operating system, or publishes it from a server so only screen updates reach the endpoint. Either way the corporate build stays untouched and the app can be updated centrally. Installing locally is what the team wants to avoid, a desktop changes nothing about compatibility, and emailing an installer is unmanaged.",
+      "distractor_analysis": {
+        "1": "A local install is exactly the change the team wishes to avoid.",
+        "2": "The hardware form factor is irrelevant to application compatibility.",
+        "3": "Unmanaged installs create inconsistency and support load."
+      },
+      "video_reference": {
+        "title": "Virtualization Services - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=wPB_C7hOY-8",
+        "duration": "11:23",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "application-virtualization", "compatibility"]
+    },
+    {
+      "id": "C1N-C-017",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A hypervisor host has one processor with eight cores. How many virtual CPUs can be assigned across its virtual machines in total?",
+      "options": [
+        "More than eight, because virtual CPUs are scheduled onto physical cores as needed",
+        "Exactly eight, one per core",
+        "Only one, because a hypervisor supports one virtual CPU",
+        "Sixteen, because each core must be split exactly in two"
+      ],
+      "answer": 0,
+      "explanation": "Virtual processors are time-sliced onto the physical cores by the hypervisor scheduler, so the total assigned can exceed the physical count, a practice called overcommitting. It works because guests rarely use all their CPU at once. Overcommit too far and guests queue for cores and slow down, so the ratio is a tuning decision. Neither a hard one-to-one limit nor a fixed two-to-one split is how scheduling works.",
+      "distractor_analysis": {
+        "1": "One-to-one is a conservative choice, not a hard limit.",
+        "2": "Hypervisors support many virtual CPUs.",
+        "3": "There is no fixed doubling rule; the ratio is configurable."
+      },
+      "video_reference": {
+        "title": "Virtualization Concepts - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=xXOIdDWUNGU",
+        "duration": "5:45",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "vcpu", "overcommit", "resource-requirements"]
+    },
+    {
+      "id": "C1N-C-018",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A technician builds a virtual machine to test an operating system installer downloaded as an ISO file. How is the ISO used?",
+      "options": [
+        "It is attached to the virtual machine's virtual optical drive so the guest boots from it",
+        "It is copied into the host's Program Files folder",
+        "It is burned to a physical disc and inserted into the host",
+        "It is installed as a driver on the host"
+      ],
+      "answer": 0,
+      "explanation": "An ISO is a disc image, and hypervisors let you mount it directly on a virtual optical drive. The guest sees a bootable disc, installs from it, and the file can be detached afterwards. No physical media is needed, which is one of the conveniences of virtualization for testing many operating systems quickly. The other options misunderstand what an image file is for.",
+      "distractor_analysis": {
+        "1": "Program Files holds installed software, not disc images.",
+        "2": "Physical media is unnecessary; the image mounts virtually.",
+        "3": "An ISO is not a driver."
+      },
+      "video_reference": {
+        "title": "Virtualization Services - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=wPB_C7hOY-8",
+        "duration": "11:23",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "iso", "installation"]
+    },
+    {
+      "id": "C1N-C-019",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A virtual machine running a database is slow, and the host shows heavy disk activity from many guests sharing one spinning hard drive. Which change addresses the bottleneck most directly?",
+      "options": [
+        "Move the virtual disks to solid-state storage or spread them across more drives",
+        "Assign the guest more virtual CPUs",
+        "Change the guest's network adapter to bridged mode",
+        "Increase the guest's screen resolution"
+      ],
+      "answer": 0,
+      "explanation": "Many guests hitting one mechanical disk create random I/O that a spinning drive handles poorly, and every guest waits. Storage is very often the limiting resource on a virtualization host, so moving the virtual disk files to SSD or NVMe storage, or separating guests across several drives, removes the queue. Extra processors do not speed up a disk-bound workload, and network mode and display settings are unrelated.",
+      "distractor_analysis": {
+        "1": "CPU is not the constraint when the host shows disk saturation.",
+        "2": "Network mode does not change disk throughput.",
+        "3": "Display resolution is irrelevant to database performance."
+      },
+      "video_reference": {
+        "title": "Virtualization Services - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=wPB_C7hOY-8",
+        "duration": "11:23",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "storage", "performance", "resource-requirements"]
+    },
+    {
+      "id": "C1N-C-020",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A training company needs thirty identical Windows lab environments that can be reset to a clean state after each class. Which virtualization feature makes this efficient?",
+      "options": [
+        "Cloning virtual machines from a master template and reverting to a snapshot after each session",
+        "Reinstalling Windows on thirty laptops each week",
+        "Using a single shared user account on one physical machine",
+        "Disabling updates on the lab machines"
+      ],
+      "answer": 0,
+      "explanation": "Build one virtual machine correctly, convert it to a template, and clone thirty copies in minutes. Taking a snapshot of each clone in its clean state lets the instructor revert every lab in seconds when the class ends. This is the standard model for training rooms, test labs and virtual desktop pools. Reinstalling physical machines is slow, a single shared machine cannot serve a class, and disabling updates solves nothing.",
+      "distractor_analysis": {
+        "1": "Weekly reinstalls are hours of work compared with a snapshot revert.",
+        "2": "One shared machine cannot give thirty students their own environment.",
+        "3": "Update policy is unrelated to resetting environments."
+      },
+      "video_reference": {
+        "title": "Virtualization Services - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=wPB_C7hOY-8",
+        "duration": "11:23",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "cloning", "templates", "snapshot"]
+    },
+    {
+      "id": "C1N-C-021",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user wants to run a macOS-only application on a Windows laptop by installing macOS in a virtual machine. What should the technician explain?",
+      "options": [
+        "Apple's licence permits macOS to run only on Apple hardware, so this is not a supported or licensed configuration",
+        "It is fully supported by Apple on any hardware",
+        "macOS cannot be virtualised at all",
+        "Windows blocks all hypervisors from running other operating systems"
+      ],
+      "answer": 0,
+      "explanation": "Virtualization does not remove licensing obligations. Apple's software licence restricts macOS to Apple-branded hardware, so running it in a virtual machine on a Windows laptop violates the licence even though tools exist to do it, and there is no vendor support. On a Mac, however, macOS may be virtualised in permitted numbers. Technicians should check the licence terms of every guest operating system and application before building a virtual machine.",
+      "distractor_analysis": {
+        "1": "Apple restricts macOS to its own hardware.",
+        "2": "macOS can be virtualised, but only on Apple hardware under the licence.",
+        "3": "Windows hosts run many guest operating systems legally."
+      },
+      "video_reference": {
+        "title": "Virtualization Concepts - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=xXOIdDWUNGU",
+        "duration": "5:45",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "licensing", "macos"]
+    },
+    {
+      "id": "C1N-C-022",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "An IT department is building a virtualization host to run six Windows Server guests. Which resource must be sized as the sum of every guest's requirement plus headroom for the hypervisor?",
+      "options": [
+        "Physical memory",
+        "Screen resolution",
+        "Keyboard layout",
+        "Optical drive speed"
+      ],
+      "answer": 0,
+      "explanation": "Memory is the least shareable resource on a host. Each running guest reserves its allocation, so the host must have the total of all guests plus enough for the hypervisor and any management software, typically several gigabytes. Processor cores can be overcommitted and storage can be thin provisioned, but memory shortfalls cause immediate swapping and instability. Display, keyboard and optical drive settings are irrelevant to capacity planning.",
+      "distractor_analysis": {
+        "1": "Resolution is a per-guest display setting with no bearing on capacity.",
+        "2": "Keyboard layout is a localisation setting.",
+        "3": "Optical drives are virtual and rarely used after installation."
+      },
+      "video_reference": {
+        "title": "Virtualization Concepts - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=xXOIdDWUNGU",
+        "duration": "5:45",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "resource-requirements", "memory", "capacity"]
+    },
+    {
+      "id": "C1N-C-023",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "A virtual machine with an old snapshot has become very slow, and the host is nearly out of disk space even though the guest reports plenty free. What is happening?",
+      "options": [
+        "The snapshot's differencing disk has grown large as changes accumulate, consuming host space and adding read overhead",
+        "The guest's antivirus has filled the host disk",
+        "The virtual switch is logging every packet",
+        "The guest's memory has leaked onto the disk"
+      ],
+      "answer": 0,
+      "explanation": "After a snapshot, every write goes to a separate differencing file while the original disk is frozen. Over weeks that file can grow to the size of the base disk, and reads must be checked against every layer in the chain, which slows the guest. Deleting or merging the snapshot writes the changes back into the base disk, reclaims the space and restores performance. Snapshots are for short-term rollback, not long-term retention.",
+      "distractor_analysis": {
+        "1": "Guest antivirus writes inside the guest's disk, which reports plenty free.",
+        "2": "Virtual switches do not capture packets to disk by default.",
+        "3": "Memory does not leak onto disk; the growth is the snapshot chain."
+      },
+      "video_reference": {
+        "title": "Virtualization Services - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=wPB_C7hOY-8",
+        "duration": "11:23",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "snapshot", "storage", "troubleshooting"]
+    },
+    {
+      "id": "C1N-C-024",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "Which statement describes how a virtual machine's disk is typically stored on the host?",
+      "options": [
+        "As one or more large files such as VHDX, VMDK or QCOW2 that the guest sees as a physical drive",
+        "As millions of individual files mirroring the guest's file system",
+        "On a dedicated physical drive that must be installed for each guest",
+        "In the host's system memory only"
+      ],
+      "answer": 0,
+      "explanation": "A virtual disk is a container file in a hypervisor-specific format. The guest formats and partitions it exactly like a physical drive while the host simply sees a large file that can be copied, backed up, moved between hosts or converted between formats. This portability is a major advantage of virtualization. Guests do not need dedicated physical drives, their files are not exposed individually on the host, and the disk persists on storage rather than in memory.",
+      "distractor_analysis": {
+        "1": "The guest's files live inside the container; the host does not see them individually.",
+        "2": "Dedicated drives per guest would defeat the purpose of consolidation.",
+        "3": "Memory is volatile; disks must persist across power cycles."
+      },
+      "video_reference": {
+        "title": "Virtualization Services - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=wPB_C7hOY-8",
+        "duration": "11:23",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "virtual-disk", "vhdx", "vmdk"]
+    },
+    {
+      "id": "C1N-C-025",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A company wants staff to log in from any thin client or personal laptop and receive the same Windows desktop, hosted centrally on servers. Which technology delivers this?",
+      "options": [
+        "Virtual desktop infrastructure (VDI)",
+        "A local Type 2 hypervisor on each laptop",
+        "A USB recovery drive",
+        "A network attached storage device"
+      ],
+      "answer": 0,
+      "explanation": "VDI runs each user's desktop as a virtual machine in the data centre or cloud and streams only the screen, keyboard and mouse to the endpoint. The endpoint can be a cheap thin client or an unmanaged personal device because no data is stored on it, and IT patches and backs up the desktops centrally. A local hypervisor puts the desktop on the laptop rather than centrally, and recovery drives and storage appliances do not host desktops.",
+      "distractor_analysis": {
+        "1": "A local hypervisor ties the desktop to one device.",
+        "2": "Recovery media repairs a local installation.",
+        "3": "NAS provides file storage, not desktops."
+      },
+      "video_reference": {
+        "title": "Virtualization Services - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=wPB_C7hOY-8",
+        "duration": "11:23",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "vdi", "thin-client"]
+    },
+    {
+      "id": "C1N-C-026",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A technician needs to move a running virtual machine from one host to another for maintenance without users noticing. Which feature does this?",
+      "options": [
+        "Live migration between hosts sharing storage or replicating memory state",
+        "Copying the virtual disk file with the guest powered off",
+        "Taking a snapshot",
+        "Exporting the guest to an ISO file"
+      ],
+      "answer": 0,
+      "explanation": "Live migration copies a running guest's memory to another host while it keeps running, then switches execution across in a fraction of a second, so sessions and connections survive. It is how administrators empty a host for patching without downtime and is a standard feature of enterprise hypervisors. Cold copying requires shutdown, snapshots preserve state on the same host, and an ISO is an optical disc image rather than a virtual machine format.",
+      "distractor_analysis": {
+        "1": "A powered-off copy means downtime for users.",
+        "2": "Snapshots do not move a guest anywhere.",
+        "3": "Virtual machines are exported as OVF or similar packages, not ISOs."
+      },
+      "video_reference": {
+        "title": "Virtualization Services - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=wPB_C7hOY-8",
+        "duration": "11:23",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "live-migration", "maintenance"]
+    },
+    {
+      "id": "C1N-C-027",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A student's laptop shows Hyper-V as an installed feature, but a third-party hypervisor now runs virtual machines extremely slowly or refuses to start them. What is the most likely reason?",
+      "options": [
+        "Two hypervisors are competing for the processor's virtualization extensions, and the built-in one has claimed them",
+        "The laptop battery is low",
+        "The screen is too small",
+        "The third-party hypervisor needs an internet connection"
+      ],
+      "answer": 0,
+      "explanation": "Only one hypervisor can own the processor's hardware virtualization features at a time. When Hyper-V or related Windows security features such as virtualization-based security are active, other hypervisors either fall back to slow software emulation or fail to launch. Disabling the Windows hypervisor platform features, or using a hypervisor that can coexist with Hyper-V, resolves the conflict. Battery, display size and connectivity are unrelated.",
+      "distractor_analysis": {
+        "1": "Power state does not stop virtual machines starting.",
+        "2": "Display size is cosmetic.",
+        "3": "Local virtual machines run without internet."
+      },
+      "video_reference": {
+        "title": "Virtualization Concepts - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=xXOIdDWUNGU",
+        "duration": "5:45",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "hyper-v", "conflict", "troubleshooting"]
+    },
+    {
+      "id": "C1N-C-028",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A network engineer wants to build a lab of several routers and firewalls to practise configuration without buying hardware. Which approach is most practical?",
+      "options": [
+        "Run virtual network appliances as virtual machines connected by internal virtual switches",
+        "Buy one physical router and reconfigure it repeatedly",
+        "Draw the topology on paper",
+        "Use a spreadsheet to simulate routing tables"
+      ],
+      "answer": 0,
+      "explanation": "Vendors provide virtual editions of routers, switches and firewalls that run as virtual machines. Connecting them through internal virtual networks reproduces a multi-device topology on a single host, with snapshots to reset any device and no risk to production. Test and development labs of this kind are one of the most common uses of desktop virtualization in networking. One physical device cannot represent a topology, and paper and spreadsheets do not run the actual software.",
+      "distractor_analysis": {
+        "1": "A single device cannot demonstrate multi-hop behaviour.",
+        "2": "Diagrams do not let you configure or test anything.",
+        "3": "A spreadsheet does not run the real operating system."
+      },
+      "video_reference": {
+        "title": "Virtualization Services - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=wPB_C7hOY-8",
+        "duration": "11:23",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "lab", "virtual-appliances", "networking"]
+    },
+    {
+      "id": "C1N-C-029",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A hypervisor host runs guests for several different departments. Which practice reduces the risk of a compromised guest affecting the others?",
+      "options": [
+        "Keeping the hypervisor patched and placing guests on separate isolated virtual networks",
+        "Giving every guest the same administrator password for convenience",
+        "Disabling all guest firewalls to simplify troubleshooting",
+        "Sharing one virtual disk file among all the guests"
+      ],
+      "answer": 0,
+      "explanation": "Virtualization security rests on two things: the shared hypervisor must be kept current because a flaw there affects every guest, and guests should be segmented on separate virtual networks or VLANs so a breach of one cannot spread laterally. Adding guest firewalls, least-privilege accounts and monitoring on the host completes the picture. Shared credentials, disabled firewalls and a shared disk each make lateral movement easier rather than harder.",
+      "distractor_analysis": {
+        "1": "Shared passwords mean one compromise opens every guest.",
+        "2": "Firewalls are a key layer of guest isolation.",
+        "3": "Sharing a disk between guests corrupts data and removes isolation."
+      },
+      "video_reference": {
+        "title": "Virtualization Concepts - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=xXOIdDWUNGU",
+        "duration": "5:45",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "security", "segmentation"]
+    },
+    {
+      "id": "C1N-C-030",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "In virtualization terminology, what is the host?",
+      "options": [
+        "The physical computer and its hypervisor that run the virtual machines",
+        "The operating system installed inside a virtual machine",
+        "The network switch connecting the office",
+        "The user who owns the virtual machine"
+      ],
+      "answer": 0,
+      "explanation": "The host is the real machine, together with the hypervisor running on it, that provides processor, memory, storage and network to the virtual machines. Each operating system running inside a virtual machine is called a guest. Keeping the terms straight matters when reading documentation and error messages: a warning about host memory refers to the physical server, while guest memory is what was assigned to a particular virtual machine.",
+      "distractor_analysis": {
+        "1": "The operating system inside a virtual machine is the guest.",
+        "2": "Physical network equipment is outside the virtualization stack.",
+        "3": "People are administrators or users, not hosts."
+      },
+      "video_reference": {
+        "title": "Virtualization Concepts - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=xXOIdDWUNGU",
+        "duration": "5:45",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "terminology", "host", "guest"]
+    },
+    {
+      "id": "C1N-C-031",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A virtual machine's clock drifts several minutes a day, which breaks authentication to the domain. What is the recommended fix?",
+      "options": [
+        "Install the hypervisor's integration tools and enable time synchronisation with the host, or point the guest at an NTP source",
+        "Replace the host's CMOS battery",
+        "Assign the guest more storage",
+        "Switch the guest to bridged networking"
+      ],
+      "answer": 0,
+      "explanation": "Virtual machines do not have a real hardware clock; they count time from interrupts the hypervisor delivers, and when a guest is paused or starved of CPU it falls behind. Integration tools keep the guest clock synchronised with the host, and domain-joined guests should also take time from the domain's NTP hierarchy. Kerberos tolerates only a few minutes of skew, so this is a real cause of login failures. The host battery, guest storage and network mode do not affect guest timekeeping.",
+      "distractor_analysis": {
+        "1": "The host clock is fine; the drift is inside the guest.",
+        "2": "Storage capacity has nothing to do with time.",
+        "3": "Network mode does not change clock behaviour."
+      },
+      "video_reference": {
+        "title": "Virtualization Services - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=wPB_C7hOY-8",
+        "duration": "11:23",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "time-sync", "troubleshooting", "integration"]
+    },
+    {
+      "id": "C1N-C-032",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A developer needs a virtual machine to talk only to a second virtual machine on the same host, with no access to the host or to any external network. Which mode should both adapters use?",
+      "options": [
+        "Internal or private networking",
+        "Bridged networking",
+        "NAT networking",
+        "Host-only networking"
+      ],
+      "answer": 0,
+      "explanation": "An internal network, sometimes called private, exists only inside the hypervisor. Guests attached to it can reach each other but not the host, not the office and not the internet, which is ideal for testing malware behaviour between machines or rehearsing a server migration in isolation. Host-only would let the host join the conversation, and bridged and NAT both provide a path to external networks.",
+      "distractor_analysis": {
+        "1": "Bridged mode exposes guests to the real network.",
+        "2": "NAT allows outbound access to the internet.",
+        "3": "Host-only includes the host as a participant."
+      },
+      "video_reference": {
+        "title": "Virtualization Services - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=wPB_C7hOY-8",
+        "duration": "11:23",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "networking", "internal-network", "isolation"]
+    },
+    {
+      "id": "C1N-C-033",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A backup administrator asks whether taking snapshots of the file server virtual machine every night is an adequate backup strategy. What is the correct advice?",
+      "options": [
+        "No, because snapshots are stored with the virtual machine on the same host and storage, so a host or storage failure loses both",
+        "Yes, snapshots are a complete backup",
+        "Yes, provided the snapshots are named clearly",
+        "No, because snapshots cannot be taken of file servers"
+      ],
+      "answer": 0,
+      "explanation": "A snapshot is a rollback point, not a backup. It depends on the base disk and lives on the same storage; if the host fails, the storage array dies or ransomware encrypts the datastore, the snapshot goes with it. Accumulating nightly snapshots also degrades performance. A proper strategy uses backup software that copies the virtual machine, often using a temporary snapshot to get a consistent image, to separate storage and ideally off site.",
+      "distractor_analysis": {
+        "1": "A snapshot shares the fate of the virtual machine it belongs to.",
+        "2": "Naming does not change where the data is stored.",
+        "3": "Any virtual machine can be snapshotted; the issue is what a snapshot protects against."
+      },
+      "video_reference": {
+        "title": "Virtualization Services - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=wPB_C7hOY-8",
+        "duration": "11:23",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "snapshot", "backup"]
+    },
+    {
+      "id": "C1N-C-034",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "A guest operating system inside a virtual machine reports that it has a network adapter, a graphics adapter and a disk controller from a vendor the physical host does not contain. Why?",
+      "options": [
+        "The hypervisor presents standardised virtual devices to every guest regardless of the underlying physical hardware",
+        "The guest is misreporting because it is infected",
+        "The host has hidden hardware that only guests can see",
+        "The guest is reading the wrong driver database"
+      ],
+      "answer": 0,
+      "explanation": "Hypervisors emulate or paravirtualise a small set of well-known devices so that any guest operating system can boot with built-in drivers. The virtual network card, display adapter and storage controller are therefore the same on every host running that hypervisor, which is what makes virtual machines portable between physical servers of different makes. It is normal, not a sign of infection or hidden components.",
+      "distractor_analysis": {
+        "1": "Standard virtual hardware is expected behaviour, not malware.",
+        "2": "There is no hidden physical hardware; the devices are software constructs.",
+        "3": "The guest correctly identifies the virtual devices it is given."
+      },
+      "video_reference": {
+        "title": "Virtualization Concepts - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=xXOIdDWUNGU",
+        "duration": "5:45",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "virtual-hardware", "portability"]
+    },
+    {
+      "id": "C1N-C-035",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A small office wants a single powerful desktop to act as a file server, a print server and a web development server for a small team, with each role isolated. Which is the most sensible plan?",
+      "options": [
+        "Install a hypervisor and run each role in its own virtual machine",
+        "Install all three roles on the desktop's single operating system",
+        "Buy three separate desktops",
+        "Run all three roles on a laptop"
+      ],
+      "answer": 0,
+      "explanation": "Virtualization lets one well-specified machine host several isolated servers, so a fault or reboot in the development environment does not take down file sharing. Each guest can be snapshotted and backed up independently and moved to new hardware later by copying files. Stacking roles on one operating system loses that isolation, three machines waste money and power for a small team, and a laptop lacks the resources and reliability for always-on services.",
+      "distractor_analysis": {
+        "1": "One operating system means one failure affects every role.",
+        "2": "Three machines cost more in hardware, power and maintenance.",
+        "3": "Laptops are not designed to run continuously as servers."
+      },
+      "video_reference": {
+        "title": "Virtualization Concepts - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=xXOIdDWUNGU",
+        "duration": "5:45",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "small-office", "consolidation"]
+    },
+    {
+      "id": "C1N-C-036",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "multi",
+      "difficulty": "medium",
+      "question": "A technician is specifying a desktop to run several virtual machines for a test lab. Which TWO hardware characteristics matter most? (Select TWO.)",
+      "options": [
+        "A processor with hardware virtualization support and plenty of cores",
+        "A large amount of RAM, since each running guest reserves its allocation",
+        "A high-refresh-rate gaming monitor",
+        "A mechanical keyboard",
+        "A Blu-ray optical drive"
+      ],
+      "answers": [0, 1],
+      "explanation": "Virtualization hosts are sized on processor, memory and storage. Hardware virtualization extensions are mandatory for modern hypervisors and more cores let more guests run concurrently without contention. Memory is the hard limit because it cannot be meaningfully overcommitted. Fast solid-state storage is the third factor. Display refresh rate, keyboard type and optical media have no effect on how many virtual machines the system can run or how well they perform.",
+      "distractor_analysis": {
+        "2": "Monitor refresh rate affects gaming, not virtual machine capacity.",
+        "3": "Keyboard type is a personal preference.",
+        "4": "Installation media is mounted as ISO files; an optical drive is unnecessary."
+      },
+      "video_reference": {
+        "title": "Virtualization Concepts - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=xXOIdDWUNGU",
+        "duration": "5:45",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "resource-requirements", "hardware"]
+    },
+    {
+      "id": "C1N-C-037",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "multi",
+      "difficulty": "medium",
+      "question": "Which TWO are legitimate reasons an IT team would use virtualization on end-user workstations rather than on servers? (Select TWO.)",
+      "options": [
+        "Running a legacy application that requires an older operating system",
+        "Testing software or suspicious files in a disposable sandbox",
+        "Increasing the physical speed of the workstation's processor",
+        "Extending the laptop's battery life",
+        "Replacing the need for antivirus software"
+      ],
+      "answers": [0, 1],
+      "explanation": "Client-side virtualization earns its place through compatibility and safety. A virtual machine keeps an old operating system alive for one stubborn application without compromising the modern host, and a sandbox lets technicians open unknown files or trial software and then discard the machine. Virtualization costs performance and battery rather than adding them, and it complements rather than replaces endpoint protection.",
+      "distractor_analysis": {
+        "2": "A hypervisor adds overhead; it cannot make the processor faster.",
+        "3": "Running extra operating systems consumes more power.",
+        "4": "Guests and hosts still need protection; isolation is a layer, not a substitute."
+      },
+      "video_reference": {
+        "title": "Virtualization Concepts - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=xXOIdDWUNGU",
+        "duration": "5:45",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "client-side", "use-cases"]
+    },
+    {
+      "id": "C1N-C-038",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "match",
+      "difficulty": "medium",
+      "question": "Match each virtual machine network mode to its behaviour.",
+      "pairs": [
+        { "left": "Bridged", "right": "Guest gets its own address on the physical network and is reachable by other devices" },
+        { "left": "NAT", "right": "Guest shares the host's address; outbound works but inbound is blocked by default" },
+        { "left": "Host-only", "right": "Guest can talk to the host and other guests but not to the outside world" },
+        { "left": "Internal", "right": "Guests talk only to each other, with no host or external access" }
+      ],
+      "explanation": "Choosing the network mode is the most common decision when creating a virtual machine, and getting it wrong is the most common reason a guest cannot be reached or cannot browse. Bridged makes the guest a peer on the LAN, NAT hides it behind the host like a home router, host-only builds a private lab that includes the host, and internal isolates guests completely from everything except each other.",
+      "video_reference": {
+        "title": "Virtualization Services - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=wPB_C7hOY-8",
+        "duration": "11:23",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "networking", "match"]
+    },
+    {
+      "id": "C1N-C-039",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "order",
+      "difficulty": "easy",
+      "question": "Order the steps to create and start a new virtual machine for testing an operating system on a desktop hypervisor.",
+      "sequence": [
+        "Confirm hardware virtualization is enabled in the host firmware and the hypervisor is installed",
+        "Create a new virtual machine and assign processor cores, memory and a virtual disk",
+        "Attach the operating system ISO to the virtual optical drive and choose a network mode",
+        "Start the virtual machine and complete the operating system installation",
+        "Install the hypervisor's guest additions and take a clean snapshot"
+      ],
+      "explanation": "The sequence follows dependencies. Virtualization extensions must be on before anything will run. Resources are allocated when the machine is defined. Installation media and networking are attached before first boot so the installer can run and reach updates. Guest additions come after the operating system exists, and a snapshot of the fresh, working state gives a clean point to return to after every experiment.",
+      "video_reference": {
+        "title": "Virtualization Services - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=wPB_C7hOY-8",
+        "duration": "11:23",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "procedure", "setup"]
+    },
+    {
+      "id": "C1N-C-040",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A virtual machine cannot reach the internet although the host can, and the guest shows an address beginning 169.254. Which is the most likely cause?",
+      "options": [
+        "The guest did not receive a DHCP lease from the virtual network it is attached to",
+        "The guest has too little memory",
+        "The host's screen saver is active",
+        "The guest's snapshot is too old"
+      ],
+      "answer": 0,
+      "explanation": "An address in the 169.254 range is an automatic private address that a client assigns itself when no DHCP server answers. In a virtual machine this usually means the adapter is attached to a network with no DHCP service, such as an internal network, or the hypervisor's built-in DHCP for NAT or host-only mode is disabled, or the virtual adapter is disconnected. Checking the adapter's mode and connection state and renewing the lease fixes it.",
+      "distractor_analysis": {
+        "1": "Memory shortage causes slowness, not a self-assigned address.",
+        "2": "The host display state has no effect on guest networking.",
+        "3": "Snapshot age does not alter DHCP behaviour."
+      },
+      "video_reference": {
+        "title": "Virtualization Services - CompTIA A+ 220-1201 - 4.1",
+        "url": "https://www.youtube.com/watch?v=wPB_C7hOY-8",
+        "duration": "11:23",
+        "objective": "4.1"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["virtualization", "networking", "dhcp", "troubleshooting"]
+    }
+  ]
+}

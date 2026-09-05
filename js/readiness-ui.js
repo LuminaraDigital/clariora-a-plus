@@ -196,7 +196,13 @@
     if (!cold) {
       // Same predicted value that drives the ring, so the "You" marker can
       // never sit at the 500 coin-flip while the ring says something else.
-      html += hw.buildGapScale(sum.predicted, result.passing, { animate: animate });
+      html += hw.buildGapScale(sum.predicted, result.passing, { animate: animate, band: sum.band });
+    }
+
+    // The model tracks how many observations sit behind the estimate. Say so,
+    // so a two-question reading never carries the same authority as two hundred.
+    if (!cold && sum.confidenceText) {
+      html += '<p class="hero-confidence">' + esc(sum.confidenceText) + '</p>';
     }
 
     var metaParts = [];
@@ -229,6 +235,9 @@
 
     html += '</div>';
     el.innerHTML = html;
+    var thin = Boolean(sum.band && sum.band.thin);
+    if (thin) el.setAttribute('data-confidence', 'low');
+    else el.removeAttribute('data-confidence');
 
     if (cold) {
       var btn = document.getElementById('heroDiagnosticBtn');

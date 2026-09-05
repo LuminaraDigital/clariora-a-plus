@@ -148,8 +148,16 @@
     var label = 'Predicted ' + Math.round(pred) + ', pass mark ' + Math.round(pass);
     var firstWidth = (o.animate === false) ? predPct : 0;
 
+    var band = o.band && num(o.band.low) !== null && num(o.band.high) !== null ? o.band : null;
+    if (band) label += ', likely range ' + Math.round(band.low) + ' to ' + Math.round(band.high);
     var html = '<div class="gap-scale" role="img" aria-label="' + esc(label) + '">';
-    html += '<div class="track"><div class="fill" style="width:' + firstWidth + '%" data-fill="' + predPct + '"></div></div>';
+    html += '<div class="track">';
+    if (band) {
+      var lo = round1(scorePct(num(band.low)));
+      var hi = round1(scorePct(num(band.high)));
+      html += '<div class="band" style="left:' + lo + '%;width:' + round1(Math.max(0, hi - lo)) + '%"></div>';
+    }
+    html += '<div class="fill" style="width:' + firstWidth + '%" data-fill="' + predPct + '"></div></div>';
     html += '<div class="marker pass" style="left:' + passPct + '%"><span>Pass ' + tnum(Math.round(pass)) + '</span></div>';
     html += '<div class="marker you" style="left:' + predPct + '%"><span>You ' + tnum(Math.round(pred)) + '</span></div>';
     html += '</div>';

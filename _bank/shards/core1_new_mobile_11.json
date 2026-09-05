@@ -1,0 +1,1196 @@
+{
+  "questions": [
+    {
+      "id": "C1N-M-001",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "A user reports that a three-year-old business laptop now runs for only twenty minutes on battery even though Windows shows the battery as fully charged. The laptop otherwise performs normally when plugged in. Which component should the technician replace first?",
+      "options": [
+        "The battery pack",
+        "The DC-in jack",
+        "The system board",
+        "The M.2 SSD"
+      ],
+      "answer": 0,
+      "explanation": "Lithium-ion cells lose capacity with charge cycles and age. A full-charge reading that drains in minutes is the classic signature of a worn battery whose chemistry can no longer hold its rated capacity, and the battery is the cheapest and least invasive part to replace. The DC-in jack only matters while charging on AC, the system board is not implicated when the machine works on mains power, and storage has no effect on runtime.",
+      "distractor_analysis": {
+        "1": "A faulty DC jack would stop the laptop charging or running on AC; here AC operation is normal.",
+        "2": "Replacing the system board is expensive and unjustified when every symptom points at the battery.",
+        "3": "An SSD failure causes boot or file errors, not a short runtime."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "battery", "power"]
+    },
+    {
+      "id": "C1N-M-002",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A technician needs to add memory to a thin business ultrabook. On opening the case there are no memory slots visible, and the service manual describes the RAM as LPDDR5. What does this tell the technician about the upgrade?",
+      "options": [
+        "The memory is soldered to the board and cannot be upgraded",
+        "The memory is under the keyboard and requires a full teardown",
+        "The laptop uses full-size DIMMs behind the display panel",
+        "The laptop accepts SO-DIMMs only in a docking station"
+      ],
+      "answer": 0,
+      "explanation": "LPDDR (low-power DDR) memory is manufactured as packages soldered directly onto the system board. It is chosen for thin, light designs because it saves space and power, but the trade-off is that the amount of RAM is fixed at the factory. A technician should check the memory type before promising an upgrade, because a soldered configuration means replacing the whole board or buying a higher-spec unit.",
+      "distractor_analysis": {
+        "1": "Soldered memory is not hidden under the keyboard; there are no modules to remove at all.",
+        "2": "Laptops never use full-size desktop DIMMs and nothing is mounted behind the display.",
+        "3": "Docking stations add ports, not memory."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "memory", "lpddr", "upgrade"]
+    },
+    {
+      "id": "C1N-M-003",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "Which memory form factor is installed in a laptop that has user-serviceable memory slots?",
+      "options": [
+        "SO-DIMM",
+        "DIMM",
+        "RIMM",
+        "SIMM"
+      ],
+      "answer": 0,
+      "explanation": "Laptops with upgradeable memory use SO-DIMM (small outline DIMM) modules, which are roughly half the length of the DIMMs found in desktops so they fit in the thin chassis. Current models are DDR4 and DDR5 SO-DIMMs, and the two generations are not interchangeable because the key notch and pin count differ. Desktop DIMMs are physically too large, and RIMM and SIMM are obsolete formats not found in modern portable systems.",
+      "distractor_analysis": {
+        "1": "Full-size DIMMs are for desktops and servers.",
+        "2": "RIMM was the Rambus format used briefly around 2000 and is obsolete.",
+        "3": "SIMM modules predate DDR entirely."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "memory", "so-dimm"]
+    },
+    {
+      "id": "C1N-M-004",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user wants the fastest possible storage upgrade for a laptop that has one M.2 slot marked with both B and M keys and support for PCIe. Which drive should the technician recommend?",
+      "options": [
+        "An M.2 NVMe SSD",
+        "An M.2 SATA SSD",
+        "A 2.5-inch SATA SSD with an adapter",
+        "An mSATA SSD"
+      ],
+      "answer": 0,
+      "explanation": "An M.2 slot that supports PCIe can take an NVMe SSD, which talks directly to the PCIe bus and delivers several times the throughput of any SATA device. M.2 SATA drives fit the same slot but are limited to the 6 Gbps SATA ceiling. A 2.5-inch drive would need a bay the laptop may not have, and mSATA is an older, physically different card that will not fit an M.2 slot at all.",
+      "distractor_analysis": {
+        "1": "M.2 SATA uses the same connector but is capped at SATA speeds.",
+        "2": "A 2.5-inch drive needs a drive bay and would still be SATA speed.",
+        "3": "mSATA is a different form factor and connector."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "storage", "m.2", "nvme"]
+    },
+    {
+      "id": "C1N-M-005",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A field engineer's laptop has a 2.5-inch spinning hard drive and the user complains about slow boot times and noise. The laptop has no M.2 slot. Which upgrade gives the largest improvement while keeping the existing bay?",
+      "options": [
+        "Replace the hard drive with a 2.5-inch SATA SSD",
+        "Replace the hard drive with a 7200 rpm hard drive",
+        "Add more system memory",
+        "Replace the optical drive with a second hard drive"
+      ],
+      "answer": 0,
+      "explanation": "A 2.5-inch SATA SSD is a drop-in replacement for a laptop hard drive: same physical size, same SATA data and power connector. It removes the seek latency and spin-up delay that make boot and application launches slow, and it has no moving parts, which also solves the noise complaint and improves shock tolerance. A faster spinning disk is a marginal gain, more RAM does not fix disk-bound boot times, and a second hard drive adds capacity, not speed.",
+      "distractor_analysis": {
+        "1": "A 7200 rpm disk is only slightly faster and still has moving parts.",
+        "2": "Memory helps multitasking but not a slow disk on boot.",
+        "3": "A second spinning drive adds space and more noise."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "storage", "ssd", "upgrade"]
+    },
+    {
+      "id": "C1N-M-006",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A laptop boots and displays the vendor logo, but Windows reports that the internal wireless adapter is missing. The adapter is a replaceable M.2 card. What should the technician check first?",
+      "options": [
+        "That the wireless card is fully seated and both antenna leads are attached",
+        "That the Wi-Fi network password has not changed",
+        "That the laptop is within range of an access point",
+        "That the display cable is routed away from the card"
+      ],
+      "answer": 0,
+      "explanation": "A wireless card that Windows cannot see at all is a hardware-level fault rather than a connection problem. Replaceable wireless cards sit in an M.2 E-key slot and can work loose after a drop or a repair, and the two tiny antenna connectors are easily left off during reassembly. Reseating the card and confirming both antenna leads restores detection; only once the adapter appears in Device Manager do network settings or signal range become relevant.",
+      "distractor_analysis": {
+        "1": "A wrong password produces an authentication failure, not a missing adapter.",
+        "2": "Range affects signal strength; the adapter would still be listed.",
+        "3": "Display cable routing has nothing to do with adapter detection."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "wireless", "m.2", "antenna"]
+    },
+    {
+      "id": "C1N-M-007",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "Which laptop component converts the wall outlet's alternating current into the low-voltage direct current the laptop uses?",
+      "options": [
+        "The external AC adapter",
+        "The CMOS battery",
+        "The inverter",
+        "The docking station"
+      ],
+      "answer": 0,
+      "explanation": "The external power brick is the laptop's power supply. It steps mains AC down and rectifies it to a fixed DC output, typically 19 to 20 volts for barrel connectors or a negotiated USB-C Power Delivery voltage. Always match the voltage exactly and meet or exceed the wattage rating; an under-rated adapter will run the laptop but fail to charge under load. The CMOS battery keeps firmware settings, an inverter powered older CCFL backlights, and a dock passes power through rather than creating it.",
+      "distractor_analysis": {
+        "1": "The CMOS battery is a coin cell for the real-time clock and firmware settings.",
+        "2": "An inverter changes DC to AC for old CCFL backlights, the reverse direction.",
+        "3": "A docking station may forward power but relies on its own adapter."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "power", "ac-adapter"]
+    },
+    {
+      "id": "C1N-M-008",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user replaced a lost 65 W USB-C charger with a 30 W phone charger. The laptop shows a charging icon but the battery percentage falls during video calls. What is the cause?",
+      "options": [
+        "The charger cannot supply enough wattage, so the laptop draws more than it receives under load",
+        "The charger is the wrong voltage and is damaging the battery",
+        "USB-C phone chargers cannot charge laptops at all",
+        "The battery has reached its cycle limit"
+      ],
+      "answer": 0,
+      "explanation": "USB-C Power Delivery negotiates the highest power profile both ends support. A 30 W source will charge the laptop, but a laptop under heavy load such as a video call can draw more than 30 W, so the battery makes up the difference and slowly drains despite the charging icon. The fix is a charger rated at or above the laptop's requirement. PD negotiation prevents wrong-voltage damage, phone chargers do charge laptops slowly, and a worn battery would drain fast even at idle.",
+      "distractor_analysis": {
+        "1": "PD negotiates voltage safely; a low-watt source is not a wrong-voltage source.",
+        "2": "Any PD-compliant USB-C charger will charge, just slowly.",
+        "3": "Battery wear would show at idle, not only under load."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "usb-c", "power-delivery", "charging"]
+    },
+    {
+      "id": "C1N-M-009",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "Several keys on a laptop keyboard stopped working after a coffee spill. The touchpad and the rest of the system are fine. What is the most cost-effective repair?",
+      "options": [
+        "Replace the keyboard assembly",
+        "Replace the system board",
+        "Reinstall the operating system",
+        "Replace the touchpad"
+      ],
+      "answer": 0,
+      "explanation": "A laptop keyboard is a discrete module connected to the board by a ribbon cable, and on most business models it can be swapped in minutes after removing the palm rest or the top cover. Liquid that shorts individual key traces damages only the keyboard membrane, so replacing the assembly restores full function at low cost. The board is not implicated when everything else works, an OS reinstall cannot fix a hardware fault, and the touchpad is not affected.",
+      "distractor_analysis": {
+        "1": "The system board is working; replacing it would be wasteful.",
+        "2": "Software cannot repair physically damaged key traces.",
+        "3": "The touchpad is a separate part and is working."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "keyboard", "repair"]
+    },
+    {
+      "id": "C1N-M-010",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "A user says the laptop keyboard types numbers when the letter keys on the right side are pressed. What should the technician do?",
+      "options": [
+        "Turn off Num Lock, which has enabled the embedded numeric keypad",
+        "Replace the keyboard because the key matrix has failed",
+        "Update the chipset driver",
+        "Reset the firmware to defaults"
+      ],
+      "answer": 0,
+      "explanation": "Compact laptop keyboards overlay a numeric keypad on the U, I, O, J, K, L and M keys. When Num Lock is on, those keys produce digits. Turning Num Lock off, often with an Fn key combination, restores normal typing immediately. This is a configuration state rather than a fault, so no hardware, driver or firmware change is needed, and a technician who recognises it saves an unnecessary repair.",
+      "distractor_analysis": {
+        "1": "A failed matrix produces dead or stuck keys, not consistent digit output.",
+        "2": "Chipset drivers do not control key mapping.",
+        "3": "Firmware defaults do not toggle Num Lock behaviour."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "keyboard", "num-lock", "function-keys"]
+    },
+    {
+      "id": "C1N-M-011",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A technician is replacing a laptop display. The old panel is described as an LCD with LED backlighting. The replacement listed by the vendor is an OLED panel of the same size. Which statement is true about the OLED replacement?",
+      "options": [
+        "Each OLED pixel emits its own light, so no separate backlight layer is needed",
+        "OLED panels require a higher-voltage inverter for the backlight",
+        "OLED panels cannot display true black",
+        "OLED panels are always thicker than LCD panels"
+      ],
+      "answer": 0,
+      "explanation": "In an OLED display every pixel is an organic light-emitting diode that produces its own light. Because there is no backlight, black pixels are simply off, giving very deep blacks and a thinner panel. The trade-offs technicians should know are higher cost, potential burn-in from static images, and the need for a compatible display cable and firmware. LCDs, by contrast, always need a backlight, which today is LED rather than the CCFL tubes that once required an inverter.",
+      "distractor_analysis": {
+        "1": "OLED has no backlight and therefore no inverter.",
+        "2": "True black is the main strength of OLED.",
+        "3": "Without a backlight layer OLED panels are typically thinner."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "display", "oled", "lcd"]
+    },
+    {
+      "id": "C1N-M-012",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "A laptop display shows a very faint image that is only visible when a flashlight is shone on the screen. An external monitor works normally. Which component has most likely failed?",
+      "options": [
+        "The panel backlight or its power circuit",
+        "The graphics processor",
+        "The LCD pixel layer",
+        "The display data cable"
+      ],
+      "answer": 0,
+      "explanation": "The flashlight test is the definitive check for a dead backlight: the LCD is still forming an image, which you can see when external light passes through it, but nothing is illuminating it from behind. On modern panels this means the LED backlight strip or the power circuit that drives it, sometimes a fuse on the board. Because the external monitor is fine, the GPU is ruled out, the pixel layer is proven working by the faint image, and a broken data cable would produce no image, flicker or artefacts rather than a correct but dark picture.",
+      "distractor_analysis": {
+        "1": "A working external display proves the GPU is fine.",
+        "2": "The faint image shows the pixel layer is producing a picture.",
+        "3": "A data cable fault corrupts or removes the image rather than dimming it."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "display", "backlight", "troubleshooting"]
+    },
+    {
+      "id": "C1N-M-013",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A laptop's Wi-Fi signal is strong when the lid is open but drops to one bar when the lid is nearly closed. What explains this behaviour?",
+      "options": [
+        "The wireless antennas are routed through the display bezel",
+        "The wireless card overheats when the lid is closed",
+        "The operating system disables Wi-Fi when the lid closes",
+        "The hinge contains a magnet that blocks radio signals"
+      ],
+      "answer": 0,
+      "explanation": "Laptop wireless antennas are almost always placed along the top edge of the display assembly behind the bezel, connected to the card by thin coaxial leads that run through the hinge. This gives them height and clearance from the metal base. When the lid is nearly closed the antennas point down toward the desk and are shielded by the chassis, so signal falls. It also explains why a lid or hinge repair can leave Wi-Fi weak if a lead is pinched or left disconnected.",
+      "distractor_analysis": {
+        "1": "The card is in the base and its temperature does not change with lid angle.",
+        "2": "Windows changes power state on lid close, but the user is seeing signal bars while the lid is still open.",
+        "3": "The lid sensor magnet is tiny and does not block radio waves."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "wireless", "antenna", "display"]
+    },
+    {
+      "id": "C1N-M-014",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A laptop has a built-in webcam that Windows no longer detects after a display hinge repair. The camera worked before the repair. What is the most likely cause?",
+      "options": [
+        "The webcam cable running through the hinge was not reconnected or was damaged",
+        "The webcam driver was uninstalled during the repair",
+        "The camera privacy setting was turned off in the operating system",
+        "The webcam needs a firmware update after any hardware change"
+      ],
+      "answer": 0,
+      "explanation": "The webcam, microphone and wireless antennas all live in the display assembly, and their cables pass through the hinge alongside the display cable. A hinge repair means every one of those cables is disturbed. A camera that disappears from Device Manager after such work is almost always a connector left unseated or a cable pinched during reassembly. The technician should reopen the display and inspect the camera cable and its board-side connector before considering software.",
+      "distractor_analysis": {
+        "1": "Mechanical repairs do not remove drivers, and a missing driver still shows an unknown device.",
+        "2": "A privacy toggle blocks apps from using the camera but Windows still lists the hardware.",
+        "3": "Webcams do not require firmware updates after mechanical work."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "webcam", "display-assembly", "repair"]
+    },
+    {
+      "id": "C1N-M-015",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "Which laptop component is most commonly used to unlock the device with a fingertip?",
+      "options": [
+        "A fingerprint reader integrated into the power button or palm rest",
+        "A near-field communication tag in the touchpad",
+        "The ambient light sensor",
+        "A smart card reader"
+      ],
+      "answer": 0,
+      "explanation": "Business laptops typically integrate a capacitive fingerprint reader either in the power button or as a small pad on the palm rest, and Windows Hello uses it for sign-in. When troubleshooting, confirm the reader appears under Biometric devices in Device Manager, that the user has enrolled a fingerprint, and that the sensor surface is clean. NFC readers, when present, read cards and phones rather than fingerprints, the ambient light sensor adjusts brightness, and a smart card reader authenticates with a physical card.",
+      "distractor_analysis": {
+        "1": "NFC reads tags and cards, not fingerprints.",
+        "2": "The ambient light sensor controls screen brightness.",
+        "3": "Smart card readers use a card, not biometrics."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "biometrics", "fingerprint", "windows-hello"]
+    },
+    {
+      "id": "C1N-M-016",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user's laptop face-recognition sign-in stopped working after the office moved to a room with large windows behind the desk. The camera still works for video calls. What is the most likely fix?",
+      "options": [
+        "Reposition the user so strong backlight is not behind them, then re-enrol the face if needed",
+        "Replace the webcam with a higher-resolution model",
+        "Disable the infrared emitter to save power",
+        "Turn off the ambient light sensor in firmware"
+      ],
+      "answer": 0,
+      "explanation": "Windows Hello face recognition uses an infrared camera and emitter rather than the colour webcam, and strong sunlight from behind the user floods the infrared sensor and washes out the depth image. Video calls keep working because they use the standard colour camera. Changing the seating position or adding a blind, followed by re-enrolling under the new lighting, resolves it. A higher-resolution colour camera does not help, and the infrared emitter is exactly the part that needs to keep working.",
+      "distractor_analysis": {
+        "1": "Face sign-in relies on the IR camera, so colour resolution is irrelevant.",
+        "2": "Disabling the IR emitter would break face recognition entirely.",
+        "3": "The ambient light sensor only affects screen brightness."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "biometrics", "infrared", "windows-hello"]
+    },
+    {
+      "id": "C1N-M-017",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "During a laptop memory upgrade the technician notices the new DDR5 SO-DIMM will not seat in the slot even though it is the same length as the old DDR4 module. What is the reason?",
+      "options": [
+        "DDR4 and DDR5 SO-DIMMs have different key notch positions and are not interchangeable",
+        "DDR5 modules must be installed with the laptop powered on",
+        "The slot needs a firmware update before accepting DDR5",
+        "DDR5 SO-DIMMs are only used in desktop systems"
+      ],
+      "answer": 0,
+      "explanation": "Every DDR generation moves the key notch so that a module can only be inserted into a slot designed for its voltage and signalling. DDR4 and DDR5 SO-DIMMs both have 262 pins and are the same length, but the notch is offset, so a DDR5 module physically cannot seat in a DDR4 slot. A board is built for one generation only; no firmware update changes that. Memory is never installed with power applied, and DDR5 SO-DIMMs are a laptop format.",
+      "distractor_analysis": {
+        "1": "Memory must never be installed with power on; the notch mismatch is the real barrier.",
+        "2": "Slot compatibility is fixed by the hardware, not firmware.",
+        "3": "SO-DIMM is by definition the laptop form factor."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "memory", "ddr5", "so-dimm"]
+    },
+    {
+      "id": "C1N-M-018",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "Before opening a laptop to replace the SSD, what should a technician do to protect both the technician and the hardware?",
+      "options": [
+        "Disconnect the AC adapter, disconnect or disable the internal battery, and use an ESD strap",
+        "Leave the battery connected so the CMOS settings are preserved",
+        "Ground the chassis by touching the display panel",
+        "Place the laptop on a carpeted surface to prevent it sliding"
+      ],
+      "answer": 0,
+      "explanation": "Internal laptop batteries keep the board live even when the machine is off, so the safe sequence is to unplug the adapter, then disconnect the battery connector or use the firmware battery-disconnect option, then wear an ESD strap on a grounded mat. This prevents shorting a powered board while inserting the drive and protects the SSD's controller from static. CMOS settings are held by a separate coin cell, the display is not a ground, and carpet is a static generator.",
+      "distractor_analysis": {
+        "1": "The main battery does not preserve CMOS; the coin cell does, and a live battery is a shock and short risk.",
+        "2": "Touching the display panel does not ground anything.",
+        "3": "Carpet generates static and is the worst possible work surface."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "safety", "esd", "battery"]
+    },
+    {
+      "id": "C1N-M-019",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A laptop shuts down without warning after about ten minutes of heavy use and the underside is very hot. The fan is heard spinning at full speed. What is the most likely cause?",
+      "options": [
+        "Dust-clogged heat sink fins or degraded thermal paste causing thermal shutdown",
+        "A failing battery cell",
+        "An incorrect display driver",
+        "A loose memory module"
+      ],
+      "answer": 0,
+      "explanation": "A fan running flat out while the case still overheats means air is moving but heat is not leaving the CPU or GPU. Laptop heat sinks collect a dense mat of dust behind the fan, and thermal paste dries out over years, both of which raise die temperature until firmware forces a protective shutdown. Cleaning the fins and re-pasting is the fix. A weak battery causes shutdowns at low charge rather than with heat, a display driver cannot cause thermal events, and loose memory causes crashes or no-boot rather than heat.",
+      "distractor_analysis": {
+        "1": "Battery faults correlate with charge level, not with heat and load.",
+        "2": "Driver problems produce visual glitches or blue screens, not hot chassis.",
+        "3": "Loose memory causes boot failures or memory errors."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "cooling", "thermal", "troubleshooting"]
+    },
+    {
+      "id": "C1N-M-020",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "A laptop's clock resets to a default date every time the machine is left unplugged for a few days, and the firmware prompts to press F1 on boot. The main battery holds charge normally. Which component should be replaced?",
+      "options": [
+        "The CMOS coin-cell battery",
+        "The main battery pack",
+        "The real-time clock chip",
+        "The AC adapter"
+      ],
+      "answer": 0,
+      "explanation": "Firmware settings and the real-time clock are kept alive by a small coin cell (often a CR2032 or a wired equivalent) when the system has no other power. Some laptops trickle-charge it from the main battery, which is why the fault only shows after days without power. A dead coin cell produces exactly this pattern: lost time, reset firmware settings and a setup prompt on boot. The main battery is proven good, the clock chip itself rarely fails, and the adapter charges the pack normally.",
+      "distractor_analysis": {
+        "1": "The main pack holds charge normally, so it is not the failing part.",
+        "2": "RTC silicon failures are rare and would not depend on power being removed.",
+        "3": "The adapter is irrelevant while the laptop is unplugged."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "cmos", "battery", "firmware"]
+    },
+    {
+      "id": "C1N-M-021",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user wants to know whether a new laptop can be upgraded later. The specification sheet lists 16 GB LPDDR5X memory and a 512 GB M.2 2280 NVMe SSD. Which statement is accurate?",
+      "options": [
+        "The storage can be upgraded but the memory cannot",
+        "Both the memory and the storage can be upgraded",
+        "Neither the memory nor the storage can be upgraded",
+        "The memory can be upgraded but the storage cannot"
+      ],
+      "answer": 0,
+      "explanation": "LPDDR memory of any generation is soldered to the board, so the 16 GB is fixed for the life of the laptop. An M.2 2280 NVMe drive, on the other hand, is a standard removable card 22 mm wide and 80 mm long that can be swapped for a larger capacity. Reading these two specification lines is how a technician sets expectations before purchase: buy the memory you will need on day one, and treat storage as the upgradeable part.",
+      "distractor_analysis": {
+        "1": "LPDDR5X is soldered and cannot be upgraded.",
+        "2": "A standard M.2 2280 slot accepts replacement drives.",
+        "3": "This reverses the truth: the SSD is the replaceable part."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "memory", "storage", "upgrade"]
+    },
+    {
+      "id": "C1N-M-022",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A laptop's touchpad cursor jumps and clicks randomly while the user types. The external mouse works correctly. Which action is the most appropriate first step?",
+      "options": [
+        "Adjust the touchpad palm-rejection or sensitivity settings and check for a driver update",
+        "Replace the touchpad assembly",
+        "Replace the system board",
+        "Disable the keyboard"
+      ],
+      "answer": 0,
+      "explanation": "Random cursor movement while typing is usually the palm brushing the touchpad, and modern precision touchpad drivers include a palm-rejection delay and sensitivity control for exactly this. Adjusting those settings, or installing the vendor's current driver, resolves most cases at zero cost. Hardware replacement is only justified if the pad misbehaves when nothing touches it and the driver is current. The board is not involved, and disabling the keyboard defeats the purpose of the laptop.",
+      "distractor_analysis": {
+        "1": "Hardware replacement comes after settings and drivers are ruled out.",
+        "2": "The system board is not implicated by a touchpad sensitivity issue.",
+        "3": "Disabling the keyboard is not a solution to touchpad behaviour."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "touchpad", "driver", "settings"]
+    },
+    {
+      "id": "C1N-M-023",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "Which laptop feature lets a user rotate the screen 360 degrees and use the device as a tablet?",
+      "options": [
+        "A convertible two-in-one hinge design with a touchscreen",
+        "A docking station",
+        "A digitizer-only display",
+        "A detachable keyboard cover"
+      ],
+      "answer": 0,
+      "explanation": "Convertible two-in-one laptops use a hinge that folds the display all the way back so the keyboard faces down and the touchscreen faces the user. Sensors detect the orientation and the operating system switches to tablet mode. Technicians should know these hinges carry the display, camera and antenna cables through a wide range of motion and are a common failure point, and that a touchscreen digitizer must be present for tablet use to be practical.",
+      "distractor_analysis": {
+        "1": "A dock adds ports and does not change the form factor.",
+        "2": "A digitizer is part of a touchscreen, not a hinge design.",
+        "3": "A detachable keyboard describes a different two-in-one style where the screen separates rather than rotates."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "two-in-one", "hinge", "touchscreen"]
+    },
+    {
+      "id": "C1N-M-024",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A touchscreen laptop registers touches a centimetre away from where the user actually presses, across the whole screen. What is the appropriate fix?",
+      "options": [
+        "Run the operating system's touch calibration tool",
+        "Replace the display panel",
+        "Increase the display resolution",
+        "Clean the fan intake"
+      ],
+      "answer": 0,
+      "explanation": "A consistent offset between the touch point and the cursor across the entire screen is a calibration problem: the digitizer is working but its coordinate map no longer matches the display. Windows includes a calibration tool under Tablet PC Settings that has the user tap a series of targets and rewrites the mapping. Only if touches are missing in a region, or the offset varies randomly, is the digitizer itself suspect. Resolution and cooling have no bearing on touch accuracy.",
+      "distractor_analysis": {
+        "1": "A uniform offset means the digitizer works; replacing it is premature.",
+        "2": "Resolution changes scale the picture, not the touch map.",
+        "3": "Cooling is unrelated to digitizer accuracy."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "touchscreen", "digitizer", "calibration"]
+    },
+    {
+      "id": "C1N-M-025",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A technician is asked why a laptop's internal speakers are quiet and tinny compared with a desktop's external speakers. What is the accurate explanation?",
+      "options": [
+        "Laptop speakers are physically small drivers with little enclosure volume, which limits bass and loudness",
+        "Laptop audio codecs are limited to mono output",
+        "Laptops lack a digital-to-analogue converter",
+        "Windows caps laptop volume at 50 percent for hearing safety"
+      ],
+      "answer": 0,
+      "explanation": "Sound quality is governed by physics. A speaker needs a driver large enough to move air and an enclosure with volume behind it to reproduce low frequencies at reasonable loudness. Laptop speakers are tiny and mounted in a shallow chassis, so they cannot produce deep bass or high volume regardless of the electronics. The audio codec on the board is stereo, includes a DAC, and Windows imposes no volume cap; the solution for better sound is external speakers or headphones.",
+      "distractor_analysis": {
+        "1": "Laptop codecs are stereo and often support multichannel over HDMI.",
+        "2": "Every sound card, including a laptop's, has a DAC.",
+        "3": "There is no such operating-system volume cap."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "audio", "speakers"]
+    },
+    {
+      "id": "C1N-M-026",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A laptop microphone picks up nothing during calls, but a USB headset works. The device appears in Sound settings. What should the technician check first?",
+      "options": [
+        "The microphone privacy setting and the vendor function key that mutes the internal microphone",
+        "The webcam cable",
+        "The speaker driver",
+        "The Wi-Fi antenna leads"
+      ],
+      "answer": 0,
+      "explanation": "Because the microphone is listed in Sound settings the hardware is detected, so the fault is almost certainly a software or firmware mute. Windows has a per-app microphone privacy switch, and most business laptops add a dedicated function key that mutes the internal microphone at the firmware level with an indicator LED. Checking both takes seconds. The webcam cable would matter if the mic were absent from the device list, the speaker driver is a separate output path, and antennas carry radio, not audio.",
+      "distractor_analysis": {
+        "1": "A disconnected cable would remove the device from the list entirely.",
+        "2": "Speaker output has nothing to do with microphone capture.",
+        "3": "Antenna leads are for wireless radios."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "microphone", "privacy", "function-keys"]
+    },
+    {
+      "id": "C1N-M-027",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "A user presses F5 in a spreadsheet expecting it to refresh, but the laptop's screen brightness changes instead. What should the technician recommend?",
+      "options": [
+        "Hold the Fn key with F5, or change the function key behaviour in firmware settings",
+        "Replace the keyboard",
+        "Install a third-party keyboard remapping utility",
+        "Disable the display driver"
+      ],
+      "answer": 0,
+      "explanation": "Laptop makers print media controls on the function row and, by default, many models trigger those actions on a plain press while requiring Fn to send the standard F-key code. Holding Fn with F5 sends the true F5, and the firmware setup usually has an option, often called Function Key Behaviour or Action Keys Mode, to swap the default permanently. Hardware replacement and third-party utilities are unnecessary, and the display driver is not the cause.",
+      "distractor_analysis": {
+        "1": "The keyboard is behaving as designed; nothing is broken.",
+        "2": "A remapping tool adds complexity when firmware already offers the toggle.",
+        "3": "The display driver does not decide key behaviour."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "keyboard", "function-keys", "firmware"]
+    },
+    {
+      "id": "C1N-M-028",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A laptop's screen has a permanently bright green dot in the same position on every image, including the firmware setup screen. What is this and what is the remedy?",
+      "options": [
+        "A stuck pixel in the panel; if it does not clear, the panel must be replaced",
+        "A graphics driver fault; reinstall the driver",
+        "A backlight failure; replace the backlight",
+        "Dust on the screen; clean the surface"
+      ],
+      "answer": 0,
+      "explanation": "A single dot of a fixed colour that appears even before the operating system loads is a panel defect, specifically a stuck sub-pixel that is permanently on. Because it shows in firmware setup, no driver can be responsible. Pixel-exercising tools occasionally free a stuck pixel, but a persistent one needs a panel replacement, and many vendors publish a threshold number of defective pixels before they will replace under warranty. A backlight fault dims the whole screen and dust wipes off.",
+      "distractor_analysis": {
+        "1": "Anything visible in firmware setup is not a driver issue.",
+        "2": "Backlight faults affect the whole display, not one dot.",
+        "3": "Dust sits on the glass and moves when wiped; a stuck pixel does not."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "display", "stuck-pixel"]
+    },
+    {
+      "id": "C1N-M-029",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A laptop's screen brightness rises and falls on its own as the user moves between rooms, which the user finds distracting. Which component causes this and how is it addressed?",
+      "options": [
+        "The ambient light sensor; disable adaptive brightness in power or display settings",
+        "The webcam; cover the lens",
+        "The backlight inverter; replace it",
+        "The graphics processor; update the driver"
+      ],
+      "answer": 0,
+      "explanation": "Many laptops include an ambient light sensor near the webcam that feeds an adaptive brightness feature, raising the backlight in bright rooms and lowering it in dark ones to save battery. Users who prefer a fixed level can turn adaptive brightness off in the display or power settings, or in the vendor utility. Covering the webcam does not cover the separate sensor, inverters belong to old CCFL panels, and the graphics driver is only the messenger for the sensor's reading.",
+      "distractor_analysis": {
+        "1": "The light sensor is a separate component from the camera lens.",
+        "2": "Modern LED backlights have no inverter and the behaviour is intentional.",
+        "3": "A driver update does not disable adaptive brightness."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "display", "ambient-light-sensor", "brightness"]
+    },
+    {
+      "id": "C1N-M-030",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "A technician replaced a laptop system board. Afterwards the laptop boots, but the fingerprint reader is missing from Device Manager and the Wi-Fi shows limited speed. Which oversight most likely explains both symptoms?",
+      "options": [
+        "Cables and connectors were not all reattached during reassembly, including the reader's ribbon and one antenna lead",
+        "The wrong operating system edition was installed",
+        "The replacement board has a slower processor",
+        "The battery was not fully charged before first boot"
+      ],
+      "answer": 0,
+      "explanation": "A system board swap means every internal connector is disconnected and reconnected: display, camera, antennas, keyboard, touchpad, fingerprint reader, speakers and battery. Two unrelated-looking faults after such a repair almost always share one cause, an incomplete reassembly. A reader that is missing entirely has no data connection, and Wi-Fi that works but slowly is the signature of only one of two antenna leads being attached. Reopen and audit every connector against the service manual.",
+      "distractor_analysis": {
+        "1": "The OS edition does not remove hardware from Device Manager.",
+        "2": "Processor speed does not affect device detection or Wi-Fi link rate.",
+        "3": "Charge level has no bearing on peripherals being detected."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "repair", "reassembly", "troubleshooting"]
+    },
+    {
+      "id": "C1N-M-031",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A laptop's battery health utility reports 480 charge cycles and 78 percent of design capacity. The user asks whether the battery is faulty. What is the correct assessment?",
+      "options": [
+        "The battery is showing normal age-related wear and is not faulty, though replacement will restore runtime",
+        "The battery is faulty and could be dangerous",
+        "The utility is wrong because capacity cannot fall below 100 percent",
+        "The battery needs to be fully discharged to recalibrate its memory effect"
+      ],
+      "answer": 0,
+      "explanation": "Lithium-ion batteries lose capacity gradually; manufacturers typically rate them to retain around 80 percent after 300 to 500 cycles. A reading of 78 percent at 480 cycles is exactly the expected wear curve, not a defect. The battery is safe and works, it simply holds less energy, so replacement is a runtime decision rather than a repair. Lithium-ion has no memory effect, so deep-discharge conditioning is unnecessary and slightly harmful.",
+      "distractor_analysis": {
+        "1": "Gradual capacity loss is normal; swelling or overheating would be the danger signs.",
+        "2": "Design capacity is the baseline and real capacity falls below it with age.",
+        "3": "Memory effect belonged to nickel-cadmium cells, not lithium-ion."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "battery", "lithium-ion", "cycles"]
+    },
+    {
+      "id": "C1N-M-032",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "A laptop's touchpad no longer clicks and the palm rest around it is slightly raised. The battery sits directly under the touchpad. What should the technician do immediately?",
+      "options": [
+        "Stop using the laptop, power it down and replace the swollen battery before any further use",
+        "Press the palm rest down firmly to reseat the touchpad",
+        "Update the touchpad driver",
+        "Continue using it with an external mouse until a convenient time"
+      ],
+      "answer": 0,
+      "explanation": "A raised palm rest or a touchpad that has stopped clicking on a laptop whose battery sits beneath it is the classic sign of a swollen lithium-ion battery. Swelling means the cells are degrading and producing gas; the pack is a fire risk and must be removed and disposed of through a proper recycling channel. Pressing on it or continuing to use the machine risks puncturing the cell. This is one of the few laptop faults that is a safety issue first and a repair second.",
+      "distractor_analysis": {
+        "1": "Pressing on a swollen cell can rupture it.",
+        "2": "The click failure is mechanical, caused by the battery pushing up on the pad.",
+        "3": "Continued use of a swollen battery risks fire."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "battery", "safety", "swelling"]
+    },
+    {
+      "id": "C1N-M-033",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A company standardises on laptops whose specification lists a physical webcam shutter and a Kensington-style lock slot. Which business requirement do these two features address?",
+      "options": [
+        "Physical privacy and theft deterrence for devices used in shared spaces",
+        "Faster wireless throughput in open-plan offices",
+        "Compliance with the USB Power Delivery standard",
+        "Support for external graphics over Thunderbolt"
+      ],
+      "answer": 0,
+      "explanation": "A sliding webcam shutter guarantees the camera cannot capture anything when closed, independent of software, which matters for privacy in shared or client-facing spaces. A lock slot accepts a cable lock so the laptop can be tethered to a desk in hot-desking offices and public areas. Both are physical controls that technicians should be able to identify and recommend when a user's concern is privacy or theft rather than performance.",
+      "distractor_analysis": {
+        "1": "Neither feature affects wireless performance.",
+        "2": "Power Delivery is a charging standard unrelated to these parts.",
+        "3": "External graphics depend on the port specification, not a shutter or lock slot."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "physical-security", "webcam", "lock-slot"]
+    },
+    {
+      "id": "C1N-M-034",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A laptop has two SO-DIMM slots, one holding an 8 GB DDR4-3200 module. The technician adds a second 8 GB DDR4-2666 module. What is the result?",
+      "options": [
+        "Both modules run at 2666 MT/s, the speed of the slower module, in dual-channel mode",
+        "The laptop will not boot because mixed speeds are not permitted",
+        "The faster module runs at 3200 and the slower at 2666 simultaneously",
+        "Only the original module is recognised"
+      ],
+      "answer": 0,
+      "explanation": "The memory controller drives all installed modules with one clock, so it selects the fastest speed every module supports, which here is 2666 MT/s. The system boots and, because the modules match in capacity, it runs in dual-channel mode for better bandwidth. The best practice for an upgrade is to match speed as well as capacity so the existing module is not slowed, but a mismatch is a performance compromise rather than a failure.",
+      "distractor_analysis": {
+        "1": "Mixed speeds work; the controller simply picks the common speed.",
+        "2": "A single controller clock cannot run two speeds at once.",
+        "3": "Both modules are recognised when seated correctly."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "memory", "dual-channel", "speed"]
+    },
+    {
+      "id": "C1N-M-035",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "After a laptop SSD is cloned to a larger NVMe drive and installed, the firmware reports no bootable device. The old drive booted normally. What is the most likely cause?",
+      "options": [
+        "The new drive is not seated fully in the M.2 slot or the retaining screw is missing",
+        "The new drive has too much capacity for the laptop",
+        "NVMe drives cannot be bootable",
+        "The clone copied the operating system but a clone can never copy the boot loader"
+      ],
+      "answer": 0,
+      "explanation": "M.2 drives insert at an angle and must be pressed flat and secured with the retaining screw; a drive left angled makes intermittent or no contact and the firmware sees no device at all. Reseating and screwing it down is the first check. Capacity limits are not a factor on any modern firmware, NVMe drives are the standard boot device, and a proper disk clone copies the EFI system partition and boot loader along with the operating system.",
+      "distractor_analysis": {
+        "1": "UEFI firmware handles drives of any current capacity.",
+        "2": "NVMe is the normal boot device in modern laptops.",
+        "3": "Sector-level clones include the EFI partition and boot loader."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "storage", "m.2", "boot"]
+    },
+    {
+      "id": "C1N-M-036",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "multi",
+      "difficulty": "medium",
+      "question": "A technician is preparing a parts order for a laptop whose display assembly was cracked in a fall. Which TWO components are typically housed inside the display assembly and may also need inspection? (Select TWO.)",
+      "options": [
+        "The webcam and its cable",
+        "The wireless antennas",
+        "The SO-DIMM memory modules",
+        "The M.2 SSD",
+        "The cooling fan"
+      ],
+      "answers": [0, 1],
+      "explanation": "The display assembly is more than a panel. It carries the webcam and microphone array on a small board with a cable through the hinge, and the wireless and often the cellular antennas run along the top edge behind the bezel. Any impact hard enough to crack the panel can damage these parts or their cables, so a technician should test camera and wireless after the repair. Memory, storage and the fan all live in the base of the laptop.",
+      "distractor_analysis": {
+        "2": "Memory modules are in the base under the bottom cover.",
+        "3": "The SSD is mounted on the system board in the base.",
+        "4": "Cooling components sit over the processor in the base."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "display-assembly", "webcam", "antenna"]
+    },
+    {
+      "id": "C1N-M-037",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "multi",
+      "difficulty": "medium",
+      "question": "A user complains a laptop battery drains quickly even when the lid is closed in a bag overnight. Which TWO settings are the most likely causes? (Select TWO.)",
+      "options": [
+        "The lid-close action is set to do nothing rather than sleep or hibernate",
+        "Wake timers or connected standby are allowed to wake the system while it is unattended",
+        "Num Lock is left on",
+        "The display resolution is set too high",
+        "The keyboard backlight colour is set to white"
+      ],
+      "answers": [0, 1],
+      "explanation": "A laptop that runs down in a bag was never really asleep. Two power settings explain almost every case: the lid-close action is set to do nothing so the machine stays fully on, or the system is allowed to wake for scheduled tasks and network activity while unattended. Setting lid close to sleep or hibernate and disabling wake timers fixes it. Num Lock, resolution and backlight colour have no meaningful effect once the lid is closed.",
+      "distractor_analysis": {
+        "2": "Num Lock is a keyboard state with no power impact.",
+        "3": "Resolution does not matter when the display is off.",
+        "4": "Backlight colour is cosmetic and the keyboard is off when the lid is closed."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "power", "sleep", "battery"]
+    },
+    {
+      "id": "C1N-M-038",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "order",
+      "difficulty": "medium",
+      "question": "Place the steps for safely replacing a laptop's M.2 NVMe SSD in the correct order.",
+      "sequence": [
+        "Back up the user's data and confirm the backup is readable",
+        "Power down, unplug the AC adapter, disconnect the internal battery and put on an ESD strap",
+        "Remove the bottom cover and unscrew the retaining screw at the end of the drive",
+        "Lift the drive at an angle and slide it out, then insert the new drive at the same angle and secure it",
+        "Reconnect the battery, replace the cover and confirm the drive is detected in firmware setup"
+      ],
+      "explanation": "Data protection comes first because a drive swap is irreversible for the old data if the drive is later reused. Power isolation and ESD protection prevent a short or static damage to a board that stays live from the internal battery. The M.2 drive is held by a single screw and inserts at roughly a 30-degree angle before being pressed flat. Verifying detection in firmware before reinstalling the operating system saves a wasted reinstall if the drive is not seated.",
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "storage", "procedure", "esd"]
+    },
+    {
+      "id": "C1N-M-039",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "match",
+      "difficulty": "medium",
+      "question": "Match each laptop symptom to the component most likely responsible.",
+      "pairs": [
+        { "left": "Faint image visible only with a flashlight", "right": "Backlight" },
+        { "left": "Clock resets after days unplugged", "right": "CMOS coin cell" },
+        { "left": "Full charge reading drains in minutes", "right": "Main battery pack" },
+        { "left": "Wireless works only with the lid open", "right": "Antenna leads in the display" },
+        { "left": "Sudden shutdown under load with a hot base", "right": "Clogged heat sink" }
+      ],
+      "explanation": "Each of these is a signature fault. A dark but present image means the panel works and the backlight does not. Lost time and firmware settings point at the coin cell that keeps the real-time clock alive. A battery that reads full but empties fast has lost capacity. Signal that depends on lid angle implicates the antennas routed through the display. Heat-related shutdowns with a loud fan mean the heat sink cannot shed heat. Recognising these patterns lets a technician go straight to the right part.",
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "troubleshooting", "match"]
+    },
+    {
+      "id": "C1N-M-040",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A remote worker's laptop needs a replacement power adapter. The label on the laptop's DC-in area reads 20 V, 3.25 A. Which replacement is acceptable?",
+      "options": [
+        "A 20 V adapter rated 65 W or higher with the matching connector",
+        "A 19 V adapter rated 45 W with the matching connector",
+        "A 24 V adapter rated 90 W with an adapter tip",
+        "Any adapter whose connector fits"
+      ],
+      "answer": 0,
+      "explanation": "Power equals voltage times current, so 20 V at 3.25 A is 65 W. A replacement must match the voltage exactly, must supply at least the required wattage (more is fine because the laptop only draws what it needs), and must have the correct connector polarity and size. A lower-wattage unit will fail to charge under load, a higher voltage can damage the charging circuit, and a connector fitting is no guarantee of correct voltage or polarity.",
+      "distractor_analysis": {
+        "1": "A 45 W adapter is under the 65 W requirement and the voltage is off by a volt.",
+        "2": "24 V exceeds the 20 V rating and risks damaging the laptop.",
+        "3": "Connector fit says nothing about voltage or polarity."
+      },
+      "video_reference": {
+        "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+        "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+        "duration": "16:42",
+        "objective": "1.1"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["laptop", "power", "ac-adapter", "wattage"]
+    }
+  ]
+}

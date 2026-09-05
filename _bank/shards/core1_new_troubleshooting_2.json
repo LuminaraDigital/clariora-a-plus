@@ -1,0 +1,1079 @@
+{
+  "questions": [
+    {
+      "id": "C1N-T2-001",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A desktop makes a repeated clicking sound from inside the case and Windows freezes for seconds at a time when opening files. Which component is most likely failing and what should be done first?",
+      "options": [
+        "The mechanical hard drive; back up the data immediately and replace the drive",
+        "The power supply fan; replace the fan",
+        "The graphics card; update the driver",
+        "The memory; run a memory test"
+      ],
+      "answer": 0,
+      "explanation": "A rhythmic clicking from a spinning hard drive is the read head repeatedly failing to find data and reseeking, and the pauses are the operating system waiting on those retries. It is a drive in the process of dying. Data must be copied off before anything else, because each attempt may be the last, and then the drive replaced and the system restored. Fans whir rather than click, graphics faults show on screen, and memory errors cause crashes rather than file-access pauses.",
+      "distractor_analysis": {
+        "1": "A failing fan grinds or rattles and does not cause file-open stalls.",
+        "2": "Driver problems produce artefacts or crashes, not clicking.",
+        "3": "Memory faults produce blue screens and random errors."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Storage Devices - CompTIA A+ 220-1201 - 5.2",
+        "url": "https://www.youtube.com/watch?v=aVIuyHCNPCE",
+        "duration": "17:04",
+        "objective": "5.2"
+      },
+      "notes_reference": "08_BIOS_UEFI_Hardware_Troubleshooting.md",
+      "tags": ["troubleshooting", "storage", "hard-drive", "clicking"]
+    },
+    {
+      "id": "C1N-T2-002",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "During boot a PC displays a message that the SMART status of the drive is bad and advises backing up. The system still boots. What does this mean?",
+      "options": [
+        "The drive's self-monitoring has detected error rates that predict failure; back up now and replace the drive",
+        "The drive is simply full",
+        "The drive needs defragmenting",
+        "The message can be ignored because the system booted"
+      ],
+      "answer": 0,
+      "explanation": "Self-Monitoring, Analysis and Reporting Technology tracks internal counters such as reallocated sectors, pending sectors and spin retries. When thresholds are crossed the firmware flags a predicted failure and the system firmware displays the warning. The drive may run for hours or months, but it is untrustworthy, so the correct response is immediate backup and replacement. A full or fragmented drive produces no SMART warning, and ignoring the message risks losing everything.",
+      "distractor_analysis": {
+        "1": "Capacity is not monitored by SMART thresholds.",
+        "2": "Fragmentation is a file layout matter, not a health failure.",
+        "3": "Booting once does not mean the drive is safe."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Storage Devices - CompTIA A+ 220-1201 - 5.2",
+        "url": "https://www.youtube.com/watch?v=aVIuyHCNPCE",
+        "duration": "17:04",
+        "objective": "5.2"
+      },
+      "notes_reference": "08_BIOS_UEFI_Hardware_Troubleshooting.md",
+      "tags": ["troubleshooting", "storage", "smart", "predictive-failure"]
+    },
+    {
+      "id": "C1N-T2-003",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A server with a RAID 5 array shows an amber light on one drive bay and the array status is degraded, but users can still access files. What should the technician do?",
+      "options": [
+        "Replace the failed drive promptly so the array can rebuild, because a second failure before the rebuild finishes would lose all data",
+        "Nothing, because RAID 5 means no data can ever be lost",
+        "Delete the array and recreate it",
+        "Remove a working drive to balance the array"
+      ],
+      "answer": 0,
+      "explanation": "RAID 5 survives the loss of exactly one drive by reconstructing data from parity, which is why users notice nothing. In that degraded state there is no redundancy left, and the rebuild that follows a drive swap stresses the remaining drives for hours. Replacing the failed drive quickly, and having a spare on the shelf, minimises the window of risk. RAID is not a backup, recreating the array destroys the data, and pulling another drive would collapse it.",
+      "distractor_analysis": {
+        "1": "A degraded array has zero tolerance for a further failure.",
+        "2": "Recreating the array erases everything on it.",
+        "3": "Removing a second drive fails the array entirely."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Storage Devices - CompTIA A+ 220-1201 - 5.2",
+        "url": "https://www.youtube.com/watch?v=aVIuyHCNPCE",
+        "duration": "17:04",
+        "objective": "5.2"
+      },
+      "notes_reference": "08_BIOS_UEFI_Hardware_Troubleshooting.md",
+      "tags": ["troubleshooting", "storage", "raid", "degraded"]
+    },
+    {
+      "id": "C1N-T2-004",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A PC reports that no bootable device was found after a technician moved it to a new desk. Before the move it booted normally. What is the most likely cause?",
+      "options": [
+        "A data or power cable to the drive was dislodged during the move",
+        "The operating system licence expired",
+        "The monitor cable is loose",
+        "The keyboard is not detected"
+      ],
+      "answer": 0,
+      "explanation": "Physical handling is the most common reason a previously working drive disappears from the firmware's device list. SATA data and power connectors, and M.2 cards that are not screwed down, can work loose when a case is tilted or bumped. Reseating the cables or the drive usually restores the boot. If the drive is firmly connected and still absent, the drive itself or the controller port has failed. Licensing, monitor cabling and keyboards do not cause a missing boot device.",
+      "distractor_analysis": {
+        "1": "Licence status is checked after Windows loads, not by the firmware.",
+        "2": "A loose monitor cable gives no display, not a no-boot-device message.",
+        "3": "A missing keyboard does not remove the boot drive."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Storage Devices - CompTIA A+ 220-1201 - 5.2",
+        "url": "https://www.youtube.com/watch?v=aVIuyHCNPCE",
+        "duration": "17:04",
+        "objective": "5.2"
+      },
+      "notes_reference": "08_BIOS_UEFI_Hardware_Troubleshooting.md",
+      "tags": ["troubleshooting", "storage", "boot", "cables"]
+    },
+    {
+      "id": "C1N-T2-005",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user's SSD-based laptop has become slow at writing large files, though reads remain fast. The drive is 96 percent full. What is the most likely explanation?",
+      "options": [
+        "The SSD has little free space, leaving few empty blocks for writes and forcing the controller to erase and rewrite constantly",
+        "The SSD needs defragmenting",
+        "The drive's spindle motor is wearing out",
+        "The SATA cable is too long"
+      ],
+      "answer": 0,
+      "explanation": "Solid-state drives write quickly only when they have free, pre-erased blocks available. When the drive is nearly full the controller must find, consolidate and erase partially used blocks before every write, which slows writes dramatically while reads are unaffected. Keeping 10 to 20 percent free and ensuring TRIM is enabled maintains performance. Defragmenting an SSD wears it without benefit, SSDs have no spindle, and internal cabling has no bearing on write speed.",
+      "distractor_analysis": {
+        "1": "Defragmentation is for spinning disks and adds wear to an SSD.",
+        "2": "SSDs have no moving parts.",
+        "3": "Cable length does not degrade write performance in a laptop."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Storage Devices - CompTIA A+ 220-1201 - 5.2",
+        "url": "https://www.youtube.com/watch?v=aVIuyHCNPCE",
+        "duration": "17:04",
+        "objective": "5.2"
+      },
+      "notes_reference": "08_BIOS_UEFI_Hardware_Troubleshooting.md",
+      "tags": ["troubleshooting", "storage", "ssd", "performance"]
+    },
+    {
+      "id": "C1N-T2-006",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "An external USB drive is not shown in File Explorer but appears in Disk Management as a healthy volume with no drive letter. What is the fix?",
+      "options": [
+        "Assign a drive letter to the volume in Disk Management",
+        "Format the drive",
+        "Replace the USB cable",
+        "Reinstall Windows"
+      ],
+      "answer": 0,
+      "explanation": "File Explorer only shows volumes that have a drive letter or mount point. Disk Management proves the drive is detected and its file system is intact, so the only thing missing is the letter, which can be lost when a letter is already taken by a network drive or another device. Assigning one makes the drive appear immediately with its data untouched. Formatting would erase it, the cable is fine because the disk is detected, and reinstalling Windows is unrelated.",
+      "distractor_analysis": {
+        "1": "Formatting destroys the data on a drive that is healthy.",
+        "2": "The disk is detected, so the cable is working.",
+        "3": "The operating system is functioning; only the letter is missing."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Storage Devices - CompTIA A+ 220-1201 - 5.2",
+        "url": "https://www.youtube.com/watch?v=aVIuyHCNPCE",
+        "duration": "17:04",
+        "objective": "5.2"
+      },
+      "notes_reference": "08_BIOS_UEFI_Hardware_Troubleshooting.md",
+      "tags": ["troubleshooting", "storage", "drive-letter", "disk-management"]
+    },
+    {
+      "id": "C1N-T2-007",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.2",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "A server's RAID controller reports that a rebuild has been running for two days and the array is now extremely slow. What is the most likely reason for the rebuild time?",
+      "options": [
+        "Very large drives take many hours to rebuild, and heavy production I/O during the rebuild slows both the rebuild and user access",
+        "The controller battery is flat",
+        "The array is too small",
+        "The network switch is congested"
+      ],
+      "answer": 0,
+      "explanation": "Rebuilding a multi-terabyte drive means reading every other drive in the array and writing the reconstructed data, which can take a day or more even with no other activity. Production reads and writes compete for the same drives, so both slow down and the rebuild stretches further. Administrators often schedule rebuilds for low-activity periods or accept the slowdown to shorten the vulnerable window. Cache battery, array size and network load do not govern rebuild duration.",
+      "distractor_analysis": {
+        "1": "A flat cache battery disables write caching but does not create multi-day rebuilds.",
+        "2": "Small arrays rebuild faster, not slower.",
+        "3": "Rebuilds happen inside the storage subsystem, not across the network."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Storage Devices - CompTIA A+ 220-1201 - 5.2",
+        "url": "https://www.youtube.com/watch?v=aVIuyHCNPCE",
+        "duration": "17:04",
+        "objective": "5.2"
+      },
+      "notes_reference": "08_BIOS_UEFI_Hardware_Troubleshooting.md",
+      "tags": ["troubleshooting", "storage", "raid", "rebuild"]
+    },
+    {
+      "id": "C1N-T2-008",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user cannot save files to a network drive and receives a message that the disk is full, but their local drive has plenty of space. What should the technician check?",
+      "options": [
+        "The free space and the user's quota on the file server share",
+        "The local drive's free space",
+        "The user's monitor settings",
+        "The mouse driver"
+      ],
+      "answer": 0,
+      "explanation": "A mapped network drive reports the capacity and free space of the volume on the server, or of the user's quota if quotas are enforced, not the local disk. A full server volume or an exhausted quota produces exactly this message. The fix is on the server: free space, expand the volume or raise the quota. The local drive is irrelevant because the save target is remote, and display and input settings have nothing to do with storage.",
+      "distractor_analysis": {
+        "1": "The file is being saved to the server, not the local disk.",
+        "2": "Monitor settings do not affect saving.",
+        "3": "Mouse drivers are unrelated to storage."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Storage Devices - CompTIA A+ 220-1201 - 5.2",
+        "url": "https://www.youtube.com/watch?v=aVIuyHCNPCE",
+        "duration": "17:04",
+        "objective": "5.2"
+      },
+      "notes_reference": "08_BIOS_UEFI_Hardware_Troubleshooting.md",
+      "tags": ["troubleshooting", "storage", "network-drive", "quota"]
+    },
+    {
+      "id": "C1N-T2-009",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A PC intermittently loses its second SATA hard drive, which reappears after a reboot. Event logs show controller reset errors. What is the most likely cause?",
+      "options": [
+        "A faulty or poorly seated SATA cable or connector causing intermittent contact",
+        "The operating system is too old",
+        "The drive letter is wrong",
+        "The screen resolution is too high"
+      ],
+      "answer": 0,
+      "explanation": "Controller resets and a drive that comes and goes are the signature of a marginal physical connection: a SATA cable with a loose latch, a bent pin, or a connector damaged by repeated handling. Swapping the cable and using a different port on the board is quick and usually decisive; if the fault follows the drive to a new cable and port, the drive's own connector or electronics are failing. Software age, letter assignment and display settings cannot make a drive vanish from the bus.",
+      "distractor_analysis": {
+        "1": "Operating system version does not cause bus-level disconnects.",
+        "2": "A wrong letter would hide the volume, not reset the controller.",
+        "3": "Display settings are unrelated to storage."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Storage Devices - CompTIA A+ 220-1201 - 5.2",
+        "url": "https://www.youtube.com/watch?v=aVIuyHCNPCE",
+        "duration": "17:04",
+        "objective": "5.2"
+      },
+      "notes_reference": "08_BIOS_UEFI_Hardware_Troubleshooting.md",
+      "tags": ["troubleshooting", "storage", "sata", "intermittent"]
+    },
+    {
+      "id": "C1N-T2-010",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A monitor shows an image that is stretched horizontally and text looks blurry, but the display worked properly yesterday. What is the most likely cause?",
+      "options": [
+        "The display resolution has been changed to one that does not match the panel's native resolution",
+        "The monitor's backlight has failed",
+        "The video cable is too short",
+        "The monitor is overheating"
+      ],
+      "answer": 0,
+      "explanation": "Flat panels have a fixed grid of pixels and look sharp only at their native resolution. If Windows falls back to a lower or differently proportioned resolution, often after a driver update or an accidental settings change, the panel scales the image and text becomes soft and shapes stretch. Setting the recommended resolution in display settings restores a crisp picture. A failed backlight gives a dark screen, cable length does not distort geometry, and overheating causes shutdowns.",
+      "distractor_analysis": {
+        "1": "A dead backlight produces a dark image, not a stretched one.",
+        "2": "Cable length affects signal integrity, not aspect ratio.",
+        "3": "Thermal problems switch the display off rather than stretching it."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Display Issues - CompTIA A+ 220-1201 - 5.3",
+        "url": "https://www.youtube.com/watch?v=KXZu72i1eX8",
+        "duration": "18:52",
+        "objective": "5.3"
+      },
+      "notes_reference": "08_BIOS_UEFI_Hardware_Troubleshooting.md",
+      "tags": ["troubleshooting", "display", "resolution", "scaling"]
+    },
+    {
+      "id": "C1N-T2-011",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A projector displays the presenter's laptop but the image has a strong pink tint. The same laptop looks normal on its own screen. What should the technician check first?",
+      "options": [
+        "The video cable and its connector pins, because a damaged or partially seated cable can drop one colour channel",
+        "The laptop's battery",
+        "The projector's lamp hours",
+        "The presenter's slides"
+      ],
+      "answer": 0,
+      "explanation": "A colour cast affecting the whole picture over an analogue or damaged digital connection usually means one colour signal is weak or missing, which is a cable or connector fault: a bent pin on a VGA plug or a badly seated HDMI connector. Reseating or replacing the cable is the first step, and trying a different input on the projector isolates the projector's port. Because the laptop's own display is correct, the graphics output itself is fine. Battery, lamp life and content do not tint an image.",
+      "distractor_analysis": {
+        "1": "Battery state does not alter colour output.",
+        "2": "An ageing lamp dims the image; it does not turn it pink.",
+        "3": "The tint affects everything on screen, not just the slides."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Display Issues - CompTIA A+ 220-1201 - 5.3",
+        "url": "https://www.youtube.com/watch?v=KXZu72i1eX8",
+        "duration": "18:52",
+        "objective": "5.3"
+      },
+      "notes_reference": "08_BIOS_UEFI_Hardware_Troubleshooting.md",
+      "tags": ["troubleshooting", "display", "colour", "cable"]
+    },
+    {
+      "id": "C1N-T2-012",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A gaming PC shows coloured blocks and torn textures on screen during games, and the problem grows worse the longer it plays. What is the most likely cause?",
+      "options": [
+        "The graphics card is overheating or its memory is failing, producing artefacts under load",
+        "The monitor's refresh rate is too low",
+        "The keyboard is faulty",
+        "The hard drive is fragmented"
+      ],
+      "answer": 0,
+      "explanation": "Artefacts that appear under graphical load and worsen with time are produced by the graphics processor or its memory operating outside safe limits, most often because its cooler is clogged with dust or the fan has failed, or because the video memory is degrading. Checking GPU temperature with a monitoring tool, cleaning the cooler and testing at stock clocks isolates it. Refresh rate causes flicker or tearing at a steady level, and keyboards and disk layout have nothing to do with rendering.",
+      "distractor_analysis": {
+        "1": "A low refresh rate does not create coloured blocks.",
+        "2": "Keyboards do not affect the image.",
+        "3": "Disk fragmentation slows loading, not rendering."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Display Issues - CompTIA A+ 220-1201 - 5.3",
+        "url": "https://www.youtube.com/watch?v=KXZu72i1eX8",
+        "duration": "18:52",
+        "objective": "5.3"
+      },
+      "notes_reference": "08_BIOS_UEFI_Hardware_Troubleshooting.md",
+      "tags": ["troubleshooting", "display", "artefacts", "gpu", "overheating"]
+    },
+    {
+      "id": "C1N-T2-013",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.3",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "A desktop PC powers on with fans spinning but the monitor stays black and shows a no-signal message. The monitor works with a laptop. What should be checked first?",
+      "options": [
+        "That the video cable is connected to the correct output, the dedicated graphics card rather than the disabled onboard port",
+        "The monitor's colour calibration",
+        "The PC's hard drive capacity",
+        "The speaker volume"
+      ],
+      "answer": 0,
+      "explanation": "When a PC has a dedicated graphics card, the motherboard's onboard video outputs are usually disabled, so a cable plugged into the wrong port gives no signal even though everything is working. Moving the cable to the graphics card's output, and confirming the card is seated and powered, resolves the majority of no-signal calls. The monitor is proven good with the laptop. Calibration, storage and audio are irrelevant to a missing signal.",
+      "distractor_analysis": {
+        "1": "Calibration only matters once an image is present.",
+        "2": "Disk capacity does not affect display output.",
+        "3": "Audio settings are unrelated to video."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Display Issues - CompTIA A+ 220-1201 - 5.3",
+        "url": "https://www.youtube.com/watch?v=KXZu72i1eX8",
+        "duration": "18:52",
+        "objective": "5.3"
+      },
+      "notes_reference": "08_BIOS_UEFI_Hardware_Troubleshooting.md",
+      "tags": ["troubleshooting", "display", "no-signal", "cabling"]
+    },
+    {
+      "id": "C1N-T2-014",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A conference room display shows a ghost of a previous image that remains faintly visible when the picture changes. What is this and what typically causes it?",
+      "options": [
+        "Image persistence or burn-in caused by a static image being displayed for long periods",
+        "A loose HDMI cable",
+        "The wrong resolution",
+        "A failing power supply"
+      ],
+      "answer": 0,
+      "explanation": "Displays that show the same static content for hours, such as a logo, a dashboard or a taskbar, can retain a faint impression of it. On LCDs this is usually temporary image persistence that fades with varied content or a pixel-refresh routine; on OLED and older plasma panels it can become permanent burn-in. Prevention means screen savers, content rotation and lower brightness. Loose cables cause flicker or dropouts, resolution affects sharpness, and power faults switch the display off.",
+      "distractor_analysis": {
+        "1": "A loose cable produces flicker or no signal, not a retained image.",
+        "2": "Wrong resolution blurs the whole image.",
+        "3": "Power supply problems cause shutdowns rather than ghosting."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Display Issues - CompTIA A+ 220-1201 - 5.3",
+        "url": "https://www.youtube.com/watch?v=KXZu72i1eX8",
+        "duration": "18:52",
+        "objective": "5.3"
+      },
+      "notes_reference": "08_BIOS_UEFI_Hardware_Troubleshooting.md",
+      "tags": ["troubleshooting", "display", "burn-in", "image-persistence"]
+    },
+    {
+      "id": "C1N-T2-015",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user's second monitor is detected but shows only a black screen with a cursor when the mouse is moved onto it. What is the most likely cause?",
+      "options": [
+        "The display is set to extend and the desktop on that screen is simply empty; nothing is wrong",
+        "The monitor's backlight has failed",
+        "The graphics card has no memory",
+        "The cable is too long"
+      ],
+      "answer": 0,
+      "explanation": "In extended desktop mode the second screen shows only the wallpaper and any windows moved onto it, and with a black wallpaper it can look faulty. The cursor appearing proves the monitor, cable, and output are all working. Setting a visible wallpaper or dragging a window across confirms it. If the user wanted the same image on both screens they need duplicate mode instead. Backlight, memory and cable faults would not let the cursor render correctly.",
+      "distractor_analysis": {
+        "1": "A dead backlight would make the cursor invisible too.",
+        "2": "A card with no memory would not drive any display.",
+        "3": "Cable problems cause signal loss, not an empty desktop with a working cursor."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Display Issues - CompTIA A+ 220-1201 - 5.3",
+        "url": "https://www.youtube.com/watch?v=KXZu72i1eX8",
+        "duration": "18:52",
+        "objective": "5.3"
+      },
+      "notes_reference": "08_BIOS_UEFI_Hardware_Troubleshooting.md",
+      "tags": ["troubleshooting", "display", "multiple-monitors", "extend"]
+    },
+    {
+      "id": "C1N-T2-016",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A monitor flickers and the image briefly cuts out several times a minute. Swapping the cable does not help, but the flicker stops when a nearby desk fan is turned off. What is the cause?",
+      "options": [
+        "Electromagnetic interference from the fan's motor affecting the display signal or the monitor's electronics",
+        "The monitor is too bright",
+        "The graphics driver needs a licence",
+        "The desk is too high"
+      ],
+      "answer": 0,
+      "explanation": "Motors, fluorescent ballasts and poorly shielded power adapters emit electromagnetic interference that can corrupt a marginal video signal or upset a monitor's power circuitry. The correlation with the fan running is the diagnosis. Moving the fan or the monitor, using a well-shielded cable and routing it away from the interference source, or plugging the monitor into a different circuit fixes it. Brightness, licensing and furniture height are irrelevant.",
+      "distractor_analysis": {
+        "1": "Brightness does not cause intermittent signal loss.",
+        "2": "Drivers are not licensed and would not correlate with the fan.",
+        "3": "Desk height has no electrical effect."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Display Issues - CompTIA A+ 220-1201 - 5.3",
+        "url": "https://www.youtube.com/watch?v=KXZu72i1eX8",
+        "duration": "18:52",
+        "objective": "5.3"
+      },
+      "notes_reference": "08_BIOS_UEFI_Hardware_Troubleshooting.md",
+      "tags": ["troubleshooting", "display", "emi", "flicker"]
+    },
+    {
+      "id": "C1N-T2-017",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.5",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A workstation has an IP address of 169.254.10.7 and cannot reach any server. Other workstations on the same switch work normally. What does the address indicate?",
+      "options": [
+        "The workstation failed to obtain a DHCP lease and assigned itself an automatic private address",
+        "The workstation has been assigned a public address",
+        "The workstation is connected to the wrong VLAN",
+        "The workstation's DNS is misconfigured"
+      ],
+      "answer": 0,
+      "explanation": "Addresses in the 169.254.0.0/16 range are Automatic Private IP Addressing, which Windows uses when no DHCP server responds. Because other machines on the same switch work, the server is up, so the fault is local: a bad patch cable, a disabled port, a faulty network adapter or a stale lease. Releasing and renewing the lease, checking the link light and swapping the cable isolate it. The address is not public, VLAN problems produce a different pattern, and DNS is irrelevant without an address.",
+      "distractor_analysis": {
+        "1": "169.254 is a reserved link-local range, not public space.",
+        "2": "A wrong VLAN could also block DHCP, but other devices on the same port group working makes the local link more likely.",
+        "3": "DNS only matters once a valid address exists."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Networks - CompTIA A+ 220-1201 - 5.5",
+        "url": "https://www.youtube.com/watch?v=VBDS_kOHhVk",
+        "duration": "15:15",
+        "objective": "5.5"
+      },
+      "notes_reference": "13_DHCP_DNS_VLAN_VPN_Network_Troubleshooting.md",
+      "tags": ["troubleshooting", "networking", "apipa", "dhcp"]
+    },
+    {
+      "id": "C1N-T2-018",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.5",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user's PC can ping its default gateway and other internal servers but cannot reach any website by name or by address. What is the most likely cause?",
+      "options": [
+        "The gateway's connection to the internet or its routing is down; the problem is beyond the local network",
+        "The PC's network cable is unplugged",
+        "The PC has an APIPA address",
+        "The PC's DNS server is wrong"
+      ],
+      "answer": 0,
+      "explanation": "Successful pings to the gateway and internal servers prove the cable, adapter, address and local routing are fine. Failing to reach the internet even by IP address rules out DNS, because no name lookup is involved. That leaves the path from the gateway outward: the router's WAN link, the provider, or the firewall. Checking the router's status page and whether other users are affected confirms it and points to the provider or the edge device.",
+      "distractor_analysis": {
+        "1": "An unplugged cable would prevent pinging the gateway.",
+        "2": "An APIPA address cannot ping internal servers on a routed network.",
+        "3": "DNS is not involved when browsing by IP address fails too."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Networks - CompTIA A+ 220-1201 - 5.5",
+        "url": "https://www.youtube.com/watch?v=VBDS_kOHhVk",
+        "duration": "15:15",
+        "objective": "5.5"
+      },
+      "notes_reference": "13_DHCP_DNS_VLAN_VPN_Network_Troubleshooting.md",
+      "tags": ["troubleshooting", "networking", "connectivity", "gateway"]
+    },
+    {
+      "id": "C1N-T2-019",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.5",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A wired desktop connects at 100 Mbps although the switch and adapter both support gigabit. The link was gigabit last week. What is the most likely cause?",
+      "options": [
+        "A damaged cable or connector, since gigabit needs all four pairs and a single broken pair falls back to 100 Mbps",
+        "The switch has been downgraded by firmware",
+        "The PC has too many browser tabs open",
+        "The monitor is drawing too much power"
+      ],
+      "answer": 0,
+      "explanation": "Fast Ethernet uses two of the four wire pairs in a twisted-pair cable, but gigabit requires all four. If one pair is broken by a crushed cable, a bent pin or a poor termination, the link auto-negotiates down to 100 Mbps and appears to work. Replacing the patch cable or re-terminating the wall jack restores gigabit. Switch firmware does not silently downgrade one port, and applications and monitors have no effect on link speed negotiation.",
+      "distractor_analysis": {
+        "1": "Firmware changes do not selectively lower one port's speed.",
+        "2": "Application load does not change the physical link rate.",
+        "3": "Monitor power is unrelated to Ethernet."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Networks - CompTIA A+ 220-1201 - 5.5",
+        "url": "https://www.youtube.com/watch?v=VBDS_kOHhVk",
+        "duration": "15:15",
+        "objective": "5.5"
+      },
+      "notes_reference": "13_DHCP_DNS_VLAN_VPN_Network_Troubleshooting.md",
+      "tags": ["troubleshooting", "networking", "link-speed", "cabling"]
+    },
+    {
+      "id": "C1N-T2-020",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.5",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "Users in one corner of an office complain of slow Wi-Fi and frequent disconnections, while the rest of the floor is fine. A site survey shows a weak signal there. What is the best fix?",
+      "options": [
+        "Add or reposition an access point to cover the weak area",
+        "Tell users to move desks",
+        "Disable the 5 GHz band",
+        "Change every user's password"
+      ],
+      "answer": 0,
+      "explanation": "A localised weak signal is a coverage problem. Adding an access point, or moving an existing one closer to the affected area, raises signal strength so clients negotiate faster rates and stop roaming or dropping. A heat map from a survey tool shows where the dead zone is and confirms the fix. Relocating staff treats the symptom, disabling 5 GHz pushes everyone to the slower band, and passwords have no bearing on signal.",
+      "distractor_analysis": {
+        "1": "Moving people avoids the problem instead of fixing it.",
+        "2": "Removing 5 GHz reduces capacity everywhere.",
+        "3": "Credentials do not affect radio coverage."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Networks - CompTIA A+ 220-1201 - 5.5",
+        "url": "https://www.youtube.com/watch?v=VBDS_kOHhVk",
+        "duration": "15:15",
+        "objective": "5.5"
+      },
+      "notes_reference": "13_DHCP_DNS_VLAN_VPN_Network_Troubleshooting.md",
+      "tags": ["troubleshooting", "networking", "wi-fi", "coverage"]
+    },
+    {
+      "id": "C1N-T2-021",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.5",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "Two PCs on the same network intermittently lose connectivity, and the event logs on both report an IP address conflict. What is the most likely cause and fix?",
+      "options": [
+        "A device has a static address inside the DHCP pool; move the static device outside the pool or create an exclusion",
+        "The switch is too old; replace it",
+        "The PCs need new monitors",
+        "The cable is the wrong colour"
+      ],
+      "answer": 0,
+      "explanation": "An address conflict means two devices claim the same IP. The usual cause is a printer, camera or server that was given a static address inside the range the DHCP server hands out, so eventually the server leases the same address to a PC. Both then drop off intermittently as they fight over it. Finding the static device by its MAC address, moving it to an address outside the pool or excluding that address in the DHCP scope resolves it permanently.",
+      "distractor_analysis": {
+        "1": "Switch age does not create duplicate addresses.",
+        "2": "Monitors are irrelevant to addressing.",
+        "3": "Cable colour has no technical meaning."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Networks - CompTIA A+ 220-1201 - 5.5",
+        "url": "https://www.youtube.com/watch?v=VBDS_kOHhVk",
+        "duration": "15:15",
+        "objective": "5.5"
+      },
+      "notes_reference": "13_DHCP_DNS_VLAN_VPN_Network_Troubleshooting.md",
+      "tags": ["troubleshooting", "networking", "ip-conflict", "dhcp"]
+    },
+    {
+      "id": "C1N-T2-022",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.5",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user reports that video calls stutter and voices break up although a speed test shows plenty of bandwidth. Which network characteristics should the technician measure?",
+      "options": [
+        "Latency, jitter and packet loss, which affect real-time traffic more than raw bandwidth",
+        "Hard drive free space",
+        "Screen resolution",
+        "The number of installed fonts"
+      ],
+      "answer": 0,
+      "explanation": "Voice and video are sensitive to delay, to variation in delay called jitter, and to lost packets, none of which a bandwidth test reveals. A congested Wi-Fi link, a saturated uplink or a misbehaving switch can have high throughput and still break up calls. Continuous ping tests and the call application's own statistics show the problem, and quality of service, a wired connection or fixing the congested link resolve it. The other options have nothing to do with network quality.",
+      "distractor_analysis": {
+        "1": "Disk space does not affect call quality.",
+        "2": "Resolution is a display setting.",
+        "3": "Fonts are irrelevant to networking."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Networks - CompTIA A+ 220-1201 - 5.5",
+        "url": "https://www.youtube.com/watch?v=VBDS_kOHhVk",
+        "duration": "15:15",
+        "objective": "5.5"
+      },
+      "notes_reference": "13_DHCP_DNS_VLAN_VPN_Network_Troubleshooting.md",
+      "tags": ["troubleshooting", "networking", "latency", "jitter", "voip"]
+    },
+    {
+      "id": "C1N-T2-023",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.5",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A PC can browse the internet but cannot open a shared folder on a server by its name, although the server responds to ping by IP address. What should be checked?",
+      "options": [
+        "Internal DNS name resolution for the server, for example with nslookup, and the PC's configured DNS servers",
+        "The PC's power supply",
+        "The monitor cable",
+        "The keyboard layout"
+      ],
+      "answer": 0,
+      "explanation": "Reaching the server by IP address proves connectivity; failing by name means the name is not resolving to that address. Common causes are a PC pointed at a public DNS server that knows nothing about internal names, a missing internal record or a stale cache. Running nslookup against the server name shows which resolver answered and what it returned, and correcting the DNS settings or flushing the cache fixes it. Hardware and input settings are unrelated to name resolution.",
+      "distractor_analysis": {
+        "1": "The PC is running and browsing; power is fine.",
+        "2": "Display cabling does not affect name lookups.",
+        "3": "Keyboard layout does not change how names resolve."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Networks - CompTIA A+ 220-1201 - 5.5",
+        "url": "https://www.youtube.com/watch?v=VBDS_kOHhVk",
+        "duration": "15:15",
+        "objective": "5.5"
+      },
+      "notes_reference": "13_DHCP_DNS_VLAN_VPN_Network_Troubleshooting.md",
+      "tags": ["troubleshooting", "networking", "dns", "name-resolution"]
+    },
+    {
+      "id": "C1N-T2-024",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.5",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "After a switch port was moved to a new patch panel, the connected PC has no link light at all. Which tool confirms whether the cable run between the wall jack and the patch panel is good?",
+      "options": [
+        "A cable tester or a toner and probe",
+        "A multimeter set to AC voltage",
+        "A loopback plug on the monitor",
+        "A screwdriver"
+      ],
+      "answer": 0,
+      "explanation": "No link light means no electrical connection between the two ends. A cable tester checks every pair for continuity, shorts and miswires, and a toner and probe traces which patch panel port a wall jack actually terminates on, which is often the problem after a move. Once the run is proven and correctly patched, the link light returns. A multimeter can check continuity but not wiring order, loopback plugs test ports rather than runs, and a screwdriver diagnoses nothing.",
+      "distractor_analysis": {
+        "1": "Voltage measurement is for power, not network wiring.",
+        "2": "Loopback plugs are for network ports, not monitors, and do not test cable runs.",
+        "3": "A screwdriver is not a diagnostic tool."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Networks - CompTIA A+ 220-1201 - 5.5",
+        "url": "https://www.youtube.com/watch?v=VBDS_kOHhVk",
+        "duration": "15:15",
+        "objective": "5.5"
+      },
+      "notes_reference": "13_DHCP_DNS_VLAN_VPN_Network_Troubleshooting.md",
+      "tags": ["troubleshooting", "networking", "cable-tester", "no-link"]
+    },
+    {
+      "id": "C1N-T2-025",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.6",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A laser printer produces pages with a repeating smudge every few centimetres down the page. Which component is most likely responsible?",
+      "options": [
+        "A damaged or dirty roller or drum, because a defect on a rotating part repeats once per rotation",
+        "Low toner",
+        "The wrong paper size setting",
+        "A network cable fault"
+      ],
+      "answer": 0,
+      "explanation": "A mark that repeats at a regular interval down the page is produced by something rotating: the imaging drum, a transfer roller or the fuser. The spacing matches the circumference of the faulty part, and manufacturers publish repetition distances to identify which one it is. Cleaning or replacing that consumable fixes the defect. Low toner causes faint or patchy print, a paper size mismatch causes cropped or misaligned output, and network faults stop printing entirely.",
+      "distractor_analysis": {
+        "1": "Low toner produces fading, not a repeating mark.",
+        "2": "Paper settings affect layout, not marks.",
+        "3": "Network problems prevent jobs arriving rather than marking pages."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Printers - CompTIA A+ 220-1201 - 5.6",
+        "url": "https://www.youtube.com/watch?v=_BhO_nYod0o",
+        "duration": "11:55",
+        "objective": "5.6"
+      },
+      "notes_reference": "16_Printers.md",
+      "tags": ["troubleshooting", "printers", "laser", "repeating-defect"]
+    },
+    {
+      "id": "C1N-T2-026",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.6",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "Printed pages from a laser printer smear when touched and the toner rubs off easily. Which component has failed?",
+      "options": [
+        "The fuser, which is not reaching the temperature needed to bond toner to the paper",
+        "The pickup roller",
+        "The paper tray sensor",
+        "The network card"
+      ],
+      "answer": 0,
+      "explanation": "Toner is a fine plastic powder that is melted onto the page by the fuser's heated roller. If the fuser lamp or its thermistor fails, or the fuser is worn, toner sits loose on the surface and wipes away. Fusers are user-replaceable maintenance items on most office printers. Pickup rollers cause feed problems, tray sensors cause paper errors, and the network card affects connectivity rather than print quality.",
+      "distractor_analysis": {
+        "1": "Pickup roller faults cause jams or no feed.",
+        "2": "Tray sensors report paper presence.",
+        "3": "Network faults stop jobs, they do not affect fusing."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Printers - CompTIA A+ 220-1201 - 5.6",
+        "url": "https://www.youtube.com/watch?v=_BhO_nYod0o",
+        "duration": "11:55",
+        "objective": "5.6"
+      },
+      "notes_reference": "16_Printers.md",
+      "tags": ["troubleshooting", "printers", "laser", "fuser"]
+    },
+    {
+      "id": "C1N-T2-027",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.6",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "An inkjet printer prints pages with horizontal white lines through text and images. What is the first thing to try?",
+      "options": [
+        "Run the printer's head cleaning routine and print a nozzle check",
+        "Replace the paper tray",
+        "Reinstall the operating system",
+        "Change the network cable"
+      ],
+      "answer": 0,
+      "explanation": "Fine horizontal gaps in inkjet output are clogged or dried nozzles in the print head, especially if the printer has sat unused. The built-in cleaning cycle forces ink through the nozzles and the nozzle check page shows which colours still have gaps; repeating the cycle two or three times usually clears it, and a head replacement is the last resort. The tray, the operating system and the cable have nothing to do with nozzle output.",
+      "distractor_analysis": {
+        "1": "The tray feeds paper and does not affect ink.",
+        "2": "Operating system state does not clog nozzles.",
+        "3": "The job is arriving and printing, so connectivity is fine."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Printers - CompTIA A+ 220-1201 - 5.6",
+        "url": "https://www.youtube.com/watch?v=_BhO_nYod0o",
+        "duration": "11:55",
+        "objective": "5.6"
+      },
+      "notes_reference": "16_Printers.md",
+      "tags": ["troubleshooting", "printers", "inkjet", "nozzle"]
+    },
+    {
+      "id": "C1N-T2-028",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.6",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "Users send print jobs to a shared printer and nothing prints, but the jobs remain listed in the queue on their PCs. The printer's display shows Ready. What should the technician check first?",
+      "options": [
+        "The print spooler service on the print server, restarting it and clearing any stuck job at the head of the queue",
+        "The paper type in the tray",
+        "The colour of the toner cartridge",
+        "The monitor on the print server"
+      ],
+      "answer": 0,
+      "explanation": "A printer that reports Ready while every job sits in the queue points at the software between the users and the device. A corrupt job at the front of the spooler blocks everything behind it, and the spooler service can hang. Restarting the spooler and deleting the stuck job on the print server releases the queue. If jobs still do not flow, the port configuration or the printer's network address should be checked. Paper type, cartridge colour and the server's monitor are irrelevant.",
+      "distractor_analysis": {
+        "1": "Paper settings affect output, not whether jobs leave the queue.",
+        "2": "Cartridge colour is meaningless here.",
+        "3": "The server's display has no effect on printing."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Printers - CompTIA A+ 220-1201 - 5.6",
+        "url": "https://www.youtube.com/watch?v=_BhO_nYod0o",
+        "duration": "11:55",
+        "objective": "5.6"
+      },
+      "notes_reference": "16_Printers.md",
+      "tags": ["troubleshooting", "printers", "spooler", "queue"]
+    },
+    {
+      "id": "C1N-T2-029",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.6",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A laser printer repeatedly pulls two or three sheets at once from the tray, causing jams. Which component is most likely worn?",
+      "options": [
+        "The separation pad or pickup rollers",
+        "The fuser",
+        "The toner cartridge",
+        "The network interface"
+      ],
+      "answer": 0,
+      "explanation": "Multi-sheet feeds happen when the separation pad, which holds back all but the top sheet, is worn smooth, or when pickup rollers have lost their grip and grab several sheets together. Both are inexpensive maintenance parts. Fanning the paper and checking for humidity also helps, since damp sheets stick together. The fuser fixes toner after feeding, the cartridge supplies toner, and the network interface delivers jobs; none of them touch the paper stack.",
+      "distractor_analysis": {
+        "1": "The fuser is downstream of the feed mechanism.",
+        "2": "Toner supply does not affect paper pickup.",
+        "3": "Network components have no mechanical role."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Printers - CompTIA A+ 220-1201 - 5.6",
+        "url": "https://www.youtube.com/watch?v=_BhO_nYod0o",
+        "duration": "11:55",
+        "objective": "5.6"
+      },
+      "notes_reference": "16_Printers.md",
+      "tags": ["troubleshooting", "printers", "multi-feed", "separation-pad"]
+    },
+    {
+      "id": "C1N-T2-030",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.6",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user prints a document and receives pages of random characters and symbols instead of the text. What is the most likely cause?",
+      "options": [
+        "The wrong or a corrupted printer driver, so the printer receives a page description language it does not understand",
+        "The paper is the wrong size",
+        "The toner is low",
+        "The printer is out of warranty"
+      ],
+      "answer": 0,
+      "explanation": "Garbage output means the printer is interpreting the data stream in the wrong language, for example PostScript sent to a printer expecting PCL, or a driver mismatch after a model change or a corrupted driver update. Reinstalling the correct manufacturer driver for the exact model, or switching the port's language setting, fixes it. Paper size causes cropping, low toner causes fading, and warranty status has no technical effect.",
+      "distractor_analysis": {
+        "1": "Wrong paper size crops or shifts the page.",
+        "2": "Low toner fades output rather than corrupting it.",
+        "3": "Warranty does not change how the printer functions."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Printers - CompTIA A+ 220-1201 - 5.6",
+        "url": "https://www.youtube.com/watch?v=_BhO_nYod0o",
+        "duration": "11:55",
+        "objective": "5.6"
+      },
+      "notes_reference": "16_Printers.md",
+      "tags": ["troubleshooting", "printers", "garbled-output", "driver"]
+    },
+    {
+      "id": "C1N-T2-031",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A laptop's battery no longer charges above 80 percent although the machine is plugged in all day. The battery health tool shows normal capacity. What is the most likely explanation?",
+      "options": [
+        "A battery conservation or charge threshold setting is limiting the charge to prolong battery life",
+        "The battery has failed",
+        "The AC adapter is faulty",
+        "The laptop is overheating"
+      ],
+      "answer": 0,
+      "explanation": "Most business laptops include a setting, in the vendor utility or firmware, that caps charging at around 80 percent when the machine lives on mains power, because holding lithium cells at full charge accelerates wear. A battery that stops at exactly the same percentage every time, with healthy capacity, is being managed rather than failing. The user can disable the setting before travel. A failed battery shows reduced capacity, a bad adapter would not charge at all, and overheating pauses charging inconsistently.",
+      "distractor_analysis": {
+        "1": "The health tool reports normal capacity.",
+        "2": "A faulty adapter would fail to charge to 80 percent either.",
+        "3": "Thermal limits do not stop at a fixed percentage."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1201 - 5.4",
+        "url": "https://www.youtube.com/watch?v=huQwiY4kiko",
+        "duration": "17:52",
+        "objective": "5.4"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["troubleshooting", "laptop", "battery", "charge-threshold"]
+    },
+    {
+      "id": "C1N-T2-032",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A tablet's screen does not respond in one horizontal band across the middle, but works above and below it. What is the most likely cause?",
+      "options": [
+        "A digitizer fault, often from a crack or delamination, affecting one set of sensor lines",
+        "The tablet needs a software update",
+        "The battery is low",
+        "The Wi-Fi is disconnected"
+      ],
+      "answer": 0,
+      "explanation": "The touch digitizer is a grid of conductive lines. Damage to the flex cable or the glass, or moisture ingress, can kill a group of adjacent lines, producing a dead strip while the rest of the screen works. Because it is a fixed region, a restart or software update will not restore it; the digitizer or display assembly must be replaced. Battery level and connectivity have no effect on which part of the screen senses touch.",
+      "distractor_analysis": {
+        "1": "A geographically fixed dead zone is hardware, not software.",
+        "2": "Low battery does not disable a section of the digitizer.",
+        "3": "Wi-Fi is unrelated to touch input."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1201 - 5.4",
+        "url": "https://www.youtube.com/watch?v=huQwiY4kiko",
+        "duration": "17:52",
+        "objective": "5.4"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["troubleshooting", "tablet", "digitizer", "touchscreen"]
+    },
+    {
+      "id": "C1N-T2-033",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A laptop shuts down the moment the AC adapter is unplugged even though the battery indicator showed 60 percent. What does this indicate?",
+      "options": [
+        "The battery can no longer deliver current under load and needs replacing, despite the reported charge",
+        "The adapter is the wrong wattage",
+        "The laptop's fan is failing",
+        "The display cable is loose"
+      ],
+      "answer": 0,
+      "explanation": "A battery's reported percentage comes from its own gauge, which can drift as cells age. When the internal resistance of worn cells rises, the pack cannot supply the current the laptop needs and voltage collapses the instant the adapter is removed, causing an immediate shutdown. Recalibration rarely helps at this stage; the battery is at end of life. Adapter wattage matters only while plugged in, and fans and display cabling are unrelated to power delivery.",
+      "distractor_analysis": {
+        "1": "The adapter is not in use once unplugged.",
+        "2": "A failing fan causes overheating, not instant power loss.",
+        "3": "Display cabling does not cut power."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1201 - 5.4",
+        "url": "https://www.youtube.com/watch?v=huQwiY4kiko",
+        "duration": "17:52",
+        "objective": "5.4"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["troubleshooting", "laptop", "battery", "shutdown"]
+    },
+    {
+      "id": "C1N-T2-034",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A laptop's keyboard types the wrong characters, for example a pound sign when the hash key is pressed and swapped quote marks. What is the most likely cause?",
+      "options": [
+        "The keyboard layout or input language is set to a different region than the physical keyboard",
+        "The keyboard has liquid damage",
+        "The touchpad driver is corrupt",
+        "The screen needs recalibrating"
+      ],
+      "answer": 0,
+      "explanation": "Swapped symbols on otherwise working keys are a layout mismatch: the operating system believes a US keyboard is attached when the hardware is UK, or vice versa, often because a second input language was added and a shortcut switched between them. Correcting the keyboard layout in language settings and removing the unused one fixes it instantly. Liquid damage produces dead or repeating keys, and touchpad and display settings have no effect on character mapping.",
+      "distractor_analysis": {
+        "1": "Liquid damage kills keys rather than remapping them.",
+        "2": "The touchpad has no role in keyboard mapping.",
+        "3": "Screen calibration affects touch, not typed characters."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1201 - 5.4",
+        "url": "https://www.youtube.com/watch?v=huQwiY4kiko",
+        "duration": "17:52",
+        "objective": "5.4"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["troubleshooting", "laptop", "keyboard", "layout"]
+    },
+    {
+      "id": "C1N-T2-035",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A laptop connects to Wi-Fi but the signal indicator shows one bar even when sitting next to the access point, and a phone in the same spot shows full strength. What is the most likely cause?",
+      "options": [
+        "A disconnected or damaged antenna lead to the laptop's wireless card, often after a screen or hinge repair",
+        "The access point is faulty",
+        "The laptop's hard drive is full",
+        "The Wi-Fi password is wrong"
+      ],
+      "answer": 0,
+      "explanation": "The phone proves the access point is transmitting strongly at that spot, so the laptop is receiving poorly. A wireless card with one or both antenna leads detached or pinched, or a broken lead running through the hinge, hears almost nothing even at close range. Reattaching the leads, or replacing a damaged one, restores normal strength. Storage and credentials have nothing to do with received signal, and a wrong password prevents connection entirely.",
+      "distractor_analysis": {
+        "1": "The phone shows full strength from the same access point.",
+        "2": "Disk space does not affect radio reception.",
+        "3": "A wrong password would block the connection, not weaken the signal."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1201 - 5.4",
+        "url": "https://www.youtube.com/watch?v=huQwiY4kiko",
+        "duration": "17:52",
+        "objective": "5.4"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["troubleshooting", "laptop", "wi-fi", "antenna"]
+    },
+    {
+      "id": "C1N-T2-036",
+      "exam": "core1",
+      "domain": "5.0 Hardware and Network Troubleshooting",
+      "objective": "5.4",
+      "type": "match",
+      "difficulty": "medium",
+      "question": "Match each mobile device symptom to the most likely cause.",
+      "pairs": [
+        { "left": "Charges to exactly 80 percent every time", "right": "Charge threshold setting" },
+        { "left": "Shuts down instantly when unplugged at 60 percent", "right": "Worn battery unable to supply current" },
+        { "left": "Dead strip across the touchscreen", "right": "Damaged digitizer" },
+        { "left": "One signal bar next to the access point", "right": "Detached antenna lead" },
+        { "left": "Hash key prints a pound sign", "right": "Wrong keyboard layout" }
+      ],
+      "explanation": "Mobile hardware faults tend to have distinctive signatures. Fixed charge ceilings are deliberate settings. Instant shutdown under load is a battery that reports charge it cannot deliver. A fixed dead zone in touch is physical digitizer damage. Poor reception with a strong nearby signal is the laptop's own antenna path. Swapped symbols are a layout mismatch in software. Recognising each pattern avoids replacing the wrong part.",
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1201 - 5.4",
+        "url": "https://www.youtube.com/watch?v=huQwiY4kiko",
+        "duration": "17:52",
+        "objective": "5.4"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["troubleshooting", "mobile", "match"]
+    }
+  ]
+}

@@ -6,7 +6,7 @@ Built by Datacentre Academy for technicians training for datacentre and enterpri
 
 [![CI](https://github.com/LuminaraDigital/comptia-a-plus-master/actions/workflows/ci.yml/badge.svg)](https://github.com/LuminaraDigital/comptia-a-plus-master/actions/workflows/ci.yml)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-3.1.0-gold.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-3.1.1-gold.svg)](CHANGELOG.md)
 
 ## Screenshots
 
@@ -29,6 +29,7 @@ Captured from the Windows desktop build at 1440 by 900 with `node tools/capture_
 **Exam engine that mirrors the real test**
 
 - 90 questions in 90 minutes, sampled to the official domain weightings for each exam
+- A bank of 1,130 questions, enough for five fresh mock exams per core before any question repeats, each with a full explanation, distractor analysis and a mapped video
 - Scaled scoring from 100 to 900 with the real pass marks (675 for Core 1, 700 for Core 2)
 - Single answer, multiple answer, matching, ordering and performance-based question types
 - Flag for review, distractor strike-through, question matrix, pause and resume

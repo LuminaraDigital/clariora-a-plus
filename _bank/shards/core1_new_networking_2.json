@@ -1,0 +1,899 @@
+{
+  "questions": [
+    {
+      "id": "C1N-N-001",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.3",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "A small office wants every workstation to receive an IP address, subnet mask, default gateway and DNS servers automatically when it boots. Which network service provides this?",
+      "options": [
+        "DHCP",
+        "DNS",
+        "SMTP",
+        "SNMP"
+      ],
+      "answer": 0,
+      "explanation": "Dynamic Host Configuration Protocol hands out IP configuration from a pool when a client broadcasts a request, saving manual configuration and preventing duplicate addresses. The lease includes the address, mask, gateway, DNS servers and often the domain name, and expires after a set time unless renewed. DNS translates names to addresses but does not assign them, SMTP carries email, and SNMP is used to monitor network devices.",
+      "distractor_analysis": {
+        "1": "DNS resolves names; it does not hand out addresses.",
+        "2": "SMTP is the mail transfer protocol.",
+        "3": "SNMP collects statistics and alerts from network equipment."
+      },
+      "video_reference": {
+        "title": "Network Services - CompTIA A+ 220-1201 - 2.3",
+        "url": "https://www.youtube.com/watch?v=Z-9mkqi2ELI",
+        "duration": "17:03",
+        "objective": "2.3"
+      },
+      "notes_reference": "12_Ports_Protocols_Network_Services.md",
+      "tags": ["networking", "dhcp", "network-services"]
+    },
+    {
+      "id": "C1N-N-002",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "Users can reach websites by IP address but not by name after a server room change. Which network service is most likely down?",
+      "options": [
+        "DNS",
+        "DHCP",
+        "File server",
+        "Print server"
+      ],
+      "answer": 0,
+      "explanation": "Reaching a destination by address proves that IP routing, the gateway and the client's own configuration are working. What is failing is the translation of names into addresses, which is the job of the Domain Name System. Checking that the DNS server the clients are configured to use is online and reachable, or that its forwarders still work, is the fix. DHCP would produce address problems, and file and print services are unrelated to web name resolution.",
+      "distractor_analysis": {
+        "1": "A DHCP failure would leave clients without addresses, so even IP browsing would fail.",
+        "2": "File sharing does not affect name lookups for websites.",
+        "3": "Printing is a separate service."
+      },
+      "video_reference": {
+        "title": "Network Services - CompTIA A+ 220-1201 - 2.3",
+        "url": "https://www.youtube.com/watch?v=Z-9mkqi2ELI",
+        "duration": "17:03",
+        "objective": "2.3"
+      },
+      "notes_reference": "12_Ports_Protocols_Network_Services.md",
+      "tags": ["networking", "dns", "troubleshooting", "network-services"]
+    },
+    {
+      "id": "C1N-N-003",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A company wants a single server to store documents that staff open from mapped drives on their Windows PCs. Which type of server and protocol fit this need?",
+      "options": [
+        "A file server sharing folders over SMB",
+        "A web server using HTTP",
+        "A mail server using IMAP",
+        "A DHCP server using UDP 67"
+      ],
+      "answer": 0,
+      "explanation": "A file server centralises documents so they can be backed up, permissioned and shared. Windows clients access shared folders over Server Message Block, which is what a mapped drive letter uses underneath, and access is controlled by share and NTFS permissions. Web servers serve pages to browsers, mail servers hold mailboxes, and DHCP assigns addresses; none of them provide the drive-letter file access the requirement describes.",
+      "distractor_analysis": {
+        "1": "HTTP serves web content, not mapped drives.",
+        "2": "IMAP is for reading email.",
+        "3": "DHCP assigns IP configuration and stores no documents."
+      },
+      "video_reference": {
+        "title": "Network Services - CompTIA A+ 220-1201 - 2.3",
+        "url": "https://www.youtube.com/watch?v=Z-9mkqi2ELI",
+        "duration": "17:03",
+        "objective": "2.3"
+      },
+      "notes_reference": "12_Ports_Protocols_Network_Services.md",
+      "tags": ["networking", "file-server", "smb", "network-services"]
+    },
+    {
+      "id": "C1N-N-004",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A network administrator wants to be alerted when a switch's uplink goes down and to graph the bandwidth on each port over time. Which service should be deployed?",
+      "options": [
+        "A monitoring system using SNMP to poll and receive traps from the switch",
+        "A DHCP server",
+        "A print server",
+        "A proxy server"
+      ],
+      "answer": 0,
+      "explanation": "Simple Network Management Protocol lets a monitoring server read counters such as port traffic and status from devices, and lets devices send unsolicited trap messages when something changes, such as a link failure. Version 3 adds authentication and encryption and should be used over the older community-string versions. Address assignment, printing and web proxying are entirely different services that provide no device telemetry.",
+      "distractor_analysis": {
+        "1": "DHCP assigns addresses and has no monitoring role.",
+        "2": "Print servers queue print jobs.",
+        "3": "A proxy relays and filters web traffic."
+      },
+      "video_reference": {
+        "title": "Network Services - CompTIA A+ 220-1201 - 2.3",
+        "url": "https://www.youtube.com/watch?v=Z-9mkqi2ELI",
+        "duration": "17:03",
+        "objective": "2.3"
+      },
+      "notes_reference": "12_Ports_Protocols_Network_Services.md",
+      "tags": ["networking", "snmp", "monitoring", "network-services"]
+    },
+    {
+      "id": "C1N-N-005",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A school wants to block access to certain website categories and cache frequently visited pages to save bandwidth. Which server performs both functions?",
+      "options": [
+        "A proxy server",
+        "A DNS server",
+        "A syslog server",
+        "An authentication server"
+      ],
+      "answer": 0,
+      "explanation": "A proxy sits between clients and the internet, making web requests on their behalf. Because every request passes through it, the proxy can enforce content filtering policies, log activity and keep a cache of pages so repeated requests are served locally. Clients are pointed at it through browser settings, group policy or a transparent redirect at the gateway. DNS resolves names, syslog collects log messages and an authentication server verifies identities.",
+      "distractor_analysis": {
+        "1": "DNS can be used for some filtering but does not cache web pages.",
+        "2": "Syslog stores log entries from devices.",
+        "3": "Authentication servers check credentials, not web content."
+      },
+      "video_reference": {
+        "title": "Network Services - CompTIA A+ 220-1201 - 2.3",
+        "url": "https://www.youtube.com/watch?v=Z-9mkqi2ELI",
+        "duration": "17:03",
+        "objective": "2.3"
+      },
+      "notes_reference": "12_Ports_Protocols_Network_Services.md",
+      "tags": ["networking", "proxy", "content-filtering", "network-services"]
+    },
+    {
+      "id": "C1N-N-006",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "Every network device and server in a data centre must send its event messages to one central location for review and retention. Which service collects them?",
+      "options": [
+        "A syslog server",
+        "A DHCP relay",
+        "A web server",
+        "A file server"
+      ],
+      "answer": 0,
+      "explanation": "Syslog is the standard protocol by which routers, switches, firewalls and Unix-like servers send timestamped event messages to a central collector, typically over UDP 514 or TLS on 6514. Centralising logs makes correlation, alerting and retention for compliance possible and preserves evidence if a device is compromised or fails. The collector is often part of a security information and event management platform. The other services do not receive device event streams.",
+      "distractor_analysis": {
+        "1": "A DHCP relay forwards address requests across subnets.",
+        "2": "Web servers serve pages and do not aggregate device logs.",
+        "3": "A file server stores documents rather than receiving syslog streams."
+      },
+      "video_reference": {
+        "title": "Network Services - CompTIA A+ 220-1201 - 2.3",
+        "url": "https://www.youtube.com/watch?v=Z-9mkqi2ELI",
+        "duration": "17:03",
+        "objective": "2.3"
+      },
+      "notes_reference": "12_Ports_Protocols_Network_Services.md",
+      "tags": ["networking", "syslog", "logging", "network-services"]
+    },
+    {
+      "id": "C1N-N-007",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A company wants users to log in once with a single username and password that is checked by a central server for every workstation and application. Which service provides this?",
+      "options": [
+        "An authentication, authorisation and accounting (AAA) server such as a domain controller or RADIUS server",
+        "A DHCP server",
+        "A print server",
+        "A web cache"
+      ],
+      "answer": 0,
+      "explanation": "Central authentication stores identities in one directory and verifies credentials for every login. In Windows networks this is Active Directory on domain controllers; for network equipment and Wi-Fi it is often a RADIUS server that itself queries the directory. Authorisation decides what the verified user may do and accounting records what they did. Address assignment, printing and caching have no part in identity.",
+      "distractor_analysis": {
+        "1": "DHCP assigns addresses without regard to identity.",
+        "2": "Print servers manage queues.",
+        "3": "A web cache stores pages."
+      },
+      "video_reference": {
+        "title": "Network Services - CompTIA A+ 220-1201 - 2.3",
+        "url": "https://www.youtube.com/watch?v=Z-9mkqi2ELI",
+        "duration": "17:03",
+        "objective": "2.3"
+      },
+      "notes_reference": "12_Ports_Protocols_Network_Services.md",
+      "tags": ["networking", "aaa", "authentication", "network-services"]
+    },
+    {
+      "id": "C1N-N-008",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A retailer wants a device at the network edge that inspects traffic for known attack patterns and can block malicious connections automatically. Which appliance is described?",
+      "options": [
+        "An intrusion prevention system, usually built into a unified threat management firewall",
+        "A load balancer",
+        "A DHCP server",
+        "A file server"
+      ],
+      "answer": 0,
+      "explanation": "An intrusion detection system watches traffic and raises alerts, while an intrusion prevention system sits inline and can drop or reset connections that match attack signatures or behave abnormally. Small and mid-sized organisations usually get this as one function of a unified threat management appliance alongside firewalling, content filtering and antivirus scanning. Load balancers distribute traffic among servers, and the other two are ordinary servers.",
+      "distractor_analysis": {
+        "1": "A load balancer spreads requests across servers for capacity, not security inspection.",
+        "2": "DHCP assigns addresses.",
+        "3": "File servers store documents."
+      },
+      "video_reference": {
+        "title": "Network Services - CompTIA A+ 220-1201 - 2.3",
+        "url": "https://www.youtube.com/watch?v=Z-9mkqi2ELI",
+        "duration": "17:03",
+        "objective": "2.3"
+      },
+      "notes_reference": "12_Ports_Protocols_Network_Services.md",
+      "tags": ["networking", "ips", "utm", "security-appliance", "network-services"]
+    },
+    {
+      "id": "C1N-N-009",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A busy website is hosted on four identical servers. Which device ensures user requests are shared among them and that a failed server stops receiving traffic?",
+      "options": [
+        "A load balancer",
+        "A DHCP server",
+        "A syslog collector",
+        "A print server"
+      ],
+      "answer": 0,
+      "explanation": "A load balancer presents one address to the world and distributes incoming connections across a pool of back-end servers using round robin, least connections or similar methods. It performs health checks and removes a failed server from the pool automatically, so users are unaware of the failure. It can also terminate TLS and keep sessions on the same server. Address assignment, log collection and printing are unrelated to distributing web load.",
+      "distractor_analysis": {
+        "1": "DHCP has no role in distributing web traffic.",
+        "2": "Syslog collects logs.",
+        "3": "Print servers manage printers."
+      },
+      "video_reference": {
+        "title": "Network Services - CompTIA A+ 220-1201 - 2.3",
+        "url": "https://www.youtube.com/watch?v=Z-9mkqi2ELI",
+        "duration": "17:03",
+        "objective": "2.3"
+      },
+      "notes_reference": "12_Ports_Protocols_Network_Services.md",
+      "tags": ["networking", "load-balancer", "high-availability", "network-services"]
+    },
+    {
+      "id": "C1N-N-010",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A factory has sensors and controllers that speak industrial protocols over the network and must never be exposed to the office LAN or the internet. Which term describes these devices and how should they be handled?",
+      "options": [
+        "Supervisory control and data acquisition or operational technology devices, isolated on their own segment behind strict firewall rules",
+        "Print servers, placed on the guest Wi-Fi",
+        "Load balancers, exposed publicly",
+        "DHCP relays, left on the office LAN"
+      ],
+      "answer": 0,
+      "explanation": "SCADA and other industrial control systems run legacy protocols with little built-in security and often cannot be patched, so they are among the most sensitive devices an organisation owns. Best practice places them on a dedicated network segment with a firewall permitting only the specific management traffic required, and monitors that segment closely. Treating them like ordinary office devices, or exposing them publicly, is how factories end up in security incidents.",
+      "distractor_analysis": {
+        "1": "They are not print servers, and guest Wi-Fi is the least trusted network.",
+        "2": "Control systems must never be publicly exposed.",
+        "3": "Sharing the office LAN gives every workstation a path to the controllers."
+      },
+      "video_reference": {
+        "title": "Network Services - CompTIA A+ 220-1201 - 2.3",
+        "url": "https://www.youtube.com/watch?v=Z-9mkqi2ELI",
+        "duration": "17:03",
+        "objective": "2.3"
+      },
+      "notes_reference": "12_Ports_Protocols_Network_Services.md",
+      "tags": ["networking", "scada", "operational-technology", "segmentation", "network-services"]
+    },
+    {
+      "id": "C1N-N-011",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.7",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "A home user in a rural area with no cable or fibre service and a poor mobile signal wants broadband internet. Which connection type is the most likely option?",
+      "options": [
+        "Satellite internet",
+        "Fibre to the premises",
+        "Cable broadband",
+        "A leased line"
+      ],
+      "answer": 0,
+      "explanation": "Satellite service needs only a clear view of the sky, so it reaches places that no cable, fibre or strong cellular signal covers. Traditional geostationary satellites impose high latency of around 600 milliseconds, which hurts video calls and gaming, while newer low-earth-orbit constellations reduce that to tens of milliseconds. Weather can degrade the link. Fibre and cable require physical infrastructure in the street, and a leased line is an expensive business circuit.",
+      "distractor_analysis": {
+        "1": "Fibre requires a provider to have run cable to the property.",
+        "2": "Cable broadband depends on the cable television network reaching the area.",
+        "3": "Leased lines are costly dedicated business circuits."
+      },
+      "video_reference": {
+        "title": "Internet Connection Types - CompTIA A+ 220-1201 - 2.7",
+        "url": "https://www.youtube.com/watch?v=iN2QnGFl06E",
+        "duration": "7:33",
+        "objective": "2.7"
+      },
+      "notes_reference": "11_Internet_Connections_TCPIP_Addressing.md",
+      "tags": ["networking", "satellite", "internet-connection", "rural"]
+    },
+    {
+      "id": "C1N-N-012",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.7",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user's internet speed test shows fast downloads but very slow uploads, and the connection uses the existing telephone line. Which connection type is this and why is upload slower?",
+      "options": [
+        "DSL, which is asymmetric by design and allocates more frequency bandwidth to downstream",
+        "Fibre, because light travels one way",
+        "Satellite, because of weather",
+        "Ethernet, because of cable length"
+      ],
+      "answer": 0,
+      "explanation": "Digital subscriber line service runs over copper telephone wiring and most residential variants are asymmetric, giving download far more capacity than upload because that matches typical consumer traffic. Speed also falls with distance from the exchange or street cabinet. Fibre is inherently symmetric-capable, satellite slowness is latency and weather rather than asymmetry over a phone line, and Ethernet is a local network technology, not an internet service.",
+      "distractor_analysis": {
+        "1": "Fibre carries light in both directions and is often symmetric.",
+        "2": "Satellite does not use a telephone line.",
+        "3": "Ethernet is the LAN cabling standard, not the internet connection type."
+      },
+      "video_reference": {
+        "title": "Internet Connection Types - CompTIA A+ 220-1201 - 2.7",
+        "url": "https://www.youtube.com/watch?v=iN2QnGFl06E",
+        "duration": "7:33",
+        "objective": "2.7"
+      },
+      "notes_reference": "11_Internet_Connections_TCPIP_Addressing.md",
+      "tags": ["networking", "dsl", "asymmetric", "internet-connection"]
+    },
+    {
+      "id": "C1N-N-013",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.7",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A company opens a temporary site for three months and needs internet on day one without waiting for a wired installation. Which option best fits?",
+      "options": [
+        "A cellular router using 4G or 5G with a business data plan",
+        "Fibre to the premises",
+        "A satellite dish installed on the roof with a two-year contract",
+        "A dial-up modem"
+      ],
+      "answer": 0,
+      "explanation": "Cellular wide area network routers turn a mobile data connection into a wired and wireless LAN for a site, can be running the day the equipment arrives and are easily returned when the site closes. Providers offer business plans with fixed pricing and external antennas improve signal. Fibre installation takes weeks and a long contract, satellite contracts are also lengthy, and dial-up cannot support a modern office.",
+      "distractor_analysis": {
+        "1": "Fibre requires a survey, installation and a long commitment.",
+        "2": "A two-year satellite contract does not suit a three-month site.",
+        "3": "Dial-up speeds are unusable for business applications."
+      },
+      "video_reference": {
+        "title": "Internet Connection Types - CompTIA A+ 220-1201 - 2.7",
+        "url": "https://www.youtube.com/watch?v=iN2QnGFl06E",
+        "duration": "7:33",
+        "objective": "2.7"
+      },
+      "notes_reference": "11_Internet_Connections_TCPIP_Addressing.md",
+      "tags": ["networking", "cellular", "wwan", "internet-connection"]
+    },
+    {
+      "id": "C1N-N-014",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.7",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "Which term describes the network within a single office building where all devices connect to the same switches?",
+      "options": [
+        "Local area network (LAN)",
+        "Wide area network (WAN)",
+        "Personal area network (PAN)",
+        "Metropolitan area network (MAN)"
+      ],
+      "answer": 0,
+      "explanation": "A LAN covers a limited area such as a building or campus, is owned by the organisation and uses Ethernet and Wi-Fi at high speed and low latency. A WAN connects sites across cities or countries using carrier links, a MAN spans a city, and a PAN is the few-metre bubble around one person, typically Bluetooth. Knowing the scope helps a technician decide whether a problem is local or belongs to a service provider.",
+      "distractor_analysis": {
+        "1": "A WAN connects geographically separate sites.",
+        "2": "A PAN is a personal, short-range network such as Bluetooth.",
+        "3": "A MAN spans a metropolitan area."
+      },
+      "video_reference": {
+        "title": "Network Types - CompTIA A+ 220-1201 - 2.7",
+        "url": "https://www.youtube.com/watch?v=PBEXIMeqRNY",
+        "duration": "4:46",
+        "objective": "2.7"
+      },
+      "notes_reference": "11_Internet_Connections_TCPIP_Addressing.md",
+      "tags": ["networking", "lan", "network-types"]
+    },
+    {
+      "id": "C1N-N-015",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.7",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A company connects its head office in one city to a branch in another using a service from a telecoms provider. Which network type is formed?",
+      "options": [
+        "A wide area network (WAN)",
+        "A local area network (LAN)",
+        "A personal area network (PAN)",
+        "A storage area network (SAN)"
+      ],
+      "answer": 0,
+      "explanation": "Any network that links sites across distances beyond a single campus is a WAN, and it almost always runs over circuits or VPN tunnels provided by a carrier because the organisation cannot run its own cable between cities. WAN links are slower and higher latency than LAN links and are a common bottleneck. A LAN is confined to one site, a PAN is personal short-range, and a SAN is a dedicated storage network inside a data centre.",
+      "distractor_analysis": {
+        "1": "A LAN cannot span cities.",
+        "2": "A PAN is a personal Bluetooth-scale network.",
+        "3": "A SAN carries block storage traffic within a data centre."
+      },
+      "video_reference": {
+        "title": "Network Types - CompTIA A+ 220-1201 - 2.7",
+        "url": "https://www.youtube.com/watch?v=PBEXIMeqRNY",
+        "duration": "4:46",
+        "objective": "2.7"
+      },
+      "notes_reference": "11_Internet_Connections_TCPIP_Addressing.md",
+      "tags": ["networking", "wan", "network-types"]
+    },
+    {
+      "id": "C1N-N-016",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.7",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A data centre team refers to the dedicated high-speed network that connects servers to shared disk arrays. Which network type is this?",
+      "options": [
+        "A storage area network (SAN)",
+        "A wireless local area network (WLAN)",
+        "A personal area network (PAN)",
+        "A metropolitan area network (MAN)"
+      ],
+      "answer": 0,
+      "explanation": "A SAN provides block-level storage to servers over a dedicated fabric, traditionally Fibre Channel and increasingly iSCSI or NVMe over Ethernet. Servers see SAN volumes as local disks, which is what allows virtual machines to move between hosts and clusters to share data. It is kept separate from the general LAN for performance and reliability. WLANs are Wi-Fi, PANs are personal short-range, and MANs are city-scale networks.",
+      "distractor_analysis": {
+        "1": "Wi-Fi is far too slow and unreliable for shared storage.",
+        "2": "A PAN is a personal device network.",
+        "3": "A MAN links sites across a city."
+      },
+      "video_reference": {
+        "title": "Network Types - CompTIA A+ 220-1201 - 2.7",
+        "url": "https://www.youtube.com/watch?v=PBEXIMeqRNY",
+        "duration": "4:46",
+        "objective": "2.7"
+      },
+      "notes_reference": "11_Internet_Connections_TCPIP_Addressing.md",
+      "tags": ["networking", "san", "storage", "network-types"]
+    },
+    {
+      "id": "C1N-N-017",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "An administrator wants two groups of devices plugged into the same physical switch to be on separate networks that cannot talk to each other without passing through a router. Which feature should be configured?",
+      "options": [
+        "VLANs, assigning the ports of each group to a different VLAN",
+        "A second DHCP scope on the same subnet",
+        "Port mirroring",
+        "Link aggregation"
+      ],
+      "answer": 0,
+      "explanation": "Virtual LANs split one physical switch into several logical broadcast domains. Ports assigned to VLAN 10 cannot reach ports in VLAN 20 at layer 2; traffic between them must go through a router or a layer 3 switch where access rules can be applied. VLANs are the standard way to separate staff, guests, voice and management traffic without buying separate switches. Mirroring copies traffic for analysis and aggregation bundles links for bandwidth.",
+      "distractor_analysis": {
+        "1": "Two scopes on one subnet do not separate devices.",
+        "2": "Port mirroring duplicates traffic to a monitoring port.",
+        "3": "Link aggregation combines ports for throughput and redundancy."
+      },
+      "video_reference": {
+        "title": "VLANs and VPNs - CompTIA A+ 220-1201 - 2.4",
+        "url": "https://www.youtube.com/watch?v=Z1wPgxsx4GI",
+        "duration": "7:32",
+        "objective": "2.4"
+      },
+      "notes_reference": "13_DHCP_DNS_VLAN_VPN_Network_Troubleshooting.md",
+      "tags": ["networking", "vlan", "segmentation"]
+    },
+    {
+      "id": "C1N-N-018",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A remote employee needs to reach internal file servers from home as though they were in the office, with the traffic encrypted across the internet. Which technology provides this?",
+      "options": [
+        "A VPN",
+        "A VLAN",
+        "A DHCP reservation",
+        "A DNS forwarder"
+      ],
+      "answer": 0,
+      "explanation": "A virtual private network creates an encrypted tunnel between the remote device and a gateway at the office, giving the client an internal address and routing its traffic into the corporate network. Protocols include IPsec, SSL/TLS-based VPNs and WireGuard. Split tunnelling decides whether all traffic or only corporate traffic uses the tunnel. VLANs segment a local switch, DHCP reservations fix an address to a device, and DNS forwarders pass queries to another resolver.",
+      "distractor_analysis": {
+        "1": "A VLAN is a local segmentation feature and provides no remote access.",
+        "2": "A DHCP reservation only pins an address.",
+        "3": "A forwarder is a DNS configuration."
+      },
+      "video_reference": {
+        "title": "VLANs and VPNs - CompTIA A+ 220-1201 - 2.4",
+        "url": "https://www.youtube.com/watch?v=Z1wPgxsx4GI",
+        "duration": "7:32",
+        "objective": "2.4"
+      },
+      "notes_reference": "13_DHCP_DNS_VLAN_VPN_Network_Troubleshooting.md",
+      "tags": ["networking", "vpn", "remote-access"]
+    },
+    {
+      "id": "C1N-N-019",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A network printer must always have the same IP address, but the administrator wants it to remain a DHCP client so the settings are managed centrally. Which DHCP feature is used?",
+      "options": [
+        "A reservation that binds the printer's MAC address to a fixed IP address",
+        "A shorter lease time",
+        "An exclusion range",
+        "A relay agent"
+      ],
+      "answer": 0,
+      "explanation": "A DHCP reservation tells the server to always give a specific address to a specific hardware address, so the printer keeps a predictable address without anyone typing static settings on the device, and any change to gateway or DNS still flows from the server. Shorter leases make addresses change more often, exclusions remove addresses from the pool for statically configured devices, and a relay forwards requests between subnets.",
+      "distractor_analysis": {
+        "1": "Shorter leases increase the chance of the address changing.",
+        "2": "Exclusions prevent the server assigning those addresses at all.",
+        "3": "A relay agent passes DHCP traffic across routers."
+      },
+      "video_reference": {
+        "title": "DHCP - CompTIA A+ 220-1201 - 2.4",
+        "url": "https://www.youtube.com/watch?v=HwUqCZFx6wk",
+        "duration": "10:45",
+        "objective": "2.4"
+      },
+      "notes_reference": "13_DHCP_DNS_VLAN_VPN_Network_Troubleshooting.md",
+      "tags": ["networking", "dhcp", "reservation"]
+    },
+    {
+      "id": "C1N-N-020",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A company's email is being rejected by recipients as suspected spam. The administrator is told to publish records that identify which servers are allowed to send mail for the domain. Which DNS record type is needed?",
+      "options": [
+        "A TXT record containing an SPF policy, and ideally DKIM and DMARC records",
+        "An A record",
+        "A PTR record for the web server",
+        "A CNAME record"
+      ],
+      "answer": 0,
+      "explanation": "Sender Policy Framework is published as a TXT record listing the hosts authorised to send email for the domain. Receiving servers check the sending address against it and treat mismatches as spam or forgery. DKIM adds a cryptographic signature published in DNS, and DMARC tells receivers how to handle failures and where to send reports. A records map names to addresses, PTR records give reverse lookups, and CNAME records create aliases.",
+      "distractor_analysis": {
+        "1": "A records resolve a hostname to an IPv4 address.",
+        "2": "PTR records provide reverse lookup, and a web server's PTR is irrelevant to mail policy.",
+        "3": "CNAME records alias one name to another."
+      },
+      "video_reference": {
+        "title": "DNS Configuration - CompTIA A+ 220-1201 - 2.4",
+        "url": "https://www.youtube.com/watch?v=lAHqO9sDVy4",
+        "duration": "18:18",
+        "objective": "2.4"
+      },
+      "notes_reference": "13_DHCP_DNS_VLAN_VPN_Network_Troubleshooting.md",
+      "tags": ["networking", "dns", "spf", "email-security"]
+    },
+    {
+      "id": "C1N-N-021",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A technician adds a mail server and must tell the internet which host receives email for the company's domain. Which DNS record is created?",
+      "options": [
+        "An MX record pointing to the mail server's hostname",
+        "An AAAA record for the web server",
+        "A TXT record containing the company address",
+        "A CNAME for the intranet"
+      ],
+      "answer": 0,
+      "explanation": "Mail exchanger records name the servers that accept email for a domain, each with a priority so that backup servers are used only when the primary fails. The MX record points to a hostname which must itself have an A or AAAA record. Without a correct MX record, mail sent to the domain has nowhere to go. IPv6 address records, arbitrary text and aliases do not direct mail delivery.",
+      "distractor_analysis": {
+        "1": "AAAA records map a name to an IPv6 address.",
+        "2": "TXT records hold policy text such as SPF, not mail routing.",
+        "3": "A CNAME creates an alias and is not used for mail exchange."
+      },
+      "video_reference": {
+        "title": "DNS Configuration - CompTIA A+ 220-1201 - 2.4",
+        "url": "https://www.youtube.com/watch?v=lAHqO9sDVy4",
+        "duration": "18:18",
+        "objective": "2.4"
+      },
+      "notes_reference": "13_DHCP_DNS_VLAN_VPN_Network_Troubleshooting.md",
+      "tags": ["networking", "dns", "mx-record", "email"]
+    },
+    {
+      "id": "C1N-N-022",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.4",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "Devices on a new subnet cannot obtain addresses even though the DHCP server on the main subnet works fine. What is the most likely cause?",
+      "options": [
+        "The router between the subnets is not configured as a DHCP relay, so the clients' broadcasts never reach the server",
+        "The clients need static DNS servers",
+        "The switch ports are the wrong colour",
+        "The DHCP server's lease time is too long"
+      ],
+      "answer": 0,
+      "explanation": "DHCP discovery is a broadcast, and routers do not forward broadcasts. A server on another subnet can only serve clients if the router on the clients' subnet is configured as a relay agent, sometimes called an IP helper, that converts the broadcast into a unicast to the server's address. The server must also have a scope for the new subnet. DNS settings, port cosmetics and lease length have nothing to do with the discovery reaching the server.",
+      "distractor_analysis": {
+        "1": "DNS is irrelevant until an address is obtained.",
+        "2": "Cosmetics do not affect traffic.",
+        "3": "Lease time affects renewal timing, not initial discovery."
+      },
+      "video_reference": {
+        "title": "DHCP - CompTIA A+ 220-1201 - 2.4",
+        "url": "https://www.youtube.com/watch?v=HwUqCZFx6wk",
+        "duration": "10:45",
+        "objective": "2.4"
+      },
+      "notes_reference": "13_DHCP_DNS_VLAN_VPN_Network_Troubleshooting.md",
+      "tags": ["networking", "dhcp", "relay", "troubleshooting"]
+    },
+    {
+      "id": "C1N-N-023",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "An office has heavy Wi-Fi interference on the 2.4 GHz band from neighbouring businesses. Which change gives clients the most relief?",
+      "options": [
+        "Move client devices to the 5 GHz or 6 GHz band, which has many more non-overlapping channels",
+        "Increase the transmit power on 2.4 GHz to overpower the neighbours",
+        "Switch every access point to channel 6",
+        "Disable encryption to reduce overhead"
+      ],
+      "answer": 0,
+      "explanation": "The 2.4 GHz band has only three non-overlapping channels and is shared with Bluetooth, microwave ovens and every nearby network, so congestion is inevitable in dense areas. The 5 GHz band offers over twenty channels and 6 GHz, used by Wi-Fi 6E and 7, adds far more with almost no legacy interference. Steering capable clients to those bands is the effective fix. Raising power adds to everyone's interference, stacking access points on one channel causes self-interference, and encryption is essential.",
+      "distractor_analysis": {
+        "1": "Higher power worsens the shared-channel problem for all parties.",
+        "2": "Putting every access point on one channel makes them interfere with each other.",
+        "3": "Encryption overhead is negligible and disabling it is a security failure."
+      },
+      "video_reference": {
+        "title": "Wireless Network Technologies - CompTIA A+ 220-1201 - 2.2",
+        "url": "https://www.youtube.com/watch?v=aTuaEk5hnAs",
+        "duration": "7:16",
+        "objective": "2.2"
+      },
+      "notes_reference": "10_Wireless_Networking.md",
+      "tags": ["networking", "wi-fi", "5ghz", "interference"]
+    },
+    {
+      "id": "C1N-N-024",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user's laptop supports Wi-Fi 6 but connects at Wi-Fi 4 speeds in a meeting room far from the access point. What is the most likely explanation?",
+      "options": [
+        "Distance and obstructions reduce signal quality, so the link negotiates a lower data rate",
+        "Wi-Fi 6 only works within one metre of the access point",
+        "The laptop's Bluetooth is off",
+        "The access point has run out of IP addresses"
+      ],
+      "answer": 0,
+      "explanation": "Wireless data rates adapt to signal conditions. As a client moves further away or behind walls, signal-to-noise ratio falls and the radio steps down to slower, more robust modulation, so a Wi-Fi 6 link may run at legacy speeds. The remedies are a closer access point, fewer obstructions or moving to a band with better propagation for that spot. Wi-Fi 6 works at normal ranges, Bluetooth does not govern Wi-Fi speed, and address exhaustion prevents connection rather than slowing it.",
+      "distractor_analysis": {
+        "1": "Wi-Fi 6 has normal indoor range comparable to earlier standards.",
+        "2": "Bluetooth state does not set the Wi-Fi data rate.",
+        "3": "Address exhaustion would stop the client getting online entirely."
+      },
+      "video_reference": {
+        "title": "Wireless Network Technologies - CompTIA A+ 220-1201 - 2.2",
+        "url": "https://www.youtube.com/watch?v=aTuaEk5hnAs",
+        "duration": "7:16",
+        "objective": "2.2"
+      },
+      "notes_reference": "10_Wireless_Networking.md",
+      "tags": ["networking", "wi-fi", "signal", "data-rate"]
+    },
+    {
+      "id": "C1N-N-025",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.2",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "Which wireless standard introduced the 6 GHz band for Wi-Fi?",
+      "options": [
+        "Wi-Fi 6E (802.11ax extended)",
+        "Wi-Fi 4 (802.11n)",
+        "Wi-Fi 5 (802.11ac)",
+        "802.11g"
+      ],
+      "answer": 0,
+      "explanation": "Wi-Fi 6E extended the 802.11ax standard into the 6 GHz band, adding up to 1,200 MHz of new spectrum with wide channels and almost no legacy devices to contend with. Wi-Fi 7 continues to use it. Wi-Fi 4 introduced 2.4 and 5 GHz operation with multiple antennas, Wi-Fi 5 is 5 GHz only, and 802.11g was a 2.4 GHz standard from 2003. Clients and access points both need 6E or later hardware to use the new band.",
+      "distractor_analysis": {
+        "1": "Wi-Fi 4 operates on 2.4 and 5 GHz.",
+        "2": "Wi-Fi 5 is 5 GHz only.",
+        "3": "802.11g is a 2.4 GHz legacy standard."
+      },
+      "video_reference": {
+        "title": "Wireless Network Technologies - CompTIA A+ 220-1201 - 2.2",
+        "url": "https://www.youtube.com/watch?v=aTuaEk5hnAs",
+        "duration": "7:16",
+        "objective": "2.2"
+      },
+      "notes_reference": "10_Wireless_Networking.md",
+      "tags": ["networking", "wi-fi-6e", "6ghz", "standards"]
+    },
+    {
+      "id": "C1N-N-026",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A warehouse uses handheld scanners that only support 2.4 GHz. The network team wants to use wide 80 MHz channels for laptops. How should the wireless network be designed?",
+      "options": [
+        "Run the scanners on 2.4 GHz with 20 MHz channels 1, 6 and 11, and put laptops on 5 GHz with wide channels",
+        "Use 80 MHz channels on 2.4 GHz for everything",
+        "Disable 2.4 GHz entirely",
+        "Put everything on channel 1"
+      ],
+      "answer": 0,
+      "explanation": "The 2.4 GHz band only has room for three non-overlapping 20 MHz channels, so wide channels there cause overlap and interference and must be avoided. Legacy devices stay on 2.4 GHz with the standard channel plan, while dual-band clients are steered to 5 GHz where 80 MHz channels are practical. Disabling 2.4 GHz would strand the scanners, and putting all access points on one channel creates co-channel interference throughout the warehouse.",
+      "distractor_analysis": {
+        "1": "The 2.4 GHz band cannot accommodate 80 MHz channels without heavy overlap.",
+        "2": "The scanners would lose connectivity.",
+        "3": "One channel everywhere maximises interference between access points."
+      },
+      "video_reference": {
+        "title": "Wireless Network Technologies - CompTIA A+ 220-1201 - 2.2",
+        "url": "https://www.youtube.com/watch?v=aTuaEk5hnAs",
+        "duration": "7:16",
+        "objective": "2.2"
+      },
+      "notes_reference": "10_Wireless_Networking.md",
+      "tags": ["networking", "wi-fi", "channels", "design"]
+    },
+    {
+      "id": "C1N-N-027",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A firewall administrator must allow technicians to manage Linux servers with an encrypted command-line session. Which port should be opened?",
+      "options": [
+        "TCP 22",
+        "TCP 23",
+        "TCP 3389",
+        "UDP 161"
+      ],
+      "answer": 0,
+      "explanation": "Secure Shell on TCP 22 provides encrypted terminal access, file transfer with SFTP and SCP, and tunnelling. It replaced Telnet on TCP 23, which sends everything including passwords in clear text and should be blocked. TCP 3389 is Remote Desktop Protocol for Windows graphical sessions, and UDP 161 is SNMP for monitoring. Opening only the ports required, and restricting the source addresses that may use them, is standard firewall practice.",
+      "distractor_analysis": {
+        "1": "Telnet on 23 is unencrypted and obsolete for management.",
+        "2": "RDP on 3389 is for Windows desktops.",
+        "3": "SNMP on 161 is a monitoring protocol."
+      },
+      "video_reference": {
+        "title": "Common Ports - CompTIA A+ 220-1201 - 2.1",
+        "url": "https://www.youtube.com/watch?v=_qGlbfZ44hg",
+        "duration": "12:52",
+        "objective": "2.1"
+      },
+      "notes_reference": "12_Ports_Protocols_Network_Services.md",
+      "tags": ["networking", "ports", "ssh", "firewall"]
+    },
+    {
+      "id": "C1N-N-028",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A Windows technician needs to connect to a remote Windows server's graphical desktop through a firewall. Which port must be permitted?",
+      "options": [
+        "TCP 3389",
+        "TCP 22",
+        "TCP 445",
+        "UDP 53"
+      ],
+      "answer": 0,
+      "explanation": "Remote Desktop Protocol listens on TCP 3389 and carries the full Windows desktop, keyboard and mouse. Because it is a frequent target of brute-force attacks, it should never be exposed directly to the internet; access should be through a VPN or a remote desktop gateway with multi-factor authentication. TCP 22 is SSH, TCP 445 is SMB file sharing and UDP 53 is DNS. Knowing these ports lets a technician write firewall rules correctly.",
+      "distractor_analysis": {
+        "1": "SSH on 22 gives a command line, not the Windows desktop.",
+        "2": "SMB on 445 is file and printer sharing.",
+        "3": "DNS on 53 resolves names."
+      },
+      "video_reference": {
+        "title": "Common Ports - CompTIA A+ 220-1201 - 2.1",
+        "url": "https://www.youtube.com/watch?v=_qGlbfZ44hg",
+        "duration": "12:52",
+        "objective": "2.1"
+      },
+      "notes_reference": "12_Ports_Protocols_Network_Services.md",
+      "tags": ["networking", "ports", "rdp", "firewall"]
+    },
+    {
+      "id": "C1N-N-029",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A video conferencing application performs poorly when the network drops a few packets, but a file download on the same link is unaffected. Which transport protocol difference explains this?",
+      "options": [
+        "The video stream uses UDP, which does not retransmit lost packets, while the download uses TCP, which retransmits and delivers everything in order",
+        "The video uses TCP and the download uses UDP",
+        "Both use TCP but video is lower priority",
+        "The video uses ICMP"
+      ],
+      "answer": 0,
+      "explanation": "Real-time media favours UDP because waiting for a retransmission would arrive too late to be useful, so lost packets simply cause a glitch. TCP, used for downloads and web pages, acknowledges every segment and resends anything lost, so the file arrives complete even on a lossy link, just more slowly. Understanding this distinction explains why voice and video are sensitive to loss and jitter while bulk transfers are sensitive only to throughput. ICMP is for diagnostics such as ping.",
+      "distractor_analysis": {
+        "1": "This reverses the usual choice of transports.",
+        "2": "Priority would not explain glitches versus a complete file.",
+        "3": "ICMP is a control protocol, not a media transport."
+      },
+      "video_reference": {
+        "title": "Introduction to IP - CompTIA A+ 220-1201 - 2.1",
+        "url": "https://www.youtube.com/watch?v=RRFjKXxYJdM",
+        "duration": "19:04",
+        "objective": "2.1"
+      },
+      "notes_reference": "12_Ports_Protocols_Network_Services.md",
+      "tags": ["networking", "tcp", "udp", "transport"]
+    },
+    {
+      "id": "C1N-N-030",
+      "exam": "core1",
+      "domain": "2.0 Networking",
+      "objective": "2.1",
+      "type": "match",
+      "difficulty": "medium",
+      "question": "Match each network service to the port it commonly uses.",
+      "pairs": [
+        { "left": "HTTPS", "right": "TCP 443" },
+        { "left": "DNS", "right": "UDP 53" },
+        { "left": "DHCP server", "right": "UDP 67" },
+        { "left": "SMB file sharing", "right": "TCP 445" },
+        { "left": "IMAP over TLS", "right": "TCP 993" }
+      ],
+      "explanation": "Ports are how a technician reads a firewall rule or a port scan. HTTPS on 443 is secure web, DNS queries use UDP 53 with TCP for large responses, DHCP servers listen on UDP 67 while clients use 68, SMB on TCP 445 is Windows file and printer sharing, and IMAP over an encrypted connection uses TCP 993. When a service does not respond, confirming its port is open between client and server is the fastest way to separate a network block from an application fault.",
+      "video_reference": {
+        "title": "Common Ports - CompTIA A+ 220-1201 - 2.1",
+        "url": "https://www.youtube.com/watch?v=_qGlbfZ44hg",
+        "duration": "12:52",
+        "objective": "2.1"
+      },
+      "notes_reference": "12_Ports_Protocols_Network_Services.md",
+      "tags": ["networking", "ports", "match"]
+    }
+  ]
+}

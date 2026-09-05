@@ -1,6 +1,6 @@
 {
   "name": "comptia-a-plus-exam-simulator",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "CompTIA A+ Master Exam Simulator for Core 1 and Core 2 with Study Library, Ghost Coach, and APX ledger",
   "main": "main.js",
   "scripts": {

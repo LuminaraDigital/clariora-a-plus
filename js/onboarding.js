@@ -597,11 +597,50 @@
       passRateText: passRateText(r),
       lastAttempt: r.lastAttempt === undefined ? null : r.lastAttempt,
       lastAttemptText: lastAttemptText(r),
+      source: r.source || 'none',
+      band: band(r),
+      confidenceText: confidenceText(r)
+    };
+  }
+
+  /**
+   * band(result)
+   * The likely range around the predicted score, from the binomial standard
+   * error of the observed accuracy: se = sqrt(p(1-p)/n), score = 100 + 800p.
+   * Few observations give a wide band; the band tightens as n grows. Attempt
+   * history counts toward n at 90 answers per recorded exam, since a recorded
+   * attempt is itself a sample of the same skill.
+   */
+  function band(result) {
+    var r = result || {};
+    if (!r.hasData || !isFinite(r.predicted)) return null;
+    var n = Math.max(0, Number(r.observations) || 0) + 90 * Math.max(0, Number(r.historyAttempts) || 0);
+    if (n < 1) return null;
+    var p = clamp(((Number(r.predicted) || 100) - 100) / 800, 0.02, 0.98);
+    var se = Math.sqrt(p * (1 - p) / n);
+    var half = Math.max(15, Math.round(800 * 1.96 * se));
+    return {
+      low: Math.round(clamp(r.predicted - half, 100, 900)),
+      high: Math.round(clamp(r.predicted + half, 100, 900)),
+      n: Math.round(n),
+      thin: n < 60,
       source: r.source || 'none'
     };
   }
 
+  /** One plain sentence about how much the estimate should be trusted. */
+  function confidenceText(result) {
+    var b = band(result);
+    if (!b) return '';
+    var answers = b.n === 1 ? '1 answer' : b.n + ' answers';
+    if (b.thin) return 'Early estimate from ' + answers + '. It tightens as you practise.';
+    if (b.source === 'history') return 'Based on your recorded attempts (' + answers + ').';
+    return 'Based on ' + answers + ' across objectives and attempts.';
+  }
+
   var format = {
+    band: band,
+    confidenceText: confidenceText,
     scoreText: scoreText,
     percentText: percentText,
     passRateText: passRateText,
@@ -824,7 +863,8 @@
     'font:inherit;font-size:.88rem;color:var(--text-muted,#6f6a62);text-decoration:underline;}',
     '#onboardingRoot .ob-big{font-size:clamp(2.8rem,4vw,3.4rem);line-height:1;font-weight:700;color:var(--gold-primary,#c9a227);',
     'margin:.25rem 0;font-variant-numeric:tabular-nums;letter-spacing:-.03em;}',
-    '#onboardingRoot .ob-sub{color:var(--text-secondary,#a39e93);font-size:.95rem;margin:0 0 1.2rem;}',
+    '#onboardingRoot .ob-sub{color:var(--text-secondary,#a39e93);font-size:.95rem;margin:0 0 .6rem;}',
+    '#onboardingRoot .ob-confidence{color:var(--text-muted,#6f6a62);font-size:.85rem;margin:0 0 1.2rem;}',
     '#onboardingRoot .ob-weak{list-style:none;padding:0;margin:0 0 1.4rem;}',
     '#onboardingRoot .ob-weak li{padding:.65rem .8rem;border-radius:6px;margin-bottom:.4rem;font-size:.92rem;',
     'background:transparent;border:1px solid var(--border-light,rgba(255,255,255,.08));',
@@ -1230,8 +1270,11 @@
       '<div class="ob-panel card" role="dialog" aria-modal="true" aria-labelledby="obSumTitle">';
     html += '<p class="ob-kicker">Your diagnostic result</p>';
     html += '<h2 class="ob-title" id="obSumTitle">Predicted score ' + result.predicted + '</h2>';
-    html += '<p class="ob-sub">' + esc(needLine) + ' Readiness ' + result.readiness + ' percent. ' +
-      'Every session from here moves the ring toward the pass mark.</p>';
+    var b = band(result);
+    var rangeLine = b ? ' Likely range ' + b.low + ' to ' + b.high + '.' : '';
+    html += '<p class="ob-sub">' + esc(needLine) + ' Readiness ' + result.readiness + ' percent.' + esc(rangeLine) + '</p>';
+    var conf = confidenceText(result);
+    if (conf) html += '<p class="ob-confidence">' + esc(conf) + '</p>';
     html += '<p class="ob-kicker">Work on these first</p><ul class="ob-weak">';
     (result.weakest || []).forEach(function (wk) {
       html += '<li><span class="ob-code">' + esc(wk.code) + '</span> ' + esc(wk.title || wk.domain || '') + '</li>';

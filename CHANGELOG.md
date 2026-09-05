@@ -2,6 +2,26 @@
 
 All notable changes to this project are documented here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [3.1.1] - 2026-09-05
+
+### Added
+
+- 364 new exam questions across the domains that limited fresh mock exams: Mobile Devices (120), Virtualization and Cloud (80), Networking (30) and Hardware and Network Troubleshooting (36) for Core 1; Software Troubleshooting (60), Operating Systems (30) and Security (8) for Core 2. Every question has a full explanation, distractor analysis and a mapped Professor Messer video. The bank now holds 1,130 questions and supports five fresh 90-question mocks per core before any repeat
+- Confidence display on the readiness hero and the diagnostic result: a likely score range drawn on the gap scale and a plain sentence stating how many answers the estimate rests on
+- Coach mission card on the home screen so the targeted daily practice built from missed questions is one click away instead of buried in the More drawer
+- Header navigation (Practice, Study, Progress) that opens the More drawer at the chosen section
+- In-app confirm dialog for exam submit and clear history, replacing the operating system dialog box
+- Desktop screenshot capture tool (`tools/capture_screenshots.js`) that drives the packaged app and writes the README images
+
+### Fixed
+
+- Blueprint percentages shown on the home cards now match the official 220-1201 and 220-1202 weightings that the exam sampler already used
+- Release gate accepts any versioned first-run intro key and checks the shell version in `js/core.js`
+- Diagnostic result screen fills the full two-column layout instead of leaving half the screen empty
+- Daily shortcuts on the home screen are ordered above the mock exam cards so they are visible on laptop displays
+- Shell version label reads the release version rather than a hard-coded 3.0.0
+- Deploy script output survives a cp1252 console
+
 ## [3.1.0] - 2026-09-05
 
 First public release under AGPL-3.0-only.

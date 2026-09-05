@@ -1,0 +1,1196 @@
+{
+  "questions": [
+    {
+      "id": "C1N-M-041",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "A user has a current Android phone and a recent iPhone and wants one cable that charges both. Which connector do both devices use?",
+      "options": [
+        "USB-C",
+        "Lightning",
+        "Micro-USB",
+        "Mini-USB"
+      ],
+      "answer": 0,
+      "explanation": "USB-C is now the common charging and data connector across Android phones, tablets, laptops and, since the iPhone 15 generation, Apple's phones as well. It is reversible, carries USB data, Power Delivery for charging and can carry DisplayPort video on devices that support alternate mode. Lightning is Apple's proprietary connector on older iPhones, Micro-USB was the previous Android standard and Mini-USB is obsolete.",
+      "distractor_analysis": {
+        "1": "Lightning is Apple-only and being phased out.",
+        "2": "Micro-USB was replaced by USB-C on Android around 2016 to 2018.",
+        "3": "Mini-USB predates Micro-USB and is found only on old cameras and accessories."
+      },
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "usb-c", "connectors"]
+    },
+    {
+      "id": "C1N-M-042",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "A user with an older iPhone asks why the charging cable is flat with exposed contacts on both faces and fits either way up. Which connector is this?",
+      "options": [
+        "Lightning",
+        "USB-C",
+        "Micro-USB",
+        "30-pin dock connector"
+      ],
+      "answer": 0,
+      "explanation": "Lightning is Apple's proprietary eight-pin connector introduced in 2012. It is a flat reversible plug with contacts exposed on both faces rather than shrouded inside a shell. It carries power and USB 2.0 data and needs an authentication chip, which is why uncertified cables sometimes display a warning. USB-C is also reversible but its contacts are inside an oval shell, Micro-USB is one-way only, and the 30-pin connector is the wide plug Lightning replaced.",
+      "distractor_analysis": {
+        "1": "USB-C contacts are hidden inside an oval metal shell.",
+        "2": "Micro-USB is trapezoidal and inserts one way only.",
+        "3": "The 30-pin connector is much wider and predates Lightning."
+      },
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "lightning", "connectors", "apple"]
+    },
+    {
+      "id": "C1N-M-043",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A technician needs a cable to connect a legacy barcode scanner with a Micro-USB port to a modern laptop that has only USB-C ports. Which cable is correct?",
+      "options": [
+        "USB-C to Micro-USB",
+        "USB-C to Lightning",
+        "USB-A to USB-C",
+        "Micro-USB to Mini-USB"
+      ],
+      "answer": 0,
+      "explanation": "The cable must match the port on each end: USB-C on the laptop and Micro-USB on the scanner. Such cables exist and carry USB 2.0 data and power, which is all a Micro-USB device can use. A Lightning cable is for Apple devices, a USB-A to USB-C cable has no Micro-USB end, and a Micro to Mini cable connects two legacy devices with nothing to plug into the laptop. Reading the connector on both ends is the whole task.",
+      "distractor_analysis": {
+        "1": "Lightning does not fit a Micro-USB port.",
+        "2": "The laptop has no USB-A ports, and the scanner is not USB-C.",
+        "3": "Neither end of that cable fits the laptop."
+      },
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "micro-usb", "usb-c", "cables"]
+    },
+    {
+      "id": "C1N-M-044",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user connects a USB-C phone to a USB-C monitor expecting the phone's screen to appear, but nothing displays. Charging works. What is the most likely reason?",
+      "options": [
+        "The phone or the cable does not support DisplayPort Alternate Mode over USB-C",
+        "The monitor needs a Lightning input for phones",
+        "USB-C can never carry video",
+        "The phone battery is too low to output video"
+      ],
+      "answer": 0,
+      "explanation": "USB-C is a connector, not a guarantee of features. Video over USB-C requires DisplayPort Alternate Mode to be supported by the device, and the cable must be a full-featured one rather than a charge-only cable. Many phones charge over USB-C but do not implement Alt Mode at all, and some cheap cables carry only power and USB 2.0 data. Checking the phone's specification and using a cable rated for video resolves the confusion.",
+      "distractor_analysis": {
+        "1": "Lightning is an input on nothing; monitors do not have Lightning ports.",
+        "2": "USB-C can carry DisplayPort and HDMI via alternate modes when supported.",
+        "3": "Battery level does not disable video output."
+      },
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "usb-c", "displayport", "alt-mode"]
+    },
+    {
+      "id": "C1N-M-045",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A field technician wants to transfer photos from a phone to a laptop as fast as possible. The phone supports USB 3.2 over USB-C. Which cable choice matters most?",
+      "options": [
+        "A cable rated for USB 3.x data rather than a charge-only or USB 2.0 cable",
+        "A cable that is at least three metres long",
+        "A cable with a braided jacket",
+        "A cable with a right-angle plug"
+      ],
+      "answer": 0,
+      "explanation": "USB-C cables vary widely in what they carry. Charge-only cables have no data wires, and many bundled cables carry only USB 2.0 at 480 Mbps. To reach USB 3.x speeds of 5 to 20 Gbps the cable itself must include the SuperSpeed wire pairs, which is usually marked on the packaging or the plug. Length, jacket and plug shape are convenience features that do not change the data rate, and very long cables can actually reduce reliable speed.",
+      "distractor_analysis": {
+        "1": "Longer cables lower signal integrity; length is not a speed feature.",
+        "2": "Braiding improves durability, not bandwidth.",
+        "3": "Plug angle is ergonomics only."
+      },
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "usb", "data-transfer", "cables"]
+    },
+    {
+      "id": "C1N-M-046",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "A user places a phone on a charging pad and it charges without any cable. Which standard is most commonly used for this?",
+      "options": [
+        "Qi wireless charging",
+        "Bluetooth",
+        "Near-field communication",
+        "USB Power Delivery"
+      ],
+      "answer": 0,
+      "explanation": "Qi is the industry standard for inductive wireless charging in phones and earbuds. A coil in the pad induces current in a coil inside the phone when the two are aligned within a few millimetres. Charging is slower than a cable and generates more heat, and a thick metal case or a misaligned phone stops it working, which are the usual support questions. Bluetooth and NFC are data radios, and USB Power Delivery is a wired charging negotiation.",
+      "distractor_analysis": {
+        "1": "Bluetooth carries data and audio, not power.",
+        "2": "NFC is used for taps and payments; the power it transfers is negligible.",
+        "3": "Power Delivery works only over a USB-C cable."
+      },
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "wireless-charging", "qi"]
+    },
+    {
+      "id": "C1N-M-047",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A phone will not charge on a Qi pad but charges normally from a cable. The user recently added a thick case with a metal plate for a car mount. What should the technician recommend?",
+      "options": [
+        "Remove the metal plate or case, because metal between the coils blocks inductive charging",
+        "Replace the phone's charging port",
+        "Switch the pad to a faster power adapter",
+        "Enable Bluetooth so the pad can pair with the phone"
+      ],
+      "answer": 0,
+      "explanation": "Inductive charging relies on a magnetic field coupling the pad's coil to the phone's coil. A metal plate in the path absorbs the field, heats up and prevents the phone charging, and even a thick non-metal case can push the coils too far apart. Cable charging works because it bypasses the coil entirely, which rules out a port fault. Adapter wattage and Bluetooth have no role in whether the inductive link forms.",
+      "distractor_analysis": {
+        "1": "The port is proven working by the successful cable charge.",
+        "2": "A stronger adapter cannot push a field through metal.",
+        "3": "Qi pads do not pair over Bluetooth."
+      },
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "wireless-charging", "qi", "troubleshooting"]
+    },
+    {
+      "id": "C1N-M-048",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "A user wants to pay for coffee by holding a phone near the card terminal. Which short-range technology makes this possible?",
+      "options": [
+        "Near-field communication",
+        "Bluetooth Low Energy",
+        "Infrared",
+        "Wi-Fi Direct"
+      ],
+      "answer": 0,
+      "explanation": "NFC operates over a few centimetres at 13.56 MHz and is what contactless payment systems such as Apple Pay and Google Wallet use to exchange a tokenised card credential with the terminal. The very short range is a security feature. NFC is also used to pair Bluetooth accessories with a tap and to read tags. Bluetooth reaches metres and needs pairing, infrared was an old line-of-sight link for early PDAs, and Wi-Fi Direct is for file transfer between devices.",
+      "distractor_analysis": {
+        "1": "Bluetooth's range and pairing model are unsuitable for tap-to-pay.",
+        "2": "Infrared beaming is obsolete and needs line of sight.",
+        "3": "Wi-Fi Direct is peer-to-peer file transfer, not payment."
+      },
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "nfc", "payments"]
+    },
+    {
+      "id": "C1N-M-049",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user's contactless payments stopped working after they put the phone in a new wallet case with several cards inside. Payments work when the phone is taken out of the case. What is the cause?",
+      "options": [
+        "The other contactless cards in the case interfere with the phone's NFC field",
+        "The case has disabled the phone's Bluetooth radio",
+        "The phone's battery is too low for NFC",
+        "The payment app needs to be reinstalled"
+      ],
+      "answer": 0,
+      "explanation": "NFC terminals read one credential at a time. When a wallet case places bank cards directly over the phone's NFC antenna, the terminal sees multiple contactless targets and either rejects the read or the cards absorb the field so the phone cannot respond. Removing the cards, or using a case with a shielding layer, fixes it. The successful payments outside the case prove the radio, battery and app are all fine.",
+      "distractor_analysis": {
+        "1": "Contactless payment uses NFC, and a case cannot switch off a radio.",
+        "2": "Payments work outside the case at the same battery level.",
+        "3": "The app works as soon as the phone leaves the case."
+      },
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "nfc", "payments", "troubleshooting"]
+    },
+    {
+      "id": "C1N-M-050",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "Which wireless technology is used to connect a phone to a car's hands-free system and to wireless earbuds?",
+      "options": [
+        "Bluetooth",
+        "NFC",
+        "Cellular",
+        "GPS"
+      ],
+      "answer": 0,
+      "explanation": "Bluetooth is the short-range personal area network radio used for audio accessories, keyboards, wearables and car hands-free systems. Devices are paired once, after which they reconnect automatically when in range of roughly ten metres. Modern devices use Bluetooth Low Energy for wearables and sensors and classic Bluetooth profiles for audio. NFC only reaches a few centimetres, cellular is the wide-area voice and data network, and GPS is receive-only positioning.",
+      "distractor_analysis": {
+        "1": "NFC is sometimes used to trigger the pairing, but the audio link is Bluetooth.",
+        "2": "Cellular connects to the carrier network, not to local accessories.",
+        "3": "GPS receives satellite signals and cannot connect to accessories."
+      },
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "bluetooth", "accessories"]
+    },
+    {
+      "id": "C1N-M-051",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "Wireless earbuds that paired to a phone yesterday will not connect today. They appear in the paired list but show as disconnected. The earbuds are charged. What should the user try first?",
+      "options": [
+        "Turn Bluetooth off and on, or forget the earbuds and pair them again",
+        "Factory reset the phone",
+        "Replace the earbuds",
+        "Enable Airplane mode permanently"
+      ],
+      "answer": 0,
+      "explanation": "Stale pairing state is the most common Bluetooth complaint. Toggling the radio forces a reconnection attempt, and if that fails, removing the device from the paired list and pairing fresh rebuilds the link keys on both ends. Also check the earbuds are not still connected to another device such as a laptop, because most earbuds hold one active connection. A phone reset or new hardware is disproportionate, and Airplane mode disables the radio you need.",
+      "distractor_analysis": {
+        "1": "A full reset destroys user data to fix a pairing key.",
+        "2": "The hardware is not shown to be faulty.",
+        "3": "Airplane mode turns Bluetooth off by default."
+      },
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "bluetooth", "pairing", "troubleshooting"]
+    },
+    {
+      "id": "C1N-M-052",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user wants to pair a new Bluetooth keyboard but the phone never lists it. The keyboard's light is on. What is the most likely reason?",
+      "options": [
+        "The keyboard is not in pairing mode, so it is not advertising itself",
+        "The phone needs an NFC tag to discover keyboards",
+        "Bluetooth keyboards only work with laptops",
+        "The phone's Wi-Fi is turned off"
+      ],
+      "answer": 0,
+      "explanation": "A Bluetooth accessory only becomes discoverable when it is put into pairing mode, usually by holding a dedicated button until an LED blinks in a distinctive pattern. A power light alone means it is on, possibly still bound to a previous device. Once in pairing mode it appears in the phone's list within seconds and a PIN or confirmation completes the process. NFC is optional, keyboards work with any Bluetooth host, and Wi-Fi is a separate radio.",
+      "distractor_analysis": {
+        "1": "NFC tap-to-pair is a convenience on some accessories, never a requirement.",
+        "2": "Phones and tablets support Bluetooth HID keyboards.",
+        "3": "Bluetooth discovery does not depend on Wi-Fi."
+      },
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "bluetooth", "pairing", "keyboard"]
+    },
+    {
+      "id": "C1N-M-053",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A photographer wants to move a stack of raw images from a phone to a laptop in a location with no Wi-Fi and no cable. Both devices support Bluetooth. Why might the technician still advise against Bluetooth for this task?",
+      "options": [
+        "Bluetooth's data rate is low, so a large transfer takes a very long time",
+        "Bluetooth cannot transfer image files",
+        "Bluetooth requires an internet connection",
+        "Bluetooth transfers are not encrypted"
+      ],
+      "answer": 0,
+      "explanation": "Bluetooth is designed for low power and modest bandwidth. Even Bluetooth 5 tops out at around 2 Mbps in practice, so several gigabytes of raw photos would take hours. Wi-Fi Direct, a phone hotspot or a USB cable are all far faster. Bluetooth can transfer any file type, needs no internet and does encrypt its links; its only real limitation for this job is speed, which is why it is used for audio and small data rather than bulk transfer.",
+      "distractor_analysis": {
+        "1": "Bluetooth file transfer supports any file type.",
+        "2": "Bluetooth is a direct device-to-device link with no internet dependency.",
+        "3": "Bluetooth links are encrypted after pairing."
+      },
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "bluetooth", "data-transfer", "bandwidth"]
+    },
+    {
+      "id": "C1N-M-054",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A laptop with a single USB-C port needs to connect to a wired network, an HDMI projector, a USB-A mouse and a charger at the same time. Which accessory meets the requirement?",
+      "options": [
+        "A USB-C docking station or multiport hub with Power Delivery pass-through",
+        "A USB-A to Ethernet adapter",
+        "A Lightning to HDMI adapter",
+        "A Qi charging pad"
+      ],
+      "answer": 0,
+      "explanation": "A docking station or multiport hub expands one USB-C connection into several interfaces: Ethernet, HDMI or DisplayPort, USB-A ports and a USB-C power input that passes charging through to the laptop. This is the standard accessory for thin laptops with few ports. A single-purpose USB-A Ethernet adapter does not fit a USB-C port and covers only one need, Lightning belongs to older Apple phones, and a Qi pad charges phones, not laptops.",
+      "distractor_analysis": {
+        "1": "It has the wrong plug for the laptop and solves only the network need.",
+        "2": "Lightning is not a laptop connector.",
+        "3": "Qi is inductive phone charging and provides no ports."
+      },
+      "video_reference": {
+        "title": "Mobile Device Accessories - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=14iM8lLBS0c",
+        "duration": "7:18",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "docking-station", "usb-c", "hub"]
+    },
+    {
+      "id": "C1N-M-055",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user reports that the laptop does not charge while connected to a new USB-C hub, although the monitor and keyboard attached to the hub work. What is the most likely explanation?",
+      "options": [
+        "The hub lacks a Power Delivery pass-through port or the charger is plugged into the laptop's port on the hub rather than the hub's power input",
+        "USB-C hubs are not capable of charging laptops",
+        "The keyboard is drawing all the available power",
+        "The monitor cable is too long"
+      ],
+      "answer": 0,
+      "explanation": "Many inexpensive hubs have a data-only USB-C port and no power input, so the laptop must be charged separately. Hubs that do support charging have a clearly marked PD input port; plugging the charger into an ordinary downstream port does nothing for the laptop. Checking the hub's specification for a PD pass-through rating at or above the laptop's wattage is the fix. Hubs certainly can charge laptops when built for it, a keyboard draws a few milliamps, and cable length does not affect charging.",
+      "distractor_analysis": {
+        "1": "Docking stations charge laptops routinely through PD pass-through.",
+        "2": "A keyboard's draw is negligible.",
+        "3": "Video cable length has no bearing on the power path."
+      },
+      "video_reference": {
+        "title": "Mobile Device Accessories - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=14iM8lLBS0c",
+        "duration": "7:18",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "hub", "power-delivery", "troubleshooting"]
+    },
+    {
+      "id": "C1N-M-056",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "Which accessory is designed to hold a tablet steady while an artist draws on it with a stylus?",
+      "options": [
+        "An adjustable stand or drawing tripod",
+        "A wireless charging pad",
+        "A screen protector",
+        "A USB-C hub"
+      ],
+      "answer": 0,
+      "explanation": "Stands and mounts are simple accessories that matter a great deal to usability: an adjustable stand tilts a tablet to a comfortable drawing angle and keeps it stable under stylus pressure. Technicians are often asked to recommend mounts for point-of-sale tablets, kiosks and vehicles as well. A charging pad supplies power, a screen protector guards the glass and a hub adds ports; none of them positions the device.",
+      "distractor_analysis": {
+        "1": "Charging pads power the device but do not hold it at an angle.",
+        "2": "Screen protectors protect the glass but provide no support.",
+        "3": "Hubs add connectivity, not positioning."
+      },
+      "video_reference": {
+        "title": "Mobile Device Accessories - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=14iM8lLBS0c",
+        "duration": "7:18",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "accessories", "stand", "tablet"]
+    },
+    {
+      "id": "C1N-M-057",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user applied a tempered glass screen protector and now the phone's fingerprint sensor under the display fails most of the time. What is the correct advice?",
+      "options": [
+        "Use a protector certified for in-display fingerprint sensors, then re-enrol the fingerprint through the protector",
+        "The sensor is broken and the phone needs repair",
+        "Disable the screen protector in settings",
+        "Fingerprint sensors never work with any protector"
+      ],
+      "answer": 0,
+      "explanation": "Optical and ultrasonic in-display sensors read the finger through the glass. A thick or air-gapped protector scatters the light or dampens the ultrasound and the stored template no longer matches. Protectors made for that phone model are thin and optically clear over the sensor area, and re-enrolling with the protector fitted gives the sensor a template that matches what it now sees. The hardware is fine, protectors are not software, and correctly chosen protectors work well.",
+      "distractor_analysis": {
+        "1": "The sensor worked before the protector; the glass is the variable.",
+        "2": "A protector is a physical film; there is nothing to disable.",
+        "3": "Compatible protectors are sold specifically for these sensors."
+      },
+      "video_reference": {
+        "title": "Mobile Device Accessories - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=14iM8lLBS0c",
+        "duration": "7:18",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "screen-protector", "fingerprint", "accessories"]
+    },
+    {
+      "id": "C1N-M-058",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A delivery company needs to attach phones to delivery bikes in all weather and still charge them during the shift. Which combination of accessories fits the requirement?",
+      "options": [
+        "A rugged waterproof case with a handlebar mount and a weather-sealed charging solution",
+        "A leather wallet case and a desktop charging pad",
+        "A clear silicone case and a Bluetooth keyboard",
+        "A tempered glass protector and a USB hub"
+      ],
+      "answer": 0,
+      "explanation": "The requirement is protection from impact and water, secure attachment to a vehicle, and power on the move. A rugged, ingress-rated case, a locking handlebar mount and a sealed charging path such as a covered USB port or a wireless charging mount meet all three. Wallet cases and desk pads suit an office, a keyboard is irrelevant on a bike, and a hub and protector solve neither mounting nor weather.",
+      "distractor_analysis": {
+        "1": "Leather and a desk pad do not survive rain or stay on a bike.",
+        "2": "A keyboard is unusable on a moving vehicle.",
+        "3": "Neither item mounts or protects the phone."
+      },
+      "video_reference": {
+        "title": "Mobile Device Accessories - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=14iM8lLBS0c",
+        "duration": "7:18",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "accessories", "rugged-case", "mount"]
+    },
+    {
+      "id": "C1N-M-059",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "A user's phone battery does not last a full day of travel. Which accessory gives the simplest fix without any repair?",
+      "options": [
+        "A portable battery pack (power bank)",
+        "A Bluetooth headset",
+        "A screen protector",
+        "A car mount"
+      ],
+      "answer": 0,
+      "explanation": "A power bank is a portable battery with USB outputs that recharges a phone anywhere. Technicians should advise on capacity in milliamp-hours relative to the phone's battery, on output wattage if fast charging is wanted, and on airline rules that limit lithium batteries in carry-on to roughly 100 Wh. The other accessories change how the phone is used or protected but do nothing for runtime.",
+      "distractor_analysis": {
+        "1": "A headset consumes power rather than supplying it.",
+        "2": "A protector guards the glass only.",
+        "3": "A mount holds the phone but does not charge it unless it is a charging mount."
+      },
+      "video_reference": {
+        "title": "Mobile Device Accessories - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=14iM8lLBS0c",
+        "duration": "7:18",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "power-bank", "battery", "accessories"]
+    },
+    {
+      "id": "C1N-M-060",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user's phone charges very slowly from a power bank that is rated 10,000 mAh with a 5 V 1 A output. The phone supports 25 W fast charging. Why is charging slow?",
+      "options": [
+        "The power bank's output is only 5 W, far below what the phone can accept",
+        "The power bank's capacity is too small to fast charge",
+        "The phone is set to low power mode",
+        "Power banks cannot fast charge any phone"
+      ],
+      "answer": 0,
+      "explanation": "Charging speed is set by the output power, which is voltage times current. A 5 V 1 A output is 5 W regardless of the bank's capacity in milliamp-hours, which only describes how much energy is stored. To fast charge, the bank must support USB Power Delivery or the phone's proprietary protocol at 18 to 25 W or more. Capacity is unrelated to rate, low power mode does not throttle charging, and PD-capable power banks fast charge normally.",
+      "distractor_analysis": {
+        "1": "Capacity is how much energy is stored, not how fast it is delivered.",
+        "2": "Low power mode reduces consumption; it does not slow charging.",
+        "3": "Many power banks support PD fast charging at 20 W or more."
+      },
+      "video_reference": {
+        "title": "Mobile Device Accessories - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=14iM8lLBS0c",
+        "duration": "7:18",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "power-bank", "charging", "wattage"]
+    },
+    {
+      "id": "C1N-M-061",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "Which type of USB-C cable is required to connect a laptop to a 40 Gbps Thunderbolt 4 dock and use its full bandwidth?",
+      "options": [
+        "A Thunderbolt-certified cable, marked with the lightning-bolt symbol",
+        "Any USB-C charging cable",
+        "A USB 2.0 rated USB-C cable",
+        "A Lightning cable with a USB-C end"
+      ],
+      "answer": 0,
+      "explanation": "Thunderbolt uses the USB-C connector but demands a cable built to its specification, identified by the lightning-bolt logo and, for longer runs, active electronics in the plug. A generic USB-C cable may negotiate only USB 3 or even USB 2 speeds, so the dock's displays and drives underperform or fail to appear. Charging-grade and USB 2.0 cables lack the high-speed pairs, and a Lightning cable is for older Apple phones.",
+      "distractor_analysis": {
+        "1": "Charging cables often omit high-speed data lines entirely.",
+        "2": "USB 2.0 cables cap at 480 Mbps.",
+        "3": "Lightning cables connect old iPhones and carry USB 2.0 only."
+      },
+      "video_reference": {
+        "title": "Mobile Device Accessories - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=14iM8lLBS0c",
+        "duration": "7:18",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "thunderbolt", "usb-c", "docking-station"]
+    },
+    {
+      "id": "C1N-M-062",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user complains that a phone connected to a laptop over USB-C only offers charging, and the laptop cannot see the phone's files. Which step on the phone fixes this?",
+      "options": [
+        "Change the USB connection mode from charging only to file transfer",
+        "Enable Bluetooth",
+        "Turn on the mobile hotspot",
+        "Insert a memory card"
+      ],
+      "answer": 0,
+      "explanation": "Phones default to charge-only when connected to a computer as a privacy protection. A notification appears offering USB options, and selecting file transfer (MTP) or photo transfer (PTP) exposes the storage to the computer. On some phones the device must also be unlocked and a trust prompt accepted. Bluetooth and hotspot are unrelated radios, and a memory card adds storage without changing the USB mode.",
+      "distractor_analysis": {
+        "1": "Bluetooth is a separate wireless link and does not change the USB mode.",
+        "2": "Hotspot shares the phone's internet connection.",
+        "3": "Storage is present; the phone is simply not exposing it."
+      },
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "usb", "mtp", "file-transfer"]
+    },
+    {
+      "id": "C1N-M-063",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "A phone charges only when the cable is held at an angle, and lint is visible inside the port. What should the technician do first?",
+      "options": [
+        "Power the phone off and carefully remove debris from the port with a non-conductive tool",
+        "Replace the phone's battery",
+        "Push the cable in harder to compress the debris",
+        "Apply contact cleaner spray into the port while the phone is on"
+      ],
+      "answer": 0,
+      "explanation": "Pocket lint packs into the bottom of charging ports and stops the plug seating fully, producing exactly this angle-dependent charging. With the phone off, a wooden or plastic pick lifts the debris out without shorting or scratching the contacts, and a quick check with a light confirms the port is clear. Only if a clean port still charges intermittently is the port or its flex cable suspect. Forcing the cable damages the port, and spraying liquid into a powered device risks a short.",
+      "distractor_analysis": {
+        "1": "The battery is not implicated by a mechanical seating problem.",
+        "2": "Force bends the port's contacts and worsens the fault.",
+        "3": "Liquids and a powered device are a short-circuit risk."
+      },
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "charging-port", "troubleshooting", "maintenance"]
+    },
+    {
+      "id": "C1N-M-064",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user has a tablet with a proprietary magnetic connector on its edge. Which accessory is this connector most likely designed for?",
+      "options": [
+        "A detachable keyboard cover that draws power and data from the tablet",
+        "A Qi wireless charging pad",
+        "A pair of Bluetooth earbuds",
+        "An NFC payment terminal"
+      ],
+      "answer": 0,
+      "explanation": "Tablet makers add a magnetic pogo-pin connector along one edge so a keyboard cover can attach without pairing or charging: the tablet supplies power and the keys send data over the pins. Because it is proprietary, only the vendor's or licensed keyboards fit. Wireless charging uses a coil behind the back glass, earbuds connect over Bluetooth, and payments use the NFC antenna; none of them use an edge connector.",
+      "distractor_analysis": {
+        "1": "Qi charging is coil-based and needs no physical connector.",
+        "2": "Earbuds pair over Bluetooth.",
+        "3": "NFC is contactless."
+      },
+      "video_reference": {
+        "title": "Mobile Device Accessories - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=14iM8lLBS0c",
+        "duration": "7:18",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "tablet", "keyboard", "proprietary-connector"]
+    },
+    {
+      "id": "C1N-M-065",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user wants to use a stylus for handwritten notes on a tablet, but a cheap capacitive stylus gives thick imprecise lines. What should the technician recommend?",
+      "options": [
+        "An active stylus supported by the tablet, which offers a fine tip, pressure sensitivity and palm rejection",
+        "A larger capacitive stylus",
+        "A screen protector to make the surface smoother",
+        "Increasing the display brightness"
+      ],
+      "answer": 0,
+      "explanation": "A passive capacitive stylus is simply a conductive rubber tip that imitates a fingertip, so the tablet sees a large blunt contact. An active stylus communicates with the digitizer, often over Bluetooth or a vendor protocol, to report a precise tip position, pressure and tilt, and lets the tablet ignore the resting palm. It must be a model the tablet supports. Bigger passive tips make lines coarser, and protectors and brightness do not change the input precision.",
+      "distractor_analysis": {
+        "1": "A larger passive tip is even less precise.",
+        "2": "A protector changes feel, not digitizer resolution.",
+        "3": "Brightness affects visibility only."
+      },
+      "video_reference": {
+        "title": "Mobile Device Accessories - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=14iM8lLBS0c",
+        "duration": "7:18",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "stylus", "tablet", "accessories"]
+    },
+    {
+      "id": "C1N-M-066",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "An office wants to connect an older Lightning iPhone to a conference room display with HDMI input for a presentation. Which accessory is needed?",
+      "options": [
+        "A Lightning to HDMI digital adapter",
+        "A USB-C to HDMI cable",
+        "A Micro-USB to HDMI MHL adapter",
+        "A DisplayPort cable"
+      ],
+      "answer": 0,
+      "explanation": "Lightning iPhones output video through an Apple-certified Lightning digital AV adapter that provides an HDMI port and a Lightning pass-through for charging. Uncertified adapters frequently fail or stop working after updates. USB-C to HDMI suits newer iPhones and Android phones with Alt Mode, MHL was a Micro-USB era Android standard, and a DisplayPort cable has no end that fits the phone.",
+      "distractor_analysis": {
+        "1": "The phone has a Lightning port, not USB-C.",
+        "2": "MHL adapters are for Micro-USB Android phones and are largely obsolete.",
+        "3": "Neither end of a DisplayPort cable fits a phone."
+      },
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "lightning", "hdmi", "adapters"]
+    },
+    {
+      "id": "C1N-M-067",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user complains that a Bluetooth headset connected to a phone has audio that lags noticeably behind video. Which factor is the most likely cause?",
+      "options": [
+        "The audio codec and buffering used over Bluetooth introduce latency",
+        "The phone's Wi-Fi is turned off",
+        "The headset is in pairing mode",
+        "The phone has no SIM card"
+      ],
+      "answer": 0,
+      "explanation": "Bluetooth audio is compressed and buffered before transmission, which adds tens to hundreds of milliseconds of delay depending on the codec. Basic SBC has the most lag; codecs such as aptX Low Latency or AAC with a well-matched headset reduce it, and many video apps compensate automatically. The delay is inherent to the wireless link, not a fault. Wi-Fi, pairing state and cellular service have no bearing on the timing of audio already playing.",
+      "distractor_analysis": {
+        "1": "Wi-Fi is not involved in a local Bluetooth stream.",
+        "2": "A headset in pairing mode would not be playing audio.",
+        "3": "Cellular service has nothing to do with local audio playback."
+      },
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "bluetooth", "audio", "latency"]
+    },
+    {
+      "id": "C1N-M-068",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A field technician wants a USB-C phone to read files from a USB-A flash drive. Which single accessory makes this possible?",
+      "options": [
+        "A USB-C on-the-go adapter or hub that provides a USB-A host port",
+        "A Lightning to USB camera adapter",
+        "A Qi receiver coil",
+        "An NFC tag"
+      ],
+      "answer": 0,
+      "explanation": "Phones and tablets can act as a USB host, a capability called USB On-The-Go. A small USB-C to USB-A OTG adapter lets the phone power and mount a flash drive, and a hub does the same for several devices at once. Once attached, the files app shows the drive. The Lightning camera adapter does this job for older iPhones only, and a Qi coil or an NFC tag has nothing to do with USB storage.",
+      "distractor_analysis": {
+        "1": "The camera adapter has a Lightning plug and will not fit USB-C.",
+        "2": "Qi receivers are for wireless charging.",
+        "3": "NFC tags store a few hundred bytes and cannot host a drive."
+      },
+      "video_reference": {
+        "title": "Mobile Device Accessories - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=14iM8lLBS0c",
+        "duration": "7:18",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "usb-otg", "adapter", "storage"]
+    },
+    {
+      "id": "C1N-M-069",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A phone's NFC payment works, but tapping it against an NFC-equipped speaker does not start Bluetooth pairing as advertised. Which setting is most likely the cause?",
+      "options": [
+        "NFC tag reading or the tap-to-pair feature is disabled on the phone, or the phone is an iPhone that does not support NFC pairing this way",
+        "The speaker needs Wi-Fi",
+        "The phone's SIM is locked",
+        "The speaker battery is too full"
+      ],
+      "answer": 0,
+      "explanation": "NFC pairing works by reading a tag in the accessory that carries the Bluetooth address and then completing the pairing automatically. Android phones must have NFC enabled and often have a separate toggle for reading tags; iPhones restrict background NFC use so this convenience does not work with most speakers. Payment working shows the NFC radio is fine, so the issue is the feature or platform, not the hardware. Wi-Fi, SIM state and battery level are irrelevant.",
+      "distractor_analysis": {
+        "1": "Bluetooth speakers do not need Wi-Fi.",
+        "2": "SIM lock affects cellular service only.",
+        "3": "A full battery does not disable pairing."
+      },
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "nfc", "bluetooth", "pairing"]
+    },
+    {
+      "id": "C1N-M-070",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "A user reports that a laptop connected through a USB-C dock loses its external monitors whenever a large file copies to a dock-attached SSD. What is the most likely cause?",
+      "options": [
+        "The dock is sharing limited USB-C bandwidth between DisplayPort and USB data, and the link renegotiates under load",
+        "The monitors are too bright",
+        "The SSD is formatted with the wrong file system",
+        "The laptop's Bluetooth is interfering with the dock"
+      ],
+      "answer": 0,
+      "explanation": "A single USB-C link has a fixed number of high-speed lanes. When the dock is not Thunderbolt, DisplayPort video and USB 3 data must share those lanes, and heavy storage traffic can force a renegotiation that briefly drops the displays. Solutions include a Thunderbolt dock and cable, lowering monitor resolution or refresh rate, or moving the SSD to a port on the laptop itself. Brightness, file system and Bluetooth do not affect lane allocation.",
+      "distractor_analysis": {
+        "1": "Brightness is a monitor setting with no link impact.",
+        "2": "File system affects compatibility, not the physical link.",
+        "3": "Bluetooth is a separate radio and does not touch the USB-C link."
+      },
+      "video_reference": {
+        "title": "Mobile Device Accessories - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=14iM8lLBS0c",
+        "duration": "7:18",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "docking-station", "bandwidth", "displayport"]
+    },
+    {
+      "id": "C1N-M-071",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "A user has connected a USB-C laptop charger to a phone. What happens?",
+      "options": [
+        "The phone negotiates a safe power level with the charger and charges normally",
+        "The phone is damaged by the higher voltage",
+        "The phone will not charge because laptop chargers are incompatible",
+        "The charger switches off permanently"
+      ],
+      "answer": 0,
+      "explanation": "USB-C Power Delivery is a negotiation. The charger advertises the voltages and currents it can provide and the phone requests only the profile it can accept, typically 9 V at 2 to 3 A. A 65 W or 100 W laptop charger therefore charges a phone safely and often faster than the phone's own small adapter. This is the interoperability benefit of USB-C, and technicians can reassure users that PD-compliant chargers are safe across device classes.",
+      "distractor_analysis": {
+        "1": "PD starts at 5 V and only raises voltage on request, so no damage occurs.",
+        "2": "PD-compliant chargers work across phones, tablets and laptops.",
+        "3": "Chargers do not disable themselves when a smaller device is attached."
+      },
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "usb-c", "power-delivery", "charging"]
+    },
+    {
+      "id": "C1N-M-072",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "Which statement about hotspot capability is correct when a user wants a laptop to get online through a phone in a location with no Wi-Fi?",
+      "options": [
+        "The phone can share its cellular connection over Wi-Fi, Bluetooth or USB tethering",
+        "Tethering requires a Lightning cable",
+        "Only tablets can create hotspots",
+        "Hotspots work only when the phone is on Wi-Fi"
+      ],
+      "answer": 0,
+      "explanation": "Phones can share their mobile data three ways. A Wi-Fi hotspot is the most common and supports several clients, USB tethering charges the phone while offering a stable wired link to one laptop, and Bluetooth tethering is low power but slow. The carrier plan must allow tethering. The phone's connector type is irrelevant to the feature, phones and tablets both offer it, and a hotspot specifically shares the cellular link rather than Wi-Fi.",
+      "distractor_analysis": {
+        "1": "USB tethering works over whatever USB cable the phone uses.",
+        "2": "Phones are the most common hotspot devices.",
+        "3": "A hotspot shares cellular data; it is not dependent on Wi-Fi."
+      },
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "hotspot", "tethering", "connectivity"]
+    },
+    {
+      "id": "C1N-M-073",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user wants a wireless keyboard and mouse for a tablet but does not want to pair or charge anything. Which option is not viable and why?",
+      "options": [
+        "A 2.4 GHz keyboard with a USB receiver is impractical because the tablet may lack a USB-A port and the receiver still needs one",
+        "Bluetooth is not viable because tablets cannot use keyboards",
+        "A wired keyboard is not viable because tablets have no input capability",
+        "An NFC keyboard is the only working option"
+      ],
+      "answer": 0,
+      "explanation": "Proprietary 2.4 GHz peripherals avoid Bluetooth pairing but need their small USB receiver plugged in, which a tablet with only USB-C can accommodate only through an OTG adapter, and the receiver protrudes from the device. Bluetooth is the natural fit for tablets and pairs once. A wired keyboard also works through an adapter. There is no such thing as an NFC keyboard; NFC carries too little data for continuous input.",
+      "distractor_analysis": {
+        "1": "Tablets support Bluetooth keyboards natively.",
+        "2": "Wired keyboards work through a USB-C OTG adapter.",
+        "3": "NFC has no role in continuous keyboard input."
+      },
+      "video_reference": {
+        "title": "Mobile Device Accessories - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=14iM8lLBS0c",
+        "duration": "7:18",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "keyboard", "bluetooth", "accessories"]
+    },
+    {
+      "id": "C1N-M-074",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A phone's screen has fine scratches after months in a pocket with keys. The user asks how to prevent this on the replacement phone. What is the best advice?",
+      "options": [
+        "Fit a tempered glass or film screen protector and a case as soon as the phone is unboxed",
+        "Increase the display brightness so scratches are less visible",
+        "Store the phone with the screen facing the keys so the back takes the damage",
+        "Apply furniture polish to the glass weekly"
+      ],
+      "answer": 0,
+      "explanation": "Screen protectors exist for exactly this reason: a sacrificial layer of tempered glass or film takes the scratches and can be replaced for a few pounds, while a case protects the edges and back from drops. Applying them before the first day of use avoids trapping dust or fitting over existing damage. Brightness does not remove scratches, deliberately facing the keys guarantees damage, and polish contains abrasives and oils that harm oleophobic coatings.",
+      "distractor_analysis": {
+        "1": "Brightness cannot hide physical scratches.",
+        "2": "Facing the keys is the cause of the problem, not the solution.",
+        "3": "Polishes can strip the coating and add micro-scratches."
+      },
+      "video_reference": {
+        "title": "Mobile Device Accessories - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=14iM8lLBS0c",
+        "duration": "7:18",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "screen-protector", "case", "accessories"]
+    },
+    {
+      "id": "C1N-M-075",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "A car's USB port charges a phone but the car's infotainment system does not recognise the phone for wired screen projection. The same phone and cable work in another car. What is the most likely explanation?",
+      "options": [
+        "The car's port is a charge-only port; the data-capable port is elsewhere",
+        "The phone needs a new SIM card",
+        "The cable is too short",
+        "Screen projection requires NFC"
+      ],
+      "answer": 0,
+      "explanation": "Vehicles often have several USB ports, and only one or two are wired to the head unit for data; the rest are charging outlets with no data lines. Because the phone and cable are proven in another car, the variable is the port. Moving to the port marked with the data or projection symbol, or consulting the vehicle manual, resolves it. A SIM affects cellular service, cable length does not stop enumeration, and wired projection needs USB data rather than NFC.",
+      "distractor_analysis": {
+        "1": "Cellular service is not required for wired projection.",
+        "2": "A short cable still carries data.",
+        "3": "NFC is not part of wired screen projection."
+      },
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "usb", "vehicle", "troubleshooting"]
+    },
+    {
+      "id": "C1N-M-076",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "multi",
+      "difficulty": "medium",
+      "question": "A technician is asked which two features of USB-C make it different from the Micro-USB it replaced on phones. Which TWO are correct? (Select TWO.)",
+      "options": [
+        "The plug is reversible and inserts either way up",
+        "It can negotiate much higher charging power through Power Delivery",
+        "It is limited to USB 2.0 speeds",
+        "It only works with Apple devices",
+        "It requires a separate power connector for charging"
+      ],
+      "answers": [0, 1],
+      "explanation": "USB-C brought two everyday improvements: a symmetrical plug that cannot be inserted the wrong way, and the Power Delivery protocol that raises charging from the 7.5 W or so of Micro-USB to 100 W and beyond, enough for laptops. Depending on the device it can also carry USB 3.x or Thunderbolt data and DisplayPort video. It is an open standard used across every platform and carries power and data in the one connector.",
+      "distractor_analysis": {
+        "2": "USB-C can carry USB 3.x, USB4 and Thunderbolt; only the cheapest cables are limited to USB 2.0.",
+        "3": "USB-C is an industry standard used by Android, Windows, Apple and others.",
+        "4": "Power and data share the single connector."
+      },
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "usb-c", "micro-usb", "power-delivery"]
+    },
+    {
+      "id": "C1N-M-077",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "multi",
+      "difficulty": "medium",
+      "question": "A user's phone will not wirelessly charge on a Qi pad that works for a colleague's phone. Which TWO checks should the technician make first? (Select TWO.)",
+      "options": [
+        "Confirm the phone model actually supports wireless charging",
+        "Remove the case and re-centre the phone on the pad",
+        "Update the phone's Bluetooth firmware",
+        "Insert a higher-capacity SIM card",
+        "Enable the phone's mobile hotspot"
+      ],
+      "answers": [0, 1],
+      "explanation": "Two things account for almost every wireless charging complaint. Not every phone has a receiving coil, especially budget models, so the specification must be checked. When the phone does support it, a thick or metallic case or a phone lying off-centre breaks the coupling between coils, and simply removing the case and aligning the phone over the pad's marked area restores charging. Bluetooth, SIM and hotspot are unrelated to inductive charging.",
+      "distractor_analysis": {
+        "2": "Bluetooth has no role in wireless charging.",
+        "3": "SIM cards carry subscriber identity and have no effect on charging.",
+        "4": "Hotspot shares data and, if anything, drains the battery."
+      },
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "wireless-charging", "qi", "troubleshooting"]
+    },
+    {
+      "id": "C1N-M-078",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "match",
+      "difficulty": "medium",
+      "question": "Match each mobile connection technology to its typical use.",
+      "pairs": [
+        { "left": "NFC", "right": "Contactless payment within a few centimetres" },
+        { "left": "Bluetooth", "right": "Wireless earbuds and car hands-free within about ten metres" },
+        { "left": "USB-C with Power Delivery", "right": "Fast wired charging and data for phones and laptops" },
+        { "left": "Qi", "right": "Cable-free inductive charging on a pad" },
+        { "left": "Lightning", "right": "Proprietary connector on older Apple phones" }
+      ],
+      "explanation": "Each technology has a distinct job. NFC is deliberately short range for secure taps. Bluetooth is the personal area network for accessories. USB-C with Power Delivery is the universal wired connection that negotiates charging power. Qi is the inductive charging standard. Lightning was Apple's proprietary plug before its move to USB-C. Knowing which one is in play tells the technician where to look when a connection fails.",
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "connectivity", "match"]
+    },
+    {
+      "id": "C1N-M-079",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "order",
+      "difficulty": "easy",
+      "question": "Put the steps for pairing a new Bluetooth headset with a phone in the correct order.",
+      "sequence": [
+        "Charge the headset and confirm the phone's Bluetooth is turned on",
+        "Hold the headset's pairing button until its light blinks in pairing mode",
+        "Open the phone's Bluetooth settings and select the headset from the list of available devices",
+        "Confirm any PIN or pairing prompt and wait for the status to show connected",
+        "Play audio to verify the headset is the active output"
+      ],
+      "explanation": "Pairing fails most often because a step is skipped: the headset is not actually in pairing mode, or the phone's radio is off. Putting the accessory into pairing mode makes it discoverable, the phone then lists it, and confirming the prompt exchanges the link keys that let the two reconnect automatically in future. Testing audio confirms the phone has actually routed sound to the new device rather than to its own speaker.",
+      "video_reference": {
+        "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+        "duration": "6:08",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "bluetooth", "pairing", "procedure"]
+    },
+    {
+      "id": "C1N-M-080",
+      "exam": "core1",
+      "domain": "1.0 Mobile Devices",
+      "objective": "1.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A company buys a mixed fleet of USB-C phones and laptops and wants one type of desk charger for every desk. Which specification should the technician require?",
+      "options": [
+        "USB-C Power Delivery chargers rated at or above the highest laptop wattage in the fleet",
+        "Micro-USB chargers rated 10 W",
+        "Lightning chargers rated 20 W",
+        "Any USB-A charger with an adapter cable"
+      ],
+      "answer": 0,
+      "explanation": "Because Power Delivery negotiates downward, a single charger rated for the most demanding laptop, commonly 65 W or 100 W, will also charge every phone and tablet safely. Standardising on it simplifies procurement and support. Micro-USB and Lightning are the wrong connectors for a USB-C fleet, and USB-A chargers cannot supply the voltages laptops need, so an adapter cable would leave the laptops uncharged.",
+      "distractor_analysis": {
+        "1": "Micro-USB is the wrong connector and far too little power.",
+        "2": "Lightning is Apple-specific and not a laptop connector.",
+        "3": "USB-A ports top out around 12 to 18 W and cannot run laptops."
+      },
+      "video_reference": {
+        "title": "Mobile Device Accessories - CompTIA A+ 220-1201 - 1.2",
+        "url": "https://www.youtube.com/watch?v=14iM8lLBS0c",
+        "duration": "7:18",
+        "objective": "1.2"
+      },
+      "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+      "tags": ["mobile", "power-delivery", "charger", "standardisation"]
+    }
+  ]
+}

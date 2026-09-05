@@ -1,0 +1,1784 @@
+{
+  "questions": [
+    {
+      "id": "C2N-X-001",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A Windows laptop takes several minutes to reach the desktop and then remains sluggish for another few minutes before settling down. Which tool should the technician use first to identify the cause?",
+      "options": [
+        "Task Manager's Startup tab to review programs launching at sign-in and their impact rating",
+        "Disk Management to shrink the system volume",
+        "Device Manager to roll back the display driver",
+        "Windows Update to pause updates"
+      ],
+      "answer": 0,
+      "explanation": "Slow boot followed by a sluggish first few minutes is the classic footprint of too many startup programs competing for disk and CPU while the desktop loads. The Startup tab in Task Manager lists each item with a measured startup impact and lets the technician disable the unnecessary ones without uninstalling anything. Only if startup is clean should storage health, drivers or pending updates be examined. Shrinking volumes, driver rollbacks and pausing updates do not address startup load.",
+      "distractor_analysis": {
+        "1": "Volume size has nothing to do with boot-time load.",
+        "2": "A display driver problem shows as graphics faults, not general slowness after boot.",
+        "3": "Pausing updates hides symptoms and does not reduce startup programs."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": ["windows", "slow-boot", "startup", "task-manager"]
+    },
+    {
+      "id": "C2N-X-002",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user's Windows PC shows a blue screen with a stop code shortly after a new graphics driver was installed. Windows still boots occasionally. What is the most appropriate first repair?",
+      "options": [
+        "Boot into Safe Mode and roll back or uninstall the new graphics driver",
+        "Reinstall Windows from scratch",
+        "Replace the graphics card",
+        "Run Disk Cleanup"
+      ],
+      "answer": 0,
+      "explanation": "A blue screen that begins immediately after a driver change points at that driver. Safe Mode loads Windows with generic drivers so the faulty one is not active, and Device Manager's Roll Back Driver or Uninstall Device option removes it. If the machine then runs stable, the driver was the cause and a different version can be tried. Reinstalling Windows or replacing hardware is premature when a software change is the obvious variable, and Disk Cleanup addresses disk space rather than crashes.",
+      "distractor_analysis": {
+        "1": "A reinstall destroys the user's setup to fix a single driver.",
+        "2": "The hardware worked before the driver update.",
+        "3": "Disk space does not cause driver-related stop errors."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": ["windows", "bsod", "driver", "safe-mode"]
+    },
+    {
+      "id": "C2N-X-003",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A Windows PC displays a message that a critical system file is missing or corrupt and will not finish booting. Which recovery tool should be tried first?",
+      "options": [
+        "Startup Repair from the Windows Recovery Environment",
+        "Reset this PC with the remove everything option",
+        "Format the drive",
+        "Update the firmware"
+      ],
+      "answer": 0,
+      "explanation": "The Windows Recovery Environment is reached automatically after repeated failed boots or from installation media, and its Startup Repair option scans for and replaces missing or damaged boot files and fixes the boot configuration. It is non-destructive and should always be tried before anything that erases data. If it fails, System Restore or the command-line tools such as sfc and bootrec are the next steps. Resetting or formatting throws away the user's data for a problem that is usually repairable.",
+      "distractor_analysis": {
+        "1": "A full reset erases the user's files and is a last resort.",
+        "2": "Formatting destroys everything and is never the first step.",
+        "3": "Firmware updates do not repair Windows boot files."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": ["windows", "boot", "startup-repair", "winre"]
+    },
+    {
+      "id": "C2N-X-004",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "Several Windows applications crash when opened, and Event Viewer shows errors referencing corrupted system files. Which command should the technician run from an elevated prompt?",
+      "options": [
+        "sfc /scannow",
+        "chkdsk /r",
+        "ipconfig /flushdns",
+        "gpupdate /force"
+      ],
+      "answer": 0,
+      "explanation": "System File Checker compares protected Windows files against known good copies and replaces any that are damaged or modified. When the log reports corruption sfc cannot fix, running DISM with the RestoreHealth option repairs the component store first, then sfc is run again. Check Disk targets file system and disk surface errors rather than system file integrity, and the networking and Group Policy commands are unrelated to application crashes.",
+      "distractor_analysis": {
+        "1": "chkdsk repairs file system structures and bad sectors, not protected system files.",
+        "2": "Flushing DNS affects name resolution only.",
+        "3": "gpupdate refreshes policy and has no effect on file integrity."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": ["windows", "sfc", "dism", "corruption"]
+    },
+    {
+      "id": "C2N-X-005",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A Windows PC freezes for several seconds at a time throughout the day, and Task Manager shows disk utilisation pinned at 100 percent during the freezes. What is the most likely cause?",
+      "options": [
+        "A failing or heavily fragmented mechanical hard drive, or an indexing or antivirus scan saturating a slow disk",
+        "The monitor's refresh rate is too low",
+        "The keyboard driver needs updating",
+        "The user has too many browser bookmarks"
+      ],
+      "answer": 0,
+      "explanation": "Sustained 100 percent disk time with system-wide pauses means every process is waiting on storage. On a spinning drive this happens when the drive is developing bad sectors and retrying reads, or when background tasks such as search indexing, antivirus scans or update installs monopolise a slow disk. Checking the drive's health with the vendor tool or SMART data, then reviewing the processes on the Disk column, isolates the cause. Refresh rate, keyboard drivers and bookmarks have no effect on disk queue.",
+      "distractor_analysis": {
+        "1": "Refresh rate affects display smoothness, not disk activity.",
+        "2": "Keyboard drivers do not generate disk load.",
+        "3": "Bookmarks are a tiny file and irrelevant."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": ["windows", "performance", "disk", "freeze"]
+    },
+    {
+      "id": "C2N-X-006",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "After a Windows feature update, a user's specialised accounting program no longer opens. The vendor has not released a compatible version. Which option restores the program with the least disruption?",
+      "options": [
+        "Roll back the feature update within the rollback window using Recovery settings",
+        "Delete the user profile",
+        "Reinstall the printer drivers",
+        "Change the display language"
+      ],
+      "answer": 0,
+      "explanation": "Windows keeps the previous version for a limited period after a feature update, and Settings offers a Go back option that returns the system to the earlier build with programs and files intact. This buys time until the vendor supports the new version, after which the update can be reapplied. Deleting the profile, reinstalling unrelated drivers and changing language settings do not address an application that is incompatible with the new operating system build.",
+      "distractor_analysis": {
+        "1": "The profile is not the problem; the operating system build is.",
+        "2": "Printer drivers are unrelated to the accounting program.",
+        "3": "Display language has no bearing on application compatibility."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": ["windows", "update", "rollback", "compatibility"]
+    },
+    {
+      "id": "C2N-X-007",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A Windows PC reports low memory warnings and applications close unexpectedly, although the machine has 16 GB of RAM. Task Manager shows one browser process using 11 GB. What should the technician do first?",
+      "options": [
+        "Identify and close or fix the runaway process, such as the browser with excessive tabs or a faulty extension",
+        "Install a larger hard drive",
+        "Lower the screen resolution",
+        "Disable Windows Defender"
+      ],
+      "answer": 0,
+      "explanation": "Low memory with one process consuming most of the RAM is a runaway application, not a hardware shortage. The Processes tab in Task Manager makes the offender obvious. Closing it relieves the pressure immediately, and the longer fix is to find the cause, commonly dozens of open tabs, a misbehaving extension or a memory leak fixed by an update. Storage capacity, display settings and security software are not the constraint here.",
+      "distractor_analysis": {
+        "1": "Disk capacity is unrelated to RAM exhaustion.",
+        "2": "Resolution changes have negligible memory impact.",
+        "3": "Disabling security software does not free the memory the browser holds."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": ["windows", "memory", "task-manager", "performance"]
+    },
+    {
+      "id": "C2N-X-008",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A Windows service that a line-of-business application depends on fails to start at boot, and the application reports it cannot connect. Where should the technician look to find out why the service failed?",
+      "options": [
+        "The System log in Event Viewer, then the service's properties in the Services console for its dependencies and log-on account",
+        "Disk Cleanup",
+        "The Fonts control panel",
+        "Display settings"
+      ],
+      "answer": 0,
+      "explanation": "Service failures are recorded in the System log with an event that names the service and the reason, such as a dependency that did not start, a log-on account whose password changed, or a timeout. The Services console then shows the dependencies tab and the account the service runs under, which are the usual culprits. Setting the service to Automatic (Delayed Start) also resolves timing problems. Cleanup, fonts and display settings have no relationship to service startup.",
+      "distractor_analysis": {
+        "1": "Disk Cleanup removes temporary files.",
+        "2": "Fonts are unrelated to services.",
+        "3": "Display settings do not affect background services."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": ["windows", "services", "event-viewer", "troubleshooting"]
+    },
+    {
+      "id": "C2N-X-009",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "A user reports that Windows reboots itself at random with no blue screen displayed. Event Viewer shows an unexpected shutdown event each time but no stop error. Which setting would help the technician capture the cause next time?",
+      "options": [
+        "Disable automatic restart on system failure and enable a memory dump in Startup and Recovery settings",
+        "Turn on the screen saver",
+        "Increase the desktop icon size",
+        "Set the default browser"
+      ],
+      "answer": 0,
+      "explanation": "By default Windows restarts immediately after a stop error, so a crash can look like a spontaneous reboot. Unticking automatic restart in the Startup and Recovery dialog makes the blue screen stay on screen with its stop code, and enabling a kernel or small memory dump writes a file that can be analysed to name the failing driver. If no stop error appears even then, the cause is likely power or hardware such as overheating or a failing supply.",
+      "distractor_analysis": {
+        "1": "Screen savers do not diagnose crashes.",
+        "2": "Icon size is cosmetic.",
+        "3": "The browser default is unrelated to system stability."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": ["windows", "reboot", "memory-dump", "diagnostics"]
+    },
+    {
+      "id": "C2N-X-010",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user's Windows profile loads with a plain desktop, missing shortcuts and documents, and a notification says they have been signed in with a temporary profile. What is the correct approach?",
+      "options": [
+        "Do not save work in the temporary profile; repair the profile registry entry or create a new profile and migrate the user's data",
+        "Tell the user the files are gone",
+        "Reinstall Windows immediately",
+        "Delete the user's account"
+      ],
+      "answer": 0,
+      "explanation": "A temporary profile appears when Windows cannot load the user's real profile, usually because the profile folder is locked or its registry entry under ProfileList is damaged. The user's data still exists in their original profile folder. Anything saved in the temporary profile is discarded at sign-out, so the first step is to warn the user, then either fix the registry entry or create a fresh profile and copy the documents, desktop and settings across. Reinstalling or deleting the account is unnecessary and risks the data.",
+      "distractor_analysis": {
+        "1": "The data is intact in the original profile folder.",
+        "2": "A profile problem does not require reinstalling the operating system.",
+        "3": "Deleting the account can remove the profile folder and the data with it."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": ["windows", "user-profile", "temporary-profile", "troubleshooting"]
+    },
+    {
+      "id": "C2N-X-011",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "multi",
+      "difficulty": "medium",
+      "question": "A Windows PC has become slow over several months. Which TWO actions are appropriate early steps before considering hardware upgrades? (Select TWO.)",
+      "options": [
+        "Review and disable unnecessary startup programs and background applications",
+        "Check for malware and confirm the disk has adequate free space and is healthy",
+        "Replace the motherboard",
+        "Reinstall the printer",
+        "Change the desktop wallpaper to a solid colour"
+      ],
+      "answers": [0, 1],
+      "explanation": "Gradual slowdown is almost always software accumulation: programs that install themselves at startup, background updaters and synchronisation agents, and sometimes malware. Trimming startup items and scanning for threats addresses the common causes, and confirming the disk is not nearly full or failing rules out the storage bottleneck that dominates on older machines. Hardware replacement comes only after those checks, and printers and wallpaper have no bearing on general performance.",
+      "distractor_analysis": {
+        "2": "Motherboard replacement is expensive and unjustified without a diagnosis.",
+        "3": "Printer software rarely affects overall speed.",
+        "4": "Wallpaper has a negligible performance effect on modern systems."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": ["windows", "performance", "startup", "malware"]
+    },
+    {
+      "id": "C2N-X-012",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.1",
+      "type": "order",
+      "difficulty": "medium",
+      "question": "Order the recovery steps for a Windows PC that fails to boot after a driver update, from least to most disruptive.",
+      "sequence": [
+        "Boot into Safe Mode and roll back or uninstall the recently changed driver",
+        "Use System Restore to return the system to a restore point taken before the change",
+        "Run Startup Repair and the sfc and DISM tools from the recovery environment",
+        "Use Reset this PC with the keep my files option",
+        "Perform a clean installation of Windows and restore data from backup"
+      ],
+      "explanation": "Troubleshooting escalates from the reversible to the destructive. Removing the specific driver targets the known change with no side effects. System Restore rolls back system files and registry while leaving documents alone. Repair tools rebuild boot files and system components. Reset reinstalls Windows but preserves personal files at the cost of applications. A clean install is the last resort because it discards everything not backed up. Each step is tried only if the previous one fails.",
+      "video_reference": {
+        "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+        "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+        "duration": "17:30",
+        "objective": "3.1"
+      },
+      "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+      "tags": ["windows", "recovery", "procedure", "escalation"]
+    },
+    {
+      "id": "C2N-X-013",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "A user's phone has become very slow and apps take a long time to open. Storage shows 98 percent used. What should the technician recommend first?",
+      "options": [
+        "Free storage by removing unused apps, clearing caches and offloading photos to the cloud",
+        "Replace the phone's battery",
+        "Turn off Wi-Fi",
+        "Change the ringtone"
+      ],
+      "answer": 0,
+      "explanation": "Mobile operating systems need free space to write caches, update apps and manage memory. When storage is nearly full the device spends its time shuffling data and everything slows down. Deleting apps that are no longer used, clearing large app caches such as browsers and messaging, and moving photos and videos to cloud storage recovers space and speed. The battery, Wi-Fi and ringtone have nothing to do with a storage shortage.",
+      "distractor_analysis": {
+        "1": "Battery health affects runtime, not app launch speed.",
+        "2": "Wi-Fi state does not change storage pressure.",
+        "3": "Ringtones are cosmetic."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "storage", "performance"]
+    },
+    {
+      "id": "C2N-X-014",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A single app on a phone crashes every time it is opened, while every other app works. Which sequence of steps is most appropriate?",
+      "options": [
+        "Force close the app, clear its cache, update it, and if it still fails uninstall and reinstall it",
+        "Factory reset the phone immediately",
+        "Replace the phone",
+        "Remove the SIM card"
+      ],
+      "answer": 0,
+      "explanation": "When one application misbehaves and the rest of the device is fine, the fault is confined to that app's code or data. Force closing clears its running state, clearing the cache removes corrupted temporary files, an update may include the bug fix, and reinstalling gives it a clean start while most apps restore their data from the account. A factory reset or a new phone is a huge intervention for a single app, and the SIM is unrelated.",
+      "distractor_analysis": {
+        "1": "A reset wipes the whole device for one app's problem.",
+        "2": "The hardware is fine because every other app works.",
+        "3": "The SIM affects cellular service, not app stability."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "app-crash", "cache", "reinstall"]
+    },
+    {
+      "id": "C2N-X-015",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user says their phone's battery, which used to last all day, now dies by mid-afternoon after installing a new social media app. What should the technician check?",
+      "options": [
+        "The battery usage screen to see whether the new app is consuming power in the background, then restrict its background activity or location access",
+        "Whether the phone's case is the wrong colour",
+        "Whether the SIM card is too old",
+        "Whether the charger cable is too long"
+      ],
+      "answer": 0,
+      "explanation": "Both major platforms show battery consumption per app. An app that refreshes constantly, tracks location continuously or keeps the radio busy will appear at the top of that list. Restricting its background activity, revoking always-on location and disabling unnecessary notifications, or removing it, restores battery life. The case, SIM age and cable length do not affect how quickly the battery drains during use.",
+      "distractor_analysis": {
+        "1": "Case colour has no effect on power.",
+        "2": "SIM cards do not degrade battery life.",
+        "3": "Cable length affects charging speed marginally, not drain."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "battery", "background-apps", "troubleshooting"]
+    },
+    {
+      "id": "C2N-X-016",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A phone becomes noticeably hot and its screen dims while a user plays a graphics-heavy game outdoors on a sunny day. What is happening?",
+      "options": [
+        "The phone is throttling performance and brightness to protect itself from overheating, which is expected behaviour",
+        "The battery is about to explode and the phone must be thrown away",
+        "The screen protector is melting",
+        "The SIM card is overheating"
+      ],
+      "answer": 0,
+      "explanation": "Heavy processing, charging and direct sun together push a phone toward its thermal limit, and the operating system responds by lowering the processor clock and dimming the display, sometimes showing a temperature warning. Moving into shade, closing the game and pausing charging lets it recover. It is a protective mechanism rather than a fault, though a phone that overheats at idle or has a swollen back is a different, serious matter. Protectors and SIMs do not generate heat.",
+      "distractor_analysis": {
+        "1": "Normal thermal throttling is not a battery emergency; swelling or smoke would be.",
+        "2": "Screen protectors tolerate far higher temperatures than a phone reaches.",
+        "3": "A SIM is a passive chip with negligible heat."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "overheating", "throttling"]
+    },
+    {
+      "id": "C2N-X-017",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A phone's touchscreen stops responding entirely, though the screen still displays normally and the buttons work. The phone was not dropped. What should the technician try first?",
+      "options": [
+        "Force restart the phone using the hardware button combination",
+        "Replace the display assembly",
+        "Remove the SIM card",
+        "Delete all photos"
+      ],
+      "answer": 0,
+      "explanation": "An unresponsive digitizer with a working display is frequently a software hang in the touch controller or the operating system, and because the screen cannot be used to shut down, the hardware button combination that forces a restart is the way out. If touch returns after the restart the fault was software. Only if it stays dead, or fails in patches, is the digitizer suspect and a repair justified. The SIM and photos have no relationship to touch input.",
+      "distractor_analysis": {
+        "1": "Hardware replacement is premature before a restart is tried.",
+        "2": "The SIM affects cellular service only.",
+        "3": "Storage contents do not control the digitizer."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "touchscreen", "force-restart", "troubleshooting"]
+    },
+    {
+      "id": "C2N-X-018",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user cannot install a new app from the official store; the store reports that the app is not compatible with the device. What is the most likely reason?",
+      "options": [
+        "The phone's operating system version is older than the minimum the app requires",
+        "The phone's screen protector is blocking the download",
+        "The user has too many contacts",
+        "Bluetooth is turned off"
+      ],
+      "answer": 0,
+      "explanation": "App stores check the device against the app's requirements: operating system version, hardware features and sometimes region. The most common failure is an old operating system that the developer no longer supports. Updating the phone's operating system resolves it if an update is available; if the phone is too old to update, the app cannot be installed and the user needs an alternative or a newer device. Protectors, contacts and Bluetooth play no part in store compatibility.",
+      "distractor_analysis": {
+        "1": "A protector is physical and cannot affect downloads.",
+        "2": "Contact count is irrelevant to app installation.",
+        "3": "Bluetooth is not used for store downloads."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "app-install", "os-version", "compatibility"]
+    },
+    {
+      "id": "C2N-X-019",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A phone fails to install an operating system update, reporting insufficient space, even though the update is 3 GB and the phone shows 4 GB free. Why does it fail?",
+      "options": [
+        "Updates need additional working space to download, unpack and apply, often double the update's size",
+        "The update is only for phones with a different colour",
+        "The SIM card is full",
+        "Updates can only be installed over Bluetooth"
+      ],
+      "answer": 0,
+      "explanation": "An operating system update is downloaded as a compressed package, expanded, and then applied alongside the running system so it can be rolled back if it fails. That process needs considerably more free space than the package itself, so 4 GB free is not enough for a 3 GB update. Clearing space, or updating through a computer where the download is staged on the PC, resolves it. Colour, the SIM and Bluetooth have nothing to do with updates.",
+      "distractor_analysis": {
+        "1": "Updates are tied to model and region, not colour.",
+        "2": "SIM cards store subscriber data only.",
+        "3": "Updates arrive over Wi-Fi or cellular, not Bluetooth."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "os-update", "storage", "troubleshooting"]
+    },
+    {
+      "id": "C2N-X-020",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user's phone randomly reboots several times a day after a recent operating system update. All apps are current. What is the recommended next step?",
+      "options": [
+        "Back up the phone and perform a factory reset, then restore, to clear corrupted system state left by the update",
+        "Remove the screen protector",
+        "Change the wallpaper",
+        "Turn off the flashlight"
+      ],
+      "answer": 0,
+      "explanation": "Random reboots that start after an update and persist with current apps suggest the update left the system in an inconsistent state. Once a backup is confirmed, a factory reset reinstalls the operating system cleanly and restoring from backup returns the user's data. If reboots continue after a clean reset with minimal apps, the fault is hardware, typically the battery or board. Cosmetic settings and accessories are irrelevant.",
+      "distractor_analysis": {
+        "1": "A protector has no effect on stability.",
+        "2": "Wallpaper does not cause reboots.",
+        "3": "The flashlight is unrelated."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "reboot", "factory-reset", "os-update"]
+    },
+    {
+      "id": "C2N-X-021",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A phone's screen auto-rotates unpredictably and the compass in the maps app points the wrong way. Which action addresses both symptoms?",
+      "options": [
+        "Recalibrate the sensors, for example by moving the phone in a figure-eight pattern, and remove any magnetic case or mount",
+        "Replace the SIM card",
+        "Clear the browser history",
+        "Reduce the screen brightness"
+      ],
+      "answer": 0,
+      "explanation": "Rotation and heading both come from the phone's motion and magnetic sensors. A magnetic case, a car mount or a nearby speaker skews the magnetometer, and sensor drift confuses the accelerometer and gyroscope. Removing the magnet source and running the calibration gesture that maps apps prompt for fixes both problems. If they persist after calibration and a restart, the sensor hardware may be faulty. The SIM, browser and brightness have nothing to do with motion sensing.",
+      "distractor_analysis": {
+        "1": "The SIM does not feed sensor data.",
+        "2": "Browser data is unrelated to sensors.",
+        "3": "Brightness does not affect orientation detection."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "sensors", "auto-rotate", "calibration"]
+    },
+    {
+      "id": "C2N-X-022",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user reports that their phone's Bluetooth car connection drops every few minutes, but only since a recent phone update. Other Bluetooth devices work. What should be tried first?",
+      "options": [
+        "Forget the car in the phone's Bluetooth settings and delete the phone from the car, then pair again",
+        "Replace the car's battery",
+        "Factory reset the phone",
+        "Turn off the car's headlights"
+      ],
+      "answer": 0,
+      "explanation": "An update can invalidate stored pairing keys or change the Bluetooth profiles negotiated with a car, leading to unstable connections with that one device while others work. Clearing the pairing on both sides and re-pairing establishes fresh keys and profile negotiation and resolves the majority of post-update car issues. A vehicle head unit update may also be needed. Resetting the whole phone is disproportionate, and the car's battery and lights are irrelevant.",
+      "distractor_analysis": {
+        "1": "The car's power system does not govern Bluetooth pairing keys.",
+        "2": "A full reset is a last resort when re-pairing fails.",
+        "3": "Headlights are unrelated."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "bluetooth", "pairing", "connectivity"]
+    },
+    {
+      "id": "C2N-X-023",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user cannot send text messages with photos, though plain texts send and data works elsewhere. Which setting is most likely wrong?",
+      "options": [
+        "The carrier's MMS or APN settings on the phone",
+        "The phone's wallpaper",
+        "The screen timeout",
+        "The keyboard layout"
+      ],
+      "answer": 0,
+      "explanation": "Picture messages travel over MMS, which uses the carrier's data path and a specific access point configuration. If the APN or MMS settings are missing or wrong, often after a SIM swap or a carrier change, plain SMS still works because it uses the signalling channel, but photos fail. Resetting network settings or entering the carrier's published APN values fixes it. Cosmetic and input settings have no connection to messaging.",
+      "distractor_analysis": {
+        "1": "Wallpaper is cosmetic.",
+        "2": "Screen timeout does not affect message delivery.",
+        "3": "Keyboard layout changes typing, not transmission."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "mms", "apn", "messaging"]
+    },
+    {
+      "id": "C2N-X-024",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A tablet's Wi-Fi shows connected but apps report no internet, while the same network works for other devices. Which troubleshooting step is most likely to fix it?",
+      "options": [
+        "Reset the tablet's network settings so it obtains fresh addressing and clears stale saved network data",
+        "Replace the tablet's screen",
+        "Reduce the tablet's volume",
+        "Uninstall the calculator app"
+      ],
+      "answer": 0,
+      "explanation": "When one device fails on a network that works for others, the problem is on that device: a stale DHCP lease, a bad saved DNS or proxy setting, or a corrupted network profile. Resetting network settings clears every saved network, VPN and cellular setting to defaults and forces a clean reconnection, which resolves most of these cases at the cost of re-entering Wi-Fi passwords. Hardware, audio and unrelated apps are not involved.",
+      "distractor_analysis": {
+        "1": "The display has no part in networking.",
+        "2": "Volume is audio only.",
+        "3": "A calculator app does not affect connectivity."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "wi-fi", "network-reset", "connectivity"]
+    },
+    {
+      "id": "C2N-X-025",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "A corporate tablet is stuck displaying the manufacturer logo after a failed update and never reaches the home screen. Which approach should the technician take?",
+      "options": [
+        "Boot into recovery mode and use a computer with the vendor's tool to reapply the operating system, restoring from backup afterwards",
+        "Leave it charging for a week",
+        "Remove the screen protector",
+        "Send a text message to the tablet"
+      ],
+      "answer": 0,
+      "explanation": "A device frozen on its logo has a corrupted or incomplete operating system and needs the firmware reapplied. Both platforms offer a recovery or download mode reachable with a button combination, and the vendor's desktop tool can reflash the system without necessarily wiping data, though a full restore is often required. Once it boots, the backup restores the user's content. Waiting, cosmetic accessories and messaging cannot repair a boot loop.",
+      "distractor_analysis": {
+        "1": "Charging does not repair corrupted system software.",
+        "2": "A protector has nothing to do with booting.",
+        "3": "A device that has not booted cannot receive messages."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "boot-loop", "recovery-mode", "os-update"]
+    },
+    {
+      "id": "C2N-X-026",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A phone's camera app opens but shows a black image, while a third-party camera app shows the picture normally. What does this indicate?",
+      "options": [
+        "The camera hardware works and the default camera app's data is corrupted; clear its cache and data or reinstall its update",
+        "The camera lens is broken",
+        "The phone needs a new battery",
+        "The SIM must be replaced"
+      ],
+      "answer": 0,
+      "explanation": "A working image in a different app proves the sensor, lens and camera service are functional, so the black screen belongs to the stock app. Clearing its cache and storage, removing its latest update, or updating it restores the app without any hardware work. If every camera app showed black, the sensor connection or a privacy block would be suspected instead. Batteries and SIMs are unrelated to camera output.",
+      "distractor_analysis": {
+        "1": "A broken lens would affect every app.",
+        "2": "Battery state does not black out the camera.",
+        "3": "The SIM has nothing to do with imaging."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "camera", "app-data", "troubleshooting"]
+    },
+    {
+      "id": "C2N-X-027",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "multi",
+      "difficulty": "medium",
+      "question": "A user's phone has poor battery life and frequent app crashes. Which TWO actions are reasonable first steps? (Select TWO.)",
+      "options": [
+        "Install pending operating system and app updates",
+        "Review battery usage by app and restrict or remove the heaviest offenders",
+        "Remove the SIM card permanently",
+        "Cover the phone's cameras with tape",
+        "Set the clock back a year"
+      ],
+      "answers": [0, 1],
+      "explanation": "Outdated software is a common cause of both instability and battery drain, because updates fix leaks and crashes, so bringing the system and apps current is the first move. The battery screen then identifies any app that is out of proportion, and restricting its background activity or removing it addresses drain directly. The remaining options are nonsensical: the SIM, cameras and clock have no role in either symptom.",
+      "distractor_analysis": {
+        "2": "The SIM is needed for cellular service and does not affect crashes.",
+        "3": "Cameras do not consume power when not in use.",
+        "4": "A wrong clock breaks certificates and sync rather than helping."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "battery", "updates", "app-crash"]
+    },
+    {
+      "id": "C2N-X-028",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.2",
+      "type": "order",
+      "difficulty": "easy",
+      "question": "Order the troubleshooting steps for a phone app that will not open, from least to most disruptive.",
+      "sequence": [
+        "Force close the app and reopen it",
+        "Restart the phone",
+        "Clear the app's cache and check for an app update",
+        "Uninstall and reinstall the app",
+        "Back up the phone and perform a factory reset"
+      ],
+      "explanation": "Mobile troubleshooting follows the same escalation logic as desktop support. Force closing clears the app's running state, a restart clears the whole system's state, clearing cache and updating fix corrupted temporary data and known bugs, and reinstalling gives the app a completely clean copy. A factory reset is the final step because it affects every app and setting on the device and requires a restore.",
+      "video_reference": {
+        "title": "Troubleshooting Mobile Devices - CompTIA A+ 220-1202 - 3.2",
+        "url": "https://www.youtube.com/watch?v=F5NxaV7t6Bc",
+        "duration": "11:30",
+        "objective": "3.2"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "procedure", "app-troubleshooting"]
+    },
+    {
+      "id": "C2N-X-029",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user's Android phone shows advertisements on the lock screen and in the notification area even when no app is open. What is the most likely cause?",
+      "options": [
+        "An installed app is adware, probably a recently added free utility or game",
+        "The carrier is testing a new feature",
+        "The phone's screen protector is displaying the ads",
+        "The battery is low"
+      ],
+      "answer": 0,
+      "explanation": "Ads outside any app, on the lock screen or as persistent notifications, come from an installed application abusing overlay and notification permissions. Reviewing recently installed apps, checking which app owns the notification by long-pressing it, and uninstalling the offender resolves it. Booting into Safe Mode, which disables third-party apps, confirms the diagnosis if the ads stop. Carriers do not inject lock-screen ads, protectors are passive, and battery level does not produce ads.",
+      "distractor_analysis": {
+        "1": "Carriers do not push lock-screen advertising through the operating system.",
+        "2": "A protector is a sheet of glass or film.",
+        "3": "Battery state does not cause advertisements."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Device Security - CompTIA A+ 220-1202 - 3.3",
+        "url": "https://www.youtube.com/watch?v=_nsBbRwyNMo",
+        "duration": "12:16",
+        "objective": "3.3"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "adware", "security", "malware"]
+    },
+    {
+      "id": "C2N-X-030",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A phone's cellular data usage tripled this month with no change in the user's habits, and the battery drains quickly. Which security concern should the technician investigate?",
+      "options": [
+        "Malware or a malicious app transmitting data in the background",
+        "The SIM card has expanded",
+        "The phone case is too tight",
+        "The ringtone volume is too high"
+      ],
+      "answer": 0,
+      "explanation": "Unexplained data consumption paired with battery drain is a signature of software doing work the user did not ask for: spyware uploading contacts and recordings, a click-fraud app loading ads invisibly, or a compromised app mining or relaying traffic. The data usage screen shows which app consumed the data, and removing it, running a reputable mobile security scan and reviewing permissions follows. The other options are physically meaningless.",
+      "distractor_analysis": {
+        "1": "SIM cards do not change size or generate traffic.",
+        "2": "A case cannot consume data.",
+        "3": "Volume settings are unrelated to data use."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Device Security - CompTIA A+ 220-1202 - 3.3",
+        "url": "https://www.youtube.com/watch?v=_nsBbRwyNMo",
+        "duration": "12:16",
+        "objective": "3.3"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "data-usage", "malware", "security"]
+    },
+    {
+      "id": "C2N-X-031",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user installed a game from a website rather than the official store, and the phone now behaves erratically. Which statement describes the risk the user took?",
+      "options": [
+        "Sideloaded apps bypass the store's security review and may carry malware or request excessive permissions",
+        "Apps from websites are always safer than store apps",
+        "Sideloading improves battery life",
+        "Sideloading is impossible on any phone"
+      ],
+      "answer": 0,
+      "explanation": "Official stores scan submissions, enforce permission rules and can remotely remove malicious apps. Installing from an unknown source, called sideloading, skips those protections and is the primary way mobile malware spreads, often as cracked versions of paid games. Android permits it when the user enables unknown sources; iOS restricts it heavily. The remedy is to uninstall the app, scan the device, review permissions and disable installation from unknown sources.",
+      "distractor_analysis": {
+        "1": "Store review makes store apps generally safer, not the reverse.",
+        "2": "Sideloading has no battery benefit and malware often drains power.",
+        "3": "Android allows sideloading; that is exactly what happened here."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Device Security - CompTIA A+ 220-1202 - 3.3",
+        "url": "https://www.youtube.com/watch?v=_nsBbRwyNMo",
+        "duration": "12:16",
+        "objective": "3.3"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "sideloading", "unknown-sources", "security"]
+    },
+    {
+      "id": "C2N-X-032",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A corporate phone reports that it has been jailbroken or rooted, and the company's email app refuses to run. Why does the app block itself?",
+      "options": [
+        "Rooting removes the operating system's security controls, so managed apps refuse to run on a device whose integrity cannot be trusted",
+        "Rooting deletes the email account",
+        "Rooting disables the phone's speaker",
+        "Rooting changes the phone's colour"
+      ],
+      "answer": 0,
+      "explanation": "Jailbreaking an iPhone or rooting an Android device grants unrestricted system access, which defeats sandboxing, allows unsigned code and lets malware read other apps' data. MDM platforms and security-sensitive apps detect this state and refuse to operate, and company policy usually requires the device to be wiped or replaced. The device will not be trusted again until it is restored to stock firmware. The other options are not effects of rooting.",
+      "distractor_analysis": {
+        "1": "Accounts remain; the app declines to run for integrity reasons.",
+        "2": "Audio hardware is unaffected by rooting.",
+        "3": "Rooting is a software change with no cosmetic effect."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Device Security - CompTIA A+ 220-1202 - 3.3",
+        "url": "https://www.youtube.com/watch?v=_nsBbRwyNMo",
+        "duration": "12:16",
+        "objective": "3.3"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "jailbreak", "root", "mdm", "security"]
+    },
+    {
+      "id": "C2N-X-033",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user receives a text message claiming to be from their bank with a link to verify a transaction. The link leads to a page that looks like the bank's site. What is this attack called?",
+      "options": [
+        "Smishing, a phishing attack delivered by SMS",
+        "A firmware update",
+        "Bluetooth pairing",
+        "A software licence check"
+      ],
+      "answer": 0,
+      "explanation": "Phishing over text messaging is called smishing. The message creates urgency and links to a look-alike site that harvests credentials or one-time codes. Users should never follow links in unexpected messages; they should open the bank's app or type the known address instead, and report the message to the carrier and the bank. Technicians see the aftermath as compromised accounts and should advise resetting passwords and enabling multi-factor authentication.",
+      "distractor_analysis": {
+        "1": "Firmware updates arrive through the operating system, not text links.",
+        "2": "Bluetooth pairing does not involve bank messages.",
+        "3": "Licence checks do not happen through SMS."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Device Security - CompTIA A+ 220-1202 - 3.3",
+        "url": "https://www.youtube.com/watch?v=_nsBbRwyNMo",
+        "duration": "12:16",
+        "objective": "3.3"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "smishing", "phishing", "security"]
+    },
+    {
+      "id": "C2N-X-034",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user complains that a flashlight app they installed asked for access to contacts, microphone, location and call logs. What should the technician advise?",
+      "options": [
+        "Deny the permissions and uninstall the app, because a flashlight has no legitimate need for that data and the request indicates spyware or data harvesting",
+        "Grant every permission so the flashlight works properly",
+        "Grant only the microphone permission",
+        "Ignore it because permissions do not matter on phones"
+      ],
+      "answer": 0,
+      "explanation": "Permission requests should match an app's purpose. A torch needs the camera flash and nothing else; demanding contacts, microphone, location and call history is the pattern of apps built to harvest and sell personal data or to spy. Modern operating systems let users deny individual permissions and show which apps have used sensitive ones recently, but the safest course is to remove an app that overreaches and choose a reputable alternative.",
+      "distractor_analysis": {
+        "1": "None of those permissions is required for a flashlight.",
+        "2": "A torch has no use for the microphone either.",
+        "3": "Permissions are the main defence against data theft on mobile."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Device Security - CompTIA A+ 220-1202 - 3.3",
+        "url": "https://www.youtube.com/watch?v=_nsBbRwyNMo",
+        "duration": "12:16",
+        "objective": "3.3"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "permissions", "spyware", "security"]
+    },
+    {
+      "id": "C2N-X-035",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A phone connected to public Wi-Fi at a hotel shows a certificate warning when opening the company's webmail. What should the user do?",
+      "options": [
+        "Not proceed, disconnect from that network and use cellular data or a VPN, because the warning may indicate a man-in-the-middle interception",
+        "Tap continue because certificate warnings are always harmless",
+        "Enter the password anyway and change it later",
+        "Turn off the phone's screen lock"
+      ],
+      "answer": 0,
+      "explanation": "A browser trusts a site only when its certificate chains to a known authority and matches the address. A warning on a network you do not control is a strong sign that something between the phone and the server is presenting its own certificate to read the traffic, a classic attack on public hotspots. The correct response is to stop, leave the network and use a trusted path such as cellular or the corporate VPN. Continuing hands credentials to the attacker.",
+      "distractor_analysis": {
+        "1": "Warnings exist because the connection cannot be verified.",
+        "2": "Entering the password exposes it immediately to the interceptor.",
+        "3": "Screen lock is unrelated and should stay on."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Device Security - CompTIA A+ 220-1202 - 3.3",
+        "url": "https://www.youtube.com/watch?v=_nsBbRwyNMo",
+        "duration": "12:16",
+        "objective": "3.3"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "certificate", "public-wi-fi", "man-in-the-middle"]
+    },
+    {
+      "id": "C2N-X-036",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user's phone is sending text messages to their contacts that the user did not write, containing a link. What has most likely happened and what should be done?",
+      "options": [
+        "The phone or the user's messaging account is compromised; scan and remove malicious apps, change the account password, enable multi-factor authentication and warn contacts not to open the link",
+        "The carrier is sending promotional messages on the user's behalf",
+        "The contacts are imagining the messages",
+        "The phone's battery is faulty"
+      ],
+      "answer": 0,
+      "explanation": "Self-propagating messages with links are how mobile malware and account takeovers spread: either an installed app has SMS permission and is sending them, or the account behind a messaging service has been hijacked. Containment means removing suspicious apps, changing passwords, adding multi-factor authentication, and telling the recipients not to click, since the link will try to infect them too. Carriers do not send messages from users' numbers, and batteries cannot send texts.",
+      "distractor_analysis": {
+        "1": "Carriers send from their own numbers, not from a customer's.",
+        "2": "Multiple recipients receiving the same link is real, not imagined.",
+        "3": "Battery hardware has no messaging capability."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Device Security - CompTIA A+ 220-1202 - 3.3",
+        "url": "https://www.youtube.com/watch?v=_nsBbRwyNMo",
+        "duration": "12:16",
+        "objective": "3.3"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "malware", "account-compromise", "security"]
+    },
+    {
+      "id": "C2N-X-037",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A company phone was left unlocked in a cafe for ten minutes. When the user returned, an unfamiliar app had been installed and the location sharing setting was on. What should the technician recommend?",
+      "options": [
+        "Treat the device as compromised: remove the app, review all permissions and accounts, change passwords, and consider a wipe and restore under company policy",
+        "Ignore it because nothing seems broken",
+        "Only turn off location sharing",
+        "Change the wallpaper to something less attractive to thieves"
+      ],
+      "answer": 0,
+      "explanation": "Physical access to an unlocked phone is a complete compromise: an attacker can install stalkerware, add their own account to cloud services, register a new authenticator, or export data. The visible changes are only what they did not bother to hide. The safe response is to assume the worst, remove the obvious app, audit accounts, permissions and installed profiles, rotate passwords, and follow the company's incident process, which often means a wipe. Leaving it in place or fixing only one setting leaves hidden access behind.",
+      "distractor_analysis": {
+        "1": "Hidden changes are exactly what a careful attacker would make.",
+        "2": "Location sharing is one symptom, not the whole compromise.",
+        "3": "Wallpaper is irrelevant to security."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Device Security - CompTIA A+ 220-1202 - 3.3",
+        "url": "https://www.youtube.com/watch?v=_nsBbRwyNMo",
+        "duration": "12:16",
+        "objective": "3.3"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "physical-access", "compromise", "incident"]
+    },
+    {
+      "id": "C2N-X-038",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.3",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "An executive reports that their phone's battery drains quickly, the device is warm at idle, and the camera indicator occasionally lights when no app is open. Which threat matches these symptoms?",
+      "options": [
+        "Spyware or stalkerware secretly recording audio, video and location in the background",
+        "A cracked screen",
+        "An outdated ringtone",
+        "A slow Wi-Fi router"
+      ],
+      "answer": 0,
+      "explanation": "Covert monitoring software keeps the processor, sensors and radio busy, which shows as heat and battery drain while the phone appears idle, and the operating system's camera and microphone indicators expose its activity. Such apps hide their icons and often require physical access or a compromised account to install. The response is a full security review, removal via safe mode or a wipe, password changes and, for a high-profile target, escalation to the security team. Screens, ringtones and routers do not cause these signs.",
+      "distractor_analysis": {
+        "1": "A cracked screen does not activate the camera or drain power.",
+        "2": "Ringtones are cosmetic.",
+        "3": "Router speed does not warm an idle phone."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Device Security - CompTIA A+ 220-1202 - 3.3",
+        "url": "https://www.youtube.com/watch?v=_nsBbRwyNMo",
+        "duration": "12:16",
+        "objective": "3.3"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "spyware", "stalkerware", "security"]
+    },
+    {
+      "id": "C2N-X-039",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user's phone connects to a Bluetooth device they do not recognise whenever they are at a particular coffee shop. What should the technician advise?",
+      "options": [
+        "Remove the unknown device from the paired list, set Bluetooth to non-discoverable when not pairing, and turn it off in public when not needed",
+        "Pair with every device nearby to see which one it is",
+        "Leave Bluetooth permanently discoverable",
+        "Share the phone's contacts with the device to identify it"
+      ],
+      "answer": 0,
+      "explanation": "An unrecognised pairing means a device was accepted at some point and now reconnects automatically. Unwanted Bluetooth connections can be used to push files, eavesdrop through audio profiles or track the phone. Removing the pairing, keeping the phone non-discoverable except during an intentional pairing and switching Bluetooth off in public spaces closes the door. Pairing with unknown devices or sharing data with them does the attacker's work for them.",
+      "distractor_analysis": {
+        "1": "Pairing with unknown devices invites exactly the risk being avoided.",
+        "2": "Permanent discoverability advertises the phone to attackers.",
+        "3": "Sharing contacts with an unknown device leaks personal data."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Device Security - CompTIA A+ 220-1202 - 3.3",
+        "url": "https://www.youtube.com/watch?v=_nsBbRwyNMo",
+        "duration": "12:16",
+        "objective": "3.3"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "bluetooth", "unauthorised-pairing", "security"]
+    },
+    {
+      "id": "C2N-X-040",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user reports that their phone's cloud account shows a sign-in from a city they have never visited. What should they do first?",
+      "options": [
+        "Change the account password immediately, sign out all other sessions, enable multi-factor authentication and review recovery contacts",
+        "Wait to see if it happens again",
+        "Delete all their photos",
+        "Turn off the phone for a day"
+      ],
+      "answer": 0,
+      "explanation": "An unfamiliar sign-in location is direct evidence that someone else holds the credentials. The account's security page allows the user to reset the password, revoke every active session and device, add multi-factor authentication and check that the recovery email and phone number have not been changed to the attacker's. Speed matters because the intruder can otherwise lock the legitimate owner out. Waiting, deleting data or powering off the phone does not remove the attacker's access.",
+      "distractor_analysis": {
+        "1": "Delay gives the attacker time to change recovery details.",
+        "2": "Deleting photos destroys the user's data without affecting the intruder.",
+        "3": "The attacker is using the account from elsewhere; the phone being off changes nothing."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Device Security - CompTIA A+ 220-1202 - 3.3",
+        "url": "https://www.youtube.com/watch?v=_nsBbRwyNMo",
+        "duration": "12:16",
+        "objective": "3.3"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "account-compromise", "mfa", "security"]
+    },
+    {
+      "id": "C2N-X-041",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user cannot install an app because the phone reports that installation from unknown sources is blocked, and they ask the technician to turn the block off. What is the appropriate response?",
+      "options": [
+        "Explain that the block protects against malware and recommend obtaining the app from the official store or the company's managed app catalogue instead",
+        "Disable the block permanently on every corporate phone",
+        "Root the phone so the block cannot reappear",
+        "Tell the user to download it from any website that offers it"
+      ],
+      "answer": 0,
+      "explanation": "The unknown sources restriction exists because sideloaded packages bypass store screening and are the leading vector for mobile malware. On a managed device the policy is set by the company and should not be overridden for convenience. If the app is legitimately required, the correct path is the official store or the MDM's private catalogue, where the organisation has vetted it. Disabling protections fleet-wide, rooting or downloading from arbitrary sites each create the exact risk the control prevents.",
+      "distractor_analysis": {
+        "1": "A fleet-wide bypass removes protection from every device.",
+        "2": "Rooting destroys the device's security model entirely.",
+        "3": "Arbitrary download sites frequently host trojanised apps."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Device Security - CompTIA A+ 220-1202 - 3.3",
+        "url": "https://www.youtube.com/watch?v=_nsBbRwyNMo",
+        "duration": "12:16",
+        "objective": "3.3"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "unknown-sources", "policy", "security"]
+    },
+    {
+      "id": "C2N-X-042",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.3",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A phone user notices that a popular banking app was replaced on the home screen by one with a nearly identical icon after they installed a free utility. What should they do?",
+      "options": [
+        "Stop using the suspicious app, uninstall both the utility and the fake app, reinstall the bank's app from the official store, and change banking credentials",
+        "Log in to the look-alike app to check whether it works",
+        "Ignore the change because the icon looks the same",
+        "Only change the phone's wallpaper"
+      ],
+      "answer": 0,
+      "explanation": "Overlay and impostor apps mimic legitimate banking apps to capture logins and one-time codes. A utility that installs or swaps a banking icon is malware. Logging in would hand over the credentials. The user should remove both apps, obtain the genuine app from the official store, change the banking password from a trusted device and notify the bank, which may be able to flag the account for monitoring. Ignoring it or changing cosmetic settings leaves the trap in place.",
+      "distractor_analysis": {
+        "1": "Logging in gives the impostor the credentials it was built to steal.",
+        "2": "The identical icon is the deception, not reassurance.",
+        "3": "Wallpaper has no security effect."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Device Security - CompTIA A+ 220-1202 - 3.3",
+        "url": "https://www.youtube.com/watch?v=_nsBbRwyNMo",
+        "duration": "12:16",
+        "objective": "3.3"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "fake-app", "overlay", "banking", "security"]
+    },
+    {
+      "id": "C2N-X-043",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.3",
+      "type": "multi",
+      "difficulty": "medium",
+      "question": "Which TWO symptoms on a phone most strongly suggest malware rather than an ordinary fault? (Select TWO.)",
+      "options": [
+        "Pop-up advertisements appearing outside any app",
+        "Unexplained spikes in data usage and battery drain while idle",
+        "The screen has a small scratch",
+        "The phone case has faded in the sun",
+        "The volume buttons are stiff"
+      ],
+      "answers": [0, 1],
+      "explanation": "Malware needs to earn money or steal data, and both leave traces: advertising injected across the system and network and battery consumption that does not match the user's activity. Other red flags include unknown apps, permissions granted that the user does not remember, and settings changed on their own. Physical wear such as scratches, faded cases and stiff buttons is mechanical and has no software cause.",
+      "distractor_analysis": {
+        "2": "A scratch is cosmetic damage.",
+        "3": "Fading is ultraviolet exposure to the case material.",
+        "4": "Stiff buttons are a mechanical wear issue."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Mobile Device Security - CompTIA A+ 220-1202 - 3.3",
+        "url": "https://www.youtube.com/watch?v=_nsBbRwyNMo",
+        "duration": "12:16",
+        "objective": "3.3"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "malware", "symptoms", "security"]
+    },
+    {
+      "id": "C2N-X-044",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.3",
+      "type": "match",
+      "difficulty": "medium",
+      "question": "Match each mobile security symptom to its most likely cause.",
+      "pairs": [
+        { "left": "Ads on the lock screen", "right": "Adware installed with a free app" },
+        { "left": "Certificate warning on hotel Wi-Fi", "right": "Possible man-in-the-middle interception" },
+        { "left": "Contacts receive links the user did not send", "right": "Compromised messaging account or SMS malware" },
+        { "left": "Managed email app refuses to run", "right": "Device detected as rooted or jailbroken" },
+        { "left": "Camera indicator lights while idle", "right": "Spyware recording in the background" }
+      ],
+      "explanation": "Each symptom maps to a distinct class of threat and therefore a distinct response. Adware is removed by finding the offending app. Certificate warnings on untrusted networks are avoided by leaving the network. Unsolicited messages mean an account or app compromise requiring password changes. Integrity failures mean the device must be restored to stock. Sensor activity at idle means covert monitoring. Recognising the pattern lets the technician act correctly the first time.",
+      "video_reference": {
+        "title": "Troubleshooting Mobile Device Security - CompTIA A+ 220-1202 - 3.3",
+        "url": "https://www.youtube.com/watch?v=_nsBbRwyNMo",
+        "duration": "12:16",
+        "objective": "3.3"
+      },
+      "notes_reference": "30_Mobile_Security_and_Troubleshooting.md",
+      "tags": ["mobile", "security", "match"]
+    },
+    {
+      "id": "C2N-X-045",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A Windows user reports that their browser's home page changed to a search site they never chose and new toolbars appeared. What has most likely happened?",
+      "options": [
+        "A browser hijacker or potentially unwanted program was installed, often bundled with a free download",
+        "Windows Update changed the browser",
+        "The keyboard is faulty",
+        "The monitor's colour profile was reset"
+      ],
+      "answer": 0,
+      "explanation": "Unwanted home page changes, new toolbars and redirected searches are the fingerprints of a browser hijacker, a category of potentially unwanted program that installs alongside free software when the user clicks through an installer without reading. Removal means uninstalling the offending program, removing the browser extension, resetting the browser's settings and running an anti-malware scan. Windows Update does not alter browser choices, and hardware settings cannot add toolbars.",
+      "distractor_analysis": {
+        "1": "Updates do not change home pages or install third-party toolbars.",
+        "2": "A keyboard fault produces wrong characters, not browser changes.",
+        "3": "Colour profiles affect display appearance only."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Security Issues - CompTIA A+ 220-1202 - 3.4",
+        "url": "https://www.youtube.com/watch?v=OCLOLvwgdMY",
+        "duration": "10:16",
+        "objective": "3.4"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": ["security", "browser-hijacker", "pup", "malware"]
+    },
+    {
+      "id": "C2N-X-046",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user's files have been renamed with a strange extension and a text file on the desktop demands payment in cryptocurrency to restore them. What should the technician do first?",
+      "options": [
+        "Disconnect the machine from the network immediately to stop the encryption spreading to shares, then follow the incident response process",
+        "Pay the ransom as quickly as possible",
+        "Run Disk Cleanup",
+        "Restart the machine repeatedly"
+      ],
+      "answer": 0,
+      "explanation": "This is ransomware. The first priority is containment: unplugging the network cable and disabling Wi-Fi prevents it encrypting mapped drives and other machines. The incident should then be reported so the organisation can identify the strain, preserve evidence, remove the malware and restore from known-good backups. Paying funds criminals and does not guarantee recovery. Cleanup tools and reboots do nothing for encrypted files and waste time while the malware spreads.",
+      "distractor_analysis": {
+        "1": "Payment is discouraged by law enforcement and often fails to recover data.",
+        "2": "Disk Cleanup removes temporary files and is irrelevant.",
+        "3": "Rebooting can trigger further encryption and destroys volatile evidence."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Security Issues - CompTIA A+ 220-1202 - 3.4",
+        "url": "https://www.youtube.com/watch?v=OCLOLvwgdMY",
+        "duration": "10:16",
+        "objective": "3.4"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": ["security", "ransomware", "containment", "incident-response"]
+    },
+    {
+      "id": "C2N-X-047",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A Windows PC shows a full-screen message claiming to be from a well-known software company, stating the computer is infected and giving a phone number to call for support. What is this?",
+      "options": [
+        "A fake security alert or scareware designed to trick the user into calling a scam support line",
+        "A genuine operating system warning",
+        "A hardware diagnostic result",
+        "A firmware update prompt"
+      ],
+      "answer": 0,
+      "explanation": "Legitimate operating system and antivirus alerts never display a phone number to call. Scareware pages hijack the browser in full-screen mode and use alarming language to push users toward a fraudulent call centre that charges for fake repairs or installs remote access tools. The fix is to close the browser through Task Manager, clear its data, scan the machine and educate the user. Genuine warnings, diagnostics and firmware prompts do not ask you to phone anyone.",
+      "distractor_analysis": {
+        "1": "Real operating system alerts do not include phone numbers.",
+        "2": "Hardware diagnostics report component status, not infection claims.",
+        "3": "Firmware prompts come from the manufacturer's tool, not a browser page."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Security Issues - CompTIA A+ 220-1202 - 3.4",
+        "url": "https://www.youtube.com/watch?v=OCLOLvwgdMY",
+        "duration": "10:16",
+        "objective": "3.4"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": ["security", "scareware", "fake-alert", "scam"]
+    },
+    {
+      "id": "C2N-X-048",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user's antivirus has been disabled and cannot be re-enabled, Task Manager will not open, and the PC is unusually slow. What do these symptoms together suggest?",
+      "options": [
+        "An active malware infection that is defending itself by disabling security tools",
+        "A pending Windows update",
+        "A low battery",
+        "A misconfigured printer"
+      ],
+      "answer": 0,
+      "explanation": "Malware that has gained a foothold commonly disables antivirus, blocks the tools an administrator would use to find it and consumes resources with its own activity. When protection cannot be re-enabled and system utilities are blocked, the machine should be treated as compromised: isolate it, boot from trusted media or into Safe Mode, scan with an offline or alternative tool and remediate following the malware removal procedure. Updates, power and printers do not disable security software.",
+      "distractor_analysis": {
+        "1": "Updates do not block Task Manager.",
+        "2": "Battery level has no effect on security tools.",
+        "3": "Printer problems affect printing only."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Security Issues - CompTIA A+ 220-1202 - 3.4",
+        "url": "https://www.youtube.com/watch?v=OCLOLvwgdMY",
+        "duration": "10:16",
+        "objective": "3.4"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": ["security", "malware", "antivirus-disabled", "symptoms"]
+    },
+    {
+      "id": "C2N-X-049",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user reports receiving automated replies from contacts to emails they never sent, and their sent folder contains messages they do not recognise. What has happened?",
+      "options": [
+        "The email account has been compromised and is being used to send spam or phishing",
+        "The email server is testing delivery",
+        "The user's keyboard is sending emails on its own",
+        "The antivirus is sending reports"
+      ],
+      "answer": 0,
+      "explanation": "Messages the user did not write appearing in the sent folder mean someone else has access to the account, typically after a phishing attack or password reuse. The attacker uses the trusted account to phish the user's contacts. Remediation is to change the password, revoke all sessions and app passwords, enable multi-factor authentication, check for malicious forwarding rules the attacker may have added, and warn contacts. Servers, keyboards and antivirus products do not compose emails.",
+      "distractor_analysis": {
+        "1": "Servers do not send messages from user accounts.",
+        "2": "Keyboards cannot compose and send mail.",
+        "3": "Antivirus reports go to administrators, not out to the user's contacts."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Security Issues - CompTIA A+ 220-1202 - 3.4",
+        "url": "https://www.youtube.com/watch?v=OCLOLvwgdMY",
+        "duration": "10:16",
+        "objective": "3.4"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": ["security", "account-compromise", "email", "phishing"]
+    },
+    {
+      "id": "C2N-X-050",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user's browser shows a certificate error for every secure website, including major sites that were fine yesterday. The system clock shows a date two years in the past. What is the fix?",
+      "options": [
+        "Correct the system date and time, then check the CMOS battery if the clock keeps resetting",
+        "Reinstall the browser",
+        "Disable HTTPS for all sites",
+        "Replace the network cable"
+      ],
+      "answer": 0,
+      "explanation": "Certificates are valid only between their start and expiry dates. If the computer's clock is wrong, every certificate appears not yet valid or expired and the browser correctly refuses to trust it. Setting the right time restores normal browsing at once. A clock that repeatedly resets indicates a failing CMOS battery. The browser is behaving properly, disabling encryption would be dangerous and pointless, and cabling has nothing to do with certificate validation.",
+      "distractor_analysis": {
+        "1": "The browser is doing its job; the clock is at fault.",
+        "2": "Turning off HTTPS exposes all traffic and does not fix the clock.",
+        "3": "Cabling affects connectivity, not certificate dates."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Security Issues - CompTIA A+ 220-1202 - 3.4",
+        "url": "https://www.youtube.com/watch?v=OCLOLvwgdMY",
+        "duration": "10:16",
+        "objective": "3.4"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": ["security", "certificate", "system-clock", "troubleshooting"]
+    },
+    {
+      "id": "C2N-X-051",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user says they can no longer reach several websites, and the browser lands on a different site than the address typed. Other computers on the network reach the sites normally. What should the technician check on the affected PC?",
+      "options": [
+        "The hosts file and the configured DNS servers for malicious entries or a rogue DNS setting",
+        "The screen resolution",
+        "The mouse driver",
+        "The sound card"
+      ],
+      "answer": 0,
+      "explanation": "Redirection that affects only one machine points at its name resolution. Malware commonly edits the hosts file to send banking or security sites to attacker servers, or changes the network adapter's DNS servers to a rogue resolver. Inspecting the hosts file for unexpected entries and confirming the DNS settings match the network's, then scanning for malware and resetting the browser, resolves it. Display, mouse and audio settings are unrelated to where addresses resolve.",
+      "distractor_analysis": {
+        "1": "Resolution does not affect name resolution.",
+        "2": "Mouse drivers cannot redirect web addresses.",
+        "3": "Audio hardware has no networking role."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Security Issues - CompTIA A+ 220-1202 - 3.4",
+        "url": "https://www.youtube.com/watch?v=OCLOLvwgdMY",
+        "duration": "10:16",
+        "objective": "3.4"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": ["security", "dns", "hosts-file", "redirection", "malware"]
+    },
+    {
+      "id": "C2N-X-052",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "Windows Update fails repeatedly on a PC, and the antivirus definitions have not updated in weeks. The internet works for browsing. What might explain both failures?",
+      "options": [
+        "Malware blocking access to update and security vendor servers to protect itself",
+        "The keyboard batteries are low",
+        "The user has too many desktop icons",
+        "The printer is offline"
+      ],
+      "answer": 0,
+      "explanation": "Many malware families block connections to operating system and security update servers through hosts file entries, firewall rules or a malicious proxy, so they cannot be detected or removed by newly released signatures. A machine where general browsing works but security and update services specifically fail should be scanned from trusted offline media, its hosts file and proxy settings inspected, and then updated once cleaned. Peripherals and desktop clutter cannot cause targeted update failures.",
+      "distractor_analysis": {
+        "1": "Keyboard power affects typing only.",
+        "2": "Desktop icons have no effect on update connectivity.",
+        "3": "Printer state is unrelated to updates."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Security Issues - CompTIA A+ 220-1202 - 3.4",
+        "url": "https://www.youtube.com/watch?v=OCLOLvwgdMY",
+        "duration": "10:16",
+        "objective": "3.4"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": ["security", "malware", "update-failure", "symptoms"]
+    },
+    {
+      "id": "C2N-X-053",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user received an email with an invoice attachment from an unknown sender and opened it. Nothing visible happened, but the technician wants to be safe. What is the best course of action?",
+      "options": [
+        "Disconnect the PC from the network, run a full scan with updated anti-malware, and check for new scheduled tasks, startup entries and unusual processes",
+        "Assume it is fine because nothing appeared on screen",
+        "Forward the attachment to colleagues to ask their opinion",
+        "Delete the email and take no further action"
+      ],
+      "answer": 0,
+      "explanation": "Malicious documents are designed to run silently: a macro or exploit installs a downloader that fetches the real payload later. Absence of symptoms means nothing. Isolating the machine limits any spread, a full scan with current definitions catches known threats, and checking persistence points such as scheduled tasks, Run keys and startup folders finds droppers that scanners miss. Forwarding the file spreads the risk, and deleting the email does not undo whatever it already did.",
+      "distractor_analysis": {
+        "1": "Modern malware avoids visible symptoms deliberately.",
+        "2": "Forwarding a malicious attachment exposes more people.",
+        "3": "Deleting the message does not remove code already executed."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Security Issues - CompTIA A+ 220-1202 - 3.4",
+        "url": "https://www.youtube.com/watch?v=OCLOLvwgdMY",
+        "duration": "10:16",
+        "objective": "3.4"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": ["security", "phishing", "attachment", "incident-response"]
+    },
+    {
+      "id": "C2N-X-054",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.4",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "After removing malware from a Windows PC, the technician wants to make sure the infection cannot return from a saved snapshot. Which step in the malware removal process addresses this?",
+      "options": [
+        "Disable System Restore during remediation so infected restore points are discarded, then re-enable it and create a clean restore point afterwards",
+        "Delete the user's documents folder",
+        "Uninstall the antivirus",
+        "Change the desktop theme"
+      ],
+      "answer": 0,
+      "explanation": "System Restore snapshots capture system files and the registry, including any malware present at the time. If a user later rolls back to one of those points, the infection returns. The standard removal procedure therefore disables System Restore while cleaning, which deletes the existing points, and re-enables it once the system is verified clean so a fresh, trustworthy restore point can be made. The user's documents are unrelated, the antivirus should stay, and themes are cosmetic.",
+      "distractor_analysis": {
+        "1": "User documents are not restore points and should be preserved.",
+        "2": "Removing protection after an infection is the opposite of the goal.",
+        "3": "Themes have no security relevance."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Security Issues - CompTIA A+ 220-1202 - 3.4",
+        "url": "https://www.youtube.com/watch?v=OCLOLvwgdMY",
+        "duration": "10:16",
+        "objective": "3.4"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": ["security", "malware-removal", "system-restore", "procedure"]
+    },
+    {
+      "id": "C2N-X-055",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user's cursor moves on its own and windows open and close while they are not touching the mouse. The PC recently had a remote support session from a caller claiming to be from an internet provider. What is the most likely explanation?",
+      "options": [
+        "A remote access tool was installed during the fraudulent support call and an attacker now controls the PC",
+        "The mouse has a low battery",
+        "The screen saver is active",
+        "Windows is applying a theme"
+      ],
+      "answer": 0,
+      "explanation": "Unsolicited callers posing as providers or software vendors persuade victims to install legitimate remote access tools, then use them later to steal data, install malware or commit fraud. Cursor movement and window activity with no user input is the attacker at work. The PC must be disconnected immediately, the remote tool and anything else installed during the call removed, passwords changed from a different device, and the incident reported. Peripheral power and cosmetic features do not open and close windows.",
+      "distractor_analysis": {
+        "1": "A weak mouse battery causes lag or dropouts, not deliberate actions.",
+        "2": "Screen savers do not manipulate windows.",
+        "3": "Themes change appearance without opening applications."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Security Issues - CompTIA A+ 220-1202 - 3.4",
+        "url": "https://www.youtube.com/watch?v=OCLOLvwgdMY",
+        "duration": "10:16",
+        "objective": "3.4"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": ["security", "remote-access", "tech-support-scam", "compromise"]
+    },
+    {
+      "id": "C2N-X-056",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user's browser constantly opens new tabs with gambling and shopping sites even when the user is not clicking anything. The antivirus scan is clean. What should the technician check next?",
+      "options": [
+        "The browser's installed extensions and any unfamiliar programs in the installed apps list, since adware often lives outside the antivirus's detection scope",
+        "The BIOS boot order",
+        "The monitor cable",
+        "The paper tray of the printer"
+      ],
+      "answer": 0,
+      "explanation": "Adware and browser hijackers are frequently classified as potentially unwanted rather than malicious, so a standard antivirus may not flag them. The browser's extension list and the operating system's installed programs are where they hide. Removing suspicious extensions and programs, resetting browser settings and running a dedicated anti-adware tool completes the clean-up. Firmware boot order and cabling have no bearing on browser behaviour, and the printer is irrelevant.",
+      "distractor_analysis": {
+        "1": "Boot order determines which device starts, not what a browser does.",
+        "2": "A display cable cannot open tabs.",
+        "3": "Printers do not affect web browsers."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Security Issues - CompTIA A+ 220-1202 - 3.4",
+        "url": "https://www.youtube.com/watch?v=OCLOLvwgdMY",
+        "duration": "10:16",
+        "objective": "3.4"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": ["security", "adware", "browser-extensions", "pup"]
+    },
+    {
+      "id": "C2N-X-057",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.4",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user notices that a file they saved yesterday has vanished, and several other documents have changed size. No ransom note is present. Which possibility should the technician consider alongside user error?",
+      "options": [
+        "Malware or a compromised account altering or deleting files, so check file history, audit logs and scan the system before restoring from backup",
+        "The files were too heavy for the hard drive",
+        "The monitor deleted them",
+        "The mouse pad is worn"
+      ],
+      "answer": 0,
+      "explanation": "Files that disappear or change without the user's knowledge can be accidental, but they are also a symptom of malware that corrupts, exfiltrates or quietly encrypts data, or of an attacker with access to the account or a synced cloud folder. Checking version history and the cloud recycle bin, reviewing sign-in logs for unfamiliar sessions and scanning the machine should precede restoring from backup, so the restored files are not damaged again. The other options are physically impossible.",
+      "distractor_analysis": {
+        "1": "Files have no weight; storage either has space or does not.",
+        "2": "Displays cannot modify storage.",
+        "3": "A worn mouse pad affects tracking only."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Security Issues - CompTIA A+ 220-1202 - 3.4",
+        "url": "https://www.youtube.com/watch?v=OCLOLvwgdMY",
+        "duration": "10:16",
+        "objective": "3.4"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": ["security", "missing-files", "malware", "investigation"]
+    },
+    {
+      "id": "C2N-X-058",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.4",
+      "type": "multi",
+      "difficulty": "medium",
+      "question": "Which TWO are common symptoms that a Windows PC is infected with malware? (Select TWO.)",
+      "options": [
+        "Security software has been disabled and cannot be turned back on",
+        "The browser redirects to unexpected sites and shows extra pop-ups",
+        "The keyboard has a sticky key",
+        "The desktop background is a photograph",
+        "The PC has two monitors"
+      ],
+      "answers": [0, 1],
+      "explanation": "Malware protects itself and monetises the victim, so disabled security tools and browser redirection with pop-ups are two of the most reliable indicators, alongside slow performance, unknown processes, altered system files, failed updates and unexplained network activity. Physical keyboard wear and ordinary personalisation such as wallpapers and multi-monitor setups are normal and carry no security meaning.",
+      "distractor_analysis": {
+        "2": "A sticky key is mechanical wear.",
+        "3": "Wallpaper choice is normal personalisation.",
+        "4": "Multiple monitors are a common productivity setup."
+      },
+      "video_reference": {
+        "title": "Troubleshooting Security Issues - CompTIA A+ 220-1202 - 3.4",
+        "url": "https://www.youtube.com/watch?v=OCLOLvwgdMY",
+        "duration": "10:16",
+        "objective": "3.4"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": ["security", "malware", "symptoms"]
+    },
+    {
+      "id": "C2N-X-059",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.4",
+      "type": "order",
+      "difficulty": "medium",
+      "question": "Order the best-practice steps for removing malware from a Windows PC.",
+      "sequence": [
+        "Investigate and verify the malware symptoms",
+        "Quarantine the infected system by disconnecting it from the network",
+        "Disable System Restore so infected restore points are not kept",
+        "Remediate: update anti-malware, scan and remove the infection, using Safe Mode or offline media if needed",
+        "Schedule scans and run updates, then enable System Restore and create a clean restore point",
+        "Educate the end user on how the infection occurred and how to avoid it"
+      ],
+      "explanation": "This is the standard malware removal sequence. Verification prevents treating a hardware fault as an infection. Quarantine stops spread. Disabling System Restore removes the risk of reinfection from a snapshot. Remediation with current definitions, in an environment where the malware is not running, removes it. Re-enabling protection with a fresh restore point and scheduled scans hardens the machine, and educating the user addresses the root cause, since most infections begin with a click.",
+      "video_reference": {
+        "title": "Troubleshooting Security Issues - CompTIA A+ 220-1202 - 3.4",
+        "url": "https://www.youtube.com/watch?v=OCLOLvwgdMY",
+        "duration": "10:16",
+        "objective": "3.4"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": ["security", "malware-removal", "procedure"]
+    },
+    {
+      "id": "C2N-X-060",
+      "exam": "core2",
+      "domain": "3.0 Software Troubleshooting",
+      "objective": "3.4",
+      "type": "match",
+      "difficulty": "medium",
+      "question": "Match each PC security symptom to its most likely cause.",
+      "pairs": [
+        { "left": "Files renamed with an odd extension and a payment demand", "right": "Ransomware" },
+        { "left": "Home page and search engine changed with new toolbars", "right": "Browser hijacker" },
+        { "left": "Full-screen warning with a phone number to call", "right": "Scareware or fake alert" },
+        { "left": "Certificate errors on every site with a wrong system date", "right": "Incorrect system clock" },
+        { "left": "Cursor moving on its own after a suspicious support call", "right": "Unauthorised remote access tool" }
+      ],
+      "explanation": "Security symptoms are diagnostic when read carefully. Encryption with a demand is ransomware and needs containment and restoration. Browser changes are hijackers removed through extensions and installed programs. A phone number in a warning is always a scam. Certificate errors everywhere are a clock problem rather than an attack. Remote control after a cold call means an attacker still has access and the machine must be isolated. Matching symptom to cause selects the right response.",
+      "video_reference": {
+        "title": "Troubleshooting Security Issues - CompTIA A+ 220-1202 - 3.4",
+        "url": "https://www.youtube.com/watch?v=OCLOLvwgdMY",
+        "duration": "10:16",
+        "objective": "3.4"
+      },
+      "notes_reference": "29_Workstation_Browser_Security_Malware.md",
+      "tags": ["security", "symptoms", "match"]
+    }
+  ]
+}

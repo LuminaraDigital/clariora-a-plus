@@ -1,0 +1,1189 @@
+{
+  "questions": [
+    {
+      "id": "C1N-C-041",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "A company rents virtual servers, storage and networking from a provider and installs and manages its own operating systems and applications on them. Which cloud service model is this?",
+      "options": [
+        "Infrastructure as a Service (IaaS)",
+        "Software as a Service (SaaS)",
+        "Platform as a Service (PaaS)",
+        "Desktop as a Service (DaaS)"
+      ],
+      "answer": 0,
+      "explanation": "IaaS provides the raw building blocks: compute instances, block and object storage, and virtual networks. The customer chooses the operating system, patches it, installs software and is responsible for everything above the hypervisor, while the provider owns the physical data centre. It is the most flexible model and the closest to running your own servers. SaaS delivers finished applications, PaaS delivers a managed runtime, and DaaS delivers hosted desktops.",
+      "distractor_analysis": {
+        "1": "SaaS customers use an application; they never see servers.",
+        "2": "PaaS hides the operating system and gives developers a runtime.",
+        "3": "DaaS streams a managed desktop, not raw infrastructure."
+      },
+      "video_reference": {
+        "title": "Cloud Models - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=KZxAY5ssUxc",
+        "duration": "9:48",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "iaas", "service-models"]
+    },
+    {
+      "id": "C1N-C-042",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "Staff use web-based email, calendars and document editing through a browser, and the company pays a monthly fee per user. Which cloud service model is this?",
+      "options": [
+        "Software as a Service (SaaS)",
+        "Infrastructure as a Service (IaaS)",
+        "Platform as a Service (PaaS)",
+        "Network as a Service"
+      ],
+      "answer": 0,
+      "explanation": "SaaS is a complete application delivered over the internet and paid for by subscription. The provider runs the servers, the database and the code, applies updates and keeps the service available, and the customer manages only users and data. Microsoft 365 and Google Workspace are the everyday examples. IaaS and PaaS both leave the customer responsible for building or running software, which SaaS customers never touch.",
+      "distractor_analysis": {
+        "1": "IaaS customers manage operating systems and applications themselves.",
+        "2": "PaaS is for developers deploying their own code.",
+        "3": "Network as a Service provides connectivity, not productivity applications."
+      },
+      "video_reference": {
+        "title": "Cloud Models - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=KZxAY5ssUxc",
+        "duration": "9:48",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "saas", "service-models"]
+    },
+    {
+      "id": "C1N-C-043",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A development team wants to deploy a web application by uploading code, with the provider managing the operating system, web server, database engine and scaling. Which service model fits?",
+      "options": [
+        "Platform as a Service (PaaS)",
+        "Infrastructure as a Service (IaaS)",
+        "Software as a Service (SaaS)",
+        "Hardware as a Service"
+      ],
+      "answer": 0,
+      "explanation": "PaaS sits between infrastructure and finished software. Developers get a managed runtime, database services, build pipelines and automatic scaling, and they focus on code rather than patching servers. The trade-off is less control over the underlying stack and some dependence on the provider's supported languages and frameworks. IaaS would leave them patching operating systems, and SaaS would give them someone else's application rather than a place to run their own.",
+      "distractor_analysis": {
+        "1": "IaaS requires the team to manage operating systems and middleware.",
+        "2": "SaaS is a finished application, not a place to deploy code.",
+        "3": "Hardware as a Service leases physical equipment."
+      },
+      "video_reference": {
+        "title": "Cloud Models - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=KZxAY5ssUxc",
+        "duration": "9:48",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "paas", "service-models"]
+    },
+    {
+      "id": "C1N-C-044",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "easy",
+      "question": "Cloud resources that are owned and operated by a provider and shared among many unrelated customers over the internet describe which deployment model?",
+      "options": [
+        "Public cloud",
+        "Private cloud",
+        "Community cloud",
+        "On-premises data centre"
+      ],
+      "answer": 0,
+      "explanation": "In a public cloud the provider owns the hardware and offers services to anyone on a pay-as-you-go basis. Customers share the physical infrastructure but are logically isolated from each other, a property called multitenancy. The main providers are Amazon Web Services, Microsoft Azure and Google Cloud. A private cloud is dedicated to one organisation, a community cloud is shared by organisations with common needs, and an on-premises data centre is not a cloud at all.",
+      "distractor_analysis": {
+        "1": "Private clouds serve a single organisation.",
+        "2": "Community clouds are shared by a defined group with common requirements.",
+        "3": "Traditional on-premises infrastructure lacks the self-service, elastic model of cloud."
+      },
+      "video_reference": {
+        "title": "Cloud Models - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=KZxAY5ssUxc",
+        "duration": "9:48",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "public-cloud", "deployment-models"]
+    },
+    {
+      "id": "C1N-C-045",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A bank builds cloud-style self-service infrastructure in its own data centre, used only by its own departments, because regulations forbid customer data leaving its premises. Which deployment model is this?",
+      "options": [
+        "Private cloud",
+        "Public cloud",
+        "Hybrid cloud",
+        "Community cloud"
+      ],
+      "answer": 0,
+      "explanation": "A private cloud delivers the cloud characteristics of self-service, pooling and elasticity, but the infrastructure is dedicated to one organisation, either in its own facility or hosted by a third party for its exclusive use. Organisations choose it for regulatory, data sovereignty or performance reasons and accept higher cost and a fixed capacity ceiling in return. It is not public because nothing is shared with other customers, and not hybrid because there is no public component.",
+      "distractor_analysis": {
+        "1": "Public cloud shares infrastructure with other customers.",
+        "2": "Hybrid requires a public cloud component, which the regulation rules out here.",
+        "3": "Community cloud is shared among several organisations."
+      },
+      "video_reference": {
+        "title": "Cloud Models - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=KZxAY5ssUxc",
+        "duration": "9:48",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "private-cloud", "deployment-models", "compliance"]
+    },
+    {
+      "id": "C1N-C-046",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A retailer keeps its core database on servers in its own data centre but bursts its website onto a public cloud during holiday sales, with the two connected by a private link. Which deployment model is this?",
+      "options": [
+        "Hybrid cloud",
+        "Public cloud",
+        "Private cloud",
+        "Community cloud"
+      ],
+      "answer": 0,
+      "explanation": "A hybrid cloud combines private infrastructure with public cloud services and connects them so workloads and data can move between them. It lets an organisation keep sensitive or steady-state systems in-house while renting public capacity for peaks, which is called cloud bursting. The integration is what makes it hybrid rather than simply using two separate environments. Each of the other models describes a single environment.",
+      "distractor_analysis": {
+        "1": "Public alone would put the database in the provider's cloud too.",
+        "2": "Private alone has no public burst capacity.",
+        "3": "Community cloud is about shared ownership among peer organisations."
+      },
+      "video_reference": {
+        "title": "Cloud Models - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=KZxAY5ssUxc",
+        "duration": "9:48",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "hybrid-cloud", "deployment-models", "cloud-bursting"]
+    },
+    {
+      "id": "C1N-C-047",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "Several hospitals in a region jointly fund and share a cloud platform that meets healthcare privacy requirements and is not open to other customers. Which deployment model is this?",
+      "options": [
+        "Community cloud",
+        "Public cloud",
+        "Hybrid cloud",
+        "Private cloud"
+      ],
+      "answer": 0,
+      "explanation": "A community cloud is shared by a specific group of organisations with common concerns such as regulation, security or mission, and is closed to outsiders. It spreads cost across the members while keeping the compliance posture they all need. It differs from a private cloud, which belongs to one organisation, and from a public cloud, which anyone can use. Government and healthcare consortia are the typical examples.",
+      "distractor_analysis": {
+        "1": "Public cloud is open to all customers.",
+        "2": "Hybrid describes a mix of private and public, not shared ownership.",
+        "3": "Private cloud serves a single organisation."
+      },
+      "video_reference": {
+        "title": "Cloud Models - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=KZxAY5ssUxc",
+        "duration": "9:48",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "community-cloud", "deployment-models"]
+    },
+    {
+      "id": "C1N-C-048",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A web application automatically adds servers when traffic rises and removes them when it falls, and the company pays only for what ran. Which cloud characteristic is being described?",
+      "options": [
+        "Rapid elasticity with metered, pay-as-you-go billing",
+        "High availability",
+        "File synchronisation",
+        "Shared resources"
+      ],
+      "answer": 0,
+      "explanation": "Elasticity is the ability to grow and shrink capacity quickly, ideally automatically, in response to demand. Combined with metered billing it means the organisation stops paying for idle capacity, which is one of the strongest financial arguments for cloud. High availability is about surviving failures rather than matching demand, file sync is a consumer feature, and shared resources describe how the provider pools hardware rather than how the customer's capacity changes.",
+      "distractor_analysis": {
+        "1": "High availability keeps a service running through failures; it does not resize it.",
+        "2": "File synchronisation is a storage feature.",
+        "3": "Resource pooling is the provider-side mechanism, not the scaling behaviour."
+      },
+      "video_reference": {
+        "title": "Cloud Characteristics - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=XzNnFbY0dMQ",
+        "duration": "6:50",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "elasticity", "metered-billing", "characteristics"]
+    },
+    {
+      "id": "C1N-C-049",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A cloud provider states that a service is designed to keep running even if an entire data centre fails, by spreading it across several sites in a region. Which cloud characteristic does this describe?",
+      "options": [
+        "High availability",
+        "Rapid elasticity",
+        "Metered utilisation",
+        "Measured service"
+      ],
+      "answer": 0,
+      "explanation": "High availability means a service stays reachable through hardware, network or site failures, usually expressed as an uptime percentage in a service level agreement. Providers achieve it by running redundant copies across availability zones and failing over automatically. Customers must still design their own applications to use those zones. Elasticity is about capacity, and metering and measured service are about tracking and billing consumption.",
+      "distractor_analysis": {
+        "1": "Elasticity scales capacity; it does not by itself survive a site failure.",
+        "2": "Metered utilisation is billing by consumption.",
+        "3": "Measured service is the monitoring that underpins metering."
+      },
+      "video_reference": {
+        "title": "Cloud Characteristics - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=XzNnFbY0dMQ",
+        "duration": "6:50",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "high-availability", "availability-zones", "characteristics"]
+    },
+    {
+      "id": "C1N-C-050",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A department's cloud bill was far higher than expected because a developer left several large test servers running over a weekend. Which cloud characteristic explains the surprise?",
+      "options": [
+        "Metered utilisation, where every hour of running resources is charged",
+        "High availability",
+        "Shared resources",
+        "Desktop virtualisation"
+      ],
+      "answer": 0,
+      "explanation": "Cloud services meter consumption continuously: compute by the second or hour, storage by the gigabyte-month, data transfer by the gigabyte. Resources that are left running cost money whether or not anyone uses them, which is the opposite of owned hardware where the cost is fixed. Budgets, automatic shutdown schedules and billing alerts are the standard controls. The other options do not relate to how charges accrue.",
+      "distractor_analysis": {
+        "1": "High availability is about uptime, not billing.",
+        "2": "Shared resources describe the provider's pooling.",
+        "3": "Desktop virtualisation is a workload type, not a billing characteristic."
+      },
+      "video_reference": {
+        "title": "Cloud Characteristics - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=XzNnFbY0dMQ",
+        "duration": "6:50",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "metered-utilisation", "cost", "characteristics"]
+    },
+    {
+      "id": "C1N-C-051",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A company's laptops each hold a local copy of the shared documents folder, and edits made on one laptop appear on the others and in the web portal within seconds. Which cloud feature is this?",
+      "options": [
+        "File synchronisation",
+        "Infrastructure as a Service",
+        "Cloud bursting",
+        "Multitenancy"
+      ],
+      "answer": 0,
+      "explanation": "File synchronisation services such as OneDrive, Google Drive and Dropbox keep a local copy of files on each device and push changes through the cloud to every other device and to the web interface. Technicians support these constantly: version conflicts when two people edit offline, selective sync to save disk space, and files on demand that download only when opened. The other terms describe infrastructure models rather than a file-level feature.",
+      "distractor_analysis": {
+        "1": "IaaS provides servers and storage, not a desktop sync client.",
+        "2": "Cloud bursting is overflow of compute into a public cloud.",
+        "3": "Multitenancy describes shared infrastructure between customers."
+      },
+      "video_reference": {
+        "title": "Cloud Characteristics - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=XzNnFbY0dMQ",
+        "duration": "6:50",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "file-synchronisation", "storage"]
+    },
+    {
+      "id": "C1N-C-052",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user edited a spreadsheet on a laptop while offline on a flight while a colleague edited the same file in the office. On landing the sync client created a second copy with the user's name appended. What happened?",
+      "options": [
+        "A sync conflict occurred and the client preserved both versions rather than overwrite either",
+        "The file was corrupted by the flight",
+        "The colleague deleted the file",
+        "The laptop's disk was full"
+      ],
+      "answer": 0,
+      "explanation": "When two devices change the same file before either syncs, the service cannot merge them automatically, so it keeps the server copy and saves the second as a conflicted copy named for the device or user. Someone then merges the changes by hand. Working in the web editor, or using file types that support real-time co-authoring, avoids this. The other explanations do not produce a second named copy.",
+      "distractor_analysis": {
+        "1": "Corruption produces an unreadable file, not a renamed duplicate.",
+        "2": "A deletion would remove the file rather than duplicate it.",
+        "3": "A full disk stops sync entirely instead of creating copies."
+      },
+      "video_reference": {
+        "title": "Cloud Characteristics - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=XzNnFbY0dMQ",
+        "duration": "6:50",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "file-synchronisation", "conflict", "troubleshooting"]
+    },
+    {
+      "id": "C1N-C-053",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A cloud provider runs virtual machines for thousands of customers on the same physical servers, isolated from one another. Which term describes this arrangement?",
+      "options": [
+        "Multitenancy, built on shared pooled resources",
+        "Private cloud",
+        "Hybrid cloud",
+        "Rapid elasticity"
+      ],
+      "answer": 0,
+      "explanation": "Resource pooling lets the provider treat thousands of servers as one pool, and multitenancy places many customers' workloads on that shared pool while keeping them logically separated by the hypervisor, networking and access controls. It is what makes public cloud economical. Customers who need dedicated hardware can pay for it, but the default is shared. Private and hybrid describe deployment models, and elasticity describes scaling.",
+      "distractor_analysis": {
+        "1": "Private cloud serves one organisation and is not shared.",
+        "2": "Hybrid is a combination of environments.",
+        "3": "Elasticity is about changing capacity, not sharing hardware."
+      },
+      "video_reference": {
+        "title": "Cloud Characteristics - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=XzNnFbY0dMQ",
+        "duration": "6:50",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "multitenancy", "shared-resources", "characteristics"]
+    },
+    {
+      "id": "C1N-C-054",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A company replaces its physical call-centre PCs with thin clients that connect to Windows desktops hosted and managed by a cloud provider on a per-user monthly fee. Which service model is this?",
+      "options": [
+        "Desktop as a Service (DaaS)",
+        "Infrastructure as a Service (IaaS)",
+        "Platform as a Service (PaaS)",
+        "Storage as a Service"
+      ],
+      "answer": 0,
+      "explanation": "DaaS is virtual desktop infrastructure delivered as a cloud subscription. The provider hosts the desktop virtual machines, handles the platform, availability and often the patching, and users connect from thin clients, laptops or tablets. It suits seasonal staffing, contractors and remote workers because desktops can be added and removed quickly. IaaS would require the company to build the desktop platform itself, and the other models do not deliver desktops.",
+      "distractor_analysis": {
+        "1": "IaaS provides servers on which the company would have to build VDI itself.",
+        "2": "PaaS is a developer runtime.",
+        "3": "Storage as a Service provides capacity, not desktops."
+      },
+      "video_reference": {
+        "title": "Cloud Models - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=KZxAY5ssUxc",
+        "duration": "9:48",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "daas", "vdi", "service-models"]
+    },
+    {
+      "id": "C1N-C-055",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A start-up wants to avoid buying servers and prefers to rent capacity that can shrink if the business does not grow. Which advantage of cloud computing does this reflect?",
+      "options": [
+        "Converting capital expenditure into operating expenditure with elastic capacity",
+        "Guaranteed lower cost than owning hardware in every case",
+        "Elimination of the need for backups",
+        "Immunity from outages"
+      ],
+      "answer": 0,
+      "explanation": "Buying servers is a large up-front capital cost for capacity you hope to use. Renting cloud resources spreads cost as a monthly operating expense that tracks actual use, and capacity can be released if plans change. That does not make cloud cheaper in all cases; steady, predictable workloads can be cheaper on owned hardware. Cloud customers still need backups of their own data, and providers do suffer outages, so those claims are wrong.",
+      "distractor_analysis": {
+        "1": "Cloud can cost more than owned hardware for constant, predictable loads.",
+        "2": "Providers protect their infrastructure, not the customer's data from deletion or ransomware.",
+        "3": "Cloud regions and services have well-publicised outages."
+      },
+      "video_reference": {
+        "title": "Cloud Characteristics - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=XzNnFbY0dMQ",
+        "duration": "6:50",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "capex-opex", "cost", "characteristics"]
+    },
+    {
+      "id": "C1N-C-056",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "Which statement correctly describes the shared responsibility model in cloud computing?",
+      "options": [
+        "The provider secures the underlying infrastructure while the customer secures their data, identities and configuration",
+        "The provider is responsible for everything including the customer's passwords",
+        "The customer must secure the provider's physical data centres",
+        "Neither party is responsible for security in a public cloud"
+      ],
+      "answer": 0,
+      "explanation": "Cloud security is split. The provider protects the physical facilities, hardware, hypervisors and, depending on the service model, more of the stack; the customer is always responsible for their own data, user accounts, access permissions and how services are configured. Most cloud breaches trace to customer-side misconfiguration such as public storage buckets and weak identity controls, not to provider failures. Neither extreme position is correct.",
+      "distractor_analysis": {
+        "1": "Identity and access are always the customer's job.",
+        "2": "Customers have no access to provider facilities.",
+        "3": "Both parties carry defined responsibilities."
+      },
+      "video_reference": {
+        "title": "Cloud Characteristics - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=XzNnFbY0dMQ",
+        "duration": "6:50",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "shared-responsibility", "security"]
+    },
+    {
+      "id": "C1N-C-057",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "In which cloud service model does the customer carry the most responsibility for patching operating systems?",
+      "options": [
+        "Infrastructure as a Service",
+        "Software as a Service",
+        "Platform as a Service",
+        "Desktop as a Service with a fully managed image"
+      ],
+      "answer": 0,
+      "explanation": "Responsibility shifts toward the provider as you move up the service models. In IaaS the customer installs and patches the guest operating system exactly as on a physical server; only the hypervisor and below belong to the provider. In PaaS the provider maintains the operating system and runtime, and in SaaS the customer touches no infrastructure at all. Managed DaaS offerings also patch the desktop image for the customer.",
+      "distractor_analysis": {
+        "1": "SaaS customers never see an operating system.",
+        "2": "PaaS providers patch the platform beneath the customer's code.",
+        "3": "Fully managed DaaS includes image maintenance."
+      },
+      "video_reference": {
+        "title": "Cloud Models - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=KZxAY5ssUxc",
+        "duration": "9:48",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "iaas", "shared-responsibility", "patching"]
+    },
+    {
+      "id": "C1N-C-058",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user cannot open a document in the cloud file portal and sees a message that the file is currently being edited by another person. What does this indicate?",
+      "options": [
+        "The service is enforcing a lock or co-authoring session to prevent conflicting edits",
+        "The file has been deleted",
+        "The user's account has been suspended",
+        "The internet connection has failed"
+      ],
+      "answer": 0,
+      "explanation": "Cloud document services either allow real-time co-authoring, where several people edit simultaneously and see each other's cursors, or place a lock on the file while one person has it open in a desktop application. The message tells the user which situation applies and usually offers to open a read-only copy or notify when the file is free. It is normal collaboration behaviour rather than a fault. The other options produce different, unrelated messages.",
+      "distractor_analysis": {
+        "1": "A deleted file reports not found, not in use.",
+        "2": "A suspended account cannot sign in at all.",
+        "3": "A failed connection cannot report who is editing."
+      },
+      "video_reference": {
+        "title": "Cloud Characteristics - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=XzNnFbY0dMQ",
+        "duration": "6:50",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "collaboration", "file-lock", "co-authoring"]
+    },
+    {
+      "id": "C1N-C-059",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A company migrates its email to a SaaS provider. Which support task remains the company's responsibility?",
+      "options": [
+        "Managing user accounts, licences, mailbox permissions and retention policies",
+        "Replacing failed hard drives in the mail servers",
+        "Patching the mail server operating system",
+        "Upgrading the mail server software to the next version"
+      ],
+      "answer": 0,
+      "explanation": "With SaaS the provider owns the entire technology stack, so hardware, operating system and application upgrades disappear from the customer's task list. What remains is administration of the tenant: creating and removing users, assigning licences, setting sharing and retention policies, configuring security features such as multi-factor authentication, and supporting end users. Understanding this division helps technicians know which problems to fix and which to escalate to the provider.",
+      "distractor_analysis": {
+        "1": "Hardware belongs entirely to the provider.",
+        "2": "The provider patches the platform.",
+        "3": "Software versions are managed by the provider for all tenants."
+      },
+      "video_reference": {
+        "title": "Cloud Models - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=KZxAY5ssUxc",
+        "duration": "9:48",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "saas", "administration", "shared-responsibility"]
+    },
+    {
+      "id": "C1N-C-060",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "An organisation moves an application to a public cloud and later finds that moving it to a different provider would require rewriting large parts of it. Which risk did it encounter?",
+      "options": [
+        "Vendor lock-in through use of provider-specific services",
+        "Rapid elasticity",
+        "Multitenancy",
+        "High availability"
+      ],
+      "answer": 0,
+      "explanation": "Each provider offers proprietary managed services for databases, messaging, identity and serverless computing. Building on them speeds development but ties the application to that provider's interfaces, so leaving later is costly. Mitigations include using open standards and containers, keeping data in portable formats and negotiating exit terms. Elasticity, multitenancy and high availability are characteristics of cloud rather than risks of dependence.",
+      "distractor_analysis": {
+        "1": "Elasticity is a benefit, not a switching cost.",
+        "2": "Multitenancy is how providers share hardware.",
+        "3": "High availability is a resilience property."
+      },
+      "video_reference": {
+        "title": "Cloud Characteristics - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=XzNnFbY0dMQ",
+        "duration": "6:50",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "vendor-lock-in", "risk"]
+    },
+    {
+      "id": "C1N-C-061",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user reports that the cloud sync client shows a red cross on a folder and files are not uploading. What is the most useful first step?",
+      "options": [
+        "Open the sync client's status view to read the specific error, such as a file name that is too long or a lack of storage quota",
+        "Reinstall the operating system",
+        "Delete the folder",
+        "Turn off the firewall permanently"
+      ],
+      "answer": 0,
+      "explanation": "Sync clients report why an item failed: path or file name too long, unsupported characters, a file locked by another program, quota exceeded or a sign-in that has expired. Reading that message directs the fix, which is usually renaming, shortening a path, freeing quota or re-authenticating. Reinstalling the operating system is wildly disproportionate, deleting the folder risks data, and disabling security is never the answer to a sync error.",
+      "distractor_analysis": {
+        "1": "A reinstall is unnecessary for a client-side sync error.",
+        "2": "Deleting the folder may lose unsynced work.",
+        "3": "Sync clients work through firewalls; disabling protection is unjustified."
+      },
+      "video_reference": {
+        "title": "Cloud Characteristics - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=XzNnFbY0dMQ",
+        "duration": "6:50",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "file-synchronisation", "troubleshooting"]
+    },
+    {
+      "id": "C1N-C-062",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A company needs to keep its data within its own country for legal reasons while using a public cloud provider. Which capability should it look for?",
+      "options": [
+        "The ability to select a region so data is stored and processed in a specific geographic location",
+        "Rapid elasticity",
+        "A larger monthly bandwidth allowance",
+        "Free egress"
+      ],
+      "answer": 0,
+      "explanation": "Public cloud providers operate regions around the world, and customers choose where each resource lives. Data residency or data sovereignty requirements are met by selecting regions inside the required jurisdiction and confirming that backups and support access follow the same rule. Elasticity, bandwidth and egress pricing are unrelated to where data resides. Technicians should know that choosing a region is a deliberate configuration decision, not a default.",
+      "distractor_analysis": {
+        "1": "Elasticity concerns capacity, not location.",
+        "2": "Bandwidth allowances do not govern data location.",
+        "3": "Egress pricing is about the cost of moving data out, not where it sits."
+      },
+      "video_reference": {
+        "title": "Cloud Models - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=KZxAY5ssUxc",
+        "duration": "9:48",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "data-residency", "regions", "compliance"]
+    },
+    {
+      "id": "C1N-C-063",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A cloud file service offers a feature where files show in the local folder but only download when opened. What is the main benefit and the main caution?",
+      "options": [
+        "It saves local disk space, but files are unavailable when the device is offline unless marked to keep locally",
+        "It doubles the file's security and has no drawbacks",
+        "It speeds up the processor and disables sync",
+        "It compresses every file and prevents editing"
+      ],
+      "answer": 0,
+      "explanation": "Files on demand shows placeholder entries for the whole cloud library while storing only the files the user actually opens, which lets a laptop with a small SSD see terabytes of shared data. The caution is connectivity: a file that was never opened is not on the disk, so a user heading onto a plane must mark the folders they need as always available. It does not alter security, performance or the ability to edit.",
+      "distractor_analysis": {
+        "1": "Placeholders do not change security and do have the offline drawback.",
+        "2": "The feature is about storage, not processor speed, and sync stays on.",
+        "3": "Files are not compressed and remain fully editable."
+      },
+      "video_reference": {
+        "title": "Cloud Characteristics - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=XzNnFbY0dMQ",
+        "duration": "6:50",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "files-on-demand", "file-synchronisation", "offline"]
+    },
+    {
+      "id": "C1N-C-064",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A small business asks whether it should choose a public cloud or build a private cloud for a new customer-facing app with unpredictable growth. Which recommendation is most appropriate?",
+      "options": [
+        "Public cloud, because it needs no capital investment and scales elastically with demand",
+        "Private cloud, because it is always cheaper",
+        "Neither, because small businesses cannot use cloud services",
+        "Private cloud, because public clouds cannot host web applications"
+      ],
+      "answer": 0,
+      "explanation": "A private cloud requires buying and running enough hardware for the peak you expect, which is exactly the wrong fit for a small company facing unknown demand. Public cloud lets it start small, pay by use and grow or shrink as the app's popularity dictates, with the provider handling the infrastructure. Private cloud makes sense where regulation or a steady, well-understood load justifies the investment, neither of which applies here.",
+      "distractor_analysis": {
+        "1": "Private cloud carries fixed capital and staffing costs.",
+        "2": "Cloud services are widely used by businesses of every size.",
+        "3": "Public clouds host a large share of the world's web applications."
+      },
+      "video_reference": {
+        "title": "Cloud Models - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=KZxAY5ssUxc",
+        "duration": "9:48",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "public-cloud", "decision", "small-business"]
+    },
+    {
+      "id": "C1N-C-065",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "An organisation adopts a strategy of running workloads across two public cloud providers at the same time. What is this called and what is its main operational cost?",
+      "options": [
+        "Multicloud, which increases complexity because staff must master two sets of tools and manage two bills",
+        "Hybrid cloud, which requires an on-premises data centre",
+        "Community cloud, which requires other organisations to join",
+        "Private cloud, which requires buying servers"
+      ],
+      "answer": 0,
+      "explanation": "Multicloud means deliberately using more than one public provider, typically to avoid lock-in, meet regional requirements or pick best-of-breed services. The price is operational: two consoles, two identity systems, two billing models and the network cost of moving data between them. It differs from hybrid, which pairs private infrastructure with public cloud; community and private clouds are ownership models unrelated to using several public vendors.",
+      "distractor_analysis": {
+        "1": "Hybrid involves private infrastructure; two public providers is multicloud.",
+        "2": "Community cloud is shared among peer organisations.",
+        "3": "Private cloud is single-organisation infrastructure."
+      },
+      "video_reference": {
+        "title": "Cloud Models - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=KZxAY5ssUxc",
+        "duration": "9:48",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "multicloud", "deployment-models"]
+    },
+    {
+      "id": "C1N-C-066",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A provider's service level agreement promises 99.9 percent monthly availability. Roughly how much downtime per month does that permit?",
+      "options": [
+        "About 44 minutes",
+        "About 7 hours",
+        "About 3 days",
+        "About 4 minutes"
+      ],
+      "answer": 0,
+      "explanation": "A 30-day month has 43,200 minutes. One tenth of one percent of that is 43.2 minutes, so a 99.9 percent commitment allows roughly three quarters of an hour of downtime before the provider owes service credits. Each extra nine cuts the allowance by ten: 99.99 percent is about 4 minutes and 99 percent is about 7 hours. Technicians should be able to translate these figures when setting user expectations.",
+      "distractor_analysis": {
+        "1": "Seven hours corresponds to about 99 percent.",
+        "2": "Three days would be roughly 90 percent availability.",
+        "3": "Four minutes corresponds to 99.99 percent."
+      },
+      "video_reference": {
+        "title": "Cloud Characteristics - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=XzNnFbY0dMQ",
+        "duration": "6:50",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "sla", "availability", "uptime"]
+    },
+    {
+      "id": "C1N-C-067",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A company uses a cloud provider's storage to keep nightly backups of its on-premises servers. Which term best describes this use?",
+      "options": [
+        "Storage as a Service used as an off-site backup target in a hybrid arrangement",
+        "Software as a Service",
+        "Desktop as a Service",
+        "Community cloud"
+      ],
+      "answer": 0,
+      "explanation": "Renting cloud storage as a destination for backups is one of the earliest and most common cloud uses. It gives geographic separation from the primary site at low cost, often with tiering to cheaper archive classes for older copies. Because the servers stay on premises and the backups go to a public cloud, the overall arrangement is hybrid. It is not SaaS, since no application is being consumed, nor DaaS, and the ownership model is public rather than community.",
+      "distractor_analysis": {
+        "1": "SaaS delivers applications, not raw backup capacity.",
+        "2": "DaaS delivers hosted desktops.",
+        "3": "Community cloud is a shared-ownership model."
+      },
+      "video_reference": {
+        "title": "Cloud Models - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=KZxAY5ssUxc",
+        "duration": "9:48",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "storage", "backup", "hybrid-cloud"]
+    },
+    {
+      "id": "C1N-C-068",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "Which cloud characteristic allows an administrator to create a new server in minutes through a web portal without contacting the provider?",
+      "options": [
+        "On-demand self-service",
+        "Metered billing",
+        "File synchronisation",
+        "Vendor lock-in"
+      ],
+      "answer": 0,
+      "explanation": "On-demand self-service is a defining feature of cloud computing: resources are provisioned through a portal, command line or programming interface immediately, without a purchase order or a ticket to the provider. It is what allows the elasticity and speed that cloud is valued for, and also what makes cost control and governance necessary, because anyone with rights can create billable resources. The other options describe billing, a storage feature and a risk.",
+      "distractor_analysis": {
+        "1": "Metering is how usage is charged, not how it is requested.",
+        "2": "File synchronisation is a data feature.",
+        "3": "Lock-in is a risk of dependence, not a provisioning capability."
+      },
+      "video_reference": {
+        "title": "Cloud Characteristics - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=XzNnFbY0dMQ",
+        "duration": "6:50",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "self-service", "characteristics"]
+    },
+    {
+      "id": "C1N-C-069",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user complains that the company's cloud-based application is slow from the branch office but fast at headquarters. Which factor is the most likely cause?",
+      "options": [
+        "The branch office's internet connection has less bandwidth or higher latency to the provider",
+        "The cloud provider only supports one office per customer",
+        "The application must be reinstalled at the branch",
+        "The branch office lacks a local file server"
+      ],
+      "answer": 0,
+      "explanation": "Cloud services depend entirely on the path between the user and the provider. A branch with a slower or congested link, or one that backhauls traffic through headquarters before it reaches the internet, will feel every extra millisecond. Measuring latency and throughput from the branch and considering a direct local internet breakout or a better circuit is the fix. Providers serve users from anywhere, SaaS applications are not installed, and a file server is unrelated.",
+      "distractor_analysis": {
+        "1": "Cloud services are reachable from any location.",
+        "2": "Browser-based cloud applications are not installed per site.",
+        "3": "A local file server does not affect access to a cloud application."
+      },
+      "video_reference": {
+        "title": "Cloud Characteristics - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=XzNnFbY0dMQ",
+        "duration": "6:50",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "performance", "latency", "troubleshooting"]
+    },
+    {
+      "id": "C1N-C-070",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A finance team wants a fixed, predictable monthly cost for a cloud server that runs constantly. Which purchasing option should the technician suggest?",
+      "options": [
+        "A reserved or committed-use instance purchased for one or three years at a discount",
+        "On-demand pricing billed by the second",
+        "Spot or preemptible instances",
+        "A free trial account"
+      ],
+      "answer": 0,
+      "explanation": "Cloud providers offer several pricing models. On-demand is flexible but the most expensive per hour and varies with use. Reserved or committed-use pricing trades flexibility for a large discount and a predictable bill, which fits a server that runs all the time. Spot instances are cheap but can be reclaimed by the provider at short notice, so they suit interruptible batch work only, and trial accounts are for evaluation rather than production.",
+      "distractor_analysis": {
+        "1": "On-demand is the least predictable and most expensive for a constant workload.",
+        "2": "Spot capacity can be taken away, unsuitable for an always-on server.",
+        "3": "Trials expire and have usage limits."
+      },
+      "video_reference": {
+        "title": "Cloud Characteristics - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=XzNnFbY0dMQ",
+        "duration": "6:50",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "pricing", "reserved-instances", "cost"]
+    },
+    {
+      "id": "C1N-C-071",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A photographer wants every photo taken on a phone to appear automatically on a tablet and a laptop. Which cloud capability provides this?",
+      "options": [
+        "Cloud file synchronisation across devices signed in to the same account",
+        "Infrastructure as a Service",
+        "A private cloud",
+        "Cloud bursting"
+      ],
+      "answer": 0,
+      "explanation": "Consumer cloud services synchronise a library across every device signed in to the account. The phone uploads each photo, and the tablet and laptop download it or show a placeholder that fetches on demand. Support issues include upload restricted to Wi-Fi, a full storage quota and a device signed in to a different account. Infrastructure services, private clouds and bursting are business infrastructure concepts that do not describe this feature.",
+      "distractor_analysis": {
+        "1": "IaaS is rented servers and storage for building systems.",
+        "2": "A private cloud is single-organisation infrastructure.",
+        "3": "Cloud bursting is overflow of compute capacity."
+      },
+      "video_reference": {
+        "title": "Cloud Characteristics - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=XzNnFbY0dMQ",
+        "duration": "6:50",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "file-synchronisation", "photos", "consumer"]
+    },
+    {
+      "id": "C1N-C-072",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "hard",
+      "question": "A company deletes a large amount of data from its cloud storage and is surprised that the bill for that month barely changed. Which billing characteristic explains this?",
+      "options": [
+        "Storage is billed per gigabyte-month, so data that existed for most of the month is still charged, and deleting it lowers the next bill instead",
+        "Cloud storage is free after the first upload",
+        "Deleted data continues to be charged forever",
+        "The provider bills only on data uploaded, never on data stored"
+      ],
+      "answer": 0,
+      "explanation": "Metered storage pricing accumulates hour by hour or day by day. Data that sat in storage for three weeks is charged for those three weeks even if it is deleted on day twenty-two, so the saving shows up in the following month. Some archive tiers also charge early-deletion fees for data removed before a minimum period. Understanding the metering model prevents disputes with finance and helps plan clean-ups.",
+      "distractor_analysis": {
+        "1": "Storage is charged continuously, not just at upload.",
+        "2": "Charges stop once the data is gone, apart from any early-deletion fee.",
+        "3": "Providers bill for capacity held over time, not only for ingestion."
+      },
+      "video_reference": {
+        "title": "Cloud Characteristics - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=XzNnFbY0dMQ",
+        "duration": "6:50",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "metered-utilisation", "storage", "billing"]
+    },
+    {
+      "id": "C1N-C-073",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A retailer's website is hosted on IaaS virtual machines. During a sale the site becomes slow. Which cloud capability should the technician recommend to prevent this in future?",
+      "options": [
+        "Configure autoscaling so additional instances start automatically when load rises",
+        "Move the site to a single larger server permanently",
+        "Ask customers to shop at quieter times",
+        "Disable HTTPS to reduce processing load"
+      ],
+      "answer": 0,
+      "explanation": "Autoscaling ties rapid elasticity to measured load: when CPU or request rates cross a threshold, the platform launches more instances behind a load balancer and removes them when demand falls, so the retailer pays for peak capacity only during the peak. A permanently larger server wastes money for most of the year and still has a ceiling, telling customers to wait loses sales, and removing encryption is a security failure that saves almost nothing.",
+      "distractor_analysis": {
+        "1": "Fixed oversizing is expensive and still has a hard limit.",
+        "2": "Restricting customers defeats the purpose of the sale.",
+        "3": "HTTPS is essential for a shop and its cost is negligible."
+      },
+      "video_reference": {
+        "title": "Cloud Characteristics - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=XzNnFbY0dMQ",
+        "duration": "6:50",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "autoscaling", "elasticity", "iaas"]
+    },
+    {
+      "id": "C1N-C-074",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "A user's laptop was stolen. The user's documents were all in a synchronised cloud folder. What should the technician do first regarding that data?",
+      "options": [
+        "Sign the stolen device out of the cloud account remotely and confirm the files are intact in the web portal",
+        "Assume the files are gone and start recreating them",
+        "Delete the files from the cloud so the thief cannot see them",
+        "Nothing, because cloud files cannot be accessed from a stolen laptop"
+      ],
+      "answer": 0,
+      "explanation": "Synchronised files exist in the cloud as well as on the laptop, so the data is recoverable to any new device. The immediate risk is the thief using the still-signed-in laptop, so the account's device list should be used to revoke that device's access and the password changed. The files themselves stay safe in the portal. Deleting them would destroy the good copy, and a signed-in laptop can absolutely reach cloud data until access is revoked.",
+      "distractor_analysis": {
+        "1": "The cloud copy makes recreation unnecessary.",
+        "2": "Deletion removes the legitimate copy; revoking access is the right control.",
+        "3": "A stolen laptop that stays signed in remains a live access path."
+      },
+      "video_reference": {
+        "title": "Cloud Characteristics - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=XzNnFbY0dMQ",
+        "duration": "6:50",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "file-synchronisation", "security", "lost-device"]
+    },
+    {
+      "id": "C1N-C-075",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "single",
+      "difficulty": "medium",
+      "question": "Which of these is an example of Platform as a Service rather than Infrastructure as a Service?",
+      "options": [
+        "A managed database service where the provider handles the operating system, patching and backups and the customer only creates tables",
+        "A virtual machine on which the customer installs a database engine",
+        "A block storage volume attached to a virtual machine",
+        "A virtual private network the customer configures"
+      ],
+      "answer": 0,
+      "explanation": "The dividing line is who manages the operating system and middleware. A managed database exposes only the database itself, with the provider running everything beneath it, which is a platform service. A virtual machine, an attached disk and a virtual network are infrastructure components the customer must configure and maintain. Recognising the model tells a technician what they can fix themselves and what only the provider can touch.",
+      "distractor_analysis": {
+        "1": "Installing software on a virtual machine is classic IaaS.",
+        "2": "Block storage is raw infrastructure.",
+        "3": "Customer-configured networking is infrastructure."
+      },
+      "video_reference": {
+        "title": "Cloud Models - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=KZxAY5ssUxc",
+        "duration": "9:48",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "paas", "iaas", "service-models"]
+    },
+    {
+      "id": "C1N-C-076",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "multi",
+      "difficulty": "medium",
+      "question": "Which TWO are essential characteristics of cloud computing as generally defined? (Select TWO.)",
+      "options": [
+        "Rapid elasticity, so capacity can grow and shrink quickly with demand",
+        "Measured service, so usage is monitored and billed by consumption",
+        "A requirement that all data be stored on the customer's premises",
+        "Fixed capacity purchased years in advance",
+        "Manual provisioning through a paper request to the provider"
+      ],
+      "answers": [0, 1],
+      "explanation": "The widely used definition of cloud computing lists on-demand self-service, broad network access, resource pooling, rapid elasticity and measured service. Elasticity and metering are two of those five and together explain why cloud costs track usage. Storing data on premises, buying fixed capacity in advance and requesting resources on paper are characteristics of traditional infrastructure procurement, the very things cloud replaces.",
+      "distractor_analysis": {
+        "2": "Cloud data is stored in the provider's facilities, not the customer's.",
+        "3": "Fixed advance capacity is the opposite of elasticity.",
+        "4": "Self-service provisioning is a defining cloud trait."
+      },
+      "video_reference": {
+        "title": "Cloud Characteristics - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=XzNnFbY0dMQ",
+        "duration": "6:50",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "characteristics", "elasticity", "measured-service"]
+    },
+    {
+      "id": "C1N-C-077",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "multi",
+      "difficulty": "medium",
+      "question": "A company is deciding whether to move a legacy application to a public cloud. Which TWO considerations argue for keeping it on premises? (Select TWO.)",
+      "options": [
+        "The application handles data that regulation requires to stay within the company's own facilities",
+        "The application runs at a constant, predictable load around the clock and existing hardware is already paid for",
+        "The application's demand spikes unpredictably several times a year",
+        "The company has no data centre staff",
+        "The company wants to stop paying for hardware refreshes"
+      ],
+      "answers": [0, 1],
+      "explanation": "Cloud is not automatically the right answer. Strict data-location rules can make a public cloud unusable for a workload, and a steady, always-on load on hardware that is already owned can be cheaper to keep than to rent, because cloud's advantage is paying for variable use. The other three points, unpredictable spikes, lack of staff and wanting to avoid hardware refreshes, are classic reasons to move to the cloud rather than to stay.",
+      "distractor_analysis": {
+        "2": "Unpredictable spikes are exactly what elastic cloud capacity handles well.",
+        "3": "Lack of staff favours letting a provider run the infrastructure.",
+        "4": "Avoiding hardware refreshes is a reason to rent rather than own."
+      },
+      "video_reference": {
+        "title": "Cloud Models - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=KZxAY5ssUxc",
+        "duration": "9:48",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "decision", "on-premises", "compliance"]
+    },
+    {
+      "id": "C1N-C-078",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "match",
+      "difficulty": "medium",
+      "question": "Match each cloud service model to the example that fits it.",
+      "pairs": [
+        { "left": "IaaS", "right": "Renting virtual machines and installing your own operating system" },
+        { "left": "PaaS", "right": "Deploying application code to a managed runtime with a managed database" },
+        { "left": "SaaS", "right": "Using web-based email and office applications by subscription" },
+        { "left": "DaaS", "right": "Streaming a hosted Windows desktop to a thin client" }
+      ],
+      "explanation": "The service models describe how much of the stack the provider manages. IaaS stops at the hypervisor, PaaS extends through the operating system and runtime, SaaS covers the whole application, and DaaS delivers a complete desktop. A technician who can place a service in the right model knows immediately whether an issue is theirs to fix or belongs with the provider.",
+      "video_reference": {
+        "title": "Cloud Models - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=KZxAY5ssUxc",
+        "duration": "9:48",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "service-models", "match"]
+    },
+    {
+      "id": "C1N-C-079",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "match",
+      "difficulty": "medium",
+      "question": "Match each cloud deployment model to its description.",
+      "pairs": [
+        { "left": "Public", "right": "Provider-owned infrastructure shared by many unrelated customers" },
+        { "left": "Private", "right": "Infrastructure dedicated to a single organisation" },
+        { "left": "Hybrid", "right": "Private infrastructure connected to public cloud services" },
+        { "left": "Community", "right": "Infrastructure shared by a defined group with common requirements" }
+      ],
+      "explanation": "Deployment models describe who owns and shares the infrastructure. Public is the shared utility model, private is dedicated to one organisation, hybrid links the two so workloads can move between them, and community is a club of like-minded organisations pooling a platform that meets their shared rules. Ownership drives cost, compliance and control, so it is usually the first decision in a cloud strategy.",
+      "video_reference": {
+        "title": "Cloud Models - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=KZxAY5ssUxc",
+        "duration": "9:48",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "deployment-models", "match"]
+    },
+    {
+      "id": "C1N-C-080",
+      "exam": "core1",
+      "domain": "4.0 Virtualization and Cloud Computing",
+      "objective": "4.2",
+      "type": "order",
+      "difficulty": "medium",
+      "question": "Order the steps a technician should follow to help a user recover a document that was accidentally deleted from a synchronised cloud folder.",
+      "sequence": [
+        "Confirm the file is missing from the local folder and from the web portal",
+        "Check the cloud service's recycle bin or deleted items and restore the file from there",
+        "If the file is not in the recycle bin, use version history or the administrator's restore tools within the retention window",
+        "Verify the restored file has synchronised back to the user's devices",
+        "Explain to the user how deletion propagates across synced devices to prevent a repeat"
+      ],
+      "explanation": "Synchronisation propagates a deletion everywhere, which alarms users, but cloud services keep deleted items for a retention period and maintain version histories. Checking the portal confirms the scope, the recycle bin recovers most cases in seconds, and administrator tools cover the rest within the retention window. Confirming the file has returned to the devices closes the loop, and a short explanation reduces the chance of the same call next week.",
+      "video_reference": {
+        "title": "Cloud Characteristics - CompTIA A+ 220-1201 - 4.2",
+        "url": "https://www.youtube.com/watch?v=XzNnFbY0dMQ",
+        "duration": "6:50",
+        "objective": "4.2"
+      },
+      "notes_reference": "14_Virtualization_and_Cloud.md",
+      "tags": ["cloud", "file-synchronisation", "recovery", "procedure"]
+    }
+  ]
+}

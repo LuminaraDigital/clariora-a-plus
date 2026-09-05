@@ -22,6 +22,14 @@ import hashlib
 import os
 import subprocess
 import sys
+# Wrangler prints emoji; a cp1252 console must not turn a deploy failure into a
+# UnicodeEncodeError that hides the real message.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 import time
 from datetime import datetime
 from pathlib import Path

@@ -8,6 +8,22 @@ Built by Datacentre Academy for technicians training for datacentre and enterpri
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-3.1.0-gold.svg)](CHANGELOG.md)
 
+## Screenshots
+
+Captured from the Windows desktop build at 1440 by 900 with `node tools/capture_screenshots.js`.
+
+| Home | Study drawer |
+| --- | --- |
+| ![Home dashboard with readiness ring, daily plan, shortcuts and mock exams](docs/screenshots/02-home.png) | ![The Study section of the More drawer](docs/screenshots/03-study-drawer.png) |
+
+| Exam runner | Submit dialog |
+| --- | --- |
+| ![A question in the 90 minute exam runner with the question matrix](docs/screenshots/04-exam.png) | ![In-app confirmation before an exam is scored](docs/screenshots/05-submit-dialog.png) |
+
+| Results | Startup |
+| --- | --- |
+| ![Scaled score, pass mark and domain breakdown after an exam](docs/screenshots/06-results.png) | ![First launch screen](docs/screenshots/01-startup.png) |
+
 ## What it does
 
 **Exam engine that mirrors the real test**
@@ -105,6 +121,8 @@ python tools/validate_bank.py --bank exam_data.json
 ```
 
 `npm test` runs every self-contained script in `tools/test_*.js` and `tools/verify_*.js`. CI runs the same three commands and also refuses any commit that tracks secrets, certificates or third-party media.
+
+`python tools/release_gate.py` runs all of the above plus the typography, version and packaging checks that must pass before a build ships. `node tools/capture_screenshots.js` refreshes the README screenshots from the packaged desktop app.
 
 ## Releasing
 

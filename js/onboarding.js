@@ -1003,6 +1003,49 @@
     state.shown = false;
   }
 
+  /**
+   * The black and gold stage shown beside every onboarding panel. With no
+   * arguments it shows the A+ mark and a partial ring. Pass a result to turn
+   * the ring into the readiness gauge with the predicted score in the centre,
+   * so the diagnostic summary reads as one screen instead of a half-empty one.
+   */
+  function stageArt(result) {
+    var circumference = 2 * Math.PI * 150;
+    var pct = result && isFinite(result.readiness) ? Math.max(0.02, Math.min(1, result.readiness / 100)) : 0.626;
+    var filled = (circumference * pct).toFixed(1);
+    var gap = (circumference - circumference * pct).toFixed(1);
+    var centre = result && isFinite(result.predicted) ? String(result.predicted) : 'A+';
+    var label = result ? 'PREDICTED SCORE' : 'READINESS';
+    var centreSize = result ? 84 : 72;
+    var caption = '';
+    if (result) {
+      var need = result.exam === 'core2' ? 700 : 675;
+      caption = '<text x="300" y="560" text-anchor="middle" font-family="Sora, system-ui, sans-serif" font-weight="600" font-size="14" letter-spacing="2" fill="#A3ADC2">' +
+        'READINESS ' + esc(String(result.readiness)) + ' PERCENT</text>' +
+        '<text x="300" y="586" text-anchor="middle" font-family="Sora, system-ui, sans-serif" font-weight="500" font-size="13" letter-spacing="1" fill="#6F7A90">' +
+        'PASS MARK ' + need + '</text>';
+    }
+    return '<div class="ob-stage" aria-hidden="true">' +
+      '<svg class="ob-stage-art" viewBox="0 0 600 900" preserveAspectRatio="xMidYMid slice" focusable="false">' +
+      '<defs><radialGradient id="obGlow" cx="50%" cy="48%" r="55%">' +
+      '<stop offset="0" stop-color="#D4AF37" stop-opacity="0.16"/><stop offset="1" stop-color="#07090E" stop-opacity="0"/>' +
+      '</radialGradient></defs>' +
+      '<rect width="600" height="900" fill="#07090E"/>' +
+      '<rect width="600" height="900" fill="url(#obGlow)"/>' +
+      '<g fill="none" stroke="#D4AF37" stroke-linecap="round">' +
+      '<circle cx="300" cy="430" r="250" stroke-opacity="0.08" stroke-width="1"/>' +
+      '<circle cx="300" cy="430" r="200" stroke-opacity="0.14" stroke-width="1.5"/>' +
+      '<circle cx="300" cy="430" r="150" stroke-opacity="0.22" stroke-width="2"/>' +
+      '<circle cx="300" cy="430" r="150" stroke-opacity="0.9" stroke-width="8" stroke-dasharray="' + filled + ' ' + gap + '" transform="rotate(-90 300 430)"/>' +
+      '</g>' +
+      '<text x="300" y="452" text-anchor="middle" font-family="Sora, system-ui, sans-serif" font-weight="700" font-size="' + centreSize + '" fill="#F3F4F6" font-variant-numeric="tabular-nums">' + esc(centre) + '</text>' +
+      '<text x="300" y="492" text-anchor="middle" font-family="Sora, system-ui, sans-serif" font-weight="600" font-size="13" letter-spacing="3" fill="#A3ADC2">' + label + '</text>' +
+      caption +
+      '<line x1="60" y1="820" x2="540" y2="820" stroke="#D4AF37" stroke-opacity="0.35" stroke-width="1"/>' +
+      '</svg>' +
+      '</div>';
+  }
+
   function renderStep1() {
     var root = ensureMount('onboardingRoot');
     if (!root) return;
@@ -1018,25 +1061,7 @@
     var minOpts = [15, 25, 45];
 
     var html = '<div class="ob-overlay">' +
-      '<div class="ob-stage" aria-hidden="true">' +
-      // On-brand stage: black ground, concentric gold rings echoing the readiness ring.
-      '<svg class="ob-stage-art" viewBox="0 0 600 900" preserveAspectRatio="xMidYMid slice" focusable="false">' +
-      '<defs><radialGradient id="obGlow" cx="50%" cy="48%" r="55%">' +
-      '<stop offset="0" stop-color="#D4AF37" stop-opacity="0.16"/><stop offset="1" stop-color="#07090E" stop-opacity="0"/>' +
-      '</radialGradient></defs>' +
-      '<rect width="600" height="900" fill="#07090E"/>' +
-      '<rect width="600" height="900" fill="url(#obGlow)"/>' +
-      '<g fill="none" stroke="#D4AF37" stroke-linecap="round">' +
-      '<circle cx="300" cy="430" r="250" stroke-opacity="0.08" stroke-width="1"/>' +
-      '<circle cx="300" cy="430" r="200" stroke-opacity="0.14" stroke-width="1.5"/>' +
-      '<circle cx="300" cy="430" r="150" stroke-opacity="0.22" stroke-width="2"/>' +
-      '<circle cx="300" cy="430" r="150" stroke-opacity="0.9" stroke-width="8" stroke-dasharray="590 353" transform="rotate(-90 300 430)"/>' +
-      '</g>' +
-      '<text x="300" y="452" text-anchor="middle" font-family="Sora, system-ui, sans-serif" font-weight="700" font-size="72" fill="#F3F4F6">A+</text>' +
-      '<text x="300" y="492" text-anchor="middle" font-family="Sora, system-ui, sans-serif" font-weight="600" font-size="13" letter-spacing="3" fill="#A3ADC2">READINESS</text>' +
-      '<line x1="60" y1="820" x2="540" y2="820" stroke="#D4AF37" stroke-opacity="0.35" stroke-width="1"/>' +
-      '</svg>' +
-      '</div>' +
+      stageArt() +
       '<div class="ob-panel card" role="dialog" aria-modal="true" aria-labelledby="obTitle">';
     html += '<p class="ob-kicker">Set up in under a minute</p>';
     html += '<h2 class="ob-title" id="obTitle">Which exam are you preparing for?</h2>';
@@ -1201,11 +1226,12 @@
       ? 'You need 675 for Core 1 and 700 for Core 2.'
       : 'You need ' + need + '.';
 
-    var html = '<div class="ob-overlay"><div class="ob-panel card" role="dialog" aria-modal="true" aria-labelledby="obSumTitle">';
-    html += '<p class="ob-kicker" id="obSumTitle">Your diagnostic result</p>';
-    html += '<p class="ob-kicker">Predicted score</p>';
-    html += '<div class="ob-big">' + result.predicted + '</div>';
-    html += '<p class="ob-sub">' + esc(needLine) + ' Readiness ' + result.readiness + ' percent.</p>';
+    var html = '<div class="ob-overlay">' + stageArt(result) +
+      '<div class="ob-panel card" role="dialog" aria-modal="true" aria-labelledby="obSumTitle">';
+    html += '<p class="ob-kicker">Your diagnostic result</p>';
+    html += '<h2 class="ob-title" id="obSumTitle">Predicted score ' + result.predicted + '</h2>';
+    html += '<p class="ob-sub">' + esc(needLine) + ' Readiness ' + result.readiness + ' percent. ' +
+      'Every session from here moves the ring toward the pass mark.</p>';
     html += '<p class="ob-kicker">Work on these first</p><ul class="ob-weak">';
     (result.weakest || []).forEach(function (wk) {
       html += '<li><span class="ob-code">' + esc(wk.code) + '</span> ' + esc(wk.title || wk.domain || '') + '</li>';

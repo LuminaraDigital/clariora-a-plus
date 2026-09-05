@@ -511,15 +511,32 @@
       const flagged = session.flaggedQuestions.size;
       const unanswered = total - answered;
 
-      let msg = `Are you ready to submit your exam?\n\n- Answered: ${answered} of ${total}\n- Unanswered: ${unanswered}\n- Flagged for review: ${flagged}`;
-      if (unanswered > 0) {
-        msg += `\n\nWarning: Unanswered questions will receive 0 credit.`;
-      }
+      const summary = [
+        `Answered: ${answered} of ${total}`,
+        `Unanswered: ${unanswered}`,
+        `Flagged for review: ${flagged}`
+      ];
+      const warning = unanswered > 0 ? 'Unanswered questions score zero.' : '';
 
-      if (confirm(msg)) {
+      const proceed = () => {
         this.closeReviewModal();
         session.finish();
+      };
+
+      if (APlus.dialog && typeof APlus.dialog.confirm === 'function') {
+        APlus.dialog.confirm({
+          title: 'Submit this exam?',
+          body: [summary],
+          warning,
+          confirmLabel: 'Submit and score',
+          cancelLabel: 'Keep working'
+        }).then((yes) => { if (yes) proceed(); });
+        return;
       }
+
+      let msg = `Are you ready to submit your exam?\n\n- ${summary.join('\n- ')}`;
+      if (warning) msg += `\n\n${warning}`;
+      if (confirm(msg)) proceed();
     }
 
     /* ---------------- Results screen ---------------- */

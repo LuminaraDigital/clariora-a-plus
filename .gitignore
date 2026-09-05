@@ -61,3 +61,6 @@ __pycache__/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Local preview config for the Claude desktop app
+.claude/

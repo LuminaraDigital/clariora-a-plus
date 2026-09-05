@@ -4725,3 +4725,141 @@ header .brand {
 .boot-intro-media video {
   filter: grayscale(1) sepia(1) saturate(1.5) hue-rotate(-10deg) brightness(0.5) contrast(1.15);
 }
+
+/* ============================================================
+   21. Header section nav and in-app confirm dialog
+   ============================================================ */
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: var(--sp-3);
+  margin-right: auto;
+  min-width: 0;
+}
+
+.header-nav-link {
+  min-height: var(--hit);
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.header-nav-link:hover {
+  color: var(--text-primary);
+  border-color: var(--border-light);
+}
+
+.header-nav-link:focus-visible {
+  outline: 2px solid var(--gold-primary);
+  outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .header-nav {
+    display: none;
+  }
+}
+
+.dialog-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 950;
+}
+
+.modal-overlay.active .modal-card.dialog-card,
+.dialog-card {
+  width: min(440px, calc(100vw - 32px));
+  max-width: min(440px, calc(100vw - 32px));
+  max-height: none;
+  padding: var(--sp-4) !important;
+}
+
+.dialog-title {
+  margin: 0 0 var(--sp-2);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.dialog-body p {
+  margin: 0 0 var(--sp-2);
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.dialog-list {
+  list-style: none;
+  margin: 0 0 var(--sp-2);
+  padding: 0;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-control);
+}
+
+.dialog-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.dialog-list li + li {
+  border-top: 1px solid var(--border-light);
+}
+
+.dialog-warning {
+  color: var(--gold-text, var(--gold-primary));
+  font-weight: 500;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-1);
+  margin-top: var(--sp-3);
+}
+
+.dialog-actions .btn {
+  min-height: var(--hit);
+  padding: 0 18px;
+}
+
+/* Daily shortcuts come before the 90 minute mocks. They are what a learner
+   reaches for every session, and on a laptop display they used to sit
+   below the fold behind two stretched exam cards. */
+.home-main {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.home-main .keep-going {
+  order: -1;
+}
+
+.home-main .mock-exams {
+  order: 0;
+}
+
+/* Mock exam cards size to their content instead of stretching to the column,
+   so a collapsed blueprint does not leave a hollow card. */
+.home-main {
+  grid-template-rows: auto auto;
+  align-content: start;
+}
+
+.home-main .mock-grid {
+  flex: 0 0 auto;
+  align-items: start;
+}

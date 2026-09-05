@@ -280,7 +280,7 @@
     };
 
     window.clearHistory = function() {
-      if (confirm('Clear exam attempt history and missed question pool?')) {
+      const wipe = () => {
         if (APlus.storage) {
           APlus.storage.remove('history');
           APlus.storage.remove('missed');
@@ -293,7 +293,18 @@
         if (APlus.ghostCoach && typeof APlus.ghostCoach.refreshMission === 'function') {
           APlus.ghostCoach.refreshMission();
         }
+      };
+      if (APlus.dialog && typeof APlus.dialog.confirm === 'function') {
+        APlus.dialog.confirm({
+          title: 'Clear attempt history?',
+          body: 'This removes every exam attempt and the missed question pool on this device. Your progress record is kept.',
+          confirmLabel: 'Clear history',
+          cancelLabel: 'Keep it',
+          danger: true
+        }).then((yes) => { if (yes) wipe(); });
+        return;
       }
+      if (confirm('Clear exam attempt history and missed question pool?')) wipe();
     };
 
     window.renderHistoryTable = function() {
@@ -376,7 +387,7 @@
       }
     }
 
-    console.log('[APlus] Initialized CompTIA A+ Master Exam Simulator v3.0.0');
+    console.log('[APlus] Initialized CompTIA A+ Master Exam Simulator v' + (APlus.APP_VERSION || '3.1.0'));
   }
 
   APlus.init = initApp;

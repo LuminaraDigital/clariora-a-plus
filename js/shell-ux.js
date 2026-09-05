@@ -319,7 +319,133 @@
     }, true);
   }
 
+  /**
+   * Open the drawer and land on one group (Practice, Study, Progress, ...).
+   * The header nav uses this so the study tools are one click away instead
+   * of a scroll through the whole drawer.
+   */
+  function openMoreMenuAt(groupId) {
+    openMoreMenu();
+    window.setTimeout(function () {
+      var heading = byId(groupId);
+      var body = document.querySelector('#moreMenu .more-drawer-body');
+      if (!heading || !body) return;
+      var section = heading.closest('.more-group') || heading;
+      var top = section.offsetTop - body.offsetTop;
+      if (prefersReducedMotion()) body.scrollTop = Math.max(0, top - 8);
+      else body.scrollTo({ top: Math.max(0, top - 8), behavior: 'smooth' });
+      heading.setAttribute('tabindex', '-1');
+      try { heading.focus({ preventScroll: true }); } catch (_) { heading.focus(); }
+    }, 30);
+  }
+
+  /* ------------------------------------------------------------------
+   * In-app confirm dialog. Replaces window.confirm for the flows a learner
+   * hits every session (submit exam, clear history) so the desktop app never
+   * pops an operating-system dialog box in the middle of the black and gold
+   * shell. Returns a Promise<boolean>. Escape and the quiet button cancel,
+   * Enter and the primary button confirm.
+   * ------------------------------------------------------------------ */
+  function confirmDialog(opts) {
+    opts = opts || {};
+    return new Promise(function (resolve) {
+      var previous = document.activeElement;
+      var overlay = document.createElement('div');
+      overlay.className = 'modal-overlay dialog-overlay active';
+      overlay.setAttribute('role', 'presentation');
+
+      var card = document.createElement('div');
+      card.className = 'modal-card dialog-card';
+      card.setAttribute('role', 'alertdialog');
+      card.setAttribute('aria-modal', 'true');
+      card.setAttribute('aria-labelledby', 'appDialogTitle');
+      card.setAttribute('aria-describedby', 'appDialogBody');
+
+      var title = document.createElement('h3');
+      title.id = 'appDialogTitle';
+      title.className = 'dialog-title';
+      title.textContent = opts.title || 'Are you sure?';
+      card.appendChild(title);
+
+      var body = document.createElement('div');
+      body.id = 'appDialogBody';
+      body.className = 'dialog-body';
+      var lines = Array.isArray(opts.body) ? opts.body : [opts.body || ''];
+      lines.forEach(function (line) {
+        if (line === '' || line == null) return;
+        if (Array.isArray(line)) {
+          var ul = document.createElement('ul');
+          ul.className = 'dialog-list';
+          line.forEach(function (item) {
+            var li = document.createElement('li');
+            li.textContent = String(item);
+            ul.appendChild(li);
+          });
+          body.appendChild(ul);
+          return;
+        }
+        var para = document.createElement('p');
+        para.textContent = String(line);
+        body.appendChild(para);
+      });
+      if (opts.warning) {
+        var warn = document.createElement('p');
+        warn.className = 'dialog-warning';
+        warn.textContent = String(opts.warning);
+        body.appendChild(warn);
+      }
+      card.appendChild(body);
+
+      var actions = document.createElement('div');
+      actions.className = 'dialog-actions';
+      var cancel = document.createElement('button');
+      cancel.type = 'button';
+      cancel.className = 'btn btn-secondary';
+      cancel.textContent = opts.cancelLabel || 'Cancel';
+      var ok = document.createElement('button');
+      ok.type = 'button';
+      ok.className = 'btn ' + (opts.danger ? 'btn-red' : 'btn-green');
+      ok.textContent = opts.confirmLabel || 'Continue';
+      actions.appendChild(cancel);
+      actions.appendChild(ok);
+      card.appendChild(actions);
+      overlay.appendChild(card);
+
+      function finish(value) {
+        document.removeEventListener('keydown', onKey, true);
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        syncBodyScrollLock();
+        if (previous && typeof previous.focus === 'function') {
+          try { previous.focus({ preventScroll: true }); } catch (_) {}
+        }
+        resolve(!!value);
+      }
+      function onKey(e) {
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); finish(false); return; }
+        if (e.key === 'Enter' && document.activeElement !== cancel) { e.preventDefault(); e.stopPropagation(); finish(true); return; }
+        if (e.key === 'Tab') {
+          var order = [cancel, ok];
+          var idx = order.indexOf(document.activeElement);
+          var next = e.shiftKey ? (idx <= 0 ? order.length - 1 : idx - 1) : (idx === order.length - 1 ? 0 : idx + 1);
+          e.preventDefault();
+          order[next].focus();
+        }
+      }
+      cancel.addEventListener('click', function () { finish(false); });
+      ok.addEventListener('click', function () { finish(true); });
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) finish(false); });
+      document.addEventListener('keydown', onKey, true);
+
+      document.body.appendChild(overlay);
+      document.body.classList.add('is-locked');
+      window.setTimeout(function () { ok.focus(); }, 0);
+    });
+  }
+
+  APlus.dialog = APlus.dialog || {};
+  APlus.dialog.confirm = confirmDialog;
   window.openMoreMenu = openMoreMenu;
+  window.openMoreMenuAt = openMoreMenuAt;
   window.closeMoreMenu = closeMoreMenu;
   window.toggleMoreMenu = toggleMoreMenu;
 

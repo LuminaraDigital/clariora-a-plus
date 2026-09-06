@@ -38,12 +38,24 @@ function record(name, pass, detail) {
   console.log((pass ? 'PASS  ' : 'FAIL  ') + name + (detail ? '  -- ' + detail : ''));
 }
 
+/* Startup on a CI runner with a virtual display is slower than a desktop. */
+const LOAD_TIMEOUT_MS = process.platform === 'win32' ? 8000 : 20000;
+let lastStderr = '';
+
 function launch(extraArgs) {
   const args = [
     '--remote-debugging-port=' + PORT,
     '--user-data-dir=' + USER_DATA
-  ].concat(extraArgs || []);
-  return spawn(EXE, args, { stdio: 'ignore', windowsHide: false });
+  ];
+  // An unpacked Linux build has no SUID sandbox helper, so Chromium refuses to
+  // start without this flag. Packaged AppImage and deb installs do not need it.
+  if (process.platform === 'linux') args.push('--no-sandbox');
+  const child = spawn(EXE, args.concat(extraArgs || []), { stdio: ['ignore', 'ignore', 'pipe'], windowsHide: false });
+  lastStderr = '';
+  if (child.stderr) {
+    child.stderr.on('data', (d) => { lastStderr = (lastStderr + d.toString()).slice(-4000); });
+  }
+  return child;
 }
 
 async function waitForTarget(timeoutMs) {
@@ -139,7 +151,11 @@ function findDatabaseFile() {
 function killTree(child) {
   if (!child || child.killed) return;
   try {
-    spawn('taskkill', ['/PID', String(child.pid), '/T', '/F'], { stdio: 'ignore' });
+    if (process.platform === 'win32') {
+      spawn('taskkill', ['/PID', String(child.pid), '/T', '/F'], { stdio: 'ignore' }).on('error', () => {});
+    } else {
+      child.kill('SIGKILL');
+    }
   } catch (_) {}
   try { child.kill(); } catch (_) {}
 }
@@ -148,15 +164,16 @@ async function firstRun() {
   const child = launch();
   let cdp = null;
   try {
-    const target = await waitForTarget(8000);
+    const target = await waitForTarget(LOAD_TIMEOUT_MS);
     if (!target) {
-      record('window loads index within 8 s', false, 'no CDP target published');
-      console.log('\nElectron published no debugging target within 8 seconds.');
+      record('window loads index within ' + (LOAD_TIMEOUT_MS / 1000) + ' s', false, 'no CDP target published');
+      console.log('\nElectron published no debugging target within ' + (LOAD_TIMEOUT_MS / 1000) + ' seconds.');
       console.log('This usually means there is no desktop session (headless console).');
-      console.log('Run this script from an interactive Windows desktop.');
+      console.log('Run this script from an interactive desktop, or under xvfb-run on Linux.');
+      if (lastStderr.trim()) console.log('\nElectron stderr:\n' + lastStderr.trim().split('\n').slice(-15).join('\n'));
       return { fatal: true };
     }
-    record('window loads index within 8 s', true, target.url.split('/').pop());
+    record('window loads index within ' + (LOAD_TIMEOUT_MS / 1000) + ' s', true, target.url.split('/').pop());
 
     cdp = await connect(target);
     await cdp.send('Page.enable');
@@ -267,7 +284,7 @@ async function secondRun() {
   const child = launch();
   let cdp = null;
   try {
-    const target = await waitForTarget(8000);
+    const target = await waitForTarget(LOAD_TIMEOUT_MS);
     if (!target) {
       record('relaunch: boot intro does not replay', false, 'no CDP target on relaunch');
       return;

@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format follows Keep
 
 ## [3.1.4] - 2026-09-06
 
+### Added
+
+- An end-to-end answer integrity test. For all 1,130 questions and all four
+  question types it takes the answer the author wrote in the shard, pushes it
+  through the real runtime path a learner's answer takes (the session shuffle,
+  then the scorer), and asserts the app marks it correct. It also asserts a
+  deliberately wrong answer is rejected, so a scorer that accepted everything
+  could not pass. This is the check that would have caught the 487 miskeyed
+  questions immediately; it is proven against a deliberately corrupted bank and
+  runs in CI on every push
+
 ### Fixed
 
 - Practice recorded against the miskeyed bank no longer distorts the readiness

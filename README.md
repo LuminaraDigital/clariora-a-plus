@@ -51,7 +51,7 @@ Captured from the Windows desktop build at 1440 by 900 with `node tools/capture_
 **Runs anywhere**
 
 - Installable PWA with a service worker for full offline use
-- Electron desktop builds for Windows (installer and portable) and macOS
+- Electron desktop builds for Windows (installer and portable), macOS (DMG) and Linux (AppImage and deb)
 - Optional cloud sync through Supabase, off by default
 - Cloudflare Workers static deployment for the web edition
 
@@ -71,6 +71,8 @@ Desktop edition:
 npm install
 npm start
 ```
+
+Linux desktop packages come from the GitHub Releases page or `npm run package-linux` on a Linux machine; see `docs/LINUX_RELEASE.md`.
 
 Terminal edition:
 

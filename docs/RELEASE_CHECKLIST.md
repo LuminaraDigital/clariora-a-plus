@@ -165,3 +165,17 @@ Learner progress is never lost by a rollback. The database lives in
 If a learner reports a broken app after an update, tell them to uninstall,
 install the previous version from the site, and reopen it. Their progress will
 still be there.
+
+## 8. Linux packages
+
+Push the release tag and GitHub Actions builds the AppImage and `.deb`,
+smoke tests them and attaches them to the release:
+
+```bash
+git tag -a v<version> -m "CompTIA A+ Master <version>"
+git push origin v<version>
+```
+
+Check the `linux-build` job is green in the Actions tab and that the two Linux
+files and `latest-linux.yml` appear on the release page. Details are in
+`docs/LINUX_RELEASE.md`.

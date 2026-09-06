@@ -188,3 +188,25 @@ all of it needs to be fetched at runtime by the app, use `study_assets/`
 at the repo root (already whitelisted in the build script) rather than
 inlining more content into `study_library.js`, and print a warning from
 the build if it exceeds 50 MB.
+
+## Fixing "Authentication error [code: 10000]" on deploy
+
+This is the error `wrangler deploy` returns today. It means the API token in
+`.env` is valid but does not carry the permission the Workers assets upload
+needs. Fix it in the Cloudflare dashboard, then every deploy path works:
+
+1. Open My Profile, API Tokens, and edit the token used in `.env` (or create a
+   new one from the "Edit Cloudflare Workers" template).
+2. Give it these permissions on the account: Workers Scripts: Edit, Workers
+   Routes: Edit (optional), Account Settings: Read.
+3. Under Workers and Pages, Overview, register the free `workers.dev` subdomain
+   if the page still asks for one. The site will be
+   `https://comptia-a-plus-master.<subdomain>.workers.dev`.
+4. Put the token in `.env` as `CLOUDFLARE_API_TOKEN=...` and run
+   `python tools/autodeploy.py --once`.
+5. Add the same token as a GitHub repository secret named
+   `CLOUDFLARE_API_TOKEN` (Settings, Secrets and variables, Actions). From then
+   on the `deploy-web` job publishes every push to `main` automatically.
+
+R2 is only needed for hosting the installers and the course video pack. The web
+edition itself needs nothing beyond the Worker.

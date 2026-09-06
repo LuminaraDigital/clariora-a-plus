@@ -891,6 +891,12 @@ function checkForUpdatesQuietly() {
 
 function initAutoUpdater() {
   if (!app.isPackaged) return;
+  // electron-updater can replace an AppImage in place; a .deb is updated by
+  // the package manager, so the check would only log an error every launch.
+  if (process.platform === 'linux' && !process.env.APPIMAGE) {
+    writeLog('info', 'updater: skipped, this Linux package is updated by the package manager');
+    return;
+  }
   try {
     autoUpdater = require('electron-updater').autoUpdater;
   } catch (err) {

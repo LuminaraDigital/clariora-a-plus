@@ -64,3 +64,6 @@ desktop.ini
 
 # Local preview config for the Claude desktop app
 .claude/
+
+# Generated at build time from icons/icon-512.png
+build/icon.png

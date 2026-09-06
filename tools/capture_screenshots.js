@@ -19,7 +19,11 @@ const os = require('os');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const DEFAULT_EXE = path.join(ROOT, 'release', 'portable', 'CompTIA_A_Plus_Simulator.exe');
+const DEFAULT_EXE = process.platform === 'win32'
+  ? path.join(ROOT, 'release', 'portable', 'CompTIA_A_Plus_Simulator.exe')
+  : process.platform === 'darwin'
+    ? path.join(ROOT, 'release', 'mac', 'CompTIA A+ Master.app', 'Contents', 'MacOS', 'CompTIA A+ Master')
+    : path.join(ROOT, 'release', 'linux', 'linux-unpacked', 'comptia-a-plus-master');
 const OUT_DIR = path.join(ROOT, 'docs', 'screenshots');
 const PORT = Number(process.env.APLUS_SHOT_PORT) || 9566;
 const WIDTH = 1440;

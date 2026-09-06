@@ -14,11 +14,16 @@
 
 const { spawn } = require('child_process');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const DEFAULT_EXE = path.join(ROOT, 'release', 'portable', 'CompTIA_A_Plus_Simulator.exe');
-const SCRATCH = 'C:/Users/lumin/AppData/Local/Temp/claude/C--Users-lumin-Desktop-Datacentre-Academy-CompTia-A-/b67d387a-e253-4720-9405-c1ae9135d2f1/scratchpad/smoke';
+const DEFAULT_EXE = process.platform === 'win32'
+  ? path.join(ROOT, 'release', 'portable', 'CompTIA_A_Plus_Simulator.exe')
+  : process.platform === 'darwin'
+    ? path.join(ROOT, 'release', 'mac', 'CompTIA A+ Master.app', 'Contents', 'MacOS', 'CompTIA A+ Master')
+    : path.join(ROOT, 'release', 'linux', 'linux-unpacked', 'comptia-a-plus-master');
+const SCRATCH = process.env.APLUS_SMOKE_DIR || path.join(os.tmpdir(), 'aplus-smoke');
 const PORT = 9555;
 const SHOT_PATH = path.join(SCRATCH, 'desktop_home.png');
 

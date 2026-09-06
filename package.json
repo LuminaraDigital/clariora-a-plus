@@ -10,7 +10,8 @@
     "package-mac": "python3 tools/build_macos_app.py",
     "icons:mac": "python tools/make_macos_icon.py",
     "test": "node tools/run_tests.js",
-    "validate:bank": "python tools/validate_bank.py --bank exam_data.json"
+    "validate:bank": "python tools/validate_bank.py --bank exam_data.json",
+    "package-linux": "python3 tools/build_linux_app.py"
   },
   "keywords": [
     "comptia",
@@ -27,7 +28,8 @@
     "electron-updater": "^6.8.9"
   },
   "devDependencies": {
-    "electron": "^44.1.1"
+    "electron": "^44.1.1",
+    "electron-builder": "^26.0.12"
   },
   "homepage": "https://github.com/LuminaraDigital/comptia-a-plus-master#readme",
   "repository": {

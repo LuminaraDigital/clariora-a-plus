@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [Unreleased]
+
+### Added
+
+- Linux desktop edition: AppImage and `.deb` packages built by GitHub Actions on every release tag from the tracked `electron-builder.linux.json`, smoke tested under a virtual display and attached to the release. `tools/build_linux_app.py` builds them locally on Linux
+- Cloudflare deploy job in CI that publishes the web edition on every push to `main` once the `CLOUDFLARE_API_TOKEN` repository secret is set
+- The desktop smoke test and screenshot tool pick the packaged binary for the current platform
+
+### Changed
+
+- The auto-updater is skipped on Linux packages that the package manager updates (`.deb`), so it no longer logs a failed check on every launch
+
 ## [3.1.1] - 2026-09-05
 
 ### Added

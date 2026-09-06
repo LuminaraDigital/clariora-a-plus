@@ -1,0 +1,118 @@
+{
+  "appId": "com.datacentreacademy.comptia-a-plus-master",
+  "productName": "CompTIA A+ Master",
+  "copyright": "Copyright Datacentre Academy",
+  "directories": {
+    "output": "release/linux",
+    "buildResources": "build"
+  },
+  "extraMetadata": {
+    "main": "main.js"
+  },
+  "files": [
+    "main.js",
+    "preload.js",
+    "package.json",
+    "release.config.json",
+    "icon.png",
+    "favicon.ico",
+    "favicon.png",
+    "index.html",
+    "A_Plus_Exam_Simulator.html",
+    "manifest.webmanifest",
+    "manifest.json",
+    "sw.js",
+    "exam_data.js",
+    "exam_data.json",
+    "study_library.js",
+    "study_library.json",
+    "curriculum_data.js",
+    "ledger_engine.js",
+    "ledger_ui.js",
+    "profiles.js",
+    "learner_state.js",
+    "study_plan.js",
+    "readiness.js",
+    "product_trust_ui.js",
+    "tutor_mode.js",
+    "exam_a11y.js",
+    "memory_srs.js",
+    "memory_mode_ui.js",
+    "objectives_data.js",
+    "objectives_data.json",
+    "objectives_tracker.js",
+    "professor_messer_220_1201_videos.json",
+    "professor_messer_220_1202_videos.json",
+    "curated_core2_expansion.json",
+    "PROFESSOR_MESSER_220_1201_INDEX.md",
+    "PROFESSOR_MESSER_220_1202_INDEX.md",
+    "README_EXAM_SUITE.md",
+    "js/**/*",
+    "css/**/*",
+    "fonts/**/*",
+    "icons/**/*",
+    "notes/**/*",
+    "media/brand/**/*",
+    "CompTIA_A_Plus_Mastery/**/*",
+    "!**/*.pdf",
+    "!**/*.mp4",
+    "!**/*.mkv",
+    "!**/*.mov",
+    "!**/groq-secrets.local.js",
+    "!**/groq_secrets.local.json",
+    "!**/.env",
+    "!**/.env.*",
+    "!node_modules/.bin/**",
+    "!node_modules/**/*.md",
+    "!node_modules/**/{test,__tests__,example,examples,.github}/**"
+  ],
+  "linux": {
+    "target": [
+      {
+        "target": "AppImage",
+        "arch": [
+          "x64"
+        ]
+      },
+      {
+        "target": "deb",
+        "arch": [
+          "x64"
+        ]
+      }
+    ],
+    "category": "Education",
+    "icon": "build/icon.png",
+    "executableName": "comptia-a-plus-master",
+    "maintainer": "Datacentre Academy <luminaradigitalagency@gmail.com>",
+    "synopsis": "CompTIA A+ Core 1 and Core 2 exam simulator and study suite",
+    "description": "Offline-first exam simulator and study suite for CompTIA A+ 220-1201 and 220-1202.",
+    "artifactName": "CompTIA_A_Plus_Linux_${version}_${arch}.${ext}",
+    "desktop": {
+      "entry": {
+        "Name": "CompTIA A+ Master",
+        "Comment": "CompTIA A+ exam simulator and study suite",
+        "Keywords": "comptia;exam;study;certification;"
+      }
+    }
+  },
+  "deb": {
+    "priority": "optional",
+    "depends": [
+      "libgtk-3-0",
+      "libnotify4",
+      "libnss3",
+      "libxss1",
+      "libxtst6",
+      "xdg-utils",
+      "libatspi2.0-0",
+      "libuuid1",
+      "libsecret-1-0"
+    ]
+  },
+  "publish": {
+    "provider": "generic",
+    "url": "https://comptia-a-plus-master.pages.dev/releases/",
+    "publishAutoUpdate": true
+  }
+}

@@ -6,7 +6,7 @@ Built by Datacentre Academy for technicians training for datacentre and enterpri
 
 [![CI](https://github.com/LuminaraDigital/comptia-a-plus-master/actions/workflows/ci.yml/badge.svg)](https://github.com/LuminaraDigital/comptia-a-plus-master/actions/workflows/ci.yml)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-3.1.1-gold.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-3.1.2-gold.svg)](CHANGELOG.md)
 
 ## Screenshots
 
@@ -23,6 +23,10 @@ Captured from the Windows desktop build at 1440 by 900 with `node tools/capture_
 | Results | Startup |
 | --- | --- |
 | ![Scaled score, pass mark and domain breakdown after an exam](docs/screenshots/06-results.png) | ![First launch screen](docs/screenshots/01-startup.png) |
+
+| Update available | Update ready |
+| --- | --- |
+| ![The software update card offering to download a new version](docs/screenshots/07-update-available.png) | ![The gold Update ready button in the header once a version is downloaded](docs/screenshots/08-update-ready.png) |
 
 ## What it does
 
@@ -50,6 +54,7 @@ Captured from the Windows desktop build at 1440 by 900 with `node tools/capture_
 
 **Runs anywhere**
 
+- In-app updates on desktop: the app checks GitHub Releases, shows what is new, and installs it when you press the button
 - Installable PWA with a service worker for full offline use
 - Electron desktop builds for Windows (installer and portable), macOS (DMG) and Linux (AppImage and deb)
 - Optional cloud sync through Supabase, off by default

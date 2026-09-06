@@ -56,10 +56,11 @@ comptia-a-plus-master
 
 ## Updates
 
-The AppImage checks the update URL from `release.config.json` on launch and
-replaces itself when a newer `latest-linux.yml` is published there. The `.deb`
-does not self-update; the updater is skipped for it and a new `.deb` is
-installed the same way as the first.
+The AppImage checks GitHub Releases on launch and every six hours. When a newer
+version is found, the Software update card in More, About offers to download it
+and then to restart into it, and it replaces itself in place. The `.deb` does
+not self-update; the updater is skipped for it and a new `.deb` is installed the
+same way as the first.
 
 ## Data location
 

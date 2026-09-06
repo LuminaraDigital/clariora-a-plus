@@ -2,10 +2,18 @@
 
 All notable changes to this project are documented here. The format follows Keep a Changelog and the project uses semantic versioning.
 
-## [Unreleased]
+## [3.1.2] - 2026-09-06
 
 ### Added
 
+- In-app software updates. The desktop app checks GitHub Releases on launch and
+  every six hours, and the More drawer gains a Software update card that shows
+  the state plainly: up to date with a Check for updates button, the new version
+  and its release notes with a Download update button, a progress bar while it
+  downloads, and a Restart and update button once it is ready. A gold "Update
+  ready" button also appears in the header so a waiting update is visible
+  without opening the drawer
+- Manual update checking, so a learner never has to wait for the timer
 - Linux desktop edition: AppImage and `.deb` packages built by GitHub Actions on every release tag from the tracked `electron-builder.linux.json`, smoke tested under a virtual display and attached to the release. `tools/build_linux_app.py` builds them locally on Linux
 - Cloudflare deploy job in CI that publishes the web edition on every push to `main` once the `CLOUDFLARE_API_TOKEN` repository secret is set
 - The desktop smoke test and screenshot tool pick the packaged binary for the current platform
@@ -13,6 +21,12 @@ All notable changes to this project are documented here. The format follows Keep
 ### Changed
 
 - The auto-updater is skipped on Linux packages that the package manager updates (`.deb`), so it no longer logs a failed check on every launch
+- The update feed is GitHub Releases rather than the Cloudflare URL, so
+  updates no longer depend on a separate host being live
+- Updates download only when the learner asks. A background download can no
+  longer compete for bandwidth during an exam
+- The version shown in the About panel is read from the running build instead
+  of being typed into the markup
 
 ## [3.1.1] - 2026-09-05
 

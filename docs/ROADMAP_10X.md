@@ -170,10 +170,24 @@ history, and a drill launched from a tile records to that objective.
 
 ## Phase 3: distribution that does not depend on one vendor (weeks 7 to 8)
 
-### 3.1 Move auto-update to GitHub Releases
+### 3.1 Move auto-update to GitHub Releases (delivered in 3.1.2)
 
-**Problem.** The updater and the installer downloads point at a Cloudflare URL
-that is not live. Every release so far has been distributed by hand.
+**Status: done.** Shipped ahead of the rest of Phase 3 because every other
+improvement in this plan reaches learners through it.
+
+**What shipped.** The updater reads GitHub Releases, so a release never depends
+on Cloudflare. The More drawer has a Software update card with five states (up
+to date, available, downloading with a progress bar, ready, error), a manual
+Check for updates button, and a gold "Update ready" button in the header when an
+update is waiting. Downloads start only when the learner asks, so nothing
+competes for bandwidth during an exam. `tools/test_app_update.js` covers the
+phase-to-markup contract, the command wiring and release-note escaping.
+
+**What remains in this item.** Windows and macOS build jobs on tags, so one tag
+produces every platform's packages and manifests. Linux already does this.
+
+**Original problem.** The updater and the installer downloads pointed at a
+Cloudflare URL that is not live. Every release was distributed by hand.
 
 **Design.** Switch electron-updater to the `github` provider, which reads
 `latest.yml`, `latest-mac.yml` and `latest-linux.yml` straight from the GitHub
@@ -188,12 +202,14 @@ name replace `updateBaseUrl`), `tools/build_windows_installer.py` and
 `.github/workflows/ci.yml` (Windows and macOS build jobs on tags),
 `docs/RELEASE_CHECKLIST.md`.
 
-**Done when.** A 3.1.1 install updates itself to the next tagged release with
-no manual upload anywhere.
+**Done when.** A 3.1.2 install updates itself to the next tagged release with
+no manual upload anywhere. Note that 3.1.1 and earlier cannot: they carry the
+old feed and must be replaced by hand once.
 
-**Effort.** Three days. **Risk.** macOS builds need signing and notarisation
-secrets in the repository to be useful; without them the macOS job produces
-unsigned artefacts that Gatekeeper blocks.
+**Effort.** Three days, of which the updater and its UI are done. **Risk.**
+macOS builds need signing and notarisation secrets in the repository to be
+useful; without them the macOS job produces unsigned artefacts that Gatekeeper
+blocks.
 
 ### 3.2 Code signing certificate and store listings
 
@@ -259,7 +275,7 @@ a rewritten question is not scored as the same item it replaced.
 | --- | --- | --- |
 | 1 to 3 | Item analysis, calibration, exam-day mode | Trust in the score is the product |
 | 4 to 6 | Sync, reminders, mastery map | Retention decides whether anyone passes |
-| 7 to 8 | GitHub Releases updater, signing, stores | Removes the manual release burden and the SmartScreen wall |
+| 7 to 8 | Signing, stores, Windows and macOS build jobs (the GitHub Releases updater is already done) | Removes the manual release burden and the SmartScreen wall |
 | Ongoing | Bank growth, PBQ integration, question versioning | Content is never finished |
 
 ## What this plan deliberately leaves out

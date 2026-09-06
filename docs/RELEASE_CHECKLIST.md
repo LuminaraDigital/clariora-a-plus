@@ -179,3 +179,21 @@ git push origin v<version>
 Check the `linux-build` job is green in the Actions tab and that the two Linux
 files and `latest-linux.yml` appear on the release page. Details are in
 `docs/LINUX_RELEASE.md`.
+
+## 9. Confirm the update reaches installed copies
+
+Installed copies read GitHub Releases, so once the tag is pushed and the
+release has its assets, an installed app finds the new version on its next
+check. To verify without waiting:
+
+1. Open the app, go to More, About, and press **Check for updates**.
+2. The card should show the new version and a **Download update** button.
+3. Download it and press **Restart and update**. The app closes, installs and
+   reopens on the new version.
+
+If the card says the check did not finish, confirm the release is published
+rather than a draft and that `latest.yml` (Windows), `latest-mac.yml` and
+`latest-linux.yml` are attached to it.
+
+Versions 3.1.1 and earlier point at the old Cloudflare URL and cannot update
+themselves. Those installs need the new build once, by hand.

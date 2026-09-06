@@ -870,61 +870,174 @@ function saveWindowState() {
 }
 
 /* ---------------------------------------------------------------------------
- * Auto-update (generic provider). Never blocks startup, network errors are logged only.
+ * Auto-update.
+ *
+ * The feed is GitHub Releases by default: every tagged release already carries
+ * the installers and the latest*.yml manifests, so updates never depend on a
+ * separate host being live. release.config.json can override the provider with
+ * a generic URL if the project ever moves.
+ *
+ * The renderer drives the experience. Main keeps one status object, pushes it
+ * on every change, and answers three commands: check, download, install. A
+ * failed check is a logged warning and a status the UI can show, never a crash
+ * and never a blocking dialog.
  * ------------------------------------------------------------------------ */
 
 const UPDATE_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
 let autoUpdater = null;
 let updateTimer = null;
 
-function checkForUpdatesQuietly() {
-  if (!autoUpdater) return;
-  try {
-    const p = autoUpdater.checkForUpdates();
-    if (p && typeof p.catch === 'function') {
-      p.catch((err) => writeLog('warn', 'update check failed: ' + ((err && err.message) || err)));
-    }
-  } catch (err) {
-    writeLog('warn', 'update check threw: ' + ((err && err.message) || err));
+/**
+ * phase: disabled | idle | checking | available | downloading | ready | error
+ * Everything the update card needs to render is in here, so a window opened
+ * later can ask for the current state instead of missing the events.
+ */
+let updateStatus = {
+  phase: 'disabled',
+  version: null,
+  releaseDate: null,
+  notes: null,
+  percent: 0,
+  bytesPerSecond: 0,
+  transferred: 0,
+  total: 0,
+  error: null,
+  checkedAt: null,
+  currentVersion: APP_VERSION,
+  canInstall: false
+};
+
+function setUpdateStatus(patch) {
+  updateStatus = Object.assign({}, updateStatus, patch || {});
+  updateStatus.canInstall = updateStatus.phase === 'ready';
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    try {
+      mainWindow.webContents.send('update:status', updateStatus);
+    } catch (_) {}
   }
+  return updateStatus;
+}
+
+/** Trim release notes to something a small card can show. */
+function summariseNotes(info) {
+  const raw = info && info.releaseNotes;
+  if (!raw) return null;
+  const text = Array.isArray(raw)
+    ? raw.map((n) => (n && n.note) || '').join('\n')
+    : String(raw);
+  const plain = text
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&[a-z]+;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!plain) return null;
+  return plain.length > 400 ? plain.slice(0, 397) + '...' : plain;
+}
+
+function checkForUpdates(opts) {
+  const manual = Boolean(opts && opts.manual);
+  if (!autoUpdater) {
+    return Promise.resolve(setUpdateStatus({ phase: 'disabled' }));
+  }
+  if (updateStatus.phase === 'downloading' || updateStatus.phase === 'ready') {
+    return Promise.resolve(updateStatus);
+  }
+  setUpdateStatus({ phase: 'checking', error: null });
+  return Promise.resolve()
+    .then(() => autoUpdater.checkForUpdates())
+    .then((result) => {
+      // update-available / update-not-available events set the real phase.
+      // If neither fired (offline provider quirk), fall back to idle.
+      if (updateStatus.phase === 'checking') {
+        setUpdateStatus({ phase: 'idle', checkedAt: new Date().toISOString() });
+      }
+      return result;
+    })
+    .catch((err) => {
+      const message = (err && err.message) || String(err);
+      writeLog('warn', 'update check failed: ' + message);
+      setUpdateStatus({
+        phase: 'error',
+        error: manual ? message : null,
+        checkedAt: new Date().toISOString()
+      });
+    });
 }
 
 function initAutoUpdater() {
-  if (!app.isPackaged) return;
+  if (!app.isPackaged) {
+    setUpdateStatus({ phase: 'disabled' });
+    return;
+  }
   // electron-updater can replace an AppImage in place; a .deb is updated by
   // the package manager, so the check would only log an error every launch.
   if (process.platform === 'linux' && !process.env.APPIMAGE) {
     writeLog('info', 'updater: skipped, this Linux package is updated by the package manager');
+    setUpdateStatus({ phase: 'disabled' });
     return;
   }
   try {
     autoUpdater = require('electron-updater').autoUpdater;
   } catch (err) {
     writeLog('warn', 'electron-updater not available: ' + ((err && err.message) || err));
+    setUpdateStatus({ phase: 'disabled' });
     return;
   }
   try {
-    autoUpdater.autoDownload = true;
+    // Download only when the learner asks. An exam in progress must never be
+    // interrupted by a background download eating bandwidth.
+    autoUpdater.autoDownload = false;
     autoUpdater.autoInstallOnAppQuit = true;
     autoUpdater.logger = null;
-    // release.config.json is the single source of the update URL. app-update.yml
-    // carries the same value, this keeps them from ever drifting apart.
-    const feed = loadReleaseConfig().updateBaseUrl;
-    if (feed && /^https:\/\//i.test(feed)) {
-      try {
-        autoUpdater.setFeedURL({ provider: 'generic', url: feed });
-      } catch (err) {
-        writeLog('warn', 'setFeedURL failed: ' + ((err && err.message) || err));
-      }
+
+    const cfg = loadReleaseConfig();
+    const gh = cfg.github;
+    if (cfg.updateProvider !== 'generic' && gh && gh.owner && gh.repo) {
+      autoUpdater.setFeedURL({ provider: 'github', owner: gh.owner, repo: gh.repo });
+      writeLog('info', 'updater feed: github ' + gh.owner + '/' + gh.repo);
+    } else if (cfg.updateBaseUrl && /^https:\/\//i.test(cfg.updateBaseUrl)) {
+      autoUpdater.setFeedURL({ provider: 'generic', url: cfg.updateBaseUrl });
+      writeLog('info', 'updater feed: generic ' + cfg.updateBaseUrl);
     }
+
     autoUpdater.on('error', (err) => {
-      writeLog('warn', 'updater error: ' + ((err && err.message) || err));
+      const message = (err && err.message) || String(err);
+      writeLog('warn', 'updater error: ' + message);
+      setUpdateStatus({ phase: 'error', error: message });
     });
     autoUpdater.on('update-available', (info) => {
       writeLog('info', 'update available: ' + ((info && info.version) || 'unknown'));
+      setUpdateStatus({
+        phase: 'available',
+        version: (info && info.version) || null,
+        releaseDate: (info && info.releaseDate) || null,
+        notes: summariseNotes(info),
+        checkedAt: new Date().toISOString(),
+        percent: 0
+      });
+    });
+    autoUpdater.on('update-not-available', () => {
+      setUpdateStatus({ phase: 'idle', version: null, checkedAt: new Date().toISOString() });
+    });
+    autoUpdater.on('download-progress', (p) => {
+      setUpdateStatus({
+        phase: 'downloading',
+        percent: Math.max(0, Math.min(100, Math.round((p && p.percent) || 0))),
+        bytesPerSecond: (p && p.bytesPerSecond) || 0,
+        transferred: (p && p.transferred) || 0,
+        total: (p && p.total) || 0
+      });
     });
     autoUpdater.on('update-downloaded', (info) => {
       writeLog('info', 'update downloaded: ' + ((info && info.version) || 'unknown'));
+      setUpdateStatus({
+        phase: 'ready',
+        percent: 100,
+        version: (info && info.version) || updateStatus.version,
+        releaseDate: (info && info.releaseDate) || updateStatus.releaseDate,
+        notes: summariseNotes(info) || updateStatus.notes
+      });
+      // Kept for the older toast in js/pwa-update.js.
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send('update:ready', {
           version: (info && info.version) || null,
@@ -932,12 +1045,38 @@ function initAutoUpdater() {
         });
       }
     });
-    checkForUpdatesQuietly();
-    updateTimer = setInterval(checkForUpdatesQuietly, UPDATE_CHECK_INTERVAL_MS);
+
+    setUpdateStatus({ phase: 'idle' });
+    // Give the window a moment to finish loading before the first check.
+    setTimeout(() => checkForUpdates({ manual: false }), 8000);
+    updateTimer = setInterval(() => checkForUpdates({ manual: false }), UPDATE_CHECK_INTERVAL_MS);
   } catch (err) {
     writeLog('warn', 'updater init failed: ' + ((err && err.message) || err));
+    setUpdateStatus({ phase: 'disabled' });
   }
 }
+
+ipcMain.handle('update:getStatus', async () => updateStatus);
+
+ipcMain.handle('update:check', async () => {
+  await checkForUpdates({ manual: true });
+  return updateStatus;
+});
+
+ipcMain.handle('update:download', async () => {
+  if (!autoUpdater) return { ok: false, error: 'updater_unavailable' };
+  if (updateStatus.phase === 'ready') return { ok: true, alreadyDownloaded: true };
+  try {
+    setUpdateStatus({ phase: 'downloading', percent: 0, error: null });
+    await autoUpdater.downloadUpdate();
+    return { ok: true };
+  } catch (err) {
+    const message = (err && err.message) || 'download_failed';
+    writeLog('warn', 'downloadUpdate failed: ' + message);
+    setUpdateStatus({ phase: 'error', error: message });
+    return { ok: false, error: message };
+  }
+});
 
 ipcMain.handle('update:installNow', async () => {
   if (!autoUpdater) return { ok: false, error: 'updater_unavailable' };

@@ -4956,3 +4956,95 @@ header .brand {
     align-items: stretch;
   }
 }
+
+/* ============================================================
+   23. Software update card and header pill
+   ============================================================ */
+
+.app-update {
+  margin-top: var(--sp-2);
+  padding: var(--sp-2);
+  border: 1px solid var(--border-light);
+  border-left: 2px solid var(--gold-primary);
+  border-radius: var(--radius-card);
+  background: var(--bg-card);
+}
+
+.app-update[hidden] {
+  display: none;
+}
+
+.app-update-line {
+  margin: 6px 0 4px;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: var(--text-primary);
+}
+
+.app-update-notes {
+  margin: 0 0 6px;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.app-update-bar {
+  height: 6px;
+  margin: 8px 0;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.app-update-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--gold-primary);
+  transition: width var(--dur-base) var(--ease-out);
+}
+
+.app-update-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  margin-top: var(--sp-2);
+}
+
+.app-update-actions .btn {
+  min-height: var(--hit);
+  padding: 0 14px;
+}
+
+/* Header pill. Only present while an update is downloaded and waiting. */
+.app-update-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--hit);
+  padding: 0 14px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--gold-primary);
+  background: var(--gold-primary);
+  color: var(--on-gold);
+  font-family: var(--font-family);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.app-update-pill:hover {
+  background: var(--gold-light);
+  border-color: var(--gold-light);
+}
+
+.app-update-pill:focus-visible {
+  outline: 2px solid var(--gold-primary);
+  outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+  .app-update-pill span {
+    display: none;
+  }
+}

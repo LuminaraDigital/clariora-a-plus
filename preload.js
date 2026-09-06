@@ -50,6 +50,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.on('update:ready', listener);
       return () => ipcRenderer.removeListener('update:ready', listener);
     },
+    // Fires on every state change: checking, available, downloading with a
+    // percentage, ready, up to date, or error.
+    onStatus: (cb) => {
+      if (typeof cb !== 'function') return () => {};
+      const listener = (_event, status) => cb(status);
+      ipcRenderer.on('update:status', listener);
+      return () => ipcRenderer.removeListener('update:status', listener);
+    },
+    getStatus: () => ipcRenderer.invoke('update:getStatus'),
+    check: () => ipcRenderer.invoke('update:check'),
+    download: () => ipcRenderer.invoke('update:download'),
     installNow: () => ipcRenderer.invoke('update:installNow')
   },
   log: (level, message) => ipcRenderer.invoke('log:write', String(level || 'info'), String(message == null ? '' : message)),

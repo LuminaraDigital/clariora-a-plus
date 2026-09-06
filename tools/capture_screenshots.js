@@ -233,6 +233,35 @@ async function main() {
   await sleep(1500);
   await shoot(cdp, '06-results');
 
+  // The update card, driven through its states so the README shows the real
+  // control rather than a mock. The packaged build talks to GitHub, so the
+  // status is pushed here directly instead of waiting for a real release.
+  await cdp.evalJs(`(() => {
+    if (window.APlus && APlus.appUpdate) {
+      if (window.openMoreMenuAt) openMoreMenuAt('moreGroupAbout');
+      APlus.appUpdate.render({
+        phase: 'available',
+        version: '3.2.0',
+        notes: 'Adds an exam-day mode, 120 new Networking questions and a faster results screen.'
+      });
+      const m = document.getElementById('appUpdateMount');
+      if (m) m.scrollIntoView({ block: 'center' });
+    }
+    return 'ok';
+  })()`);
+  await sleep(900);
+  await shoot(cdp, '07-update-available');
+
+  await cdp.evalJs(`(() => {
+    if (window.APlus && APlus.appUpdate) {
+      APlus.appUpdate.render({ phase: 'ready', version: '3.2.0' });
+      if (window.closeMoreMenu) closeMoreMenu();
+    }
+    return 'ok';
+  })()`);
+  await sleep(900);
+  await shoot(cdp, '08-update-ready');
+
   cdp.ws.close();
   killTree(child);
   try { fs.rmSync(USER_DATA, { recursive: true, force: true }); } catch (_) {}

@@ -2,6 +2,28 @@
 
 All notable changes to this project are documented here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [3.1.4] - 2026-09-06
+
+### Fixed
+
+- Practice recorded against the miskeyed bank no longer distorts the readiness
+  score. 3.1.3 corrected the questions but left every earlier attempt and all
+  accumulated per-objective accuracy in place, so a learner who upgraded kept a
+  prediction built on results where choosing the right answer was marked wrong.
+  On the first launch of a corrected build the app now records a cutoff, stops
+  counting earlier attempts toward the prediction, and clears the per-objective
+  counters, which are cumulative and cannot be filtered by date
+- Attempt history is never deleted. Earlier attempts stay in the history table
+  and the trend line; they simply no longer feed the prediction
+- A one-time notice on the home screen explains why the readiness score changed
+  and suggests a fresh diagnostic
+
+### Added
+
+- Attempts now record which generation of the question bank scored them, so a
+  future correction can invalidate exactly the affected attempts rather than
+  relying on a timestamp
+
 ## [3.1.3] - 2026-09-06
 
 ### Fixed

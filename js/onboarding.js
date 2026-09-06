@@ -390,11 +390,30 @@
     return [];
   }
 
-  /** Attempts that count toward `exam`, newest first. 'both' matches everything. */
+  /** True for attempts scored against the miskeyed bank shipped before 3.1.3. */
+  function isStaleAttempt(record) {
+    var a = A();
+    try {
+      if (a && a.bankIntegrity && typeof a.bankIntegrity.isStale === 'function') {
+        return a.bankIntegrity.isStale(record);
+      }
+    } catch (err) {
+      console.warn('[onboarding] bank integrity check failed:', err);
+    }
+    return false;
+  }
+
+  /**
+   * Attempts that count toward `exam`, newest first. 'both' matches everything.
+   * Attempts finished before the bank correction are left out: they were scored
+   * against questions with the wrong answer keyed, so their scaled scores say
+   * nothing about the learner. They stay visible in the history table.
+   */
   function historyForExam(history, exam) {
     var e = normExam(exam);
     return (Array.isArray(history) ? history : []).filter(function (r) {
       if (!r || typeof r.scaledScore !== 'number' || !isFinite(r.scaledScore)) return false;
+      if (isStaleAttempt(r)) return false;
       if (e === 'both') return true;
       return r.examType === e || r.examType === 'both';
     });

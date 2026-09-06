@@ -442,6 +442,53 @@
     });
   }
 
+  /**
+   * One-time explanation after a bank correction invalidated earlier practice
+   * data. Shown at the top of the home screen and dismissed by the learner, not
+   * on a timer, because it changes what their readiness score means.
+   */
+  function renderBankFixNotice() {
+    var bi = APlus.bankIntegrity;
+    if (!bi || typeof bi.noticePending !== 'function' || !bi.noticePending()) return;
+    var host = byId('homeMissionMount');
+    var parent = host && host.parentNode;
+    if (!parent) return;
+    if (byId('bankFixNotice')) return;
+
+    var info = bi.summary();
+    var card = document.createElement('section');
+    card.id = 'bankFixNotice';
+    card.className = 'bank-fix-notice';
+    card.setAttribute('role', 'status');
+
+    var attempts = info.affectedAttempts === 1
+      ? 'Your earlier attempt was'
+      : 'Your earlier ' + info.affectedAttempts + ' attempts were';
+    var body = info.affectedAttempts > 0
+      ? attempts + ' scored against questions that had the wrong answer marked correct. They stay in your history, but they no longer count toward your readiness score.'
+      : 'Practice recorded before this update was scored against questions that had the wrong answer marked correct, so it no longer counts toward your readiness score.';
+
+    card.innerHTML =
+      '<div class="label">Question bank corrected</div>' +
+      '<p class="bank-fix-line"></p>' +
+      '<p class="bank-fix-note">Take a fresh diagnostic or a mock exam to rebuild an accurate readiness score.</p>' +
+      '<div class="bank-fix-actions">' +
+      '<button type="button" class="btn btn-secondary" id="bankFixDismiss">Got it</button>' +
+      '</div>';
+    // Set as text, not markup: this module has no escaping helper and the
+    // sentence carries a count from storage.
+    card.querySelector('.bank-fix-line').textContent = body;
+    parent.insertBefore(card, host);
+
+    var btn = byId('bankFixDismiss');
+    if (btn) {
+      btn.addEventListener('click', function () {
+        try { bi.dismissNotice(); } catch (_) {}
+        if (card.parentNode) card.parentNode.removeChild(card);
+      });
+    }
+  }
+
   APlus.dialog = APlus.dialog || {};
   APlus.dialog.confirm = confirmDialog;
   window.openMoreMenu = openMoreMenu;
@@ -1027,6 +1074,7 @@
       renderRecentAttempts();
     }, 1600);
 
+    renderBankFixNotice();
     runFirstLaunch();
   }
 

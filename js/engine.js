@@ -377,7 +377,11 @@
           passed: passed,
           status: passed ? 'PASSED' : 'FAILED',
           passingScore: this.passingScore,
-          domainStats: domainStats
+          domainStats: domainStats,
+          // Which generation of the question bank scored this attempt. Lets a
+          // future correction invalidate exactly the affected attempts instead
+          // of guessing from timestamps.
+          bankRevision: (APlus.bankIntegrity && APlus.bankIntegrity.BANK_REVISION) || 2
         });
         if (history.length > 25) history.pop();
         APlus.storage.set('history', history);

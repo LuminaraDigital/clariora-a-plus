@@ -5048,3 +5048,39 @@ header .brand {
     display: none;
   }
 }
+
+/* ============================================================
+   24. Bank correction notice
+   ============================================================ */
+
+.bank-fix-notice {
+  padding: var(--sp-2) var(--sp-3);
+  margin-bottom: var(--sp-2);
+  border: 1px solid var(--border-light);
+  border-left: 2px solid var(--gold-primary);
+  border-radius: var(--radius-card);
+  background: var(--bg-card);
+}
+
+.bank-fix-line {
+  margin: 4px 0 6px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.bank-fix-note {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.bank-fix-actions {
+  margin-top: var(--sp-2);
+}
+
+.bank-fix-actions .btn {
+  min-height: var(--hit);
+  padding: 0 16px;
+}

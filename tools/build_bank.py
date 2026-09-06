@@ -114,14 +114,40 @@ def auto_balance(questions, core):
     # deterministic order
     singles.sort(key=lambda q: q["id"])
     for q in singles:
+        keyed_text = q["options"][q["answer"]]
         counts = Counter(x["answer"] for x in singles)
         # pick the currently-least-used position
         pos = min(range(4), key=lambda p: (counts[p], p))
-        k = (pos - q["answer"]) % 4
+        # Rotation is new[i] = old[(i + k) % 4], so an option at old index j
+        # lands at new index (j - k) % 4. For the keyed answer to land on pos
+        # that requires k = (answer - pos) % 4. Using (pos - answer) rotates the
+        # options one way and the key the other, which silently makes a
+        # different option "correct". That shipped for 487 questions.
+        k = (q["answer"] - pos) % 4
         if k:
             opts = q["options"]
             q["options"] = [opts[(i + k) % 4] for i in range(4)]
             q["answer"] = pos
+            # distractor_analysis is keyed by option index, so it has to travel
+            # with the options. new[i] = old[(i + k) % 4], therefore an entry on
+            # old index j belongs on new index (j - k) % 4. Without this the
+            # notes describe the wrong options and one lands on the right answer.
+            da = q.get("distractor_analysis")
+            if isinstance(da, dict):
+                remapped = {}
+                for key, text in da.items():
+                    try:
+                        j = int(key)
+                    except (TypeError, ValueError):
+                        remapped[key] = text
+                        continue
+                    remapped[str((j - k) % 4)] = text
+                q["distractor_analysis"] = remapped
+            if q["options"][q["answer"]] != keyed_text:
+                raise AssertionError(
+                    f"auto_balance moved the keyed answer for {q['id']}: "
+                    f"expected {keyed_text!r}, got {q['options'][q['answer']]!r}"
+                )
     return questions
 
 

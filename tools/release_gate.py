@@ -153,8 +153,11 @@ def check_validate_bank(res: Results) -> None:
     if not script.is_file():
         res.warn("validate_bank.py", "not present")
         return
+    # Validate the repository copy, which is the source of truth. The script's
+    # own default points at the packaged desktop build, an untracked artefact
+    # that is stale between installer builds and absent on a clean clone.
     r = subprocess.run(
-        [sys.executable, str(script)],
+        [sys.executable, str(script), "--bank", str(ROOT / "exam_data.json")],
         cwd=str(ROOT),
         capture_output=True,
         text=True,

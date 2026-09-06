@@ -387,7 +387,7 @@
       }
     }
 
-    console.log('[APlus] Initialized CompTIA A+ Master Exam Simulator v' + (APlus.APP_VERSION || '3.1.2'));
+    console.log('[APlus] Initialized CompTIA A+ Master Exam Simulator v' + (APlus.APP_VERSION || '3.1.3'));
   }
 
   APlus.init = initApp;

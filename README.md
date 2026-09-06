@@ -6,7 +6,7 @@ Built by Datacentre Academy for technicians training for datacentre and enterpri
 
 [![CI](https://github.com/LuminaraDigital/comptia-a-plus-master/actions/workflows/ci.yml/badge.svg)](https://github.com/LuminaraDigital/comptia-a-plus-master/actions/workflows/ci.yml)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-3.1.2-gold.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-3.1.3-gold.svg)](CHANGELOG.md)
 
 ## Screenshots
 

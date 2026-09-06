@@ -2,6 +2,37 @@
 
 All notable changes to this project are documented here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [3.1.3] - 2026-09-06
+
+### Fixed
+
+- **The wrong answer was keyed on 487 questions.** The bank builder balances how
+  often each option position is correct by rotating the options, but it rotated
+  the options one way and moved the answer index the other way. The result was
+  that a different option became "correct" in the shipped bank while the source
+  shards were right all along. C1-011 asked for the DDR4 pin count and its own
+  explanation said 288 pins, but the app marked 168 pins correct. C1-003 asked
+  what a technician should do when a job exceeds their expertise and the app
+  marked "completely disassemble the server hardware" correct instead of
+  "escalate to a senior engineer". Learners answering correctly were told they
+  were wrong, and the readiness score was computed from those results
+- Distractor analysis notes were not carried along when the builder rotated the
+  options, so the notes described the wrong options. On every rotated question
+  one note landed on the correct answer, explaining why the right answer was
+  wrong
+- The release gate validated the packaged desktop build, an untracked artefact
+  that is stale between installer builds and missing on a clean clone. It now
+  validates the repository copy of the bank
+
+### Added
+
+- The bank builder asserts that the keyed option text survives rotation, so this
+  class of corruption fails the build instead of shipping
+- The validator rejects any single-choice question whose keyed answer carries a
+  distractor note, since that means the key and the notes disagree about which
+  option is correct. This finds miskeyed questions statically, with no learner
+  data needed
+
 ## [3.1.2] - 2026-09-06
 
 ### Added

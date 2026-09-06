@@ -119,6 +119,20 @@ def validate_qs(questions, core, errors, warnings):
         # distractor analysis strongly recommended for single/multi
         if t in ("single", "multi") and not q.get("distractor_analysis"):
             warnings.append(f"{where} no distractor_analysis (recommended)")
+        # A note on the keyed answer means the key and the notes disagree about
+        # which option is correct. Every occurrence so far has been a genuinely
+        # wrong answer reaching learners, so this is an error rather than a
+        # warning. See the auto_balance rotation bug fixed on 2026-09-06.
+        da = q.get("distractor_analysis")
+        if t == "single" and isinstance(da, dict) and da:
+            if str(q.get("answer")) in da:
+                errors.append(
+                    f"{where} distractor_analysis has a note on the keyed answer "
+                    f"(index {q.get('answer')}); the key and the notes disagree"
+                )
+            stray = [k for k in da if not str(k).isdigit() or int(k) >= len(opts or [])]
+            if stray:
+                errors.append(f"{where} distractor_analysis keys out of range: {stray}")
         # video objective must match
         vr = q.get("video_reference")
         if vr:

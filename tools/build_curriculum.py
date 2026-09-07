@@ -112,44 +112,245 @@ def classify_exam(text: str) -> str:
     return "both"
 
 
-def extract_docx(path: Path, max_chars: int = 160000) -> str:
+# Word paragraph style -> block type. Anything unmapped becomes a paragraph.
+# The NetAcad IT Essentials labs use a small, consistent set of styles, so
+# this table is what lets the app draw a lab as steps, questions and
+# terminal panes instead of a wall of text.
+DOCX_STYLE_MAP = {
+    "Title": "title",
+    "LabSection": "h1",
+    "Heading1": "h1",
+    "Heading2": "h2",
+    "Heading3": "h3",
+    "Heading4": "h4",
+    "SubStepAlpha": "step",
+    "SubStepNum": "step",
+    "Bulletlevel1": "bullet",
+    "Bulletlevel2": "bullet2",
+    "ListBullet": "bullet",
+    "BodyTextL25": "p",
+    "BodyTextL25Bold": "p",
+    "BodyTextL50": "p",
+    "BodyTextL75": "p",
+    "InstNoteRedL25": "note",
+    "ReflectionQ": "question",
+    "AnswerLineL25": "answer",
+    "AnswerLineL50": "answer",
+    "AnswerLineL75": "answer",
+    "CMD": "cmd",
+    "CMDOutput": "output",
+    "Caption": "caption",
+    "TableHeading": "caption",
+}
+DOCX_SKIP_STYLES = {"ConfigWindow", "Visual", "TableText"}
+ANSWER_PLACEHOLDER = re.compile(r"^(type your answers? here\.?|answers? will vary\.?)$", re.I)
+QUESTION_HEAD = re.compile(r"^(reflection\s+)?questions?:?$", re.I)
+W_NS = NS_W["w"]
+
+
+def _para_text(p) -> str:
+    return "".join(t.text for t in p.iter("{%s}t" % W_NS) if t.text).strip()
+
+
+def _para_style(p) -> str:
+    ps = p.find("w:pPr/w:pStyle", NS_W)
+    return ps.get("{%s}val" % W_NS) if ps is not None else ""
+
+
+def _table_blocks(tbl) -> list[dict]:
+    rows = []
+    for tr in tbl.findall("w:tr", NS_W):
+        cells = []
+        for tc in tr.findall("w:tc", NS_W):
+            cells.append(" ".join(t for t in (_para_text(p) for p in tc.findall(".//w:p", NS_W)) if t))
+        if any(cells):
+            rows.append(cells)
+    return [{"t": "table", "rows": rows}] if rows else []
+
+
+def extract_docx_blocks(path: Path) -> list[dict]:
+    """Walk the document body in order and emit typed blocks.
+
+    Block shape: {"t": type, "text": str} plus "rows" for tables.
+    Types: title h1 h2 h3 h4 qhead p note step bullet bullet2 question answer
+    cmd output caption table.
+    """
+    with zipfile.ZipFile(path, "r") as z:
+        tree = ET.fromstring(z.read("word/document.xml"))
+    body = tree.find("w:body", NS_W)
+    if body is None:
+        return []
+    blocks: list[dict] = []
+    in_questions = False
+    for el in body:
+        tag = el.tag.split("}")[-1]
+        if tag == "tbl":
+            blocks.extend(_table_blocks(el))
+            continue
+        if tag != "p":
+            continue
+        text = _para_text(el)
+        if not text:
+            continue
+        style = _para_style(el)
+        if style in DOCX_SKIP_STYLES:
+            continue
+        kind = DOCX_STYLE_MAP.get(style, "p")
+        if ANSWER_PLACEHOLDER.match(text):
+            kind = "answer"
+        if kind in ("h1", "h2", "h3", "h4") and QUESTION_HEAD.match(text):
+            in_questions = True
+            blocks.append({"t": "qhead", "text": text.rstrip(":")})
+            continue
+        if kind in ("h1", "h2", "h3", "h4", "step", "cmd", "title"):
+            in_questions = False
+        if kind == "p" and in_questions and style.startswith("BodyText"):
+            kind = "question"
+        if kind == "p" and re.match(r"^note:", text, re.I):
+            kind = "note"
+        if kind == "answer":
+            if ANSWER_PLACEHOLDER.match(text):
+                text = ""
+            blocks.append({"t": "answer", "text": text})
+            continue
+        blocks.append({"t": kind, "text": text})
+    # Documents with no styles at all (hand written labs): first line is the
+    # title and the rest are steps.
+    if blocks and not any(b["t"] == "title" for b in blocks):
+        if all(b["t"] in ("p", "note") for b in blocks):
+            blocks[0]["t"] = "title"
+            for b in blocks[1:]:
+                if b["t"] == "p":
+                    b["t"] = "step"
+    return blocks
+
+
+def blocks_to_text(blocks: list[dict]) -> str:
+    out = []
+    for b in blocks:
+        if b["t"] == "table":
+            out.extend(" | ".join(r) for r in b.get("rows", []))
+        elif b.get("text"):
+            out.append(b["text"])
+    return "\n".join(out).strip()
+
+
+def extract_docx(path: Path, max_chars: int = 160000) -> tuple[str, list[dict]]:
+    """Return (plain text for search, typed blocks for the renderer)."""
     try:
-        with zipfile.ZipFile(path, "r") as z:
-            xml_bytes = z.read("word/document.xml")
-        tree = ET.fromstring(xml_bytes)
-        paras = []
-        for p in tree.findall(".//w:p", NS_W):
-            texts = [t.text for t in p.findall(".//w:t", NS_W) if t.text]
-            if texts:
-                paras.append("".join(texts))
-        content = "\n".join(paras).strip()
+        blocks = extract_docx_blocks(path)
+        content = blocks_to_text(blocks)
         if len(content) > max_chars:
-            return content[:max_chars] + "\n\n[Truncated for in-app size. Open the original DOCX for the full lab.]"
-        return content or "[Empty DOCX]"
+            content = content[:max_chars] + "\n\n[Truncated for in-app size. Open the original DOCX for the full lab.]"
+        return (content or "[Empty DOCX]"), blocks
     except Exception as exc:
-        return f"[Could not extract DOCX: {exc}]"
+        return f"[Could not extract DOCX: {exc}]", []
 
 
-def extract_pptx(path: Path, max_chars: int = 120000) -> tuple[str, int]:
-    """Return (slide text, slide count)."""
+IMAGE_EXT_OK = {".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp"}
+NS_R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+NS_PR = "http://schemas.openxmlformats.org/package/2006/relationships"
+NS_P = "http://schemas.openxmlformats.org/presentationml/2006/main"
+A_NS = NS_A["a"]
+
+
+def _slide_rels(z: zipfile.ZipFile, slide_name: str) -> dict[str, str]:
+    rel_name = slide_name.replace("ppt/slides/", "ppt/slides/_rels/") + ".rels"
+    if rel_name not in z.namelist():
+        return {}
+    root = ET.fromstring(z.read(rel_name))
+    out = {}
+    for rel in root.findall("{%s}Relationship" % NS_PR):
+        target = rel.get("Target") or ""
+        if target.startswith("../"):
+            target = "ppt/" + target[3:]
+        out[rel.get("Id")] = target
+    return out
+
+
+def _notes_text(z: zipfile.ZipFile, rels: dict[str, str]) -> str:
+    for target in rels.values():
+        if "notesSlides/" in target and target in z.namelist():
+            root = ET.fromstring(z.read(target))
+            paras = []
+            for p in root.iter("{%s}p" % A_NS):
+                t = "".join(n.text for n in p.iter("{%s}t" % A_NS) if n.text).strip()
+                if t and not t.isdigit():
+                    paras.append(t)
+            return "\n".join(paras).strip()
+    return ""
+
+
+def extract_pptx(path: Path, img_dir: Path | None = None, max_chars: int = 120000) -> tuple[str, int, list[dict]]:
+    """Return (flat slide text, slide count, deck).
+
+    deck is a list of slides:
+      {"n": 1, "title": str, "subtitle": str, "bullets": [{"text", "level"}],
+       "images": ["media/slides/img/<stem>/s1-1.png"], "notes": str}
+    Images are copied out of the pptx so the app can show them beside the
+    text. WMF/EMF are skipped because browsers cannot draw them.
+    """
     try:
         with zipfile.ZipFile(path, "r") as z:
-            slides = sorted(
-                n for n in z.namelist()
-                if re.match(r"ppt/slides/slide\d+\.xml$", n)
+            names = sorted(
+                (n for n in z.namelist() if re.match(r"ppt/slides/slide\d+\.xml$", n)),
+                key=lambda n: int(re.search(r"(\d+)", n.rsplit("/", 1)[1]).group(1)),
             )
             parts: list[str] = []
-            for i, name in enumerate(slides, 1):
+            deck: list[dict] = []
+            stem_slug = slug(path.stem)
+            for i, name in enumerate(names, 1):
                 root = ET.fromstring(z.read(name))
-                texts = [n.text for n in root.findall(".//a:t", NS_A) if n.text and n.text.strip()]
-                if texts:
-                    parts.append(f"--- Slide {i} ---\n" + "\n".join(texts))
+                rels = _slide_rels(z, name)
+                slide = {"n": i, "title": "", "subtitle": "", "bullets": [], "images": [], "notes": ""}
+                flat: list[str] = []
+                for sp in root.iter("{%s}sp" % NS_P):
+                    ph = sp.find(".//{%s}nvPr/{%s}ph" % (NS_P, NS_P))
+                    ph_type = (ph.get("type") or "body") if ph is not None else "free"
+                    if ph_type in ("sldNum", "dt", "ftr"):
+                        continue
+                    for para in sp.iter("{%s}p" % A_NS):
+                        text = "".join(n.text for n in para.iter("{%s}t" % A_NS) if n.text).strip()
+                        if not text:
+                            continue
+                        flat.append(text)
+                        ppr = para.find("{%s}pPr" % A_NS)
+                        level = int(ppr.get("lvl", "0")) if ppr is not None else 0
+                        if ph_type in ("title", "ctrTitle") and not slide["title"]:
+                            slide["title"] = text
+                        elif ph_type == "subTitle" and not slide["subtitle"]:
+                            slide["subtitle"] = text
+                        elif re.match(r"^image\s*(\u00a9|\(c\))", text, re.I):
+                            continue
+                        else:
+                            slide["bullets"].append({"text": text, "level": level})
+                if img_dir is not None:
+                    k = 0
+                    for pic in root.iter("{%s}pic" % NS_P):
+                        blip = pic.find(".//{%s}blip" % A_NS)
+                        rid = blip.get("{%s}embed" % NS_R) if blip is not None else None
+                        target = rels.get(rid or "", "")
+                        ext = Path(target).suffix.lower()
+                        if not target or ext not in IMAGE_EXT_OK or target not in z.namelist():
+                            continue
+                        k += 1
+                        out_name = f"s{i}-{k}{ext}"
+                        out_path = img_dir / stem_slug / out_name
+                        out_path.parent.mkdir(parents=True, exist_ok=True)
+                        data = z.read(target)
+                        if not out_path.exists() or out_path.stat().st_size != len(data):
+                            out_path.write_bytes(data)
+                        slide["images"].append(f"media/slides/img/{stem_slug}/{out_name}")
+                slide["notes"] = _notes_text(z, rels)
+                deck.append(slide)
+                if flat:
+                    parts.append(f"--- Slide {i} ---\n" + "\n".join(flat))
             content = "\n\n".join(parts).strip()
             if len(content) > max_chars:
                 content = content[:max_chars] + "\n\n[Truncated. Open the PowerPoint for full slides and images.]"
-            return content or "[No extractable slide text]", len(slides)
+            return content or "[No extractable slide text]", len(names), deck
     except Exception as exc:
-        return f"[Could not extract PPTX: {exc}]", 0
+        return f"[Could not extract PPTX: {exc}]", 0, []
 
 
 def ensure_link_or_copy(src: Path, dst: Path) -> str:
@@ -192,25 +393,37 @@ def ingest_labs() -> list[dict]:
         dest_name = path.name
         method = ensure_link_or_copy(path, lab_out / dest_name)
         rel_media = f"media/labs/{dest_name}"
+        blocks: list[dict] = []
         if ext == ".md":
             content = path.read_text(encoding="utf-8", errors="replace")
             fmt = "markdown"
         else:
-            content = extract_docx(path)
+            content, blocks = extract_docx(path)
             fmt = "docx-text"
         title = title_from_name(path.name)
-        if path.name.startswith("00"):
-            title = path.stem
+        m = re.match(r"^Lab\s*0*(\d+)\b", title, re.I)
+        lab_no = int(m.group(1)) if m else None
+        if lab_no is not None:
+            # "Lab 05 - Configure a NIC" -> "Configure a NIC"; the number is its own field.
+            title = re.sub(r"^Lab\s*0*\d+\s*[-:.]?\s*", "", title).strip() or title
+        elif path.name.startswith("Checklist"):
+            title = "Datacentre capstone checklist"
+        elif path.name.startswith("00a"):
+            title = "How to run the labs at home"
+        elif path.name.startswith("00"):
+            title = "Lab study and execution guide"
         items.append({
             "id": f"lab-{slug(path.stem)}",
             "kind": "lab",
             "title": title,
-            "exam": classify_exam(path.name + " " + content[:200]),
+            "exam": "both" if (fmt == "markdown" or lab_no is None) else classify_exam(path.name + " " + content[:200]),
             "format": fmt,
             "source": f"Labs for A+/{path.name}",
             "media_path": rel_media,
             "size_mb": round(path.stat().st_size / (1024 * 1024), 2),
             "link_method": method,
+            "lab_no": lab_no,
+            "blocks": blocks,
             "content": content,
             "excerpt": content[:320].replace("\n", " ").strip(),
         })
@@ -237,8 +450,11 @@ def ingest_slides() -> list[dict]:
         seen_stems.add(stem)
         dest = out / path.name
         method = ensure_link_or_copy(path, dest)
-        text, slides = extract_pptx(path)
+        text, slides, deck = extract_pptx(path, out / "img")
         title = PPT_TITLES.get(stem, title_from_name(path.name))
+        mod = re.search(r"_M(\d+)_", stem)
+        module_no = int(mod.group(1)) if mod else None
+        short = re.sub(r"^Core \d Module \d+:\s*", "", title)
         exam = "core1" if "1201" in stem else ("core2" if "1202" in stem else classify_exam(stem))
         items.append({
             "id": f"slide-{slug(stem)}",
@@ -251,6 +467,9 @@ def ingest_slides() -> list[dict]:
             "slides": slides,
             "size_mb": round(path.stat().st_size / (1024 * 1024), 2),
             "link_method": method,
+            "module_no": module_no,
+            "short_title": short,
+            "deck": deck,
             "content": text,
             "excerpt": text[:320].replace("\n", " ").strip(),
         })
@@ -311,7 +530,7 @@ def main() -> int:
     slides = ingest_slides()
     videos = ingest_videos()
     catalog = {
-        "version": "1.0",
+        "version": "1.1",
         "title": "Datacentre Academy A+ Curriculum",
         "description": (
             "Hands-on labs, module PowerPoints, and lecture videos from "

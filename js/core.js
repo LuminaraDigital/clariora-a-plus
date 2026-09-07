@@ -11,7 +11,7 @@
   window.APlus = window.APlus || {};
   const APlus = window.APlus;
 
-  APlus.APP_VERSION = '3.1.4';
+  APlus.APP_VERSION = '3.1.5';
   APlus.NAME = 'CompTIA A+ Master Exam Simulator';
 
   /**

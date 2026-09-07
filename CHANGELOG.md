@@ -2,6 +2,36 @@
 
 All notable changes to this project are documented here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [3.1.5] - 2026-09-07
+
+### Changed
+
+- The course library now shows slide decks as decks and labs as worksheets
+  instead of extracted text. A slide deck opens one slide at a time with the
+  slide title, nested bullets, the figures pulled out of the PowerPoint,
+  speaker notes, a filmstrip of every slide, a progress bar, and left and right
+  arrow keys. Section divider slides list the exam objectives they cover
+- A lab opens as a guided worksheet: what you will do, what you will need,
+  then numbered steps with a checkbox on every sub-step, questions with a place
+  to type the answer, commands and their output in a terminal pane with a copy
+  button, and notes as callouts. Progress and answers are saved per lab and
+  the sidebar shows how far along each deck and lab is
+- The two markdown guides render as formatted pages (headings, tables, lists,
+  code) and the capstone checklist renders as a table with a tick per row
+- Library items are grouped (Core 1, Core 2; Start here, Hands-on labs,
+  Capstone), carry a module or lab number badge, and the tabs show counts
+- `tools/build_curriculum.py` now extracts document structure: typed blocks
+  for Word labs (headings, steps, questions, answers, commands, output, tables)
+  and per-slide title, bullets with levels, images and notes for PowerPoint
+  decks. Slide images are written under `media/slides/img/` and shipped with
+  the web build (about 40 MB). Older flat catalogs still render
+
+### Added
+
+- `tools/test_curriculum.js` covers the deck and lab parsers, the markdown
+  subset, escaping, and renders every real deck and lab when the catalog is
+  present. It runs in `npm test`
+
 ## [3.1.4] - 2026-09-06
 
 ### Added

@@ -197,3 +197,16 @@ rather than a draft and that `latest.yml` (Windows), `latest-mac.yml` and
 
 Versions 3.1.1 and earlier point at the old Cloudflare URL and cannot update
 themselves. Those installs need the new build once, by hand.
+
+## 8. Prove the upgrade is offered
+
+After the Windows assets and `latest.yml` are on the GitHub release, launch
+the previous version and confirm it sees the new one:
+
+```bat
+node tools\check_update_feed.js release\CompTIA_A_Plus_Portable_<previous>.exe
+```
+
+It prints the updater status and ends with `RESULT: update to <new> is
+offered to <previous>`. If it says no update was offered, check that
+`latest.yml` is attached to the release and that the release is not a draft.

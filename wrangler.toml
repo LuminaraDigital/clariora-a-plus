@@ -1,12 +1,38 @@
-# Clariora - Cloudflare deploy
-# Primary path: Workers static assets (workers.dev URL).
-# Pages remains available once the API token has Cloudflare Pages: Edit.
+# Clariora - Cloudflare Edge Deployment
+# Zone: clariora.com.au
+# Account: 2373013c66331e9660e47ffa3ae40f5c
 
 name = "comptia-a-plus-master"
+main = "workers/api_worker.js"
 compatibility_date = "2026-09-01"
+account_id = "2373013c66331e9660e47ffa3ae40f5c"
 workers_dev = true
+
+routes = [
+  { pattern = "clariora.com.au/api/v1/*", zone_name = "clariora.com.au" }
+]
 
 [assets]
 directory = "./dist_web"
 not_found_handling = "single-page-application"
 html_handling = "auto-trailing-slash"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "clariora_edge_db"
+database_id = "clariora-edge-db-primary"
+
+[[r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "clariora-media"
+
+[ai]
+binding = "AI"
+
+# Environment Variables & Secrets (Set via `wrangler secret put <KEY>`):
+# - TELEGRAM_BOT_TOKEN: From @BotFather (for initData HMAC & Stars invoices)
+# - GROQ_API_KEY: Free tier fast inference (Llama 3.1 8B)
+# - NVIDIA_API_KEY: Pro tier enterprise inference (Llama 3.1/3.3 70B)
+# - OLLAMA_ENDPOINT: Pro tier self-hosted Ollama URL
+# - OLLAMA_AUTH_TOKEN: Optional auth token for private Ollama
+# - OPENROUTER_API_KEY: Pro tier multi-model inference (Claude 3.5, DeepSeek R1)

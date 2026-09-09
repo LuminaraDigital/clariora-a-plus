@@ -1180,7 +1180,7 @@ function createWindow() {
     minHeight: MIN_HEIGHT,
     show: false,
     autoHideMenuBar: !isMac,
-    title: 'Clariora',
+    title: 'Clariora Exam Simulator',
     backgroundColor: '#07090E',
     icon: path.join(__dirname, 'icon.png'),
     webPreferences: {
@@ -1419,8 +1419,8 @@ function buildAppMenu() {
           click: () => {
             dialog.showMessageBox(mainWindow, {
               type: 'info',
-              title: 'About Clariora',
-              message: 'Clariora v' + APP_VERSION,
+              title: 'About Clariora Simulator',
+              message: 'Clariora Exam Simulator v' + APP_VERSION,
               detail: 'Built for Datacentre Academy.\n' +
                 'Core 1 (220-1201) and Core 2 (220-1202).\n' +
                 'Your progress: ' + getDatabasePath() + '\n' +

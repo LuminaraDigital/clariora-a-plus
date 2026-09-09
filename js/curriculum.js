@@ -595,13 +595,13 @@
       }
     }
     out +=
-      '<div class="cl-slide-foot"><span>' +
+      '<footer class="cl-slide-foot"><span>' +
       escapeHTML(item.short_title || item.title) +
       '</span><span>' +
       s.n +
       ' / ' +
       total +
-      '</span></div></article>';
+      '</span></footer></article>';
     return out;
   };
 
@@ -613,7 +613,7 @@
     var s = deck[idx - 1] || { notes: '' };
 
     var out = '<div class="cl-deck" data-deck="' + escapeHTML(item.id) + '">';
-    out += '<div class="cl-head">';
+    out += '<header class="cl-head">';
     out += '<span class="cl-badge">' + (item.module_no ? 'M' + pad2(item.module_no) : 'Deck') + '</span>';
     out +=
       '<div class="cl-head-text"><h4>' +
@@ -626,7 +626,7 @@
       seen +
       ' viewed</p></div>';
     out += '<div class="cl-head-actions">' + openOriginal(item, 'Open PowerPoint') + '</div>';
-    out += '</div>';
+    out += '</header>';
 
     out += '<div class="cl-stage">';
     out +=
@@ -863,8 +863,8 @@
     var pct = total ? Math.round((doneCount / total) * 100) : 0;
 
     var out = '<div class="cl-lab" data-lab="' + escapeHTML(item.id) + '">';
-    out += '<div class="cl-head">';
-    out += '<span class="cl-badge">' + (item.lab_no ? 'Lab ' + pad2(item.lab_no) : 'Project') + '</span>';
+    out += '<header class="cl-head">';
+    out += '<span class="cl-badge">' + (item.lab_no ? 'Lab ' + pad2(item.lab_no) : 'Guide') + '</span>';
     out += '<div class="cl-head-text"><h4>' + escapeHTML(lab.title || item.title) + '</h4><p class="cl-meta">';
     out += escapeHTML(examLabel(item.exam));
     if (total) out += ' · ' + total + ' steps';
@@ -875,7 +875,7 @@
       '<div class="cl-head-actions">' +
       openOriginal(item, 'Open original') +
       '<button type="button" class="cl-link" data-cl-action="reset-lab">Reset progress</button></div>';
-    out += '</div>';
+    out += '</header>';
 
     if (total) {
       out +=
@@ -924,12 +924,7 @@
           escapeHTML(part.heading) +
           '</h5>';
       }
-      var bare = lab.parts.length === 1 && part.steps.length === 1 && !part.steps[0].heading;
       part.steps.forEach(function (st) {
-        if (bare) {
-          out += '<section class="cl-panel">' + itemsHtml(st.items, progress) + '</section>';
-          return;
-        }
         var stepTotal = 0;
         var stepDone = 0;
         st.items.forEach(function (b) {
@@ -941,13 +936,13 @@
         var complete = stepTotal > 0 && stepDone === stepTotal;
         out += '<article class="cl-step' + (complete ? ' is-complete' : '') + '">';
         out +=
-          '<div class="cl-step-head"><span class="cl-step-no">Step ' +
+          '<header class="cl-step-head"><span class="cl-step-no">Step ' +
           st.no +
           '</span><h6>' +
           escapeHTML(st.heading || '') +
           '</h6>' +
           (stepTotal ? '<span class="cl-step-count">' + stepDone + '/' + stepTotal + '</span>' : '') +
-          '</div>';
+          '</header>';
         out += '<div class="cl-step-body">' + itemsHtml(st.items, progress) + '</div>';
         out += '</article>';
       });
@@ -964,16 +959,16 @@
   html.markdownLab = function (item) {
     var body = model.markdown(item.content || '');
     var out = '<div class="cl-lab cl-lab-md">';
-    out += '<div class="cl-head"><span class="cl-badge">Guide</span>';
+    out += '<header class="cl-head"><span class="cl-badge">Guide</span>';
     out += '<div class="cl-head-text"><h4>' + escapeHTML(item.title) + '</h4><p class="cl-meta">Reference notes · ' + escapeHTML(examLabel(item.exam)) + '</p></div>';
-    out += '<div class="cl-head-actions">' + openOriginal(item, 'Open markdown') + '</div></div>';
+    out += '<div class="cl-head-actions">' + openOriginal(item, 'Open markdown') + '</div></header>';
     out += '<div class="cl-md">' + body + '</div></div>';
     return out;
   };
 
   html.video = function (item, progress) {
     var out = '<div class="cl-video-wrap">';
-    out += '<div class="cl-head"><span class="cl-badge">Video</span>';
+    out += '<header class="cl-head"><span class="cl-badge">Video</span>';
     out +=
       '<div class="cl-head-text"><h4>' +
       escapeHTML(item.title) +
@@ -983,11 +978,13 @@
       escapeHTML(String(item.size_mb)) +
       ' MB' +
       (progress && progress.played ? ' · Watched' : '') +
-      '</p></div></div>';
+      '</p></div></header>';
     out +=
       '<video id="curriculumVideoPlayer" class="curriculum-video" controls playsinline preload="metadata" src="' +
       encodePath(item.media_path) +
       '"></video>';
+    out +=
+      '<p class="curriculum-hint">If playback fails in the browser build, use the desktop app or the course media pack.</p>';
     out += '</div>';
     return out;
   };
@@ -1364,13 +1361,13 @@
       var strip = document.getElementById('clFilmstrip');
       if (!strip) return;
       var active = strip.querySelector('.cl-film.is-active');
-      if (!active) return;
-      // Scroll the strip only. scrollIntoView would also scroll the viewer
-      // and push the slide under the header.
-      var sr = strip.getBoundingClientRect();
-      var ar = active.getBoundingClientRect();
-      var target = strip.scrollLeft + (ar.left - sr.left) - (strip.clientWidth - ar.width) / 2;
-      strip.scrollLeft = Math.max(0, target);
+      if (active && typeof active.scrollIntoView === 'function') {
+        try {
+          active.scrollIntoView({ block: 'nearest', inline: 'center' });
+        } catch (_) {
+          active.scrollIntoView();
+        }
+      }
     },
 
     step: function (delta) {

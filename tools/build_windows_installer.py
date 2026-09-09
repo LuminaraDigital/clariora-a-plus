@@ -2,7 +2,7 @@
 Build a Windows NSIS installer students can download.
 
 Canonical output (share this only):
-  ROOT/release/Clariora_Setup_<version>.exe
+  ROOT/release/CompTIA_A_Plus_Setup_<version>.exe
 
 Also produces (then pruned from APP_DIR):
   APP_DIR/release/... during the electron-builder run
@@ -401,7 +401,7 @@ def main() -> int:
         print("ERROR: electron-builder failed")
         return r.returncode
 
-    setups = sorted(release_dir.glob("Clariora_Setup_*.exe")) if release_dir.is_dir() else []
+    setups = sorted(release_dir.glob("CompTIA_A_Plus_Setup_*.exe")) if release_dir.is_dir() else []
     if not setups:
         print(f"ERROR: no installer found under {release_dir}")
         return 1
@@ -411,7 +411,7 @@ def main() -> int:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
     # Canonical share location
-    for old in OUT_DIR.glob("Clariora_Setup_*.exe"):
+    for old in OUT_DIR.glob("CompTIA_A_Plus_Setup_*.exe"):
         if old.name != latest.name:
             try:
                 old.unlink()
@@ -428,7 +428,7 @@ def main() -> int:
             print(f"Update metadata: {OUT_DIR / meta}")
 
     # Single-file portable exe produced by the "portable" target.
-    for portable_exe in release_dir.glob("Clariora_Portable_*.exe"):
+    for portable_exe in release_dir.glob("CompTIA_A_Plus_Portable_*.exe"):
         shutil.copy2(portable_exe, OUT_DIR / portable_exe.name)
         print(f"Portable exe: {OUT_DIR / portable_exe.name}")
 

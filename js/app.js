@@ -387,7 +387,7 @@
       }
     }
 
-    console.log('[APlus] Initialized Clariora v' + (APlus.APP_VERSION || '3.1.4'));
+    console.log('[APlus] Initialized Clariora Exam Simulator v' + (APlus.APP_VERSION || '3.1.4'));
   }
 
   APlus.init = initApp;

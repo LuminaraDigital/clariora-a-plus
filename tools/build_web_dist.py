@@ -69,12 +69,16 @@ ROOT_EXTRA_FILES = [
     "icon.png",
     "_headers",
     "_redirects",
+    # Telegram Mini App / TON Connect files: must be served as real files, not the SPA fallback.
+    "tonconnect-manifest.json",
+    "privacy.html",
+    "terms.html",
 ]
 
 # Whole directories copied in full (minus excluded extensions/paths).
 # landing/ is the marketing page. It ships with the site but is not part
 # of the offline app shell, so it is copied and never precached.
-DIRS_TO_COPY = ["js", "css", "fonts", "icons", "landing"]
+DIRS_TO_COPY = ["js", "css", "fonts", "icons", "shards", "landing"]
 
 EXCLUDED_EXTENSIONS = {".pdf", ".py", ".exe", ".pyc"}
 EXCLUDED_DIR_NAMES = {

@@ -416,7 +416,7 @@ def ingest_labs() -> list[dict]:
             "id": f"lab-{slug(path.stem)}",
             "kind": "lab",
             "title": title,
-            "exam": "both" if (fmt == "markdown" or lab_no is None) else classify_exam(path.name + " " + content[:200]),
+            "exam": classify_exam(path.name + " " + content[:200]),
             "format": fmt,
             "source": f"Labs for A+/{path.name}",
             "media_path": rel_media,

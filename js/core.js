@@ -12,7 +12,7 @@
   const APlus = window.APlus;
 
   APlus.APP_VERSION = '3.1.5';
-  APlus.NAME = 'Clariora';
+  APlus.NAME = 'Clariora Exam Simulator';
 
   /**
    * Event Bus: publish-subscribe system for decoupled modular communication

@@ -157,7 +157,7 @@ var partsLabItem = {
     { t: 'h2', text: 'Verify' },
     { t: 'h3', text: 'Check' },
     { t: 'step', text: 'Confirm the partition.' },
-    { t: 'table', rows: [['#', 'Item', '\u00fc'], ['1', 'Racked the servers', '\u2610'], ['2', 'Cabled the switches', '\u2610']] }
+    { t: 'table', rows: [['#', 'Item', 'ü'], ['1', 'Racked the servers', '☐'], ['2', 'Cabled the switches', '☐']] }
   ]
 };
 
@@ -328,7 +328,7 @@ test('checklist tables become checkbox rows', function () {
   has(out, 'data-cl-step="t0"');
   has(out, 'data-cl-step="t1" checked');
   has(out, 'Racked the servers');
-  lacks(out, '\u00fc');
+  lacks(out, 'ü');
 });
 
 test('table rows do not count towards step progress', function () {

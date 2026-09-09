@@ -101,7 +101,7 @@ def main() -> int:
         print("ERROR: electron-builder failed")
         return r.returncode
 
-    produced = sorted(p for p in OUT_DIR.glob("Clariora_Linux_*") if p.is_file())
+    produced = sorted(p for p in OUT_DIR.glob("CompTIA_A_Plus_Linux_*") if p.is_file())
     if not produced and not args.dir:
         print(f"ERROR: no Linux packages found under {OUT_DIR}")
         return 1

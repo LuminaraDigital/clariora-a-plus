@@ -8,6 +8,8 @@
   <link rel="icon" type="image/png" href="favicon.png" sizes="64x64">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="css/tma-overrides.css">
   <meta name="theme-color" content="#D4AF37">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1481,6 +1483,7 @@
   <script src="js/bank-integrity.js?v=4.3.6"></script>
   <script src="js/data.js"></script>
   <script src="js/engine-core.js"></script>
+  <script src="js/pbq-engine.js"></script>
   <script src="js/qtypes.js"></script>
   <script src="js/pbq.js"></script>
   <script src="js/mastery.js"></script>
@@ -1509,10 +1512,47 @@
   <script src="js/readiness-ui.js"></script>
   <script src="js/home-widgets.js"></script>
   <script src="js/onboarding.js?v=4.3.0"></script>
+  <script src="js/pearson-mode.js"></script>
+  <script src="js/mastery-heatmap.js"></script>
+  <script src="js/community-benchmarks.js"></script>
+  <script src="js/report-problem-modal.js"></script>
+  <script src="js/pass-guarantee-certificate.js"></script>
   <script src="js/pwa-update.js"></script>
   <script src="js/app-update.js?v=4.3.5"></script>
+  <!-- Telegram Mini App (TMA) Suite -->
+  <script src="shards/manifest.js"></script>
+  <script src="js/data_loader_tma.js"></script>
+  <script src="js/tma_bridge.js"></script>
+  <script src="js/stars_billing.js"></script>
+  <script src="js/ton_credentials.js"></script>
+  <script src="js/tma_ghost_coach.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      if (window.TMABridge) {
+        var bridge = window.TMABridge.init();
+        if (bridge && bridge.isTMA) {
+          var sub = document.getElementById('tmaSkeletonSubtext');
+          if (sub) sub.textContent = 'Telegram Mini App Initializing...';
+        }
+        if (typeof window.TMABridge.mountUserPill === 'function') {
+          window.TMABridge.mountUserPill('tmaUserPillMount');
+        }
+      }
+      setTimeout(function () {
+        var sk = document.getElementById('tmaSkeletonScreen');
+        if (sk) sk.classList.add('is-loaded');
+      }, 300);
+    });
+  </script>
 </head>
 <body>
+
+  <!-- TMA Fast-Boot Skeleton Screen -->
+  <div id="tmaSkeletonScreen" class="tma-skeleton-screen" aria-hidden="true">
+    <div class="tma-skeleton-pulse"></div>
+    <div style="font-weight: 700; color: #D4AF37; font-size: 1.1rem; margin-bottom: 4px;">Clariora A+</div>
+    <div id="tmaSkeletonSubtext" style="color: #94A3B8; font-size: 0.8rem;">Preparing workspace...</div>
+  </div>
 
   <!-- Cinematic boot: full-bleed brand, one enter path, then homepage. -->
   <div id="aplusBootIntro" class="boot-intro is-active" role="dialog" aria-modal="true" aria-labelledby="aplusBootIntroTitle">
@@ -1550,10 +1590,15 @@
       <button type="button" class="header-nav-link" onclick="openMoreMenuAt('moreGroupProgress')">Progress</button>
     </nav>
     <div class="header-controls-wrap" role="group" aria-label="App controls">
+      <div id="tmaUserPillMount" style="display: inline-flex; align-items: center;"></div>
       <button type="button" class="streak-chip" id="streakChip" onclick="openMoreMenu()" title="Study streak" aria-label="Study streak">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3c.6 3 2.2 4.2 3.6 5.6A6.9 6.9 0 0 1 18 13.5a6 6 0 1 1-12 0c0-2 .9-3.4 2-4.6.3 1 .9 1.7 1.7 2 0-2.6.8-5.5 2.3-7.9Z"></path></svg>
         <strong id="apxStreakBadge">0</strong>
         <span class="streak-label">day streak</span>
+      </button>
+      <button type="button" class="streak-chip tma-stars-chip" id="tmaStarsChip" onclick="StarsBilling.openStarsUpgradeSheet()" title="Telegram Stars Store" aria-label="Telegram Stars Store" style="border-color: rgba(245, 208, 97, 0.4); background: rgba(245, 208, 97, 0.1); cursor: pointer;">
+        <span style="color: #F5D061;">⭐</span>
+        <strong style="color: #F5D061; margin-left: 2px;">Stars</strong>
       </button>
       <button type="button" id="moreMenuBtn" class="btn btn-secondary more-btn" onclick="toggleMoreMenu()" aria-haspopup="dialog" aria-expanded="false" aria-controls="moreMenu">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
@@ -1587,7 +1632,12 @@
 
       <div class="home-main">
         <section class="mock-exams" aria-labelledby="mockExamsHeading">
-          <h3 id="mockExamsHeading" class="section-heading">Full mock exams</h3>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
+            <h3 id="mockExamsHeading" class="section-heading" style="margin-bottom: 0;">Full mock exams</h3>
+            <button type="button" id="pearsonModeToggleBtn" class="btn btn-secondary" onclick="APlus.pearsonMode.toggle()" style="font-size: 0.82rem; padding: 0.3rem 0.75rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+              <span>Pearson VUE Mode:</span> <strong class="mode-badge" style="color: var(--accent-cyan);">OFF (Standard)</strong>
+            </button>
+          </div>
           <div class="mock-grid">
             <div class="card">
               <div class="card-title">Core 1</div>
@@ -1621,6 +1671,11 @@
           </div>
         </section>
 
+        <!-- 61-Objective Interactive Mastery Heatmap -->
+        <section class="mastery-heatmap-section" id="homeMasteryHeatmapSection" style="margin: 1.5rem 0;">
+          <div id="masteryHeatmapMount"></div>
+        </section>
+
         <section class="keep-going" aria-labelledby="keepGoingHeading">
         <h3 id="keepGoingHeading" class="section-heading label">Keep going</h3>
         <section id="homeMissionMount" class="home-mission" aria-label="Coach mission" hidden></section>
@@ -1640,6 +1695,10 @@
           <button type="button" class="quick-link" onclick="openPBQModal()">
             <span class="quick-link-title">PBQ labs</span>
             <span class="quick-link-meta">Interactive sims</span>
+          </button>
+          <button type="button" class="quick-link" onclick="APlus.passGuarantee.generateCertificate(prompt('Enter your full legal name for the readiness certificate:', 'Certified Technician') || 'Certified Technician', 'core1')">
+            <span class="quick-link-title">Pass Guarantee</span>
+            <span class="quick-link-meta">Verify certificate</span>
           </button>
         </nav>
         <section id="recentAttemptsMount" class="card recent-attempts" aria-label="Recent attempts"></section>
@@ -1727,6 +1786,7 @@
           </div>
         </div>
         <div id="apxExamRewardBanner"></div>
+        <div id="tonCredentialMount"></div>
         
         <div class="stats-row">
           <div class="stat-box">
@@ -2186,6 +2246,10 @@
       if (window.ExamA11y) ExamA11y.init();
       if (window.TutorMode) TutorMode.init();
       if (window.TutorMode) TutorMode.syncToggleUi();
+      const hmMount = document.getElementById('masteryHeatmapMount');
+      if (hmMount && window.APlus && APlus.masteryHeatmap) {
+        APlus.masteryHeatmap.render(hmMount);
+      }
     }
 
     /* NAVIGATION */
@@ -3810,10 +3874,11 @@
 
       <section class="more-group more-about" aria-labelledby="moreGroupAbout">
         <h3 id="moreGroupAbout" class="label">About</h3>
-        <p class="about-product">Clariora A+</p>
+        <p class="about-product">Clariora</p>
         <p class="about-brand">Datacentre Academy</p>
         <p class="more-note">CompTIA A+ practice for 220-1201 Core 1 and 220-1202 Core 2.</p>
         <p class="more-note">Not affiliated with CompTIA.</p>
+        <p class="more-note"><a href="privacy.html" style="color: #38BDF8; text-decoration: underline;">Privacy Policy</a> &bull; <a href="terms.html" style="color: #38BDF8; text-decoration: underline;">Terms of Service</a></p>
         <p class="more-note about-version" id="aboutVersionLine">Version 3.1.4</p>
         <section id="appUpdateMount" class="app-update" hidden></section>
         <nav class="drawer-nav" aria-label="About actions">

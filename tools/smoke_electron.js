@@ -6,7 +6,7 @@
  * intro does not play a second time.
  *
  *   node tools/smoke_electron.js
- *   node tools/smoke_electron.js "C:/path/to/Clariora.exe"
+ *   node tools/smoke_electron.js "C:/path/to/CompTIA_A_Plus_Simulator.exe"
  *
  * Electron needs a desktop session. On a headless machine the window never
  * appears and no CDP target is published: the script says so and exits 1.
@@ -19,7 +19,7 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const DEFAULT_EXE = process.platform === 'win32'
-  ? path.join(ROOT, 'release', 'portable', 'Clariora.exe')
+  ? path.join(ROOT, 'release', 'portable', 'CompTIA_A_Plus_Simulator.exe')
   : process.platform === 'darwin'
     ? path.join(ROOT, 'release', 'mac', 'Clariora.app', 'Contents', 'MacOS', 'Clariora')
     : path.join(ROOT, 'release', 'linux', 'linux-unpacked', 'comptia-a-plus-master');

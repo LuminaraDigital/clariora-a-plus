@@ -4,8 +4,8 @@ Build a macOS desktop app (.app inside .dmg / .zip) via electron-builder.
 Must run on macOS. Windows and Linux hosts cannot produce a signed Mac app.
 
 Canonical output:
-  ROOT/release/Clariora_Mac_<version>_<arch>.dmg
-  ROOT/release/Clariora_Mac_<version>_<arch>.zip
+  ROOT/release/CompTIA_A_Plus_Mac_<version>_<arch>.dmg
+  ROOT/release/CompTIA_A_Plus_Mac_<version>_<arch>.zip
 
 Usage:
   python3 tools/build_macos_app.py
@@ -123,7 +123,7 @@ def main() -> int:
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     copied = 0
-    for pattern in ("Clariora_Mac_*.dmg", "Clariora_Mac_*.zip"):
+    for pattern in ("CompTIA_A_Plus_Mac_*.dmg", "CompTIA_A_Plus_Mac_*.zip"):
         for src in sorted(release_dir.glob(pattern)):
             dest = OUT_DIR / src.name
             shutil.copy2(src, dest)

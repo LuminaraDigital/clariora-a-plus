@@ -87,7 +87,7 @@
     "maintainer": "Datacentre Academy <luminaradigitalagency@gmail.com>",
     "synopsis": "CompTIA A+ Core 1 and Core 2 exam simulator and study suite",
     "description": "Offline-first exam simulator and study suite for CompTIA A+ 220-1201 and 220-1202.",
-    "artifactName": "Clariora_Linux_${version}_${arch}.${ext}",
+    "artifactName": "CompTIA_A_Plus_Linux_${version}_${arch}.${ext}",
     "desktop": {
       "entry": {
         "Name": "Clariora",

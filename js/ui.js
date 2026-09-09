@@ -391,7 +391,36 @@
 
       if (qNumEl) qNumEl.innerText = `Question ${idx + 1} of ${total}`;
       if (qDomEl) qDomEl.innerText = q.domain || (q.exam === 'core1' ? 'Core 1' : 'Core 2');
-      if (qTextEl) qTextEl.innerText = q.question;
+      if (qTextEl) {
+        qTextEl.innerText = q.question;
+        let exMount = document.getElementById('qExhibitMount');
+        if (!exMount) {
+          exMount = document.createElement('div');
+          exMount.id = 'qExhibitMount';
+          qTextEl.parentNode.insertBefore(exMount, qTextEl.nextSibling);
+        }
+        if (q.exhibit) {
+          const ex = q.exhibit;
+          const url = escapeHTML(ex.url || ex.src || '');
+          const cap = escapeHTML(ex.caption || ex.title || 'Exhibit Diagram');
+          const alt = escapeHTML(ex.alt || 'Question Exhibit');
+          exMount.innerHTML = `
+            <div class="question-exhibit" style="margin: 0.9rem 0 1.2rem 0; background: #0c1017; border: 1px solid var(--gold-primary); border-radius: 8px; overflow: hidden;">
+              <div style="background: rgba(212, 175, 55, 0.15); padding: 0.45rem 0.8rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(212, 175, 55, 0.3);">
+                <span style="font-weight: 700; color: var(--gold-primary); font-size: 0.82rem; letter-spacing: 0.04em;">EXHIBIT: ${cap}</span>
+                <a href="${url}" target="_blank" rel="noopener" class="btn btn-secondary" style="font-size: 0.74rem; padding: 0.15rem 0.45rem; text-decoration: none;">Full Size ↗</a>
+              </div>
+              <div style="padding: 0.8rem; text-align: center; background: #080b11;">
+                <img src="${url}" alt="${alt}" style="max-width: 100%; max-height: 380px; object-fit: contain; border-radius: 4px;" />
+              </div>
+            </div>
+          `;
+          exMount.style.display = 'block';
+        } else {
+          exMount.innerHTML = '';
+          exMount.style.display = 'none';
+        }
+      }
 
       // Flag button
       const flagBtn = document.getElementById('flagBtn');
@@ -405,13 +434,16 @@
       // Render options via qtypes
       const optContainer = document.getElementById('optionsList');
       if (optContainer) {
-        const userState = {
-          answer: session.userAnswers[idx],
-          answers: Array.isArray(session.userAnswers[idx]) ? session.userAnswers[idx] : [],
-          matches: session.userAnswers[idx] || {},
-          sequence: session.userAnswers[idx] || null,
-          eliminated: session.eliminatedOptions[idx] || new Set()
-        };
+        const storedAns = session.userAnswers[idx];
+        const userState = (typeof storedAns === 'object' && storedAns !== null && !Array.isArray(storedAns))
+          ? { ...storedAns, eliminated: session.eliminatedOptions[idx] || new Set() }
+          : {
+              answer: storedAns,
+              answers: Array.isArray(storedAns) ? storedAns : [],
+              matches: storedAns || {},
+              sequence: storedAns || null,
+              eliminated: session.eliminatedOptions[idx] || new Set()
+            };
 
         APlus.qtypes.render(q, userState, optContainer, {
           onSelect: (ansVal) => session.answerQuestion(ansVal),
@@ -577,6 +609,16 @@
       if (isPassed && window.APlus && window.APlus.sound) {
         window.APlus.sound.playSuccess();
       }
+
+      // Render TON Blockchain Credential Card if TONCredentials module is active
+      if (window.TONCredentials && document.getElementById('tonCredentialMount')) {
+        window.TONCredentials.renderCredentialCard(document.getElementById('tonCredentialMount'), {
+          examCore: payload.examCore || (payload.passingScore === 700 ? '2' : '1'),
+          scaledScore: payload.scaledScore,
+          passed: isPassed,
+          ledgerHash: (payload.ledgerEntry && payload.ledgerEntry.entryHash) || 'APX_' + Date.now().toString(16)
+        });
+      }
     }
 
     /**
@@ -729,8 +771,19 @@
           </div>
           <div class="review-body" id="reviewBody_${idx}">
             <p class="review-stem-full" style="font-size: 15px; margin-bottom: 1rem;">${escapeHTML(q.question)}</p>
+            ${q.exhibit ? `
+              <div class="question-exhibit" style="margin: 0.8rem 0; background: #0c1017; border: 1px solid var(--gold-primary); border-radius: 8px; overflow: hidden;">
+                <div style="background: rgba(212, 175, 55, 0.15); padding: 0.4rem 0.8rem; font-weight: 700; color: var(--gold-primary); font-size: 0.82rem;">
+                  EXHIBIT: ${escapeHTML(q.exhibit.caption || q.exhibit.title || 'Diagram')}
+                </div>
+                <div style="padding: 0.8rem; text-align: center; background: #080b11;">
+                  <img src="${escapeHTML(q.exhibit.url || q.exhibit.src || '')}" alt="${escapeHTML(q.exhibit.alt || 'Exhibit')}" style="max-width: 100%; max-height: 320px; object-fit: contain; border-radius: 4px;" />
+                </div>
+              </div>
+            ` : ''}
             <div id="reviewOptionMount_${idx}"></div>
             ${this.buildExplanationHtml(q)}
+            ${window.APlus && APlus.communityBenchmarks ? APlus.communityBenchmarks.renderBadge(q) : ''}
             ${q.video_reference ? `
               <div class="review-video">
                 <span class="label">Video reference</span>
@@ -739,8 +792,10 @@
                 <a href="${escapeHTML(q.video_reference.url)}" target="_blank" rel="noopener" class="btn btn-secondary" style="font-size: 0.78rem; padding: 0.3rem 0.7rem; text-decoration: none;">Watch lesson</a>
               </div>
             ` : ''}
-            <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem;">
+            <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+              <button type="button" class="btn btn-secondary" style="font-size: 0.78rem; padding: 0.25rem 0.55rem; color: var(--gold-light); border-color: var(--border-gold);" onclick="if(window.TMAGhostCoach)TMAGhostCoach.openCoachSheet(APlus.engine.questions[${idx}], (APlus.engine.userAnswers[${idx}] !== undefined && APlus.engine.questions[${idx}].options ? APlus.engine.questions[${idx}].options[APlus.engine.userAnswers[${idx}]] : 'None'))">👻 Ask Ghost Coach</button>
               <button type="button" class="btn btn-secondary" style="font-size: 0.78rem; padding: 0.25rem 0.55rem;" onclick="APlus.mastery.openHanseiModal(APlus.engine.questions[${idx}])">Why I missed this</button>
+              <button type="button" class="btn btn-secondary" style="font-size: 0.78rem; padding: 0.25rem 0.55rem; color: var(--accent-amber);" onclick="if(window.APlus&&APlus.problemReporter)APlus.problemReporter.openModal('${escapeHTML(q.id)}')">⚠️ Report a problem</button>
             </div>
           </div>
         `;

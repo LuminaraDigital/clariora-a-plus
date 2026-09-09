@@ -1,6 +1,6 @@
 {
-  "name": "Clariora A+",
-  "short_name": "Clariora A+",
+  "name": "Clariora",
+  "short_name": "Clariora",
   "description": "Enterprise-grade CompTIA A+ Core 1 and Core 2 Exam Simulator & Study Suite",
   "start_url": "./A_Plus_Exam_Simulator.html",
   "display": "standalone",

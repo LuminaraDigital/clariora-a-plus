@@ -6,44 +6,11 @@ All notable changes to this project are documented here. The format follows Keep
 
 ### Changed
 
-- The product is now called Clariora. The window title, boot screen, About
-  dialog, web manifests, installer and disk image file names, desktop
-  shortcut, and documentation all use the new name. Storage keys, the
-  Electron app id, the GitHub repository, and the Cloudflare worker name are
-  unchanged so existing installs keep updating and learners keep their data
-- On first launch after the rename the desktop app moves its data folder from
-  the old product name to the new one, so exam history, the learner database,
-  and window state carry over without any action from the learner
-
-## [3.1.5] - 2026-09-07
-
-### Changed
-
-- The course library now shows slide decks as decks and labs as worksheets
-  instead of extracted text. A slide deck opens one slide at a time with the
-  slide title, nested bullets, the figures pulled out of the PowerPoint,
-  speaker notes, a filmstrip of every slide, a progress bar, and left and right
-  arrow keys. Section divider slides list the exam objectives they cover
-- A lab opens as a guided worksheet: what you will do, what you will need,
-  then numbered steps with a checkbox on every sub-step, questions with a place
-  to type the answer, commands and their output in a terminal pane with a copy
-  button, and notes as callouts. Progress and answers are saved per lab and
-  the sidebar shows how far along each deck and lab is
-- The two markdown guides render as formatted pages (headings, tables, lists,
-  code) and the capstone checklist renders as a table with a tick per row
-- Library items are grouped (Core 1, Core 2; Start here, Hands-on labs,
-  Capstone), carry a module or lab number badge, and the tabs show counts
-- `tools/build_curriculum.py` now extracts document structure: typed blocks
-  for Word labs (headings, steps, questions, answers, commands, output, tables)
-  and per-slide title, bullets with levels, images and notes for PowerPoint
-  decks. Slide images are written under `media/slides/img/` and shipped with
-  the web build (about 40 MB). Older flat catalogs still render
-
-### Added
-
-- `tools/test_curriculum.js` covers the deck and lab parsers, the markdown
-  subset, escaping, and renders every real deck and lab when the catalog is
-  present. It runs in `npm test`
+- The product is renamed from CompTIA A+ Master to Clariora across the app
+  shell, PWA manifests, Electron window and About dialog, Telegram bot,
+  TON Connect manifest, legal pages, build scripts and docs. Storage keys,
+  the Electron appId, the GitHub repository, the Cloudflare project name and
+  the public domain are unchanged so installed apps and links keep working.
 
 ## [3.1.4] - 2026-09-06
 

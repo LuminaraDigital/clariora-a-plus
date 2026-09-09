@@ -849,10 +849,22 @@
     var deleteBtn = global.document.getElementById('aplusSyncDeleteBtn');
     if (deleteBtn) {
       deleteBtn.addEventListener('click', function () {
-        try {
-          if (!global.confirm('Delete all of your synced data from the cloud? Data on this device is not affected.')) return;
-        } catch (_) {}
-        deleteCloudData();
+        var proceed = function () { deleteCloudData(); };
+        if (global.APlus && global.APlus.dialog && typeof global.APlus.dialog.confirm === 'function') {
+          global.APlus.dialog.confirm({
+            title: 'Delete Synced Cloud Data?',
+            body: 'This will delete all of your synced data from the cloud. Data on this local device is not affected.',
+            confirmLabel: 'Delete Cloud Data',
+            cancelLabel: 'Keep',
+            danger: true
+          }).then(function (ok) {
+            if (ok) proceed();
+          });
+        } else {
+          try {
+            if (global.confirm('Delete all of your synced data from the cloud? Data on this device is not affected.')) proceed();
+          } catch (_) {}
+        }
       });
     }
   }

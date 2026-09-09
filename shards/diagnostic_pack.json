@@ -1,0 +1,698 @@
+[
+  {
+    "id": "C1-001",
+    "exam": "core1",
+    "domain": "2.0 Networking",
+    "objective": "2.8",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Which of the following is an environmental threat or phenomenon that damages electronic components rather than a physical tool found in a technician's toolkit?",
+    "options": [
+      "Multimeter / voltage tester",
+      "Electromagnetic pulse (EMP) discharge",
+      "USB thumb drive with diagnostic utilities",
+      "Hex nut driver for motherboard standoffs"
+    ],
+    "answer": 1,
+    "explanation": "An electromagnetic pulse (EMP) is a sudden burst of electromagnetic radiation that damages or destroys electronic circuits; it is an environmental hazard, not a tool. Diagnostic thumb drives, nut drivers for mounting standoffs, and multimeters/voltage testers are standard physical equipment carried in a technician's toolkit.",
+    "distractor_analysis": {
+      "2": "USB thumb drives with diagnostic software and bootable ISOs are essential portable tools for field technicians.",
+      "3": "Nut drivers are standard mechanical hand tools used to tighten motherboard standoffs and chassis mounting screws.",
+      "0": "Multimeters and voltage testers are essential diagnostic electrical tools used to verify AC wall outlets and DC PSU rail voltages."
+    },
+    "video_reference": {
+      "title": "Network Tools - CompTIA A+ 220-1201 - 2.8",
+      "url": "https://www.youtube.com/watch?v=CHQQgjtrhYU",
+      "duration": "11:48",
+      "objective": "2.8"
+    },
+    "notes_reference": "13_DHCP_DNS_VLAN_VPN_Network_Troubleshooting.md",
+    "tags": [
+      "tools",
+      "safety",
+      "environmental"
+    ]
+  },
+  {
+    "id": "C1-002",
+    "exam": "core1",
+    "domain": "2.0 Networking",
+    "objective": "2.8",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "A datacenter technician needs to measure the AC line voltage and verify proper grounding at a standard commercial wall receptacle. Which tool should the technician use?",
+    "options": [
+      "Radio frequency interference (RFI) probe",
+      "Electrostatic discharge (ESD) field meter",
+      "Digital multimeter / voltmeter",
+      "Precision mechanical tweezers"
+    ],
+    "answer": 2,
+    "explanation": "A digital multimeter (or dedicated voltmeter/receptacle tester) measures AC voltage, DC voltage, resistance, and circuit continuity, making it the proper tool to verify that an electrical wall outlet supplies expected line voltage (e.g., 120V in North America or 230V in Europe). RFI probes detect wireless electromagnetic interference. ESD field meters measure static charge accumulation. Tweezers are assembly tools that present severe shock hazards if inserted into electrical outlets.",
+    "distractor_analysis": {
+      "0": "RFI probes measure high-frequency radio signal emissions, not 50/60 Hz AC electrical line power.",
+      "1": "ESD field meters measure static electrostatic potential on surfaces, not line voltage from power mains.",
+      "3": "Inserting metal tweezers into an energized AC wall receptacle creates a dangerous short circuit and severe electric shock hazard."
+    },
+    "video_reference": {
+      "title": "Network Tools - CompTIA A+ 220-1201 - 2.8",
+      "url": "https://www.youtube.com/watch?v=CHQQgjtrhYU",
+      "duration": "11:48",
+      "objective": "2.8"
+    },
+    "notes_reference": "13_DHCP_DNS_VLAN_VPN_Network_Troubleshooting.md",
+    "tags": [
+      "tools",
+      "multimeter",
+      "power",
+      "electrical"
+    ]
+  },
+  {
+    "id": "C1-003",
+    "exam": "core1",
+    "domain": "5.0 Hardware and Network Troubleshooting",
+    "objective": "5.1",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "A tier-1 help desk technician is troubleshooting a complex server failure that exceeds their technical expertise and authorization level. According to professional support best practices, what should the technician do next?",
+    "options": [
+      "Completely disassemble the server hardware without a diagnostic plan",
+      "Inform the customer that the problem is impossible to fix and close the ticket",
+      "Escalate the issue to a senior engineer following established support procedures",
+      "Ask the end user for technical advice on how to repair the server"
+    ],
+    "answer": 2,
+    "explanation": "When an issue falls outside a technician's skill set, access permissions, or organizational scope of practice, the professional and standard procedure is to escalate the ticket to senior engineering or specialized vendor support. Asking the customer for technical instructions is unprofessional, disassembling hardware blindly causes further downtime, and dismissing the problem without escalation damages customer trust.",
+    "distractor_analysis": {
+      "3": "End users look to IT support for technical solutions; asking them how to fix server infrastructure is unprofessional.",
+      "0": "Disassembling complex systems without a tested diagnostic theory wastes time and risks damaging hardware.",
+      "1": "Telling a customer a problem cannot be fixed instead of seeking higher-tier engineering support violates SLA and customer service standards."
+    },
+    "video_reference": {
+      "title": "Troubleshooting Hardware - CompTIA A+ 220-1201 - 5.1",
+      "url": "https://www.youtube.com/watch?v=HgeURynWn_w",
+      "duration": "25:15",
+      "objective": "5.1"
+    },
+    "notes_reference": "08_BIOS_UEFI_Hardware_Troubleshooting.md",
+    "tags": [
+      "troubleshooting",
+      "methodology",
+      "escalation"
+    ]
+  },
+  {
+    "id": "C1-016",
+    "exam": "core1",
+    "domain": "5.0 Hardware and Network Troubleshooting",
+    "objective": "5.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A technician is following the CompTIA Troubleshooting Methodology to resolve intermittent memory errors. The technician has identified the problem, established a theory of probable cause (unseated RAM), and successfully tested the theory. What is the NEXT step in the methodology?",
+    "options": [
+      "Document findings, actions, and outcomes in the ticketing system",
+      "Question the user about environmental and software changes",
+      "Verify full system functionality and implement preventive measures",
+      "Establish a plan of action to resolve the problem and implement the solution"
+    ],
+    "answer": 3,
+    "explanation": "The CompTIA 6-step Troubleshooting Methodology proceeds in order: (1) Identify the problem, (2) Establish a theory of probable cause, (3) Test the theory to determine cause, (4) Establish a plan of action to resolve the problem and implement the solution, (5) Verify full system functionality and implement preventive measures, and (6) Document findings, actions, and outcomes. After testing and confirming the theory, the technician must establish a plan of action and implement the solution (reseating or replacing the RAM).",
+    "distractor_analysis": {
+      "0": "Documenting findings is Step 6, the final step performed after the issue is fully resolved, verified, and closed.",
+      "1": "Questioning the user is part of Step 1 (Identify the problem), which occurred at the very start of troubleshooting.",
+      "2": "Verifying full system functionality is Step 5, performed after the solution has been implemented in Step 4."
+    },
+    "video_reference": {
+      "title": "Troubleshooting Hardware - CompTIA A+ 220-1201 - 5.1",
+      "url": "https://www.youtube.com/watch?v=HgeURynWn_w",
+      "duration": "25:15",
+      "objective": "5.1"
+    },
+    "notes_reference": "08_BIOS_UEFI_Hardware_Troubleshooting.md",
+    "tags": [
+      "troubleshooting",
+      "methodology",
+      "comptia"
+    ]
+  },
+  {
+    "id": "C1-004",
+    "exam": "core1",
+    "domain": "3.0 Hardware",
+    "objective": "3.7",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Which of the following computer peripheral devices functions strictly as an output device for presenting data to users?",
+    "options": [
+      "USB web camera",
+      "Mechanical keyboard",
+      "Studio condenser microphone",
+      "Standalone laser printer"
+    ],
+    "answer": 3,
+    "explanation": "A printer is an output device that converts digital electronic documents into hardcopy physical media. Microphones capture acoustic audio signals into digital data (input), web cameras capture video streams (input), and keyboards capture keystrokes and user commands (input).",
+    "distractor_analysis": {
+      "2": "A microphone captures analog sound waves and converts them into digital audio data, making it an input device.",
+      "0": "A web camera captures optical images and transmits video data into the computer system, making it an input device.",
+      "1": "A keyboard sends keystroke scan codes into the operating system, making it a primary human input device."
+    },
+    "video_reference": {
+      "title": "Multifunction Devices - CompTIA A+ 220-1201 - 3.7",
+      "url": "https://www.youtube.com/watch?v=ctAOL7WyEUY",
+      "duration": "14:25",
+      "objective": "3.7"
+    },
+    "notes_reference": "16_Printers.md",
+    "tags": [
+      "hardware",
+      "peripherals",
+      "input-output"
+    ]
+  },
+  {
+    "id": "C1-005",
+    "exam": "core1",
+    "domain": "3.0 Hardware",
+    "objective": "3.5",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Which of the following is a specialized AI accelerator processor developed specifically by Google for cloud machine learning workloads rather than a standard commodity PC component?",
+    "options": [
+      "Central Processing Unit (CPU)",
+      "Tensor Processing Unit (TPU)",
+      "Graphics Processing Unit (GPU)",
+      "Random Access Memory (RAM)"
+    ],
+    "answer": 1,
+    "explanation": "A Tensor Processing Unit (TPU) is a proprietary application-specific integrated circuit (ASIC) custom-built by Google for machine learning and neural network training in cloud datacenters, not a standard commodity PC component. CPUs, GPUs, and RAM modules are the foundational components found in standard personal computers and workstations.",
+    "distractor_analysis": {
+      "2": "A GPU is a standard PC component responsible for rendering graphics and executing parallel compute tasks.",
+      "3": "RAM is the primary volatile system memory installed on every personal computer motherboard.",
+      "0": "The CPU is the central processing unit that executes general-purpose operating system and application instructions in every PC."
+    },
+    "video_reference": {
+      "title": "Motherboards - CompTIA A+ 220-1201 - 3.5",
+      "url": "https://www.youtube.com/watch?v=dbxM_LFMXpw",
+      "duration": "6:18",
+      "objective": "3.5"
+    },
+    "notes_reference": "04_Motherboards_Expansion_Cards.md",
+    "tags": [
+      "hardware",
+      "processors",
+      "cpu",
+      "tpu"
+    ]
+  },
+  {
+    "id": "C1-012",
+    "exam": "core1",
+    "domain": "1.0 Mobile Devices",
+    "objective": "1.1",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Which memory form factor is engineered specifically for compact laptops, small-form-factor devices, and thin clients due to its smaller physical dimensions?",
+    "options": [
+      "Registered ECC full-height server DIMM",
+      "Standard desktop unbuffered DIMM",
+      "Small Outline Dual In-line Memory Module (SO-DIMM)",
+      "Single In-line Memory Module (SIMM)"
+    ],
+    "answer": 2,
+    "explanation": "SO-DIMMs (Small Outline Dual In-line Memory Modules) are approximately half the physical length of standard desktop DIMMs, making them the universal standard memory module form factor for laptops, notebooks, all-in-one PCs, and compact small-form-factor systems. Desktop DIMMs, SIMMs, and full-height server DIMMs are physically too large to fit into laptop chassis.",
+    "distractor_analysis": {
+      "1": "Desktop DIMMs are full-length modules designed for desktop ATX and microATX motherboards, unable to fit into laptop memory slots.",
+      "3": "SIMMs are obsolete 30-pin and 72-pin memory modules from legacy 1990s personal computers.",
+      "0": "Registered ECC server DIMMs are full-height enterprise modules designed for multi-socket rackmount servers."
+    },
+    "video_reference": {
+      "title": "Laptop Hardware - CompTIA A+ 220-1201 - 1.1",
+      "url": "https://www.youtube.com/watch?v=zODZ0i-Iark",
+      "duration": "16:42",
+      "objective": "1.1"
+    },
+    "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+    "tags": [
+      "mobile",
+      "laptop",
+      "ram",
+      "so-dimm"
+    ]
+  },
+  {
+    "id": "C1-088",
+    "exam": "core1",
+    "domain": "1.0 Mobile Devices",
+    "objective": "1.2",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Which of the following wireless technologies utilizes optical light waves rather than radio frequency (RF) electromagnetic waves to communicate between devices, requiring direct line-of-sight?",
+    "options": [
+      "Near Field Communication (NFC)",
+      "Radio Frequency Identification (RFID)",
+      "Infrared (IR)",
+      "Bluetooth (IEEE 802.15.1)"
+    ],
+    "answer": 2,
+    "explanation": "Infrared (IR) communication uses invisible optical light waves (in the 850 nm to 940 nm range) transmitted by an LED to an optical photodiode sensor, requiring direct line-of-sight and unable to penetrate walls or opaque objects. Bluetooth, NFC, and RFID are all radio-frequency (RF) technologies that use electromagnetic radio waves.",
+    "distractor_analysis": {
+      "3": "Bluetooth operates on 2.4 GHz ultra-high-frequency radio waves, which can penetrate walls and do not require optical line-of-sight.",
+      "0": "Near Field Communication (NFC) uses high-frequency radio electromagnetic induction (13.56 MHz) over very short distances (a few centimeters).",
+      "1": "RFID uses electromagnetic radio frequency fields to automatically identify and track tags attached to objects."
+    },
+    "video_reference": {
+      "title": "Connecting Mobile Devices - CompTIA A+ 220-1201 - 1.2",
+      "url": "https://www.youtube.com/watch?v=Iis2-_89YvQ",
+      "duration": "6:08",
+      "objective": "1.2"
+    },
+    "notes_reference": "15_Mobile_Devices_and_Laptops.md",
+    "tags": [
+      "mobile",
+      "wireless",
+      "infrared",
+      "rf"
+    ]
+  },
+  {
+    "id": "C1-093",
+    "exam": "core1",
+    "domain": "4.0 Virtualization and Cloud Computing",
+    "objective": "4.1",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "In hardware virtualization terminology, a virtual machine executing inside a hypervisor is called the _______ operating system, running on top of the underlying physical server known as the _______ system.",
+    "options": [
+      "Master node; Worker pod",
+      "Guest OS; Host system",
+      "Host OS; Guest system",
+      "Kernel space; User space"
+    ],
+    "answer": 1,
+    "explanation": "In virtualization, the virtualized instance running inside the VM environment is designated the 'Guest' operating system, while the physical server, hardware layer, and hypervisor providing physical resources is designated the 'Host' system. Kernel and user spaces are OS memory protection rings, and master/worker are container orchestration terms.",
+    "distractor_analysis": {
+      "2": "The terms are inverted; the host is the physical provider of hardware resources and the guest is the virtualized instance.",
+      "3": "Kernel space and user space are memory isolation domains within an operating system kernel, not virtualization host/guest relationships.",
+      "0": "Master nodes and worker pods are terminology from Kubernetes container cluster orchestration."
+    },
+    "video_reference": {
+      "title": "Virtualization Concepts - CompTIA A+ 220-1201 - 4.1",
+      "url": "https://www.youtube.com/watch?v=xXOIdDWUNGU",
+      "duration": "5:45",
+      "objective": "4.1"
+    },
+    "notes_reference": "14_Virtualization_and_Cloud.md",
+    "tags": [
+      "virtualization",
+      "terminology",
+      "guest",
+      "host"
+    ]
+  },
+  {
+    "id": "C1-094",
+    "exam": "core1",
+    "domain": "4.0 Virtualization and Cloud Computing",
+    "objective": "4.1",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "When provisioning a new virtual machine on a Type 2 hypervisor workstation, which physical component is NOT strictly required because it can be emulated using an ISO image file?",
+    "options": [
+      "Allocated virtual disk storage space",
+      "Allocated virtual RAM from host physical memory",
+      "Physical optical DVD/CD-ROM disc drive",
+      "Hypervisor software layer"
+    ],
+    "answer": 2,
+    "explanation": "Hypervisors support virtual optical drives that mount standard ISO image files directly from local storage, eliminating any requirement for a physical optical DVD/CD drive. However, a hypervisor, allocated virtual storage (VHD/VMDK), and physical host RAM are mandatory prerequisites to instantiate and run a virtual machine.",
+    "distractor_analysis": {
+      "3": "A hypervisor is the essential virtualization management layer required to allocate CPU and memory to guest VMs.",
+      "0": "A virtual disk file (VHDX or VMDK) is required to provide block storage for the guest operating system file system.",
+      "1": "Allocating virtual RAM backed by physical host memory is mandatory for the guest OS kernel and programs to execute."
+    },
+    "video_reference": {
+      "title": "Virtualization Concepts - CompTIA A+ 220-1201 - 4.1",
+      "url": "https://www.youtube.com/watch?v=xXOIdDWUNGU",
+      "duration": "5:45",
+      "objective": "4.1"
+    },
+    "notes_reference": "14_Virtualization_and_Cloud.md",
+    "tags": [
+      "virtualization",
+      "vm",
+      "iso",
+      "hypervisor"
+    ]
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "objective": "1.2",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "A technician is setting up a new workstation for an employee who needs to join the corporate Active Directory domain. Which Windows edition CANNOT join a Windows Server domain?",
+    "options": [
+      "Windows Pro",
+      "Windows Enterprise",
+      "Windows Education",
+      "Windows Home"
+    ],
+    "answer": 3,
+    "explanation": "Windows Home edition is designed strictly for consumers and small home users; it lacks the network architecture, Group Policy management, and security subsystems required to join an Active Directory domain. Windows Pro, Enterprise, and Education all support native domain joining, BitLocker, and centralized management. Pro provides business networking features, Enterprise provides advanced corporate virtualization and DirectAccess, and Education provides academic licensing controls.",
+    "distractor_analysis": {
+      "0": "Windows Pro includes full Active Directory domain join capabilities, BitLocker, and Group Policy client support.",
+      "1": "Windows Enterprise is the premier corporate edition with full domain join, DirectAccess, and AppLocker features.",
+      "2": "Windows Education includes all Enterprise-level capabilities, including native domain join for academic networks."
+    },
+    "video_reference": {
+      "title": "Installing Operating Systems - CompTIA A+ 220-1202 - 1.2",
+      "url": "https://www.youtube.com/watch?v=SoDrALxWWTg",
+      "duration": "16:50",
+      "objective": "1.2"
+    },
+    "notes_reference": "23_Windows_Editions_and_OS_Installation.md",
+    "tags": [
+      "windows-editions",
+      "domain-join",
+      "active-directory",
+      "licensing"
+    ],
+    "id": "C2-001"
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "objective": "1.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "An IT department is building a high-performance CAD engineering desktop running 64-bit Windows 10/11 Pro. What is the maximum physical RAM capacity supported by the Pro edition?",
+    "options": [
+      "6 TB",
+      "512 GB",
+      "128 GB",
+      "2 TB"
+    ],
+    "answer": 3,
+    "explanation": "64-bit Windows 10/11 Pro supports a maximum physical memory capacity of 2 TB (terabytes) of RAM. Windows 10/11 Home is capped at 128 GB of RAM. Windows Pro for Workstations and Enterprise support up to 6 TB of RAM and up to 4 physical CPU sockets. 512 GB is an arbitrary limit not aligned with standard Windows SKU boundaries.",
+    "distractor_analysis": {
+      "2": "128 GB is the physical RAM ceiling for Windows 10/11 Home edition, not Windows Pro.",
+      "0": "6 TB is the maximum memory limit supported by Windows Pro for Workstations and Windows Enterprise editions.",
+      "1": "512 GB is a distractor figure and does not represent the architectural RAM cap for standard Windows Pro."
+    },
+    "video_reference": {
+      "title": "Installing Operating Systems - CompTIA A+ 220-1202 - 1.2",
+      "url": "https://www.youtube.com/watch?v=SoDrALxWWTg",
+      "duration": "16:50",
+      "objective": "1.2"
+    },
+    "notes_reference": "23_Windows_Editions_and_OS_Installation.md",
+    "tags": [
+      "windows-editions",
+      "ram-limits",
+      "64-bit",
+      "hardware-specs"
+    ],
+    "id": "C2-002"
+  },
+  {
+    "exam": "core2",
+    "domain": "1.0 Operating Systems",
+    "objective": "1.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A procurement manager needs to license operating systems for 1,000 corporate laptops using a central Volume Licensing agreement (KMS/MAK). Which Windows editions are available exclusively through volume licensing channels?",
+    "options": [
+      "Pro for Workstations",
+      "Home",
+      "Pro",
+      "Enterprise and Education"
+    ],
+    "answer": 3,
+    "explanation": "Windows Enterprise and Education editions are not sold as retail standalone boxed products; they are available exclusively through Microsoft Volume Licensing agreements or academic licensing contracts. Windows Home and Pro are available as retail and OEM licenses. Pro for Workstations can be purchased via retail OEM channels and volume licensing.",
+    "distractor_analysis": {
+      "1": "Windows Home is sold directly to consumers through retail channels and OEM pre-installs.",
+      "2": "Windows Pro is widely available as standalone retail packaged product and pre-installed OEM software.",
+      "0": "Windows Pro for Workstations can be obtained pre-installed on high-end OEM hardware without enterprise volume agreements."
+    },
+    "video_reference": {
+      "title": "Installing Operating Systems - CompTIA A+ 220-1202 - 1.2",
+      "url": "https://www.youtube.com/watch?v=SoDrALxWWTg",
+      "duration": "16:50",
+      "objective": "1.2"
+    },
+    "notes_reference": "23_Windows_Editions_and_OS_Installation.md",
+    "tags": [
+      "windows-editions",
+      "volume-licensing",
+      "enterprise",
+      "procurement"
+    ],
+    "id": "C2-003"
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "objective": "3.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A Windows workstation displays a blue recovery screen with error code 0xc000000f indicating the Boot Configuration Data (BCD) file is missing. In the WinRE Command Prompt, which `bootrec` command switch searches for Windows installations and prompts to add them to the BCD store?",
+    "options": [
+      "`bootrec /fixmbr`",
+      "`bootrec /fixboot`",
+      "`bootrec /rebuildbcd`",
+      "`bootrec /scanos`"
+    ],
+    "answer": 2,
+    "explanation": "The `bootrec /rebuildbcd` command scans all attached storage drives for compatible Windows installations and interactively prompts the administrator to add them to the Boot Configuration Data (BCD) store. `/fixmbr` rewrites the master boot record, `/fixboot` writes a new partition boot sector, and `/scanos` lists installations without offering an interactive rebuild.",
+    "distractor_analysis": {
+      "0": "`/fixmbr` writes a standard MBR code to the system partition without touching the BCD database entries.",
+      "1": "`/fixboot` writes a new boot sector to the system partition to fix damaged PBRs.",
+      "3": "`/scanos` lists Windows installations not currently in the BCD, but does not rebuild or update the database."
+    },
+    "video_reference": {
+      "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+      "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+      "duration": "17:30",
+      "objective": "3.1"
+    },
+    "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+    "tags": [
+      "bootrec",
+      "bcd",
+      "command-line",
+      "troubleshooting"
+    ],
+    "id": "C2-022"
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "objective": "3.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A Windows computer fails to boot, displaying 'The Boot Configuration Data file is missing or contains errors.' In the WinRE Command Prompt, which command scans for Windows installations and rebuilds the BCD?",
+    "options": [
+      "`bootrec /fixmbr`",
+      "`bootrec /rebuildbcd`",
+      "`sfc /scannow`",
+      "`chkdsk /f`"
+    ],
+    "answer": 1,
+    "explanation": "`bootrec /rebuildbcd` scans all attached disks for installed Windows operating systems and interactively prompts to add them to the BCD store. `/fixmbr` writes the MBR, `sfc` checks system files, and `chkdsk` checks disk sectors.",
+    "distractor_analysis": {
+      "0": "`bootrec /fixmbr` writes a standard Master Boot Record to the system partition without repairing BCD entries.",
+      "2": "`sfc /scannow` checks operating system core binaries against cached manifests, not boot database configuration.",
+      "3": "`chkdsk /f` repairs filesystem structure errors on the target drive volume."
+    },
+    "video_reference": {
+      "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+      "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+      "duration": "17:30",
+      "objective": "3.1"
+    },
+    "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+    "tags": [
+      "bootrec",
+      "rebuildbcd",
+      "windows-recovery",
+      "troubleshooting"
+    ],
+    "id": "C2-116"
+  },
+  {
+    "exam": "core2",
+    "domain": "3.0 Software Troubleshooting",
+    "objective": "3.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "After an automatic graphics driver update, a designer's dual monitors flicker violently and drop to low resolution. What is the fastest way to restore stability?",
+    "options": [
+      "Format the drive and reinstall Windows from installation media",
+      "Open Device Manager, display adapter properties, and Roll Back Driver",
+      "Replace the two LCD panels and the video cables",
+      "Delete the SystemRoot directory and repair from WinRE"
+    ],
+    "answer": 1,
+    "explanation": "Selecting 'Roll Back Driver' on the Driver tab of the display adapter's properties in Device Manager immediately reinstates the previously working graphics driver package and registry settings. Reformatting is destructive, monitor replacement is unnecessary, and deleting SystemRoot bricks the machine.",
+    "distractor_analysis": {
+      "0": "A rebuild costs hours for a fault a two-minute driver rollback fixes.",
+      "2": "Two panels failing at the same moment as a driver update is not a hardware coincidence.",
+      "3": "Deleting the Windows directory destroys the installation."
+    },
+    "video_reference": {
+      "title": "Troubleshooting Windows - CompTIA A+ 220-1202 - 3.1",
+      "url": "https://www.youtube.com/watch?v=qIenQsBAg2U",
+      "duration": "17:30",
+      "objective": "3.1"
+    },
+    "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+    "tags": [
+      "device-manager",
+      "driver-rollback",
+      "graphics",
+      "troubleshooting"
+    ],
+    "id": "C2-117"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.9",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Which executable command opens the Microsoft Remote Desktop Connection client on Windows?",
+    "options": [
+      "`msra.exe`",
+      "`resmon.exe`",
+      "`perfmon.exe`",
+      "`mstsc.exe`"
+    ],
+    "answer": 3,
+    "explanation": "`mstsc.exe` (Microsoft Terminal Services Client) launches the Remote Desktop Connection application, allowing users to initiate an RDP connection to remote servers and workstations. `msra.exe` launches Windows Remote Assistance, `resmon.exe` launches Resource Monitor, and `perfmon.exe` launches Performance Monitor.",
+    "distractor_analysis": {
+      "0": "`msra.exe` launches Windows Remote Assistance for interactive screen sharing and support sessions.",
+      "1": "`resmon.exe` opens Resource Monitor to inspect real-time CPU, memory, disk, and network process utilization.",
+      "2": "`perfmon.exe` opens Performance Monitor for performance counter graphing and data collector logging."
+    },
+    "video_reference": {
+      "title": "Remote Access - CompTIA A+ 220-1202 - 4.9",
+      "url": "https://www.youtube.com/watch?v=B-xa0hjmuAs",
+      "duration": "12:49",
+      "objective": "4.9"
+    },
+    "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+    "tags": [
+      "remote-access",
+      "rdp",
+      "mstsc",
+      "windows-tools"
+    ],
+    "id": "C2-024"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.3",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "Which backup method copies all files that have been created or modified since the last FULL backup and does NOT clear the archive bit?",
+    "options": [
+      "Full backup",
+      "Incremental backup",
+      "Differential backup",
+      "Synthetic full backup"
+    ],
+    "answer": 2,
+    "explanation": "A Differential backup copies all files that have changed since the last FULL backup and leaves the archive bit set (does NOT clear it). Because the archive bit remains untouched, each subsequent differential backup grows larger, capturing cumulative changes since the full backup. Full and Incremental backups clear the archive bit upon completion.",
+    "distractor_analysis": {
+      "0": "A Full backup copies all selected data regardless of status and CLEARS the archive bit.",
+      "1": "An Incremental backup copies files changed since the last backup of any type and CLEARS the archive bit.",
+      "3": "A Synthetic full merges incrementals into an existing full backup on the storage server."
+    },
+    "video_reference": {
+      "title": "Managing Backups - CompTIA A+ 220-1202 - 4.3",
+      "url": "https://www.youtube.com/watch?v=xJc7-KM-Fsk",
+      "duration": "15:01",
+      "objective": "4.3"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "backup-methods",
+      "differential",
+      "archive-bit",
+      "backup-types"
+    ],
+    "id": "C2-047"
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "objective": "2.5",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A threat actor crafts a sophisticated spear-phishing email targeting the Chief Technology Officer (CTO) to gain access to proprietary intellectual property. What specific term describes phishing directed at high-ranking corporate executives?",
+    "options": [
+      "Smishing",
+      "Broad phishing",
+      "Whaling",
+      "Vishing"
+    ],
+    "answer": 2,
+    "explanation": "Whaling is a specialized, highly customized form of spear phishing that targets high-profile corporate executives (such as CEOs, CFOs, CTOs, and board members). Broad phishing casts a wide net with generic templates, vishing is voice phishing over the phone, and smishing is SMS-based mobile text phishing.",
+    "distractor_analysis": {
+      "1": "Broad phishing sends generic mass emails to thousands of indiscriminate recipients.",
+      "3": "Vishing involves social engineering conducted via voice telephone calls.",
+      "0": "Smishing uses mobile SMS text messages containing malicious links."
+    },
+    "video_reference": {
+      "title": "Social Engineering - CompTIA A+ 220-1202 - 2.5",
+      "url": "https://www.youtube.com/watch?v=9xtzpbY1n9I",
+      "duration": "13:37",
+      "objective": "2.5"
+    },
+    "notes_reference": "26_Threats_Attacks_Social_Engineering.md",
+    "tags": [
+      "social-engineering",
+      "whaling",
+      "spear-phishing",
+      "executives"
+    ],
+    "id": "C2-035"
+  },
+  {
+    "exam": "core2",
+    "domain": "2.0 Security",
+    "objective": "2.5",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "An attacker pastes malicious adhesive QR codes over legitimate parking meter payment codes, redirecting scanning smartphone users to a fraudulent credit card payment portal. What attack vector is this?",
+    "options": [
+      "Pharming, DNS redirection to a lookalike site",
+      "Vishing, phishing delivered over a voice call",
+      "Smishing, phishing delivered over SMS text",
+      "Quishing, phishing delivered through a QR code"
+    ],
+    "answer": 3,
+    "explanation": "Quishing (QR code phishing) uses malicious Quick Response (QR) codes in physical or digital locations that redirect mobile device users who scan the code to malicious phishing landing pages or malware download sites. Smishing uses SMS messages, pharming redirects DNS traffic, and vishing uses phone calls.",
+    "distractor_analysis": {
+      "2": "Smishing arrives as a text message. Here the lure is a printed code on the meter itself.",
+      "0": "Pharming poisons name resolution so a correct address lands on a fake site. No DNS record was touched.",
+      "1": "Vishing is a phone call using voice pressure, not a scanned image."
+    },
+    "video_reference": {
+      "title": "Social Engineering - CompTIA A+ 220-1202 - 2.5",
+      "url": "https://www.youtube.com/watch?v=9xtzpbY1n9I",
+      "duration": "13:37",
+      "objective": "2.5"
+    },
+    "notes_reference": "26_Threats_Attacks_Social_Engineering.md",
+    "tags": [
+      "social-engineering",
+      "quishing",
+      "qr-code",
+      "phishing"
+    ],
+    "id": "C2-036"
+  }
+]

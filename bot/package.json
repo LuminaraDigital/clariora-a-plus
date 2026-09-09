@@ -1,0 +1,12 @@
+{
+  "name": "clariora-tma-bot",
+  "version": "1.0.0",
+  "description": "Telegram Bot companion and Stars payment processor for Clariora TMA",
+  "main": "bot_server.js",
+  "scripts": {
+    "start": "node bot_server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  }
+}

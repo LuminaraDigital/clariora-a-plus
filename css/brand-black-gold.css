@@ -2639,16 +2639,16 @@ kbd {
 /* Course library (videos / slides / labs)
    One gold accent per screen: the active item, the progress fill and the
    done state. Everything else sits on the two neutral surfaces. */
-#curriculumModal .modal-card {
-  width: min(1320px, calc(100vw - 48px)) !important;
-  max-width: min(1320px, calc(100vw - 48px)) !important;
+.modal-card.curriculum-modal-card {
+  max-width: min(1320px, 96vw);
+  width: 100%;
   height: min(92vh, 980px);
-  max-height: min(92vh, 980px) !important;
+  max-height: min(92vh, 980px);
   display: flex;
   flex-direction: column;
 }
 
-#curriculumModal .modal-header {
+.modal-card.curriculum-modal-card .modal-header {
   flex: 0 0 auto;
 }
 
@@ -3845,8 +3845,9 @@ kbd {
 }
 
 @media (max-width: 900px) {
-  #curriculumModal .modal-card {
+  .modal-card.curriculum-modal-card {
     height: auto;
+    max-height: min(92vh, 980px);
   }
 
   .curriculum-layout {
@@ -4841,7 +4842,7 @@ header::after {
 }
 
 @media (max-width: 560px) {
-  :root { --fs-display: 48px; }
+  :root { --fs-display: clamp(32px, 8.5vw, 44px); }
 }
 
 /* ============================================================

@@ -1,6 +1,6 @@
 # 00. CompTIA A+ Exam Strategy, Objectives & Troubleshooting Roadmap
 
-Welcome to the **Clariora Knowledge Base**. This repository synthesizes all theoretical lectures, practical labs, and video demonstrations from the Datacentre Academy curriculum into a complete, exam-focused study guide for both **CompTIA A+ Core 1 (220-1201)** and **CompTIA A+ Core 2 (220-1202)**.
+Welcome to the **CompTIA A+ Master Knowledge Base**. This repository synthesizes all theoretical lectures, practical labs, and video demonstrations from the Datacentre Academy curriculum into a complete, exam-focused study guide for both **CompTIA A+ Core 1 (220-1201)** and **CompTIA A+ Core 2 (220-1202)**.
 
 ---
 

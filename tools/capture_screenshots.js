@@ -7,7 +7,7 @@
  * user sees, not a browser approximation.
  *
  *   node tools/capture_screenshots.js
- *   node tools/capture_screenshots.js "C:/path/to/Clariora.exe"
+ *   node tools/capture_screenshots.js "C:/path/to/CompTIA_A_Plus_Simulator.exe"
  *
  * Needs a desktop session (the window has to exist for the compositor to
  * paint it). Exits 1 if the app never publishes a debugging target.
@@ -20,7 +20,7 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const DEFAULT_EXE = process.platform === 'win32'
-  ? path.join(ROOT, 'release', 'portable', 'Clariora.exe')
+  ? path.join(ROOT, 'release', 'portable', 'CompTIA_A_Plus_Simulator.exe')
   : process.platform === 'darwin'
     ? path.join(ROOT, 'release', 'mac', 'Clariora.app', 'Contents', 'MacOS', 'Clariora')
     : path.join(ROOT, 'release', 'linux', 'linux-unpacked', 'comptia-a-plus-master');

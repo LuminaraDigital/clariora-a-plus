@@ -1,0 +1,3309 @@
+[
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.9",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Which executable command opens the Microsoft Remote Desktop Connection client on Windows?",
+    "options": [
+      "`msra.exe`",
+      "`resmon.exe`",
+      "`perfmon.exe`",
+      "`mstsc.exe`"
+    ],
+    "answer": 3,
+    "explanation": "`mstsc.exe` (Microsoft Terminal Services Client) launches the Remote Desktop Connection application, allowing users to initiate an RDP connection to remote servers and workstations. `msra.exe` launches Windows Remote Assistance, `resmon.exe` launches Resource Monitor, and `perfmon.exe` launches Performance Monitor.",
+    "distractor_analysis": {
+      "0": "`msra.exe` launches Windows Remote Assistance for interactive screen sharing and support sessions.",
+      "1": "`resmon.exe` opens Resource Monitor to inspect real-time CPU, memory, disk, and network process utilization.",
+      "2": "`perfmon.exe` opens Performance Monitor for performance counter graphing and data collector logging."
+    },
+    "video_reference": {
+      "title": "Remote Access - CompTIA A+ 220-1202 - 4.9",
+      "url": "https://www.youtube.com/watch?v=B-xa0hjmuAs",
+      "duration": "12:49",
+      "objective": "4.9"
+    },
+    "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+    "tags": [
+      "remote-access",
+      "rdp",
+      "mstsc",
+      "windows-tools"
+    ],
+    "id": "C2-024"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.3",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "Which backup method copies all files that have been created or modified since the last FULL backup and does NOT clear the archive bit?",
+    "options": [
+      "Full backup",
+      "Incremental backup",
+      "Differential backup",
+      "Synthetic full backup"
+    ],
+    "answer": 2,
+    "explanation": "A Differential backup copies all files that have changed since the last FULL backup and leaves the archive bit set (does NOT clear it). Because the archive bit remains untouched, each subsequent differential backup grows larger, capturing cumulative changes since the full backup. Full and Incremental backups clear the archive bit upon completion.",
+    "distractor_analysis": {
+      "0": "A Full backup copies all selected data regardless of status and CLEARS the archive bit.",
+      "1": "An Incremental backup copies files changed since the last backup of any type and CLEARS the archive bit.",
+      "3": "A Synthetic full merges incrementals into an existing full backup on the storage server."
+    },
+    "video_reference": {
+      "title": "Managing Backups - CompTIA A+ 220-1202 - 4.3",
+      "url": "https://www.youtube.com/watch?v=xJc7-KM-Fsk",
+      "duration": "15:01",
+      "objective": "4.3"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "backup-methods",
+      "differential",
+      "archive-bit",
+      "backup-types"
+    ],
+    "id": "C2-047"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.3",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "The foundational 3-2-1 backup strategy mandates maintaining 3 total copies of data, stored on 2 different media types, with at least 1 copy stored where?",
+    "options": [
+      "Inside the same server room rack",
+      "In an unencrypted local partition",
+      "Offsite (or in the cloud)",
+      "On a legacy magnetic floppy disk"
+    ],
+    "answer": 2,
+    "explanation": "The 3-2-1 backup rule requires: 3 copies of data (production copy + 2 backup copies), on 2 different storage media types (e.g., local disk SAN and tape or cloud), with 1 copy kept Offsite (or in an isolated cloud region) to ensure data survival against localized physical disasters (fire, flood, theft). Keeping copies in the same room or unencrypted partitions leaves data vulnerable to site destruction.",
+    "distractor_analysis": {
+      "1": "Storing backups on local unencrypted partitions offers zero disaster recovery protection if the physical machine is destroyed.",
+      "3": "Floppy disks have minuscule storage capacity (1.44 MB) and are obsolete for enterprise backup.",
+      "0": "Keeping all backup copies in the same room fails completely if the facility experiences a fire or flood."
+    },
+    "video_reference": {
+      "title": "Managing Backups - CompTIA A+ 220-1202 - 4.3",
+      "url": "https://www.youtube.com/watch?v=xJc7-KM-Fsk",
+      "duration": "15:01",
+      "objective": "4.3"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "backup-best-practices",
+      "3-2-1-rule",
+      "disaster-recovery",
+      "offsite"
+    ],
+    "id": "C2-048"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.4",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Which class of fire extinguisher is specifically designated for fighting fires involving energized electrical equipment such as servers, wiring, and circuit breakers?",
+    "options": [
+      "Class A (water-based)",
+      "Class B (flammable liquids)",
+      "Class C (energized electrical equipment)",
+      "Class K (commercial cooking grease)"
+    ],
+    "answer": 2,
+    "explanation": "Class C fire extinguishers use non-conductive extinguishing agents (such as Carbon Dioxide [CO2], Halon alternatives, or dry chemical powder) specifically rated to safely extinguish fires on energized electrical equipment without shocking the operator. Class A is for ordinary combustibles (wood/paper), Class B is for flammable liquids, and Class K is for cooking oils.",
+    "distractor_analysis": {
+      "0": "Class A extinguishers use pressurized water, which conducts electricity and causes fatal shocks on live server equipment.",
+      "1": "Class B extinguishers are rated for flammable liquids like gasoline, oil, and paint.",
+      "3": "Class K extinguishers are wet chemical systems formulated for commercial kitchen deep fryers."
+    },
+    "video_reference": {
+      "title": "Managing Electrostatic Discharge - CompTIA A+ 220-1202 - 4.4",
+      "url": "https://www.youtube.com/watch?v=sDlVVU3oAlA",
+      "duration": "5:28",
+      "objective": "4.4"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "fire-safety",
+      "class-c",
+      "extinguisher",
+      "co2"
+    ],
+    "id": "C2-050"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.8",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "A technician is tidying the automation share on a file server and has to sort scripts by interpreter before handing the folder to the automation team. Which file extension identifies a Microsoft PowerShell script?",
+    "options": [
+      ".bat",
+      ".cmd",
+      ".ps1",
+      ".vbs"
+    ],
+    "answer": 2,
+    "explanation": "PowerShell script files use the `.ps1` file extension. Windows Command Prompt batch files use `.bat` or `.cmd`, and VBScript files use `.vbs`. Python scripts use `.py`, and Bash shell scripts use `.sh`.",
+    "distractor_analysis": {
+      "0": "`.bat` is the legacy file extension for MS-DOS / Windows Command Prompt batch files.",
+      "1": "`.cmd` is used for Windows NT Command Prompt scripts.",
+      "3": "`.vbs` is the file extension for Microsoft Visual Basic Scripting Edition (VBScript) files."
+    },
+    "video_reference": {
+      "title": "Scripting Languages - CompTIA A+ 220-1202 - 4.8",
+      "url": "https://www.youtube.com/watch?v=nJKUP1twjbY",
+      "duration": "6:00",
+      "objective": "4.8"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "scripting",
+      "powershell",
+      "file-extensions",
+      "automation"
+    ],
+    "id": "C2-051"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.8",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Which file extension is used for traditional Windows Command Prompt batch scripts that execute command sequences in `cmd.exe`?",
+    "options": [
+      ".sh",
+      ".py",
+      ".bat",
+      ".ps1"
+    ],
+    "answer": 2,
+    "explanation": "Windows batch files executed by the Command Prompt (`cmd.exe`) use the `.bat` (or `.cmd`) file extension. `.ps1` is for PowerShell scripts, `.sh` is for Linux/Unix shell scripts, and `.py` is for Python source code.",
+    "distractor_analysis": {
+      "3": "`.ps1` is the file extension for Microsoft PowerShell scripts.",
+      "0": "`.sh` is the file extension for Unix/Linux Bourne/Bash shell scripts.",
+      "1": "`.py` is the file extension for Python script files."
+    },
+    "video_reference": {
+      "title": "Scripting Languages - CompTIA A+ 220-1202 - 4.8",
+      "url": "https://www.youtube.com/watch?v=nJKUP1twjbY",
+      "duration": "6:00",
+      "objective": "4.8"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "scripting",
+      "batch",
+      "file-extensions",
+      "cmd"
+    ],
+    "id": "C2-052"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.8",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Which file extension is universally used for Unix/Linux Bourne-Again Shell (Bash) script files?",
+    "options": [
+      ".bat",
+      ".ps1",
+      ".sh",
+      ".js"
+    ],
+    "answer": 2,
+    "explanation": "Linux and Unix shell scripts typically use the `.sh` file extension and begin with a shebang line (e.g., `#!/bin/bash`). `.bat` is for Windows batch scripts, `.ps1` is for PowerShell, and `.js` is for JavaScript files.",
+    "distractor_analysis": {
+      "0": "`.bat` is a Windows batch file extension.",
+      "1": "`.ps1` is a Microsoft PowerShell script extension.",
+      "3": "`.js` is a JavaScript source file extension."
+    },
+    "video_reference": {
+      "title": "Scripting Languages - CompTIA A+ 220-1202 - 4.8",
+      "url": "https://www.youtube.com/watch?v=nJKUP1twjbY",
+      "duration": "6:00",
+      "objective": "4.8"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "scripting",
+      "bash",
+      "linux",
+      "file-extensions"
+    ],
+    "id": "C2-053"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.8",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Which file extension identifies source code files written for the Python programming language?",
+    "options": [
+      ".sh",
+      ".vbs",
+      ".py",
+      ".ps1"
+    ],
+    "answer": 2,
+    "explanation": "Python source code scripts use the `.py` file extension and are executed by the Python interpreter runtime (`python script.py`). `.ps1` is for PowerShell, `.sh` is for Linux shell scripts, and `.vbs` is for VBScript.",
+    "distractor_analysis": {
+      "3": "`.ps1` is the file extension for PowerShell scripts.",
+      "0": "`.sh` is the file extension for Unix/Linux Bash scripts.",
+      "1": "`.vbs` is the file extension for Microsoft VBScript files."
+    },
+    "video_reference": {
+      "title": "Scripting Languages - CompTIA A+ 220-1202 - 4.8",
+      "url": "https://www.youtube.com/watch?v=nJKUP1twjbY",
+      "duration": "6:00",
+      "objective": "4.8"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "scripting",
+      "python",
+      "file-extensions",
+      "interpreted"
+    ],
+    "id": "C2-054"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.8",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Which file extension is used for legacy Microsoft Visual Basic Scripting Edition (VBScript) files executed by Windows Script Host (`wscript.exe` / `cscript.exe`)?",
+    "options": [
+      ".ps1",
+      ".bat",
+      ".py",
+      ".vbs"
+    ],
+    "answer": 3,
+    "explanation": "VBScript (Visual Basic Scripting Edition) files use the `.vbs` extension and are executed natively in Windows via the Windows Script Host engines (`cscript.exe` for console output or `wscript.exe` for GUI dialogs). `.ps1` is for modern PowerShell, `.bat` is for batch scripts, and `.py` is for Python.",
+    "distractor_analysis": {
+      "0": "`.ps1` is the file extension for Microsoft PowerShell.",
+      "1": "`.bat` is the file extension for Command Prompt batch scripts.",
+      "2": "`.py` is the file extension for Python scripts."
+    },
+    "video_reference": {
+      "title": "Scripting Languages - CompTIA A+ 220-1202 - 4.8",
+      "url": "https://www.youtube.com/watch?v=nJKUP1twjbY",
+      "duration": "6:00",
+      "objective": "4.8"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "scripting",
+      "vbscript",
+      "file-extensions",
+      "legacy"
+    ],
+    "id": "C2-055"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.9",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A network administrator needs to remotely manage a Linux server over an unencrypted public network. Which protocol provides an encrypted command-line interface session using TCP port 22?",
+    "options": [
+      "HTTP, unencrypted web transport on TCP 80",
+      "FTP, cleartext file transfer on TCP 20 and 21",
+      "SSH, an encrypted shell on TCP 22",
+      "Telnet, a cleartext shell on TCP 23"
+    ],
+    "answer": 2,
+    "explanation": "Secure Shell (SSH) operates over TCP port 22 and provides strong cryptographic authentication (passwords or public/private key pairs) and end-to-end symmetric encryption for remote command-line sessions. Telnet (port 23) transmits credentials in cleartext plaintext, HTTP (port 80) is unencrypted web traffic, and FTP (port 21) is unencrypted file transfer.",
+    "distractor_analysis": {
+      "3": "Telnet gives a shell but sends the password in the clear, which is exactly what the public network rules out.",
+      "0": "HTTP is a web protocol and is unencrypted. It provides no command-line session.",
+      "1": "FTP transfers files in the clear and offers no interactive shell."
+    },
+    "video_reference": {
+      "title": "Remote Access - CompTIA A+ 220-1202 - 4.9",
+      "url": "https://www.youtube.com/watch?v=B-xa0hjmuAs",
+      "duration": "12:49",
+      "objective": "4.9"
+    },
+    "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+    "tags": [
+      "remote-access",
+      "ssh",
+      "port-22",
+      "security"
+    ],
+    "id": "C2-060"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.1",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "What is the FIRST step in the official CompTIA 6-step troubleshooting methodology?",
+    "options": [
+      "Test the theory to determine cause",
+      "Document findings, actions, and outcomes",
+      "Establish a theory of probable cause",
+      "Identify the problem"
+    ],
+    "answer": 3,
+    "explanation": "Step 1 of the CompTIA 6-step troubleshooting methodology is 'Identify the problem' (gather information, question users, identify symptoms, determine if anything changed, review logs). Step 2 is Establish a theory, Step 3 is Test the theory, Step 4 is Establish a plan of action, Step 5 is Verify full system functionality, and Step 6 is Document findings.",
+    "distractor_analysis": {
+      "2": "Establishing a theory of probable cause is Step 2 of the methodology.",
+      "0": "Testing the theory to determine cause is Step 3 of the methodology.",
+      "1": "Documenting findings, actions, and outcomes is Step 6 (the final step) of the methodology."
+    },
+    "video_reference": {
+      "title": "Ticketing Systems - CompTIA A+ 220-1202 - 4.1",
+      "url": "https://www.youtube.com/watch?v=EzjHn6vvrsI",
+      "duration": "13:48",
+      "objective": "4.1"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "troubleshooting-methodology",
+      "identify-problem",
+      "comptia-6-step",
+      "helpdesk"
+    ],
+    "id": "C2-127"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "After successfully testing and confirming the theory of probable cause for a system outage, what is the NEXT step in the CompTIA troubleshooting methodology?",
+    "options": [
+      "Verify full system functionality",
+      "Establish a plan of action to resolve the problem and identify potential effects",
+      "Document findings and close the ticket",
+      "Question the user about recent changes"
+    ],
+    "answer": 1,
+    "explanation": "Following Step 3 (Test the theory to determine cause), Step 4 is 'Establish a plan of action to resolve the problem and identify potential effects' (including obtaining change approvals and preparing a rollback plan), followed by implementing the plan. Step 5 is Verify system functionality, and Step 6 is Document findings.",
+    "distractor_analysis": {
+      "0": "Verifying full system functionality is Step 5, performed AFTER implementing the plan of action.",
+      "2": "Documenting findings is Step 6, performed after verification is complete.",
+      "3": "Questioning users about changes is part of Step 1 (Identify the problem)."
+    },
+    "video_reference": {
+      "title": "Ticketing Systems - CompTIA A+ 220-1202 - 4.1",
+      "url": "https://www.youtube.com/watch?v=EzjHn6vvrsI",
+      "duration": "13:48",
+      "objective": "4.1"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "troubleshooting-methodology",
+      "plan-of-action",
+      "comptia-6-step",
+      "implementation"
+    ],
+    "id": "C2-128"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "In a corporate datacenter change management process, what is the primary role of the Change Advisory Board (CAB)?",
+    "options": [
+      "To write all software code for the development team",
+      "To evaluate proposed changes, assess business and technical risks, and grant formal approval",
+      "To manually deploy operating system patches on client laptops",
+      "To conduct performance reviews for IT staff members"
+    ],
+    "answer": 1,
+    "explanation": "The Change Advisory Board (CAB) is a governance committee of IT and business representatives responsible for reviewing Requests for Change (RFCs), evaluating operational risks, assessing scheduling and business impact, and granting formal approval for major infrastructure changes. The CAB does not write software, patch laptops manually, or conduct HR performance reviews.",
+    "distractor_analysis": {
+      "0": "Software code is written by software developers, not the Change Advisory Board.",
+      "2": "Patch deployments are executed by system administrators during scheduled maintenance windows.",
+      "3": "Staff performance reviews are managed by Human Resources and department managers."
+    },
+    "video_reference": {
+      "title": "Change Management - CompTIA A+ 220-1202 - 4.2",
+      "url": "https://www.youtube.com/watch?v=AhcQlR73Bo4",
+      "duration": "21:42",
+      "objective": "4.2"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "change-management",
+      "cab",
+      "risk-assessment",
+      "approval"
+    ],
+    "id": "C2-129"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.5",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Which document must be consulted by datacenter personnel for proper handling procedures, personal protective equipment (PPE), and emergency first-aid protocols regarding hazardous chemicals (such as cleaning solvents or battery acid)?",
+    "options": [
+      "SLA (Service Level Agreement)",
+      "SDS (Safety Data Sheet)",
+      "AUP (Acceptable Use Policy)",
+      "EULA (End-User License Agreement)"
+    ],
+    "answer": 1,
+    "explanation": "Safety Data Sheets (SDS), formerly known as Material Safety Data Sheets (MSDS), are mandatory safety documents detailing chemical product hazards, safe handling procedures, required PPE, storage guidelines, and emergency first-aid instructions. SLAs define service uptime, AUPs define acceptable user conduct, and EULAs define software licensing terms.",
+    "distractor_analysis": {
+      "0": "An SLA defines contractual service availability and performance commitments between a vendor and customer.",
+      "2": "An Acceptable Use Policy specifies permissible employee conduct when using company technology assets.",
+      "3": "A EULA defines legal software licensing permissions and restrictions."
+    },
+    "video_reference": {
+      "title": "Environmental Impacts - CompTIA A+ 220-1202 - 4.5",
+      "url": "https://www.youtube.com/watch?v=FqWHM4Sws1M",
+      "duration": "6:28",
+      "objective": "4.5"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "environmental-controls",
+      "sds",
+      "msds",
+      "safety"
+    ],
+    "id": "C2-130"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.3",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "A company backup policy adheres to the '3-2-1' backup strategy. What does this rule mandate?",
+    "options": [
+      "3 backup servers, 2 administrators, 1 cloud subscription",
+      "3 copies of data, across 2 different media types, with at least 1 copy kept offsite",
+      "3 daily backups, 2 weekly backups, and 1 monthly backup",
+      "3 network connections, 2 firewalls, and 1 router"
+    ],
+    "answer": 1,
+    "explanation": "The 3-2-1 backup rule specifies maintaining: 3 total copies of data (1 primary copy + 2 backup copies), on 2 different storage media types (e.g., local disk array + tape or cloud), with 1 copy stored Offsite (or in an isolated cloud region) for disaster recovery. It does not refer to staff counts, network routers, or schedule frequencies.",
+    "distractor_analysis": {
+      "0": "The 3-2-1 rule defines data copy counts and storage locations, not personnel counts or subscriptions.",
+      "2": "Backup schedules (e.g., GFS grandfather-father-son) define retention frequencies, which differs from the 3-2-1 media rule.",
+      "3": "Network router and firewall redundancies represent network design, not backup data redundancy."
+    },
+    "video_reference": {
+      "title": "Managing Backups - CompTIA A+ 220-1202 - 4.3",
+      "url": "https://www.youtube.com/watch?v=xJc7-KM-Fsk",
+      "duration": "15:01",
+      "objective": "4.3"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "backup-best-practices",
+      "3-2-1-rule",
+      "offsite",
+      "media-types"
+    ],
+    "id": "C2-131"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.4",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Which type of fire extinguisher is specifically rated and required for extinguishing fires involving energized electrical equipment in a server room?",
+    "options": [
+      "Class B (Flammable liquids)",
+      "Class C (Electrical Equipment)",
+      "Class K (Kitchen cooking oils)",
+      "Class A (Water)"
+    ],
+    "answer": 1,
+    "explanation": "Class C fire extinguishers use non-conductive extinguishing agents (such as CO2, Halon replacements like FM-200/Novec 1230, or dry chemical) to extinguish fires on energized electrical equipment without conducting electrical shock to the operator. Class A uses water (which conducts electricity), Class B is for flammable liquids, and Class K is for cooking oils.",
+    "distractor_analysis": {
+      "3": "Class A water extinguishers conduct electrical current directly back through the stream, posing a fatal electrocution hazard.",
+      "0": "Class B extinguishers are formulated for flammable liquids like fuels and paints.",
+      "2": "Class K extinguishers are designed for commercial kitchen grease and deep fryers."
+    },
+    "video_reference": {
+      "title": "Managing Electrostatic Discharge - CompTIA A+ 220-1202 - 4.4",
+      "url": "https://www.youtube.com/watch?v=sDlVVU3oAlA",
+      "duration": "5:28",
+      "objective": "4.4"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "fire-safety",
+      "class-c",
+      "electrical-fire",
+      "extinguisher"
+    ],
+    "id": "C2-133"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.8",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "A technician is creating a Task Scheduler action that runs a nightly maintenance routine through powershell.exe on a Windows file server. Which file extension will the script argument point at?",
+    "options": [
+      ".bat",
+      ".sh",
+      ".ps1",
+      ".vbs"
+    ],
+    "answer": 2,
+    "explanation": "PowerShell scripts carry the .ps1 extension, so the scheduled task action runs powershell.exe with -File pointing at a .ps1 file. Expect to set the execution policy or sign the script before it will run under a service account. The .bat extension is legacy Command Prompt batch, still common in old logon scripts but with no access to the .NET object pipeline. The .sh extension is a Bourne or Bash script for Linux and macOS hosts and means nothing to the Windows scheduler. The .vbs extension is VBScript, which is deprecated and disabled in hardened builds.",
+    "distractor_analysis": {
+      "0": "`.bat` is the legacy file extension for MS-DOS and Windows Command Prompt batch scripts.",
+      "1": "`.sh` is the file extension for Unix/Linux Bourne/Bash shell scripts.",
+      "3": "`.vbs` is the file extension for Visual Basic Scripting Edition files."
+    },
+    "video_reference": {
+      "title": "Scripting Languages - CompTIA A+ 220-1202 - 4.8",
+      "url": "https://www.youtube.com/watch?v=nJKUP1twjbY",
+      "duration": "6:00",
+      "objective": "4.8"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "scripting",
+      "powershell",
+      "file-extensions",
+      "automation"
+    ],
+    "id": "C2-134"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.6",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "During an incident response investigation where a corporate laptop is seized as digital evidence, why is maintaining a strict 'Chain of Custody' form essential?",
+    "options": [
+      "To set the date the seized laptop may be reimaged and returned",
+      "To speed up hardware warranty claims with the manufacturer",
+      "To document everyone who handled and stored the evidence, keeping it admissible",
+      "To record the imaging tool and hash used during acquisition"
+    ],
+    "answer": 2,
+    "explanation": "In digital forensics and incident response, a Chain of Custody form records the chronological custody, transfer, analysis, and secure storage of physical and digital evidence. Without a documented, unbroken chain of custody, evidence can be challenged and ruled inadmissible in legal proceedings. It has no role in warranties, payroll, or imaging.",
+    "distractor_analysis": {
+      "1": "Warranty handling is an asset process and has nothing to do with evidence integrity.",
+      "3": "Tool version and hash values belong on the acquisition record that accompanies the image.",
+      "0": "Disposal and return timing come from the evidence retention policy after the case closes."
+    },
+    "video_reference": {
+      "title": "Incident Response - CompTIA A+ 220-1202 - 4.6",
+      "url": "https://www.youtube.com/watch?v=jKhIYQioCE8",
+      "duration": "6:43",
+      "objective": "4.6"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "incident-response",
+      "chain-of-custody",
+      "evidence",
+      "forensics"
+    ],
+    "id": "C2-135"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.7",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "When communicating with a frustrated customer whose computer crashed during a critical deadline, what professional technique should a technician use FIRST?",
+    "options": [
+      "Interrupt the user to explain that software crashes are normal",
+      "Actively listen without interruption, acknowledge the urgency with empathy, and clarify the issue calmly",
+      "Place the customer on hold immediately for 10 minutes",
+      "Blame the software vendor for poor programming"
+    ],
+    "answer": 1,
+    "explanation": "Professional IT communication standards emphasize active listening and de-escalation: remain calm, do not interrupt the customer while they explain the issue, acknowledge their urgency with professional empathy, and ask clarifying diagnostic questions. Interrupting, long unannounced holds, and deflecting blame worsen customer frustration and violate service standards.",
+    "distractor_analysis": {
+      "0": "Interrupting the customer dismisses their concern and increases hostility.",
+      "2": "Placing an agitated customer on hold without explanation escalates frustration.",
+      "3": "Blaming external vendors is unprofessional and does not resolve the customer's problem."
+    },
+    "video_reference": {
+      "title": "Professionalism - CompTIA A+ 220-1202 - 4.7",
+      "url": "https://www.youtube.com/watch?v=8kKg8RJHAFQ",
+      "duration": "4:47",
+      "objective": "4.7"
+    },
+    "notes_reference": "17_Support_Procedures_Professionalism_OS_Types.md",
+    "tags": [
+      "professionalism",
+      "communication",
+      "active-listening",
+      "customer-service"
+    ],
+    "id": "C2-136"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.5",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "What is the recommended relative humidity range maintained in server rooms to prevent both electrostatic discharge (ESD) and moisture condensation?",
+    "options": [
+      "10% to 20%",
+      "40% to 60%",
+      "85% to 95%",
+      "0% to 5%"
+    ],
+    "answer": 1,
+    "explanation": "Datacenter environmental standards (such as ASHRAE guidelines) recommend maintaining relative humidity between 40% and 60%. Humidity below 30-40% creates dry air that dramatically increases the risk of destructive electrostatic discharge (ESD). Humidity above 60-70% promotes moisture condensation on components, leading to corrosion and short circuits.",
+    "distractor_analysis": {
+      "0": "Humidity levels below 20% create extremely dry air, causing severe electrostatic discharge (ESD) hazards.",
+      "2": "Humidity levels above 85% cause moisture condensation on cold electronics, leading to catastrophic short circuits.",
+      "3": "0% to 5% humidity causes massive static electricity buildup and is hazardous to sensitive semiconductors."
+    },
+    "video_reference": {
+      "title": "Environmental Impacts - CompTIA A+ 220-1202 - 4.5",
+      "url": "https://www.youtube.com/watch?v=FqWHM4Sws1M",
+      "duration": "6:28",
+      "objective": "4.5"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "environmental-controls",
+      "humidity",
+      "datacenter",
+      "esd"
+    ],
+    "id": "C2-137"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.4",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "When attaching an electrostatic discharge (ESD) wrist strap while servicing a disconnected desktop computer, where should the alligator clip be attached?",
+    "options": [
+      "To the technician's plastic tool handle",
+      "To an unpainted metal portion of the computer chassis",
+      "Directly to the motherboard CPU socket pins",
+      "To an active electrical wall outlet"
+    ],
+    "answer": 1,
+    "explanation": "An ESD wrist strap should be clipped to an unpainted metal surface on the computer chassis (with the power cable unplugged). This equalizes the electrical potential between the technician's body and the equipment chassis, safely draining static electricity. Clipping to CPU pins damages hardware, live outlets cause electrocution, and plastic does not conduct static.",
+    "distractor_analysis": {
+      "2": "Clipping to CPU socket pins bends delicate pins and destroys semiconductor traces.",
+      "3": "Attaching to a live electrical wall receptacle creates an immediate risk of fatal electrical shock.",
+      "0": "Plastic tool handles are electrical insulators and cannot conduct or drain static charges."
+    },
+    "video_reference": {
+      "title": "Managing Electrostatic Discharge - CompTIA A+ 220-1202 - 4.4",
+      "url": "https://www.youtube.com/watch?v=sDlVVU3oAlA",
+      "duration": "5:28",
+      "objective": "4.4"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "esd",
+      "safety",
+      "grounding",
+      "wrist-strap"
+    ],
+    "id": "C2-138"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.6",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Which software licensing model is bundled with brand-new computer hardware, tied permanently to the original motherboard, and cannot be transferred to a different PC?",
+    "options": [
+      "Open Source GPL license",
+      "OEM (Original Equipment Manufacturer) license",
+      "Retail (FPP) license",
+      "Enterprise Volume License (VL)"
+    ],
+    "answer": 1,
+    "explanation": "An OEM (Original Equipment Manufacturer) license is sold at a discount to computer builders and tied permanently to the original motherboard of the hardware on which it was first installed; it cannot be legally transferred to another PC. Retail (Full Packaged Product) licenses can be transferred to new hardware, and Volume Licenses cover corporate fleets.",
+    "distractor_analysis": {
+      "0": "Open source GPL software is freely redistributable and not tied to physical hardware motherboards.",
+      "2": "Retail (FPP) licenses allow transferring the software license from an old PC to a newly purchased PC.",
+      "3": "Enterprise Volume Licenses allow flexible reassignment and centralized KMS/MAK activation across corporate devices."
+    },
+    "video_reference": {
+      "title": "Incident Response - CompTIA A+ 220-1202 - 4.6",
+      "url": "https://www.youtube.com/watch?v=jKhIYQioCE8",
+      "duration": "6:43",
+      "objective": "4.6"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "licensing",
+      "oem",
+      "eula",
+      "compliance"
+    ],
+    "id": "C2-139"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.4",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "When lifting a 4U rack server weighing 75 pounds (34 kg), what physical safety practice must technicians follow to prevent back injury?",
+    "options": [
+      "Bend at the waist and lift quickly using back muscles",
+      "Perform a two-person team lift or use a specialized mechanical server lift, bending at the knees",
+      "Carry the server with one hand while walking briskly",
+      "Twist the torso while lifting the server"
+    ],
+    "answer": 1,
+    "explanation": "Lifting heavy datacenter equipment (generally any item exceeding 40-50 pounds) requires a two-person team lift or mechanical equipment lift. Technicians must bend at the knees (not the waist), keep the load close to the body, keep the back straight, and lift with the leg muscles without twisting the torso.",
+    "distractor_analysis": {
+      "0": "Bending at the waist and lifting with back muscles places severe strain on the spinal column, risking herniated discs.",
+      "2": "Carrying a 75-pound server single-handedly is physically unsafe and risks dropping expensive hardware.",
+      "3": "Twisting the torso while lifting creates asymmetrical spinal torque and is a leading cause of workplace back injuries."
+    },
+    "video_reference": {
+      "title": "Managing Electrostatic Discharge - CompTIA A+ 220-1202 - 4.4",
+      "url": "https://www.youtube.com/watch?v=sDlVVU3oAlA",
+      "duration": "5:28",
+      "objective": "4.4"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "physical-safety",
+      "lifting",
+      "team-lift",
+      "ergonomics"
+    ],
+    "id": "C2-140"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.5",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "In datacenter rack airflow management, why are blanking panels installed across empty rack unit (U) spaces?",
+    "options": [
+      "To provide extra storage shelves for technician tools",
+      "To prevent hot exhaust air from recirculating back into the cold aisle server intakes",
+      "To ground the rack against lightning strikes",
+      "To increase optical fiber network speeds"
+    ],
+    "answer": 1,
+    "explanation": "Blanking panels (filler panels) cover unused rack spaces in server cabinets. In hot-aisle/cold-aisle datacenter designs, empty rack gaps allow hot exhaust air from the rear of the rack to loop back through the front intakes, causing servers to overheat. Blanking panels enforce proper front-to-back airflow containment. They are not tool shelves, lightning grounds, or network accelerators.",
+    "distractor_analysis": {
+      "0": "Blanking panels are lightweight airflow barriers, not load-bearing storage shelves.",
+      "2": "Rack grounding is accomplished via heavy copper busbars and bonding straps, not plastic/sheet-metal blanking panels.",
+      "3": "Airflow blanking panels have zero interaction with optical fiber transceivers or data propagation speeds."
+    },
+    "video_reference": {
+      "title": "Environmental Impacts - CompTIA A+ 220-1202 - 4.5",
+      "url": "https://www.youtube.com/watch?v=FqWHM4Sws1M",
+      "duration": "6:28",
+      "objective": "4.5"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "datacenter",
+      "blanking-panels",
+      "airflow",
+      "hvac"
+    ],
+    "id": "C2-141"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.8",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "A datacenter jump box requires PowerShell remoting (`Enter-PSSession`) enabled across 50 Windows servers. Which Windows service and management protocol underpins PowerShell remoting?",
+    "options": [
+      "Telnet Service",
+      "Windows Remote Management (WinRM / WS-Management)",
+      "Simple Network Management Protocol (SNMP)",
+      "Network File System (NFS)"
+    ],
+    "answer": 1,
+    "explanation": "PowerShell Remoting relies on the Windows Remote Management (WinRM) service, Microsoft's implementation of the standard WS-Management SOAP-based protocol. WinRM communicates over HTTP (port 5985) or HTTPS (port 5986) using Kerberos or certificate authentication. Telnet is unencrypted CLI, SNMP monitors device metrics, and NFS is a file-sharing protocol.",
+    "distractor_analysis": {
+      "0": "Telnet is an insecure plaintext terminal protocol that is disabled by default and unrelated to PowerShell Remoting.",
+      "2": "SNMP queries hardware metrics and network interface counters, lacking remote interactive shell capabilities.",
+      "3": "NFS is a network file sharing protocol used to mount remote storage volumes."
+    },
+    "video_reference": {
+      "title": "Scripting Languages - CompTIA A+ 220-1202 - 4.8",
+      "url": "https://www.youtube.com/watch?v=nJKUP1twjbY",
+      "duration": "6:00",
+      "objective": "4.8"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "powershell",
+      "winrm",
+      "remote-management",
+      "wsman"
+    ],
+    "id": "C2-163"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A datacenter engineer needs to modify inbound firewall rules on production database clusters. Which formalized operational process mandates submitting an RFC, assessing risk, obtaining Change Advisory Board (CAB) approval, and documenting a rollback plan?",
+    "options": [
+      "Bypassing tickets to speed up delivery",
+      "Formal Change Management process",
+      "Shadow IT unapproved implementation",
+      "Uncoordinated weekend maintenance"
+    ],
+    "answer": 1,
+    "explanation": "Change Management is the formal governance framework designed to minimize outages and business disruption caused by changes. It requires submitting a Request for Change (RFC), performing risk analysis, testing in a sandbox, scheduling within a maintenance window, obtaining CAB approval, and preparing a validated rollback plan. Shadow IT and skipping approvals cause enterprise outages.",
+    "distractor_analysis": {
+      "2": "Shadow IT refers to unauthorized, undocumented hardware or software deployments that bypass corporate IT oversight.",
+      "3": "Uncoordinated changes without documented plans or CAB approval lead to unexpected production downtime.",
+      "0": "Bypassing ticketing systems eliminates audit trails and violates compliance and governance policies."
+    },
+    "video_reference": {
+      "title": "Change Management - CompTIA A+ 220-1202 - 4.2",
+      "url": "https://www.youtube.com/watch?v=AhcQlR73Bo4",
+      "duration": "21:42",
+      "objective": "4.2"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "change-management",
+      "cab",
+      "firewall-change",
+      "rollback-plan"
+    ],
+    "id": "C2-234"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.3",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Which backup rule specifies maintaining three copies of data, stored across two different media types, with at least one copy kept in an offsite or cloud location?",
+    "options": [
+      "A single USB thumb drive left plugged into the server",
+      "Taking desktop screenshots of critical files",
+      "The 3-2-1 backup rule",
+      "RAID 0 storage striping alone"
+    ],
+    "answer": 2,
+    "explanation": "The 3-2-1 backup rule is the foundational standard for enterprise data protection: 3 copies of data (production + 2 backups), stored on 2 different media types (e.g., disk array + tape or cloud), with 1 copy stored Offsite. RAID 0 provides zero redundancy, single USB drives lack offsite protection, and screenshots are not database backups.",
+    "distractor_analysis": {
+      "3": "RAID 0 stripes data across drives with zero fault tolerance; if one drive fails, all data on the array is lost.",
+      "0": "Leaving a single USB flash drive connected to the server provides zero media diversity and fails if the server room burns down.",
+      "1": "Taking screenshots is not a viable or restorable enterprise database backup strategy."
+    },
+    "video_reference": {
+      "title": "Managing Backups - CompTIA A+ 220-1202 - 4.3",
+      "url": "https://www.youtube.com/watch?v=xJc7-KM-Fsk",
+      "duration": "15:01",
+      "objective": "4.3"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "3-2-1-rule",
+      "backup-strategy",
+      "disaster-recovery",
+      "offsite"
+    ],
+    "id": "C2-235"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.4",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Before opening a server chassis to install additional DDR5 RAM modules, what electrostatic discharge (ESD) safety precautions should a technician take?",
+    "options": [
+      "Wear a heavy wool sweater and shuffle feet on carpet",
+      "Place open electronic circuit boards directly on conductive aluminum foil while powered",
+      "Spray liquid glass cleaner directly onto the RAM golden edge contacts",
+      "Wear an antistatic ESD wrist strap connected to unpainted chassis metal and work on a grounded ESD mat"
+    ],
+    "answer": 3,
+    "explanation": "Electrostatic discharge (ESD) can destroy delicate semiconductor circuitry with voltages far below human perception. Technicians must wear a properly grounded ESD wrist strap, work on an ESD-safe dissipative mat, handle memory modules by their non-conductive edges, and store components in antistatic bags. Wool clothes generate static, foil shorts live circuits, and liquids corrode contacts.",
+    "distractor_analysis": {
+      "0": "Wool clothing and walking across carpet generate thousands of volts of static electricity, drastically increasing ESD risk.",
+      "1": "Placing powered circuit boards on conductive foil creates immediate short circuits and destroys electronics.",
+      "2": "Spraying liquid cleaners onto gold contacts causes corrosion, liquid ingress, and electrical shorts."
+    },
+    "video_reference": {
+      "title": "Managing Electrostatic Discharge - CompTIA A+ 220-1202 - 4.4",
+      "url": "https://www.youtube.com/watch?v=sDlVVU3oAlA",
+      "duration": "5:28",
+      "objective": "4.4"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "esd",
+      "safety",
+      "wrist-strap",
+      "hardware-handling"
+    ],
+    "id": "C2-236"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.5",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Which safety document must be consulted to review handling, storage, and emergency spill response protocols for hazardous datacenter substances such as printer toner, isopropyl alcohol, or UPS battery acid?",
+    "options": [
+      "VLAN trunking protocol configuration",
+      "Safety Data Sheet (SDS / MSDS)",
+      "GPU overclocking profile",
+      "DNS zone transfer record"
+    ],
+    "answer": 1,
+    "explanation": "Safety Data Sheets (SDS), formerly known as MSDS, are federally mandated documents detailing the chemical composition, health hazards, personal protective equipment (PPE), safe handling procedures, and emergency spill/first-aid instructions for hazardous substances. GPU profiles, DNS records, and VLAN configs have no safety information.",
+    "distractor_analysis": {
+      "2": "GPU overclocking profiles configure graphics clock speeds and voltages, providing zero chemical safety guidance.",
+      "3": "DNS zone transfer records manage domain name replication between nameservers.",
+      "0": "VLAN trunking protocols manage layer 2 virtual network tags across network switches."
+    },
+    "video_reference": {
+      "title": "Environmental Impacts - CompTIA A+ 220-1202 - 4.5",
+      "url": "https://www.youtube.com/watch?v=FqWHM4Sws1M",
+      "duration": "6:28",
+      "objective": "4.5"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "sds",
+      "msds",
+      "chemical-safety",
+      "spill-response"
+    ],
+    "id": "C2-237"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.6",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "During an incident response investigation where a corporate laptop is seized for legal evidence, why is maintaining a strict 'Chain of Custody' form critical?",
+    "options": [
+      "It authorizes the technician to open and read the user's personal files",
+      "It sets the retention period before the laptop can be reimaged",
+      "It documents everyone who handled the media, which keeps the evidence admissible",
+      "It records the exact imaging tool version used during acquisition"
+    ],
+    "answer": 2,
+    "explanation": "Chain of Custody is the formal chronological documentation recording the seizure, custody, transfer, analysis, and disposition of physical and electronic evidence. Maintaining an unbroken chain of custody ensures that evidence has not been tampered with and remains legally admissible in a court of law. Wallpapers, fan curves, and cable colors are unrelated.",
+    "distractor_analysis": {
+      "3": "Tool and hash detail belong on the acquisition record. Chain of custody tracks possession over time.",
+      "0": "Custody paperwork does not grant a technician permission to browse content. Legal counsel scopes that.",
+      "1": "Retention and disposal come from the evidence handling policy, after the case closes."
+    },
+    "video_reference": {
+      "title": "Incident Response - CompTIA A+ 220-1202 - 4.6",
+      "url": "https://www.youtube.com/watch?v=jKhIYQioCE8",
+      "duration": "6:43",
+      "objective": "4.6"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "chain-of-custody",
+      "incident-response",
+      "evidence",
+      "forensics"
+    ],
+    "id": "C2-238"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.1",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "How does a ticketing system primarily assist IT operations teams in daily service delivery?",
+    "options": [
+      "By replacing the hardware monitoring platform used in the NOC",
+      "By removing the need for a separate knowledge base",
+      "By assigning public IPv4 blocks to each branch office",
+      "By logging, prioritizing, assigning and tracking requests so SLA targets are met"
+    ],
+    "answer": 3,
+    "explanation": "Ticketing systems (such as ServiceNow or Jira Service Desk) provide a centralized platform to record, categorize, prioritize, assign, track, and document customer incidents and requests, ensuring accountability, historical knowledge capture, and compliance with contractual SLAs. They do not replace hardware monitoring, eliminate documentation, or allocate IPv4 space.",
+    "distractor_analysis": {
+      "0": "Monitoring detects faults. Ticketing tracks the work that follows and does not replace it.",
+      "1": "A knowledge base holds the how. The ticket queue holds the what and the when.",
+      "2": "Address allocation is an IPAM function and has no relationship to service delivery tracking."
+    },
+    "video_reference": {
+      "title": "Ticketing Systems - CompTIA A+ 220-1202 - 4.1",
+      "url": "https://www.youtube.com/watch?v=EzjHn6vvrsI",
+      "duration": "13:48",
+      "objective": "4.1"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "ticketing-systems",
+      "incident-management",
+      "sla",
+      "documentation"
+    ],
+    "id": "C2-239"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "What is the primary operational purpose of affixing barcode asset tags to company hardware and maintaining Configuration Management Database (CMDB) records?",
+    "options": [
+      "To keep firmware revisions aligned across a switch stack",
+      "To track configuration items across their whole lifecycle, from procurement to disposal",
+      "To give the service desk a warranty lookup for each monitor model",
+      "To let finance depreciate assets on a fixed annual schedule"
+    ],
+    "answer": 1,
+    "explanation": "Asset management and CMDB tracking record detailed information about physical and logical Configuration Items (CIs)-including serial numbers, location, assigned user, warranty dates, purchase costs, and relationships-throughout their entire lifecycle from procurement to disposal. Asset tags have no effect on monitor pixels, beep code volume, or printer fusers.",
+    "distractor_analysis": {
+      "2": "Warranty lookup is one report the CMDB can feed. It is not why the database exists.",
+      "3": "Depreciation is a finance use of the same data, downstream of the asset record itself.",
+      "0": "Firmware alignment is handled by configuration management tooling on the devices."
+    },
+    "video_reference": {
+      "title": "Ticketing Systems - CompTIA A+ 220-1202 - 4.1",
+      "url": "https://www.youtube.com/watch?v=EzjHn6vvrsI",
+      "duration": "13:48",
+      "objective": "4.1"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "asset-management",
+      "cmdb",
+      "lifecycle",
+      "hardware-tracking"
+    ],
+    "id": "C2-240"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.7",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "When communicating with an upset, frustrated customer whose workstation crashed during a payroll run, how should the technician conduct the interaction?",
+    "options": [
+      "Transfer the call to another queue so the user can cool down first",
+      "Talk through the stack trace in detail so the user sees the complexity",
+      "Stay calm, listen without interrupting, avoid jargon, and set clear expectations",
+      "Explain that payroll should not have been run so close to the deadline"
+    ],
+    "answer": 2,
+    "explanation": "CompTIA professional customer service guidelines dictate that technicians remain calm, patient, and empathetic, listen actively without interrupting, avoid confusing jargon, clarify the problem, and communicate realistic timelines. Mocking users, hanging up, or arguing damages customer relationships and violates professional ethics.",
+    "distractor_analysis": {
+      "3": "Assigning blame during an outage escalates the call and solves nothing.",
+      "0": "Passing the call along abandons the customer and loses the context you already have.",
+      "1": "Technical depth the customer did not ask for reads as deflection. Give them status and a timeline."
+    },
+    "video_reference": {
+      "title": "Professionalism - CompTIA A+ 220-1202 - 4.7",
+      "url": "https://www.youtube.com/watch?v=8kKg8RJHAFQ",
+      "duration": "4:47",
+      "objective": "4.7"
+    },
+    "notes_reference": "17_Support_Procedures_Professionalism_OS_Types.md",
+    "tags": [
+      "professionalism",
+      "communication",
+      "active-listening",
+      "customer-service"
+    ],
+    "id": "C2-241"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.8",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "In datacenter operations, what is the primary purpose of writing PowerShell (`.ps1`) and Bash (`.sh`) scripts?",
+    "options": [
+      "To replace physical deadbolt server room door locks",
+      "To passively cool the server rack cold aisle",
+      "To physically clean optical fiber transceivers",
+      "To automate repetitive administrative tasks, bulk user provisioning, and scheduled maintenance workflows"
+    ],
+    "answer": 3,
+    "explanation": "Scripting languages (PowerShell, Bash, Python) allow system administrators to automate repetitive operational tasks-such as batch account creation, log rotation, automated backups, patch deployments, and system health audits-increasing efficiency and reducing human error. Scripts cannot replace physical door locks, cool aisles, or clean fiber connectors.",
+    "distractor_analysis": {
+      "0": "Physical facility security requires mechanical deadbolts and electronic badge locks, not software scripts.",
+      "1": "Datacenter cold aisle cooling is delivered by HVAC precision air conditioning units.",
+      "2": "Cleaning optical fiber transceivers requires physical lint-free swabs and isopropyl cleaning tools."
+    },
+    "video_reference": {
+      "title": "Scripting Languages - CompTIA A+ 220-1202 - 4.8",
+      "url": "https://www.youtube.com/watch?v=nJKUP1twjbY",
+      "duration": "6:00",
+      "objective": "4.8"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "scripting",
+      "powershell",
+      "bash",
+      "automation"
+    ],
+    "id": "C2-242"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.9",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "What core functionality do Remote Monitoring and Management (RMM) platforms provide for Managed Service Providers (MSPs)?",
+    "options": [
+      "Power and cooling efficiency reporting for the facilities team",
+      "Central monitoring, patch management, alerting and remote access across many endpoints",
+      "Out-of-band console access to server hardware through a dedicated IPMI network",
+      "Automated ordering of consumables such as toner for managed printers"
+    ],
+    "answer": 1,
+    "explanation": "RMM (Remote Monitoring and Management) platforms deploy lightweight agent software to client computers and servers, enabling MSPs to centrally monitor system health, deploy software patches, execute remote scripts, receive alert notifications, and establish remote management sessions across distributed customer networks. They are not limited to local keyboards, toner deliveries, or PUE math.",
+    "distractor_analysis": {
+      "2": "Out-of-band console work is what iDRAC or iLO does on individual servers, not what an RMM platform is for.",
+      "3": "Consumable ordering is a managed print service feature, a small slice of what an RMM covers.",
+      "0": "Efficiency reporting belongs to DCIM tooling on the facilities side."
+    },
+    "video_reference": {
+      "title": "Remote Access - CompTIA A+ 220-1202 - 4.9",
+      "url": "https://www.youtube.com/watch?v=B-xa0hjmuAs",
+      "duration": "12:49",
+      "objective": "4.9"
+    },
+    "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+    "tags": [
+      "rmm",
+      "remote-management",
+      "msp",
+      "monitoring"
+    ],
+    "id": "C2-243"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.3",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "You are documenting the nightly backup schedule for a small office file server so the next technician can size the retention window. Which data does an incremental backup job capture?",
+    "options": [
+      "The whole volume on every run, regardless of modification time",
+      "Only the system state and registry hives, not user data",
+      "Everything changed since the last backup of any type, clearing the archive bit",
+      "Everything changed since the last full backup, leaving the archive bit set"
+    ],
+    "answer": 2,
+    "explanation": "An Incremental backup captures only the files that have changed since the last backup of any kind (Full or Incremental) and clears the archive bit. This produces the fastest daily backup jobs and smallest storage footprint, but requires restoring the Full backup plus all subsequent incrementals in chronological order. Full backups copy everything, and DNS/BIOS are specific subsystems.",
+    "distractor_analysis": {
+      "3": "That is a differential. It grows against the last full and does not clear the archive bit.",
+      "0": "Copying everything every run is a full backup. Incrementals exist to avoid that window.",
+      "1": "System state is a separate backup selection, not the definition of an incremental job."
+    },
+    "video_reference": {
+      "title": "Managing Backups - CompTIA A+ 220-1202 - 4.3",
+      "url": "https://www.youtube.com/watch?v=xJc7-KM-Fsk",
+      "duration": "15:01",
+      "objective": "4.3"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "incremental-backup",
+      "backup-types",
+      "archive-bit",
+      "storage"
+    ],
+    "id": "C2-244"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.3",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "You are documenting the nightly backup schedule for a small office file server and comparing job types for restore speed. Which data does a differential backup job capture?",
+    "options": [
+      "Everything changed since the last backup of any type, clearing the archive bit",
+      "The whole volume on every run, regardless of the archive bit",
+      "Only open files, captured through a volume shadow copy",
+      "Everything changed since the last full backup, leaving the archive bit set"
+    ],
+    "answer": 3,
+    "explanation": "A Differential backup copies all files that have changed since the last FULL backup without clearing the archive bit. Each daily differential grows in size, capturing cumulative changes since Sunday's full backup. Restoring requires only two backup sets: the last Full backup and the latest Differential backup. Memory dumps, ARP tables, and syslog rotation are specific subcomponents.",
+    "distractor_analysis": {
+      "0": "That describes an incremental. Clearing the archive bit is what makes each incremental depend on the one before it.",
+      "1": "Copying the whole volume every run is a full backup, which is the job type the differential is meant to shorten.",
+      "2": "Shadow copy is the mechanism that lets open files be read. It is not what selects the file set."
+    },
+    "video_reference": {
+      "title": "Managing Backups - CompTIA A+ 220-1202 - 4.3",
+      "url": "https://www.youtube.com/watch?v=xJc7-KM-Fsk",
+      "duration": "15:01",
+      "objective": "4.3"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "differential-backup",
+      "backup-types",
+      "archive-bit",
+      "restore"
+    ],
+    "id": "C2-245"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.4",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "What is the proper ergonomic lifting technique when moving heavy datacenter UPS batteries or rackmount servers?",
+    "options": [
+      "Drag the unit by its power cords to the edge of the rack",
+      "Team lift or use a mechanical lift, bend at the knees, keep the back straight",
+      "Bend at the waist and lift with the lower back while turning",
+      "Lift with the arms extended to keep the load away from the body"
+    ],
+    "answer": 1,
+    "explanation": "Safe lifting procedures require bending at the knees (not the waist), keeping the load close to the body, keeping the back straight, lifting with the strong leg muscles, and avoiding twisting the torso under load. Heavy equipment (>40-50 lbs) mandates a team lift or mechanical server lift. Bending at the waist, lifting far from the chest, and pulling cords cause severe injury and damage.",
+    "distractor_analysis": {
+      "2": "Bending at the waist and twisting under load is the classic way to injure the lumbar spine.",
+      "3": "Holding the load away from the body multiplies the leverage on the back.",
+      "0": "Cords are not handles. This damages the equipment and risks dropping it on your feet."
+    },
+    "video_reference": {
+      "title": "Managing Electrostatic Discharge - CompTIA A+ 220-1202 - 4.4",
+      "url": "https://www.youtube.com/watch?v=sDlVVU3oAlA",
+      "duration": "5:28",
+      "objective": "4.4"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "safety",
+      "ergonomics",
+      "lifting",
+      "physical-safety"
+    ],
+    "id": "C2-246"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.6",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Why is maintaining strict software license compliance and tracking End-User License Agreements (EULAs) critical for an organization?",
+    "options": [
+      "EULA tracking sets the support window for firmware updates on network switches",
+      "Seat counts decide how many concurrent RDP sessions the kernel will schedule",
+      "Deploying past the licensed seat count breaches copyright and contract, exposing the company to penalties and audit",
+      "License records decide which PCIe generation the vendor will certify for the platform"
+    ],
+    "answer": 2,
+    "explanation": "Software licensing compliance ensures that an organization does not install more software instances than it legally owns. Under-licensing exposes the enterprise to copyright infringement lawsuits, substantial financial penalties, and mandatory third-party software audits (e.g., BSA). Licensing has no effect on physical fan noise, PCIe bus speeds, or optical fiber wavelengths.",
+    "distractor_analysis": {
+      "3": "PCIe generation is a hardware specification. No licence document changes what the slot negotiates.",
+      "0": "Firmware support windows come from the hardware support contract, not the software EULA.",
+      "1": "Concurrent RDP sessions are capped by RDS licensing configuration, not by an application seat count."
+    },
+    "video_reference": {
+      "title": "Incident Response - CompTIA A+ 220-1202 - 4.6",
+      "url": "https://www.youtube.com/watch?v=jKhIYQioCE8",
+      "duration": "6:43",
+      "objective": "4.6"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "licensing",
+      "compliance",
+      "eula",
+      "legal"
+    ],
+    "id": "C2-247"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.6",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "In digital forensics and incident response, what is the correct prioritization dictated by the 'Order of Volatility' when collecting digital evidence?",
+    "options": [
+      "Collect offline backup tapes first, then physical printouts, and finally active RAM",
+      "Format all storage drives before capturing memory",
+      "Collect physical chassis barcode stickers before memory dumps",
+      "Capture the most volatile data first (CPU registers/cache, routing tables, active RAM) before less volatile data (hard disks, backup media, printouts)"
+    ],
+    "answer": 3,
+    "explanation": "The Order of Volatility dictates that evidence must be captured in order from most volatile (data that disappears immediately when power is cut) to least volatile. The standard order is: 1. CPU registers and cache, 2. Routing tables, ARP cache, process table, kernel statistics, 3. System RAM, 4. Temporary file systems, 5. Disk storage, 6. Remote logs, 7. Physical media/archives.",
+    "distractor_analysis": {
+      "0": "Offline backup tapes are non-volatile and will persist for years; capturing them first allows volatile RAM evidence to be lost.",
+      "1": "Formatting drives destroys data and constitutes spoliation of forensic evidence.",
+      "2": "Chassis stickers are permanent physical labels and should not be prioritized over volatile memory."
+    },
+    "video_reference": {
+      "title": "Incident Response - CompTIA A+ 220-1202 - 4.6",
+      "url": "https://www.youtube.com/watch?v=jKhIYQioCE8",
+      "duration": "6:43",
+      "objective": "4.6"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "order-of-volatility",
+      "incident-response",
+      "forensics",
+      "evidence"
+    ],
+    "id": "C2-248"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Under what circumstance is a documented rollback (backout) plan executed during a change management deployment?",
+    "options": [
+      "When the change advisory board reschedules the maintenance window",
+      "When the change fails, hits unforeseen errors, or causes unacceptable downtime",
+      "When the deployment finishes ahead of schedule with no errors logged",
+      "When users report that the new behaviour is working as designed"
+    ],
+    "answer": 1,
+    "explanation": "A rollback (backout) plan is an essential risk mitigation procedure designed to be executed when an infrastructure change fails, encounters severe bugs, or causes unplanned outages during implementation, providing clear steps to restore the system to its pre-change operational baseline. It is not executed when changes succeed.",
+    "distractor_analysis": {
+      "2": "A clean, early finish is the success path. You verify and close, you do not roll back.",
+      "3": "Working as designed is the acceptance criterion, not a rollback trigger.",
+      "0": "A rescheduled window means the change has not run yet, so there is nothing to back out."
+    },
+    "video_reference": {
+      "title": "Change Management - CompTIA A+ 220-1202 - 4.2",
+      "url": "https://www.youtube.com/watch?v=AhcQlR73Bo4",
+      "duration": "21:42",
+      "objective": "4.2"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "change-management",
+      "rollback-plan",
+      "backout",
+      "risk-mitigation"
+    ],
+    "id": "C2-249"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.9",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Which statement accurately describes the operational difference and synergy between a Virtual Private Network (VPN) and Remote Desktop Protocol (RDP) for remote workers?",
+    "options": [
+      "A VPN removes resident malware from the client before the session is allowed",
+      "Neither one needs auditing, because both are already encrypted",
+      "A VPN builds the encrypted tunnel to the corporate LAN, and RDP runs the desktop session over it",
+      "RDP builds the encrypted tunnel and the VPN supplies the graphical session"
+    ],
+    "answer": 2,
+    "explanation": "A Virtual Private Network (VPN) operates at the network layer to encapsulate and encrypt all IP traffic between a remote client and the corporate network, placing the client logically on the corporate LAN. Remote Desktop Protocol (RDP) operates at the application layer to stream graphical desktop video, keyboard, and mouse control. In enterprise environments, RDP is commonly routed through a secure VPN tunnel. VPNs do not delete malware, and all sessions should be logged.",
+    "distractor_analysis": {
+      "3": "The roles are reversed. RDP is the presentation protocol; the VPN is the transport.",
+      "0": "A VPN moves packets. Posture and malware checks come from endpoint security, not from the tunnel.",
+      "1": "Encryption protects the traffic in transit. It does not remove the need to log who connected."
+    },
+    "video_reference": {
+      "title": "Remote Access - CompTIA A+ 220-1202 - 4.9",
+      "url": "https://www.youtube.com/watch?v=B-xa0hjmuAs",
+      "duration": "12:49",
+      "objective": "4.9"
+    },
+    "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+    "tags": [
+      "remote-access",
+      "vpn",
+      "rdp",
+      "secure-access"
+    ],
+    "id": "C2-250"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.10",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "What is an appropriate and secure operational practice when using Artificial Intelligence (AI) copilots and assistants in IT workflows?",
+    "options": [
+      "Pasting production database passwords and customer PII into public AI chatbots",
+      "Blindly executing destructive AI-generated terminal commands without human review",
+      "Allowing AI models to approve production change requests automatically without human CAB oversight",
+      "Using AI to assist with drafting scripts, documentation, and troubleshooting analysis while strictly verifying all outputs and never inputting confidential credentials or proprietary data"
+    ],
+    "answer": 3,
+    "explanation": "Responsible and secure AI utilization in enterprise IT requires treating AI outputs as unverified drafts: human engineers must review and test all generated scripts in sandboxes, verify command syntax against documentation, and strictly protect data privacy by never submitting credentials, API keys, intellectual property, or PII into public AI tools. Pasting secrets into AI and blindly running unverified code creates massive risk.",
+    "distractor_analysis": {
+      "0": "Pasting production credentials and PII into public AI platforms causes severe data privacy breaches and leaks secrets.",
+      "1": "Blindly executing AI commands without human verification risks catastrophic data loss due to AI hallucinations.",
+      "2": "Change management governance requires human accountability; AI cannot replace CAB risk evaluation."
+    },
+    "video_reference": {
+      "title": "Managing AI - CompTIA A+ 220-1202 - 4.10",
+      "url": "https://www.youtube.com/watch?v=oofb6ROU7LM",
+      "duration": "10:38",
+      "objective": "4.10"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "artificial-intelligence",
+      "data-privacy",
+      "verification",
+      "copilot"
+    ],
+    "id": "C2-251"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.1",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Which set of operational documentation and procedures should be completed when onboarding a new employee into a corporate IT environment?",
+    "options": [
+      "Only the change ticket that created the mailbox in Exchange",
+      "Account provisioning, role-based access requests, asset assignment, and AUP sign-off",
+      "Only a signed asset receipt and a desk allocation from facilities",
+      "Only the security awareness training record kept by HR"
+    ],
+    "answer": 1,
+    "explanation": "IT employee onboarding procedures include creating directory user accounts, provisioning mailbox and role-based permissions, issuing and tracking tagged hardware assets in the CMDB, configuring MFA tokens, and having the employee read and sign the corporate Acceptable Use Policy (AUP). Cafeteria menus, GPU specs, and paint colors are not IT identity onboarding procedures.",
+    "distractor_analysis": {
+      "2": "The hardware receipt is one item on the list. It leaves identity, access and policy untouched.",
+      "3": "Training is required but proves nothing about what the account can reach.",
+      "0": "A mailbox ticket is one provisioning task inside a wider onboarding record."
+    },
+    "video_reference": {
+      "title": "Ticketing Systems - CompTIA A+ 220-1202 - 4.1",
+      "url": "https://www.youtube.com/watch?v=EzjHn6vvrsI",
+      "duration": "13:48",
+      "objective": "4.1"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "onboarding",
+      "documentation",
+      "aup",
+      "identity"
+    ],
+    "id": "C2-252"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "In an IT support contract or managed service agreement, what is the primary purpose of a Service Level Agreement (SLA)?",
+    "options": [
+      "To set the hourly rate charged for out-of-hours callout work",
+      "To record which technicians hold vendor certification for the platform",
+      "To define measurable commitments such as uptime, response time, and time to resolve",
+      "To list the hardware models the vendor will support on site"
+    ],
+    "answer": 2,
+    "explanation": "A Service Level Agreement (SLA) is a formal contract between a service provider (internal IT or external vendor) and a customer that establishes measurable performance metrics, such as guaranteed system availability/uptime percentages (e.g., 99.9%), maximum initial response times, and resolution targets. SLAs do not configure CPU microcode, RAM timings, or monitor gamma.",
+    "distractor_analysis": {
+      "3": "Supported models belong in the scope or coverage schedule, not the service level targets.",
+      "0": "Rates sit in the commercial terms. An SLA measures performance, not price.",
+      "1": "Certification lists are a staffing matter and are not the performance commitment."
+    },
+    "video_reference": {
+      "title": "Ticketing Systems - CompTIA A+ 220-1202 - 4.1",
+      "url": "https://www.youtube.com/watch?v=EzjHn6vvrsI",
+      "duration": "13:48",
+      "objective": "4.1"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "sla",
+      "service-level-agreement",
+      "metrics",
+      "support"
+    ],
+    "id": "C2-253"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.5",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "How does structured horizontal and vertical cable management inside server racks improve datacenter operational efficiency?",
+    "options": [
+      "It raises link speed past the Cat6 rating by controlling bend radius",
+      "It lets the RAID controller recalculate parity across shelves faster",
+      "It extends the life of the TLS certificates on the switch stack",
+      "It keeps airflow paths clear, removes trip hazards, and makes tracing a run quick"
+    ],
+    "answer": 3,
+    "explanation": "Structured cable management (using horizontal cable managers, vertical D-rings, and velcro ties) organizes power and data cabling away from exhaust fans, preventing heat buildup and maintaining front-to-back cold-aisle/hot-aisle airflow. It also eliminates physical snag hazards and allows technicians to trace and replace cables quickly during outages. It does not alter link speeds, RAID parity, or certificates.",
+    "distractor_analysis": {
+      "0": "Bend radius protects the cable from damage. It cannot raise a link above its rated category.",
+      "1": "Parity work happens inside the controller and is unaffected by how cables are dressed.",
+      "2": "Certificate lifetime is set by the issuing authority, not by cable management."
+    },
+    "video_reference": {
+      "title": "Environmental Impacts - CompTIA A+ 220-1202 - 4.5",
+      "url": "https://www.youtube.com/watch?v=FqWHM4Sws1M",
+      "duration": "6:28",
+      "objective": "4.5"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "cable-management",
+      "datacenter",
+      "airflow",
+      "safety"
+    ],
+    "id": "C2-254"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.5",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "What is the proper environmental procedure for disposing of spent laser printer toner cartridges and depleted UPS lead-acid batteries?",
+    "options": [
+      "Store them in the plant room until the annual facilities clear-out",
+      "Follow local regulations, check the Safety Data Sheet, and use certified recycling",
+      "Put them in the general waste stream once the toner reservoir is empty",
+      "Rinse the cartridge and battery casings before placing them in recycling"
+    ],
+    "answer": 1,
+    "explanation": "Laser toner (fine plastic polymer/iron oxide powder) and UPS batteries (lead and sulfuric acid) contain hazardous chemicals and heavy metals that pose severe environmental and fire risks. Organizations must follow local environmental e-waste regulations, consult SDS sheets, and return spent items through vendor recycling programs. Dumping in trash, flushing down drains, or burning causes severe pollution and violates environmental laws.",
+    "distractor_analysis": {
+      "2": "Residual toner and lead are both regulated. Empty does not mean safe for general waste.",
+      "3": "Rinsing washes toner particulate and electrolyte into the drain, which is itself a violation.",
+      "0": "Accumulating hazardous waste on site without a disposal route creates a compliance and fire risk."
+    },
+    "video_reference": {
+      "title": "Environmental Impacts - CompTIA A+ 220-1202 - 4.5",
+      "url": "https://www.youtube.com/watch?v=FqWHM4Sws1M",
+      "duration": "6:28",
+      "objective": "4.5"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "environmental-controls",
+      "e-waste",
+      "battery-disposal",
+      "toner"
+    ],
+    "id": "C2-255"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.7",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Why are professional appearance, punctuality, and respectful conduct critical soft skills for IT support technicians?",
+    "options": [
+      "They reduce the number of change approvals a technician must request",
+      "They lower the licence cost of the remote support platform",
+      "They build trust, project competence, and represent the organization well",
+      "They shorten the mean time to repair recorded against each ticket"
+    ],
+    "answer": 2,
+    "explanation": "CompTIA Core 2 emphasizes professional soft skills: arriving on time, dressing appropriately, maintaining a tidy workspace, using respectful language, and actively listening build customer trust and confidence in the IT department. Soft skills do not physically alter network speeds, power supply wattage, or QoS packet headers.",
+    "distractor_analysis": {
+      "3": "Repair time is driven by diagnosis and parts, not by how the technician is dressed.",
+      "0": "Change approval is governed by risk and policy, not by conduct.",
+      "1": "Licence cost is a commercial term and is unaffected by soft skills."
+    },
+    "video_reference": {
+      "title": "Professionalism - CompTIA A+ 220-1202 - 4.7",
+      "url": "https://www.youtube.com/watch?v=8kKg8RJHAFQ",
+      "duration": "4:47",
+      "objective": "4.7"
+    },
+    "notes_reference": "17_Support_Procedures_Professionalism_OS_Types.md",
+    "tags": [
+      "professionalism",
+      "punctuality",
+      "soft-skills",
+      "communication"
+    ],
+    "id": "C2-256"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.1",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "What is the primary operational value of creating and maintaining Standard Operating Procedures (SOPs) in an IT knowledge base?",
+    "options": [
+      "They replace the change approval board for routine maintenance work",
+      "They record every asset serial number for the annual audit",
+      "They define the escalation path and on-call rota for major incidents",
+      "They give repeatable step-by-step instructions, so work is consistent and onboarding is faster"
+    ],
+    "answer": 3,
+    "explanation": "A Standard Operating Procedure (SOP) is a formal, documented set of step-by-step instructions compiled by an organization to guide technicians in performing routine and complex operations consistently. SOPs ensure quality control, reduce errors, streamline troubleshooting, and accelerate onboarding. They do not promote guessing, bypass security controls, or eliminate backup requirements.",
+    "distractor_analysis": {
+      "0": "An SOP describes how to do the work. It does not remove the requirement for change approval.",
+      "1": "Serial numbers live in the asset register or CMDB, not in a procedure document.",
+      "2": "Escalation and rota belong to the incident management plan, which an SOP may reference but does not replace."
+    },
+    "video_reference": {
+      "title": "Ticketing Systems - CompTIA A+ 220-1202 - 4.1",
+      "url": "https://www.youtube.com/watch?v=EzjHn6vvrsI",
+      "duration": "13:48",
+      "objective": "4.1"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "documentation",
+      "sop",
+      "standard-operating-procedure",
+      "knowledge-base"
+    ],
+    "id": "C2-257"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.3",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Why do backup architectures commonly execute a Full backup once weekly followed by nightly Incremental backups, rather than running a Full backup every single night?",
+    "options": [
+      "To bypass the need for backup encryption",
+      "To drastically reduce the nightly backup window duration and save network bandwidth and storage capacity",
+      "To eliminate the need to ever perform test restores",
+      "To avoid having to maintain offsite backup copies"
+    ],
+    "answer": 1,
+    "explanation": "Running a full backup of multi-terabyte datasets every night consumes massive network bandwidth, overloads production storage I/O, and requires immense storage capacity. Performing a weekly Full backup combined with nightly Incremental backups captures only changed blocks each night, dramatically shortening the backup window and saving storage space. Test restores, offsite copies, and encryption remain mandatory.",
+    "distractor_analysis": {
+      "2": "Test restores remain essential regardless of backup strategy to verify that the backup chain can be successfully reconstructed.",
+      "3": "Maintaining offsite backup copies is required by the 3-2-1 rule regardless of whether fulls or incrementals are used.",
+      "0": "Backup encryption is mandatory to protect sensitive company data at rest across all backup tiers."
+    },
+    "video_reference": {
+      "title": "Managing Backups - CompTIA A+ 220-1202 - 4.3",
+      "url": "https://www.youtube.com/watch?v=xJc7-KM-Fsk",
+      "duration": "15:01",
+      "objective": "4.3"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "backup-strategy",
+      "full-backup",
+      "incremental",
+      "backup-window"
+    ],
+    "id": "C2-258"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "When a major database infrastructure change is scheduled to execute during an approved 02:00 AM maintenance window, what responsibilities must the systems engineer fulfill?",
+    "options": [
+      "Skip the notification because the window was already approved in the ticket",
+      "Close the change ticket at the start so the overnight queue stays clean",
+      "Notify stakeholders, follow the approved plan, watch post-change telemetry, and roll back if needed",
+      "Silence monitoring for the window so alerts do not page the on-call engineer"
+    ],
+    "answer": 2,
+    "explanation": "During a scheduled maintenance window, the implementing engineer must follow the approved RFC plan step by step, communicate status milestones to stakeholders, monitor system health, verify functionality, and be prepared to execute the rollback plan before the window expires if critical faults occur. Shifting times unannounced, disabling monitoring, and deleting tickets violate change management governance.",
+    "distractor_analysis": {
+      "3": "Suppressing alerts blinds you at the exact moment you most need to see the effect of the change.",
+      "0": "Approval and notification are separate obligations. Stakeholders still need to know the work has started.",
+      "1": "The ticket closes after verification, with the outcome recorded, not before the work begins."
+    },
+    "video_reference": {
+      "title": "Change Management - CompTIA A+ 220-1202 - 4.2",
+      "url": "https://www.youtube.com/watch?v=AhcQlR73Bo4",
+      "duration": "21:42",
+      "objective": "4.2"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "change-management",
+      "maintenance-window",
+      "communication",
+      "rollback"
+    ],
+    "id": "C2-259"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.6",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "What is the primary objective of corporate Privacy Policies and data classification frameworks (such as GDPR, HIPAA, and CCPA guidelines)?",
+    "options": [
+      "To define the retention period for firewall and switch configuration backups",
+      "To standardize how server rooms number rack units for asset tagging",
+      "To set the encryption cipher suites allowed on public web services",
+      "To govern how personal and confidential data may be collected, stored and shared"
+    ],
+    "answer": 3,
+    "explanation": "Privacy policies and regulatory compliance frameworks (GDPR, HIPAA, CCPA, PCI-DSS) establish legal rules and organizational standards governing the ethical and secure collection, processing, retention, encryption, and sharing of Personally Identifiable Information (PII) and sensitive customer records. They have no relation to fan direction, rack numbering, or cable colors.",
+    "distractor_analysis": {
+      "0": "Device configuration retention is an operational standard, not a privacy framework.",
+      "1": "Rack numbering is a facilities convention with no personal data in scope.",
+      "2": "Cipher suite policy is one technical control that supports privacy rules but does not define them."
+    },
+    "video_reference": {
+      "title": "Incident Response - CompTIA A+ 220-1202 - 4.6",
+      "url": "https://www.youtube.com/watch?v=jKhIYQioCE8",
+      "duration": "6:43",
+      "objective": "4.6"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "privacy-policies",
+      "pii",
+      "data-protection",
+      "gdpr"
+    ],
+    "id": "C2-260"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.4",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Why is proper electrical grounding (earth bonding) mandatory for all datacenter server racks and high-voltage equipment?",
+    "options": [
+      "It lets the UPS transfer to battery without a gap in the output waveform",
+      "It gives fault current a low-resistance path to earth, protecting people from shock and gear from damage",
+      "It equalizes neutral and line voltage so the PDU reports accurate amperage",
+      "It suppresses electromagnetic interference on copper runs sharing the rack"
+    ],
+    "answer": 1,
+    "explanation": "Equipment grounding connects metal chassis and server racks to the building's electrical earth grounding system. In the event of a short circuit or insulation failure, grounding provides a safe, low-resistance path for fault current to trip circuit breakers immediately, preventing the chassis from carrying lethal voltages that could electrocute technicians. Grounding does not affect DNS, ARP, or printer toner.",
+    "distractor_analysis": {
+      "2": "PDU metering reads current on the line conductor. Bonding does not calibrate it.",
+      "3": "Bonding reduces some noise as a side effect, but the reason it is mandatory is life safety.",
+      "0": "Transfer time is a function of the UPS topology, online or line-interactive, not of rack bonding."
+    },
+    "video_reference": {
+      "title": "Managing Electrostatic Discharge - CompTIA A+ 220-1202 - 4.4",
+      "url": "https://www.youtube.com/watch?v=sDlVVU3oAlA",
+      "duration": "5:28",
+      "objective": "4.4"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "electrical-safety",
+      "grounding",
+      "fault-current",
+      "safety"
+    ],
+    "id": "C2-261"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.9",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Why do remote support procedures require obtaining explicit user consent and recording remote assistance sessions?",
+    "options": [
+      "To satisfy the licence terms of the remote access product itself",
+      "To measure link latency so the session quality can be tuned",
+      "To protect privacy, keep accountability, and leave an audit trail for compliance",
+      "To let the support tool cache the session so it reconnects faster"
+    ],
+    "answer": 2,
+    "explanation": "Obtaining user consent before connecting and recording remote support sessions protects user privacy, ensures transparency, establishes a verified audit trail of all technician actions for security compliance, and provides objective records for dispute resolution and staff training. It has no physical effect on PCIe buses, refresh rates, or ping latency.",
+    "distractor_analysis": {
+      "3": "Session caching is a product feature. Consent and recording exist for the user, not the tool.",
+      "0": "Product licensing does not require consent from the person being supported.",
+      "1": "Latency measurement is telemetry. It has nothing to do with permission to view a desktop."
+    },
+    "video_reference": {
+      "title": "Remote Access - CompTIA A+ 220-1202 - 4.9",
+      "url": "https://www.youtube.com/watch?v=B-xa0hjmuAs",
+      "duration": "12:49",
+      "objective": "4.9"
+    },
+    "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+    "tags": [
+      "remote-support",
+      "session-recording",
+      "consent",
+      "compliance"
+    ],
+    "id": "C2-262"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.3",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "What is the operational advantage of utilizing 'Synthetic Full Backups' in modern backup systems?",
+    "options": [
+      "It deletes the prior incremental chains so only one restore point remains",
+      "It turns off encryption during the merge to raise throughput",
+      "It removes the need for an offsite copy of the backup data",
+      "The server merges the last full with its incrementals into a new full, without re-reading clients"
+    ],
+    "answer": 3,
+    "explanation": "A Synthetic Full backup constructs a fresh, consolidated full backup image directly on the backup storage server by taking the previous full backup and applying all subsequent incremental changes to it. This provides the fast restore benefits of a Full backup without placing heavy read I/O or network transfer loads on production client servers. It does not delete restore paths, disable encryption, or eliminate offsite copies.",
+    "distractor_analysis": {
+      "0": "Synthesis creates a new full; it does not force the loss of earlier recovery points.",
+      "1": "Encryption stays in force. Repository merges are not a reason to weaken protection.",
+      "2": "An offsite or immutable copy is still required. Synthesis only changes how the full is produced."
+    },
+    "video_reference": {
+      "title": "Managing Backups - CompTIA A+ 220-1202 - 4.3",
+      "url": "https://www.youtube.com/watch?v=xJc7-KM-Fsk",
+      "duration": "15:01",
+      "objective": "4.3"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "synthetic-full",
+      "backup-methods",
+      "storage",
+      "optimization"
+    ],
+    "id": "C2-263"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "How does an incident severity and priority matrix (evaluating Impact vs. Urgency) assist IT service desks during major outage events?",
+    "options": [
+      "It calculates the service credit owed to the customer under the SLA",
+      "It sets objective criteria to rank response so the biggest business impact is handled first",
+      "It defines the escalation path from tier one through to tier three support",
+      "It records the root cause once the outage has been resolved"
+    ],
+    "answer": 1,
+    "explanation": "An incident priority matrix evaluates the breadth of business impact (how many users/critical services are down) and urgency (financial or time sensitivity) to calculate a clear priority level (e.g., Critical, High, Medium, Low). This ensures IT teams deploy emergency resources to major enterprise outages first before working on minor single-user requests. Cable types, fan curves, and chair heights are unrelated.",
+    "distractor_analysis": {
+      "2": "Escalation paths sit in the support model. The matrix decides what gets worked first.",
+      "3": "Root cause analysis happens after restoration, in the problem record.",
+      "0": "Service credits are a commercial consequence, calculated after the fact."
+    },
+    "video_reference": {
+      "title": "Ticketing Systems - CompTIA A+ 220-1202 - 4.1",
+      "url": "https://www.youtube.com/watch?v=EzjHn6vvrsI",
+      "duration": "13:48",
+      "objective": "4.1"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "incident-management",
+      "severity-matrix",
+      "priority",
+      "sla"
+    ],
+    "id": "C2-264"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.6",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "When an employee or systems administrator leaves the organization, what mandatory IT offboarding procedures must be executed immediately?",
+    "options": [
+      "Share the former employee's password with the remaining department staff",
+      "Delete the employee's trouble tickets without logging",
+      "Disable directory user accounts, revoke active SSO tokens/MFA credentials, recover company-owned hardware assets, and document access removal",
+      "Leave VPN certificates active indefinitely for former employee convenience"
+    ],
+    "answer": 2,
+    "explanation": "IT offboarding procedures require immediate de-provisioning: disabling Active Directory and cloud accounts, revoking active session tokens and MFA registrations, removing group memberships, collecting all company-owned laptops/smartphones, and documenting the deactivation in ticketing/audit logs. Leaving accounts open, sharing passwords, and deleting audit logs create severe security breaches.",
+    "distractor_analysis": {
+      "3": "Leaving VPN certificates active allows former employees unauthorized remote access to the corporate network.",
+      "0": "Sharing passwords violates individual accountability and creates unauthorized access pathways.",
+      "1": "Deleting trouble tickets destroys historical records and violates compliance documentation policies."
+    },
+    "video_reference": {
+      "title": "Incident Response - CompTIA A+ 220-1202 - 4.6",
+      "url": "https://www.youtube.com/watch?v=jKhIYQioCE8",
+      "duration": "6:43",
+      "objective": "4.6"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "offboarding",
+      "access-revocation",
+      "deprovisioning",
+      "security"
+    ],
+    "id": "C2-265"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "What is the primary purpose of conducting a Post-Change Review (PCR) or post-implementation review meeting following a major infrastructure change?",
+    "options": [
+      "To decide which storage vendor wins the next hardware refresh",
+      "To pause infrastructure monitoring until the next change window",
+      "To reassign the change ticket to the operations backlog queue",
+      "To review outcomes, record unexpected issues, and capture lessons learned"
+    ],
+    "answer": 3,
+    "explanation": "A Post-Change Review (PCR) is the final phase of formal change management. The engineering team and CAB review the implementation outcome (whether objectives were met on time and within budget), document any unforeseen complications or rollback triggers, and capture lessons learned to continuously refine future change procedures. It is not an excuse to replace hardware blindly, disable monitoring, or pull RAM.",
+    "distractor_analysis": {
+      "0": "Vendor selection is a procurement activity, not a review of the change just made.",
+      "1": "Monitoring must stay on after a change, which is when regressions surface.",
+      "2": "A completed change is closed with its outcome recorded, not pushed into a backlog."
+    },
+    "video_reference": {
+      "title": "Change Management - CompTIA A+ 220-1202 - 4.2",
+      "url": "https://www.youtube.com/watch?v=AhcQlR73Bo4",
+      "duration": "21:42",
+      "objective": "4.2"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "change-management",
+      "post-change-review",
+      "lessons-learned",
+      "pcr"
+    ],
+    "id": "C2-266"
+  },
+  {
+    "id": "C2N-I-012",
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.1",
+    "type": "multi",
+    "difficulty": "medium",
+    "question": "Before changing a production firewall rule set during business hours, which TWO change-management practices should the technician follow? (Select TWO.)",
+    "explanation": "Formal change requests, risk/rollback notes, and approvals/windows are core operational procedure controls. Silent mass changes, skipping config backup, and shared unlogged accounts break auditability and recovery.",
+    "video_reference": null,
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "change-management",
+      "firewall",
+      "operations"
+    ],
+    "options": [
+      "Submit a change request with risk assessment and rollback plan",
+      "Obtain required approvals and schedule a maintenance window when mandated",
+      "Apply the change silently on all sites first, then write documentation later",
+      "Skip backup of the current config because rules are easy to remember",
+      "Use the same unlogged shared admin account for every engineer on the change"
+    ],
+    "answers": [
+      0,
+      1
+    ],
+    "distractor_analysis": {
+      "2": "Undocumented silent changes prevent review and complicate rollback when traffic breaks.",
+      "3": "Without a saved prior config, rollback becomes guesswork during an outage.",
+      "4": "Shared admin accounts destroy individual accountability required by change audits."
+    }
+  },
+  {
+    "id": "C2N-I-017",
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.2",
+    "type": "order",
+    "difficulty": "medium",
+    "question": "Order the safety steps for replacing a hot-swap PSU in a live rack under LOTO-aware datacenter policy for that chassis type.",
+    "explanation": "Confirm the chassis is rated for hot swap and identify the failed module and its circuit before you touch anything. iDRAC, iLO or the front panel LED will name the failed supply, so you are not going by guesswork. Wear ESD protection, tell the NOC the redundancy is about to drop, and follow site lockout and tagout rules for that chassis. Then pull the failed module and seat the replacement until it latches and the status LED goes healthy. Verify load sharing across both supplies on the PDU and the management controller, clear the alert, and log the swap. Pulling the wrong module drops the host.",
+    "video_reference": null,
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "safety",
+      "psu",
+      "datacenter"
+    ],
+    "sequence": [
+      "Confirm the chassis supports hot-swap and identify the failed PSU module and circuit",
+      "Wear ESD protection, communicate with NOC, and follow site LOTO/energy isolation rules as required",
+      "Remove the failed module and insert the replacement until latched with status LEDs healthy",
+      "Verify redundant load sharing, clear alerts, and update the maintenance log"
+    ]
+  },
+  {
+    "id": "C2N-I-018",
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.3",
+    "type": "order",
+    "difficulty": "medium",
+    "question": "Order the steps to implement a 3-2-1 style backup plan for a small office file server before a major application upgrade.",
+    "explanation": "Start with the business, not the tooling. Agree the critical data sets and the recovery point and recovery time objectives with the owner, because those numbers decide job frequency and retention. Then configure a local backup to separate media plus a second distinct target, which gives you the three copies on two media that the rule calls for. Send the third copy offsite or to immutable cloud storage so ransomware cannot reach it from the same credentials. Finally restore sample files and a test VM and record the result. A backup job that has never been restored is a report, not a recovery plan.",
+    "video_reference": null,
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "backup",
+      "3-2-1",
+      "restore-test"
+    ],
+    "sequence": [
+      "Identify critical data sets and recovery point/time objectives with the business owner",
+      "Configure local backups to a separate medium and a second distinct storage target",
+      "Replicate or vault a third copy offsite or to immutable cloud storage",
+      "Run a restore test of sample files/VMs and document the results before the upgrade"
+    ]
+  },
+  {
+    "id": "C2N-I-023",
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.4",
+    "type": "match",
+    "difficulty": "medium",
+    "question": "Match each scripting or automation artifact to its typical use on Windows support desks.",
+    "explanation": "PowerShell dominates modern Windows automation, batch files remain for legacy needs, shell scripts serve Unix hosts, and Scheduled Tasks time the runs. Matching the artifact prevents picking the wrong runtime.",
+    "video_reference": null,
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "scripting",
+      "powershell",
+      "scheduled-tasks"
+    ],
+    "pairs": [
+      {
+        "left": ".ps1 PowerShell script",
+        "right": "Automate admin tasks with rich Windows APIs"
+      },
+      {
+        "left": ".bat / .cmd",
+        "right": "Legacy Command Prompt batch automation"
+      },
+      {
+        "left": ".sh shell script",
+        "right": "Bash automation on Linux/macOS jump hosts"
+      },
+      {
+        "left": "Scheduled Task",
+        "right": "Run scripts at logon/time triggers under a service account"
+      }
+    ]
+  },
+  {
+    "id": "C2N-I-024",
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.7",
+    "type": "match",
+    "difficulty": "easy",
+    "question": "You are coaching a new technician through their first week on the service desk floor. Match each professionalism scenario to the appropriate technician response.",
+    "explanation": "These behaviors are graded on the exam and watched on the floor. Take an angry user out of the lobby and away from an audience, stay calm and stick to facts. An unclear ticket gets clarifying questions and a restatement of the problem before you change anything, because guessing generates rework and a second outage. Personal data on screen is not yours to read; access only what the job requires. If you have to escalate mid-change, stop at a safe point, document the exact state and hand off cleanly. With a language barrier, speak plainly, confirm understanding and never talk down to the customer.",
+    "video_reference": null,
+    "notes_reference": "17_Support_Procedures_Professionalism_OS_Types.md",
+    "tags": [
+      "professionalism",
+      "communication"
+    ],
+    "pairs": [
+      {
+        "left": "Angry user in a public lobby",
+        "right": "Stay calm, move to a private area if possible, and focus on facts"
+      },
+      {
+        "left": "Unclear ticket description",
+        "right": "Ask clarifying questions and restate the problem before changing systems"
+      },
+      {
+        "left": "Personal data visible on screen",
+        "right": "Avoid snooping; access only what the job requires"
+      },
+      {
+        "left": "Escalation needed mid-change",
+        "right": "Stop at a safe point, document state, and hand off cleanly"
+      },
+      {
+        "left": "Cultural or language barrier",
+        "right": "Speak plainly, confirm understanding, and avoid condescension"
+      }
+    ]
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "An IT department is deploying 300 new laptops. Which operational process involves physically affixing scannable barcode/RFID tags and recording serial numbers, purchase dates, warranty terms, and assigned users in a Configuration Management Database (CMDB)?",
+    "options": [
+      "Software license harvesting",
+      "Asset management / Hardware inventory tracking",
+      "Change management risk analysis",
+      "Disaster recovery tabletop testing"
+    ],
+    "answer": 1,
+    "explanation": "Asset management is the lifecycle process of identifying, tracking, and managing physical and virtual IT assets from procurement to disposal. Affixing barcode/RFID asset tags and entering hardware specifications, serial numbers, warranty timelines, and assigned personnel into a CMDB ensures accurate hardware accountability and auditing. Change management evaluates system modifications, disaster recovery plans for outages, and license harvesting recovers unused software.",
+    "distractor_analysis": {
+      "2": "Change management governs the formal approval and rollout of infrastructure changes, not physical device inventory tagging.",
+      "3": "Disaster recovery tabletop exercises simulate emergency operational responses to critical outages without managing hardware tag inventories.",
+      "0": "License harvesting reclaims unused software allocations across workstations rather than cataloging physical laptop hardware assets."
+    },
+    "video_reference": {
+      "title": "Ticketing Systems - CompTIA A+ 220-1202 - 4.1",
+      "url": "https://www.youtube.com/watch?v=EzjHn6vvrsI",
+      "duration": "13:48",
+      "objective": "4.1"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "operational-procedures",
+      "asset-management",
+      "cmdb",
+      "lifecycle"
+    ],
+    "id": "C2N-O-001"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A technician spends two hours diagnosing an uncommon VPN configuration error and successfully resolves the issue. According to standard operating procedures, what documentation step should the technician complete before closing the ticket?",
+    "options": [
+      "Email the company CEO detailing the technician's overtime hours",
+      "Change the ticket priority to Critical and leave it open for 30 days",
+      "Document the root cause, symptoms, and step-by-step resolution in the ticketing work log and create a Knowledge Base (KB) article if applicable",
+      "Delete the ticket history to save database storage on the ticketing server"
+    ],
+    "answer": 2,
+    "explanation": "Professional IT operational procedures require thorough incident documentation. Recording the detailed problem description, root cause analysis, and exact resolution steps in the ticketing system ensures organizational knowledge capture, aids future troubleshooting, and allows creating or updating internal Knowledge Base (KB) articles. Deleting tickets destroys audit history, emailing executive leadership is inappropriate, and falsely escalating closed tickets violates ticketing procedures.",
+    "distractor_analysis": {
+      "3": "Deleting ticket history destroys institutional memory, compliance audit trails, and troubleshooting references.",
+      "0": "Escalating routine ticket resolution notes to the Chief Executive Officer violates communication hierarchy and operational protocols.",
+      "1": "Leaving closed tickets open under a Critical status skews SLA metrics and misrepresents active incident queues."
+    },
+    "video_reference": {
+      "title": "Ticketing Systems - CompTIA A+ 220-1202 - 4.1",
+      "url": "https://www.youtube.com/watch?v=EzjHn6vvrsI",
+      "duration": "13:48",
+      "objective": "4.1"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "operational-procedures",
+      "ticketing",
+      "documentation",
+      "kb"
+    ],
+    "id": "C2N-O-002"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.1",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "A network technician needs to understand both the physical cable runs connecting patch panels to datacenter rack switches AND the logical IP addressing, VLAN segmentation, and routing boundaries. Which documentation resources are required?",
+    "options": [
+      "Software end-user licence agreements for the switch operating system",
+      "Safety data sheets for the solvents used to clean rack surfaces",
+      "The acceptable use policy signed by every network user",
+      "Physical cabling diagrams and logical topology diagrams together"
+    ],
+    "answer": 3,
+    "explanation": "Network documentation comprises two distinct types: Physical network diagrams illustrate actual hardware locations, rack elevations, patch panel ports, and physical cable pathways. Logical network diagrams illustrate data flow, IP addressing schemes, subnet masks, VLAN IDs, router gateways, and firewall security zones. EULAs govern software licensing, SDS covers chemical safety, and AUP governs employee computer behavior.",
+    "distractor_analysis": {
+      "0": "Licence documents cover entitlement, not cable paths or VLAN boundaries.",
+      "1": "Safety data sheets cover chemical handling and belong in the safety file.",
+      "2": "The acceptable use policy governs user behaviour and carries no network detail."
+    },
+    "video_reference": {
+      "title": "Ticketing Systems - CompTIA A+ 220-1202 - 4.1",
+      "url": "https://www.youtube.com/watch?v=EzjHn6vvrsI",
+      "duration": "13:48",
+      "objective": "4.1"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "operational-procedures",
+      "network-diagrams",
+      "topology",
+      "documentation"
+    ],
+    "id": "C2N-O-003"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.2",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "A senior systems engineer submits a Request for Change (RFC) to upgrade the core datacenter hypervisor cluster. Why is a documented rollback (backout) plan a MANDATORY prerequisite for change approval?",
+    "options": [
+      "It guarantees that no software bugs exist in the new hypervisor build",
+      "It provides step-by-step instructions and verified backups to restore systems to their previous working state if the change fails or causes unexpected downtime",
+      "It automatically executes the hypervisor installation script without administrative supervision",
+      "It eliminates the need to perform risk analysis or test in a staging environment"
+    ],
+    "answer": 1,
+    "explanation": "A rollback (backout) plan is a critical risk mitigation requirement in formal change management. If an infrastructure change encounters unforeseen failures, performance degradation, or database corruption during execution, the rollback plan provides clear, tested steps (including restoring pre-change backups and reverting configuration states) to return the environment to a known good operational baseline within the maintenance window. Rollback plans do not automate installations, replace sandbox testing, or guarantee zero vendor bugs.",
+    "distractor_analysis": {
+      "2": "A rollback plan is a recovery procedure used upon failure, not an automated deployment script for primary installations.",
+      "3": "Having a backout plan does not excuse the engineering team from conducting rigorous risk analyses and sandbox staging tests.",
+      "0": "No documentation can guarantee that third-party vendor software is completely free of bugs or regressions."
+    },
+    "video_reference": {
+      "title": "Change Management - CompTIA A+ 220-1202 - 4.2",
+      "url": "https://www.youtube.com/watch?v=AhcQlR73Bo4",
+      "duration": "21:42",
+      "objective": "4.2"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "change-management",
+      "rollback-plan",
+      "backout",
+      "rfc"
+    ],
+    "id": "C2N-O-004"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Which organizational governing body is responsible for reviewing proposed RFCs, evaluating business risk, assessing scheduling conflicts with other projects, and granting formal approval for major infrastructure changes?",
+    "options": [
+      "Software Quality Assurance Beta Testers",
+      "Local Emergency Response Team",
+      "Change Advisory Board (CAB)",
+      "Human Resources Disciplinary Panel"
+    ],
+    "answer": 2,
+    "explanation": "The Change Advisory Board (CAB) is a multidisciplinary committee composed of IT managers, systems architects, security officers, and business stakeholders that convenes periodically to review Requests for Change (RFCs). The CAB evaluates technical risk, business impact, rollback viability, and scheduling conflicts before officially approving or rejecting changes. HR handles employee relations, QA conducts code testing, and emergency teams handle physical crises.",
+    "distractor_analysis": {
+      "3": "Human Resources panels govern personnel management, employment policy, and workplace conduct, not technical infrastructure RFCs.",
+      "0": "QA beta testers evaluate software usability and defect reporting prior to production release, lacking governance authority over enterprise change approvals.",
+      "1": "Emergency response teams address physical building evacuations and hazards, not IT change management governance."
+    },
+    "video_reference": {
+      "title": "Change Management - CompTIA A+ 220-1202 - 4.2",
+      "url": "https://www.youtube.com/watch?v=AhcQlR73Bo4",
+      "duration": "21:42",
+      "objective": "4.2"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "change-management",
+      "cab",
+      "approval",
+      "rfc"
+    ],
+    "id": "C2N-O-005"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Before deploying a new security patch to 2,000 production database servers, the systems team validates the patch in an isolated replica environment that mirrors production hardware and application stacks. What is this environment called?",
+    "options": [
+      "Live Production cluster",
+      "Public cloud archive repository",
+      "Client endpoint demilitarized zone (DMZ)",
+      "Sandbox / Staging (Test) environment"
+    ],
+    "answer": 3,
+    "explanation": "A Sandbox or Staging environment is an isolated non-production network segment that closely duplicates the production configuration. Testing patches, scripts, and software upgrades in a sandbox allows engineers to detect software conflicts, application crashes, and performance regressions without impacting live business operations or real user data. Testing on live production risks immediate company-wide outages.",
+    "distractor_analysis": {
+      "0": "Testing unverified security patches directly on live production clusters risks catastrophic enterprise downtime and customer data corruption.",
+      "1": "Public cloud archives are cold storage tiers for long-term retention of historical data, not execution testbeds.",
+      "2": "A DMZ is a perimeter network exposed to the internet hosting external services (e.g., web servers), not an isolated patch staging environment."
+    },
+    "video_reference": {
+      "title": "Change Management - CompTIA A+ 220-1202 - 4.2",
+      "url": "https://www.youtube.com/watch?v=AhcQlR73Bo4",
+      "duration": "21:42",
+      "objective": "4.2"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "change-management",
+      "sandbox",
+      "test-environment",
+      "staging"
+    ],
+    "id": "C2N-O-006"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A systems engineer must migrate an email server to a new storage array. Why should this change be scheduled strictly during a predefined 'maintenance window'?",
+    "options": [
+      "To prevent the server from generating Windows Event Viewer logs",
+      "To minimize business disruption and user impact by executing changes during low-traffic off-peak hours",
+      "To ensure that server hardware runs at cooler operating temperatures",
+      "To bypass the need for Change Advisory Board (CAB) approval"
+    ],
+    "answer": 1,
+    "explanation": "A maintenance window is a pre-scheduled timeframe (typically during overnight hours or weekends) agreed upon by IT and business stakeholders during which planned service interruptions, reboots, and high-risk changes are permitted. Executing changes during off-peak hours minimizes the impact of potential downtime on employee productivity and customer operations. Maintenance windows do not alter hardware cooling, bypass CAB approval, or suppress event logging.",
+    "distractor_analysis": {
+      "2": "Hardware operating temperatures are governed by server room HVAC cooling, not calendar scheduling windows.",
+      "3": "Scheduling within a maintenance window is a requirement of the CAB process, never a loophole to bypass formal approval.",
+      "0": "Windows Event Viewer continues logging all driver, application, and system events normally regardless of the time of day."
+    },
+    "video_reference": {
+      "title": "Change Management - CompTIA A+ 220-1202 - 4.2",
+      "url": "https://www.youtube.com/watch?v=AhcQlR73Bo4",
+      "duration": "21:42",
+      "objective": "4.2"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "change-management",
+      "maintenance-window",
+      "stakeholders",
+      "communication"
+    ],
+    "id": "C2N-O-007"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.3",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "A company executes a Full backup every Sunday night at 23:00. From Monday through Saturday, the backup software is configured to back up only files that have changed since the previous day's backup and then clear the archive bit. Which backup type is running on weeknights, and what is required for a complete restore on Thursday?",
+    "options": [
+      "Synthetic full backup; restoring Thursday requires only Monday's backup",
+      "Full backup; restoring Thursday requires only Wednesday's backup",
+      "Incremental backup; restoring Thursday requires Sunday's Full backup plus Monday, Tuesday, and Wednesday Incremental backups in sequential order",
+      "Differential backup; restoring Thursday requires Sunday's Full backup plus only Wednesday's Differential backup"
+    ],
+    "answer": 2,
+    "explanation": "An Incremental backup backs up all files modified since the last backup of ANY type (full or incremental) and CLEARS the archive bit (sets it to 0). Consequently, each daily incremental captures only that single day's changes. To restore data as of Thursday morning, the administrator must restore the last Full backup (Sunday) followed by each daily incremental backup in exact chronological order (Monday, Tuesday, Wednesday). Differential backups do not clear the archive bit and require only the Full plus the latest Differential.",
+    "distractor_analysis": {
+      "3": "Differential backups do not clear the archive bit and back up all changes since Sunday's Full, which does not match the question's daily clear behavior.",
+      "0": "A synthetic full creates an assembled full backup on the backup server without needing individual client incremental chain playback.",
+      "1": "Daily full backups would back up all enterprise data every single night, which is not the described incremental workflow."
+    },
+    "video_reference": {
+      "title": "Managing Backups - CompTIA A+ 220-1202 - 4.3",
+      "url": "https://www.youtube.com/watch?v=xJc7-KM-Fsk",
+      "duration": "15:01",
+      "objective": "4.3"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "backup-and-recovery",
+      "incremental",
+      "differential",
+      "archive-bit"
+    ],
+    "id": "C2N-O-008"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.3",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "An IT manager enforces the industry standard '3-2-1 backup rule' for corporate financial databases. Which configuration exemplifies strict adherence to the 3-2-1 rule?",
+    "options": [
+      "3 copies of the data stored on 2 different partitions of the same physical hard drive",
+      "3 backups taken every 2 hours using 1 single USB flash drive",
+      "3 daily full backups kept on 2 optical DVDs stored in the server room desk",
+      "3 total copies of the data, on 2 different storage media types (e.g., local NVMe SAN and LTO tape), with 1 copy stored offsite/in the cloud"
+    ],
+    "answer": 3,
+    "explanation": "The 3-2-1 backup rule is the benchmark for data protection: Maintain at least 3 total copies of your data (1 primary production copy + 2 backup copies), stored on at least 2 different storage media technologies (e.g., disk SAN + magnetic tape or cloud object storage), with at least 1 copy kept offsite (or in an immutable cloud repository) to survive localized physical disasters (fire, flood, theft). Storing copies on the same drive or room violates media diversity and offsite requirements.",
+    "distractor_analysis": {
+      "0": "Multiple partitions on the same physical drive all fail simultaneously if the underlying spindle motor or drive controller fails.",
+      "1": "Relying on a single USB thumb drive provides zero media redundancy, zero drive diversity, and zero offsite disaster protection.",
+      "2": "Keeping all DVD media inside the same server room offers zero protection against building fires, water leaks, or physical burglary."
+    },
+    "video_reference": {
+      "title": "Managing Backups - CompTIA A+ 220-1202 - 4.3",
+      "url": "https://www.youtube.com/watch?v=xJc7-KM-Fsk",
+      "duration": "15:01",
+      "objective": "4.3"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "backup-and-recovery",
+      "3-2-1-rule",
+      "best-practices",
+      "offsite"
+    ],
+    "id": "C2N-O-009"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.3",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "A financial transaction system defines a Recovery Point Objective (RPO) of 15 minutes and a Recovery Time Objective (RTO) of 2 hours. What do these metrics mandate from a backup and operational recovery perspective?",
+    "options": [
+      "The disaster recovery site must be located 15 miles away and have 2 internet connections",
+      "Maximum allowable data loss is 15 minutes of transactions (requiring frequent snapshots/replication), and systems must be fully restored and operational within 2 hours of an outage",
+      "Backups take 15 minutes to run and systems must run without maintenance for 2 hours",
+      "Data must be retained for 15 months and restored in 2 days"
+    ],
+    "answer": 1,
+    "explanation": "Recovery Point Objective (RPO) is the maximum acceptable amount of data loss measured in time (e.g., losing at most 15 minutes of committed transactions, necessitating continuous replication or 15-minute transactional logs). Recovery Time Objective (RTO) is the maximum acceptable duration of system downtime before service must be fully restored to normal operations following an outage (e.g., recovering within 2 hours). These are core business continuity metrics.",
+    "distractor_analysis": {
+      "2": "RPO and RTO measure business risk and downtime limits, not the computational runtime speed of backup software agents.",
+      "3": "Data retention timelines are governed by legal compliance policies, not the operational definition of RPO and RTO.",
+      "0": "Geographic distance between hot sites is dictated by disaster zone guidelines, not RPO/RTO time-based loss metrics."
+    },
+    "video_reference": {
+      "title": "Managing Backups - CompTIA A+ 220-1202 - 4.3",
+      "url": "https://www.youtube.com/watch?v=xJc7-KM-Fsk",
+      "duration": "15:01",
+      "objective": "4.3"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "backup-and-recovery",
+      "rto",
+      "rpo",
+      "disaster-recovery"
+    ],
+    "id": "C2N-O-010"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.3",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A backup administrator configures automated nightly image backups for 50 virtual servers. The backup dashboard displays green checkmarks indicating all backup jobs completed successfully. What CRITICAL operational procedure must the administrator conduct periodically to ensure data recoverability?",
+    "options": [
+      "Disable encryption on backup volumes to speed up dashboard reporting",
+      "Reboot the production database server every hour",
+      "Perform periodic test restores to an isolated sandbox network to verify data integrity and bootability",
+      "Delete the previous week's backups to make room for newer checkmarks"
+    ],
+    "answer": 2,
+    "explanation": "A backup is only as good as its restore. Automated backup job success checkmarks only confirm that data blocks were written to media; they do not guarantee that the resulting files, databases, or VM images are uncorrupted and capable of booting cleanly. Conducting periodic test restores in an isolated sandbox environment is the only way to validate true recoverability and measure realistic RTO timelines. Deleting backups, disabling encryption, and hourly reboots are harmful practices.",
+    "distractor_analysis": {
+      "3": "Deleting historical backups destroys version history and violates mandatory retention compliance guidelines.",
+      "0": "Disabling backup encryption exposes sensitive company data to theft if backup tapes or cloud buckets are compromised.",
+      "1": "Rebooting live production servers hourly causes severe business interruption without testing the backup restore pipeline."
+    },
+    "video_reference": {
+      "title": "Managing Backups - CompTIA A+ 220-1202 - 4.3",
+      "url": "https://www.youtube.com/watch?v=xJc7-KM-Fsk",
+      "duration": "15:01",
+      "objective": "4.3"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "backup-and-recovery",
+      "test-restores",
+      "validation",
+      "audit"
+    ],
+    "id": "C2N-O-011"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.4",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A technician is preparing to open a desktop chassis to replace the motherboard and RAM. What is the PROPER use of an electrostatic discharge (ESD) antistatic wrist strap?",
+    "options": [
+      "Clip the lead to the earth pin of a live wall outlet before opening the case",
+      "Wear the strap loosely over a sleeve so it does not restrict movement",
+      "Clip the lead directly to the CPU heat spreader before removing the cooler",
+      "Fit the strap snugly on the wrist and clip it to unpainted chassis metal with the PC unplugged"
+    ],
+    "answer": 3,
+    "explanation": "An ESD antistatic wrist strap equalizes the electrical potential between the technician's body and the computer equipment, safely draining static charges through a built-in 1-megaohm resistor. The strap must be worn tightly against bare skin, and the alligator clip must be attached to an unpainted metal section of the computer chassis with the power cord disconnected. Attaching clips to live outlets is life-threatening, wearing over clothes prevents skin contact, and clipping to silicon destroys the CPU.",
+    "distractor_analysis": {
+      "0": "Never bond yourself to a live outlet. Use the chassis, which is already at a common potential.",
+      "1": "A loose strap over fabric breaks skin contact, so there is no path to bleed off charge.",
+      "2": "The processor is the component you are protecting. The clip belongs on bare chassis metal."
+    },
+    "video_reference": {
+      "title": "Managing Electrostatic Discharge - CompTIA A+ 220-1202 - 4.4",
+      "url": "https://www.youtube.com/watch?v=sDlVVU3oAlA",
+      "duration": "5:28",
+      "objective": "4.4"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "safety-procedures",
+      "esd",
+      "antistatic-wrist-strap",
+      "hardware"
+    ],
+    "id": "C2N-O-012"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.4",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "Which computer components contain high-voltage internal capacitors capable of storing lethal electrical charges even after being disconnected from wall power for days, and should NEVER be disassembled by standard field technicians?",
+    "options": [
+      "Standard USB mice and keyboards",
+      "Power Supply Units (PSUs) and legacy CRT display monitors",
+      "Solid-State Drives (SSDs) and NVMe cards",
+      "DDR4 and DDR5 RAM memory modules"
+    ],
+    "answer": 1,
+    "explanation": "Power Supply Units (PSUs) and legacy Cathode Ray Tube (CRT) monitors contain large high-voltage filter capacitors capable of storing thousands of volts of electrical charge long after mains power has been disconnected. Disassembling a PSU housing or CRT chassis can deliver a fatal electric shock. Standard technicians must treat PSUs as non-field-serviceable sealed Field Replaceable Units (FRUs) and replace the entire unit. SSDs, RAM, and USB mice operate on low-voltage DC (3.3V-5V) and carry no lethal capacitor charges.",
+    "distractor_analysis": {
+      "2": "Solid-state drives operate on low-voltage 3.3V / 5V DC power and do not contain lethal high-voltage energy storage capacitors.",
+      "3": "DDR RAM modules operate at 1.1V - 1.35V DC and present zero high-voltage electrocution danger to technicians.",
+      "0": "USB peripherals utilize standard 5V low-power circuits that carry no capacitor shock hazards."
+    },
+    "video_reference": {
+      "title": "Managing Electrostatic Discharge - CompTIA A+ 220-1202 - 4.4",
+      "url": "https://www.youtube.com/watch?v=sDlVVU3oAlA",
+      "duration": "5:28",
+      "objective": "4.4"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "safety-procedures",
+      "high-voltage",
+      "psu",
+      "crt",
+      "capacitors"
+    ],
+    "id": "C2N-O-013"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.4",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A server power supply in a datacenter rack sparks violently and begins emitting dense smoke and flames. Which type of fire extinguisher is rated specifically for energized electrical equipment fires?",
+    "options": [
+      "Class K wet chemical kitchen extinguisher",
+      "A standard bucket of tap water",
+      "Class C (or multipurpose ABC dry chemical / clean agent clean gas like CO2 or FM-200)",
+      "Class A pressurized water extinguisher"
+    ],
+    "answer": 2,
+    "explanation": "Fires involving energized electrical equipment (such as servers, wiring, and breaker panels) are designated as Class C fires. Class C extinguishers use non-conductive extinguishing agents such as Carbon Dioxide (CO2), Halon alternatives (FM-200/Novec 1230), or dry chemicals that do not conduct electricity back to the operator. Pressurized water extinguishers (Class A) and buckets of water conduct electricity and cause fatal shocks when applied to energized equipment. Class K is for commercial cooking oils.",
+    "distractor_analysis": {
+      "3": "Water-based Class A extinguishers conduct electrical current directly back through the stream, posing severe electrocution danger.",
+      "0": "Class K wet chemical extinguishers are specifically formulated to saponify commercial cooking fats and grease in restaurant kitchens.",
+      "1": "Throwing liquid tap water on energized server racks causes immediate short-circuit electrocution and explosive arcing."
+    },
+    "video_reference": {
+      "title": "Managing Electrostatic Discharge - CompTIA A+ 220-1202 - 4.4",
+      "url": "https://www.youtube.com/watch?v=sDlVVU3oAlA",
+      "duration": "5:28",
+      "objective": "4.4"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "safety-procedures",
+      "fire-safety",
+      "class-c",
+      "extinguisher"
+    ],
+    "id": "C2N-O-014"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.5",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A cleaning solvent is accidentally splashed into a technician's eyes while servicing a shared laser printer. Which safety documentation must be immediately referenced to find emergency first-aid and eye flushing instructions?",
+    "options": [
+      "Printer Service User Manual troubleshooting appendix",
+      "Company Acceptable Use Policy (AUP)",
+      "Building Architectural Floorplan Diagram",
+      "Safety Data Sheet (SDS / MSDS) for the specific chemical product"
+    ],
+    "answer": 3,
+    "explanation": "Safety Data Sheets (SDS), formerly known as Material Safety Data Sheets (MSDS), are federally mandated safety documents provided by chemical manufacturers. Section 4 of an SDS specifically outlines emergency first-aid measures, eye and skin exposure procedures, toxicity hazards, handling precautions, and required PPE. Hardware service manuals cover mechanical gears, AUP covers computer usage policies, and floorplans show physical architectural layouts.",
+    "distractor_analysis": {
+      "0": "Printer hardware manuals document mechanical disassembly and paper jam clearing, lacking detailed chemical toxicology and first-aid protocols.",
+      "1": "Acceptable Use Policies dictate acceptable employee network conduct and provide zero chemical emergency response guidance.",
+      "2": "Building floorplans show architectural layouts and fire exits without detailing chemical first-aid treatments."
+    },
+    "video_reference": {
+      "title": "Environmental Impacts - CompTIA A+ 220-1202 - 4.5",
+      "url": "https://www.youtube.com/watch?v=FqWHM4Sws1M",
+      "duration": "6:28",
+      "objective": "4.5"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "environmental-controls",
+      "sds",
+      "msds",
+      "chemical-safety"
+    ],
+    "id": "C2N-O-015"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.5",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A datacenter technician replaces twelve failed Lead-Acid batteries from an Uninterruptible Power Supply (UPS) system. How should these hazardous heavy-metal batteries be disposed of?",
+    "options": [
+      "Store them indefinitely in the loading bay until the site closes",
+      "Recycle through a licensed hazardous waste and battery recycling facility",
+      "Place them in the general waste dumpster once fully discharged",
+      "Return them to the UPS vendor only if the units are still in warranty"
+    ],
+    "answer": 1,
+    "explanation": "Lead-acid and lithium-ion batteries contain toxic heavy metals (lead, cadmium, lithium) and corrosive sulfuric acid electrolyte that contaminate groundwater and cause landfill fires. Environmental protection regulations (e.g., EPA/RCRA) strictly prohibit disposing of batteries in municipal trash. They must be collected, stored in acid-resistant containers, and handed over to certified environmental recycling facilities. Throwing in dumpsters, burning, or crushing causes severe chemical contamination and toxic fires.",
+    "distractor_analysis": {
+      "2": "Lead-acid cells are regulated waste whether charged or flat. General waste is not a legal route.",
+      "3": "Warranty status does not change the disposal obligation for the old cells.",
+      "0": "Indefinite storage of leaking cells creates an environmental and safety hazard on site."
+    },
+    "video_reference": {
+      "title": "Environmental Impacts - CompTIA A+ 220-1202 - 4.5",
+      "url": "https://www.youtube.com/watch?v=FqWHM4Sws1M",
+      "duration": "6:28",
+      "objective": "4.5"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "environmental-controls",
+      "battery-disposal",
+      "e-waste",
+      "lead-acid"
+    ],
+    "id": "C2N-O-016"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.5",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "Why is it critical for datacenter HVAC climate control systems to maintain relative humidity within an optimal range of approximately 40% to 60%?",
+    "options": [
+      "High humidity speeds up server CPU clock frequencies",
+      "Relative humidity controls the optical wavelength of fiber optic transceivers",
+      "Low humidity (<30%) drastically increases the risk of Electrostatic Discharge (ESD), while high humidity (>60%) promotes condensation and metal corrosion",
+      "Low humidity causes network packets to travel slower over copper cables"
+    ],
+    "answer": 2,
+    "explanation": "Datacenter environmental guidelines (such as ASHRAE TC 9.9) specify keeping relative humidity between 40% and 60% (with controlled dew point). If humidity drops below ~30%, the dry air significantly increases static charge generation, causing destructive ESD events on sensitive server electronics. If humidity rises above ~60-70%, moisture can condense onto cold metal components, causing electrical short circuits and terminal corrosion. Humidity has no effect on packet velocity, CPU clocks, or fiber wavelengths.",
+    "distractor_analysis": {
+      "3": "Relative humidity has zero effect on the propagation velocity of electromagnetic signals inside copper conductor wires.",
+      "0": "Humidity levels do not alter processor silicon clock frequencies or multiplier ratios.",
+      "1": "Optical wavelengths in fiber optic transceivers are governed by solid-state laser diodes, completely independent of ambient air humidity."
+    },
+    "video_reference": {
+      "title": "Environmental Impacts - CompTIA A+ 220-1202 - 4.5",
+      "url": "https://www.youtube.com/watch?v=FqWHM4Sws1M",
+      "duration": "6:28",
+      "objective": "4.5"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "environmental-controls",
+      "hvac",
+      "humidity",
+      "datacenter-environment"
+    ],
+    "id": "C2N-O-017"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.6",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "A technician acting as a first responder on a compromised workstation secures the physical machine for forensic investigation. Which document MUST be meticulously maintained to track every individual who handled, analyzed, or transferred the physical storage drive?",
+    "options": [
+      "Request for Change (RFC) document",
+      "End-User License Agreement (EULA)",
+      "Safety Data Sheet (SDS)",
+      "Chain of Custody form"
+    ],
+    "answer": 3,
+    "explanation": "In computer forensics and incident response, a Chain of Custody form is the legal documentation that accounts for the possession, transfer, analysis, and storage of physical or digital evidence from the moment of collection until trial. It records exact dates/times, names, badge numbers, serial numbers, and reasons for evidence custody transfer. Without an unbroken chain of custody, evidence is rendered inadmissible in a court of law. RFCs govern changes, EULAs govern software, and SDS covers chemical safety.",
+    "distractor_analysis": {
+      "0": "RFC documents are used in change management to request infrastructure modifications, not to track legal evidence possession.",
+      "1": "EULAs define software licensing terms and conditions between vendors and customers.",
+      "2": "Safety Data Sheets provide chemical hazard and first-aid instructions, having zero forensic evidence tracking utility."
+    },
+    "video_reference": {
+      "title": "Incident Response - CompTIA A+ 220-1202 - 4.6",
+      "url": "https://www.youtube.com/watch?v=jKhIYQioCE8",
+      "duration": "6:43",
+      "objective": "4.6"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "incident-response",
+      "chain-of-custody",
+      "forensics",
+      "evidence"
+    ],
+    "id": "C2N-O-018"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.6",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "While replacing a broken hard drive on an employee's computer, a technician discovers folders containing explicit illegal content. Following standard incident response procedures, what should the technician do IMMEDIATELY?",
+    "options": [
+      "Raise it with the employee directly before telling anyone else",
+      "Stop work, alter nothing, secure the workstation, and report it under policy",
+      "Copy the files to removable media so a second technician can verify",
+      "Delete the folders and finish the drive replacement as scheduled"
+    ],
+    "answer": 1,
+    "explanation": "When encountering illegal material or severe policy violations, the mandatory first-responder procedure is: 1. Immediately cease all interaction with the system to avoid altering file timestamps or evidence, 2. Secure and isolate the device to prevent tampering, and 3. Promptly notify management, corporate legal counsel, and the designated Incident Response / Security team in accordance with organizational policy. Copying data, deleting evidence (spoliation), or confronting the suspect compromises the investigation.",
+    "distractor_analysis": {
+      "2": "Copying the material spreads it and puts the technician in possession of it. Never move the data.",
+      "3": "Deleting it destroys evidence and may itself be an offence.",
+      "0": "Warning the subject gives them time to destroy evidence and puts the technician at risk."
+    },
+    "video_reference": {
+      "title": "Incident Response - CompTIA A+ 220-1202 - 4.6",
+      "url": "https://www.youtube.com/watch?v=jKhIYQioCE8",
+      "duration": "6:43",
+      "objective": "4.6"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "incident-response",
+      "first-responder",
+      "prohibited-activity",
+      "policy"
+    ],
+    "id": "C2N-O-019"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.6",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A database contains customer Social Security numbers, dates of birth, full legal names, and home addresses. Under privacy frameworks (such as GDPR and NIST standards), how is this data categorized?",
+    "options": [
+      "Public Domain open-source telemetry",
+      "Non-confidential marketing metadata",
+      "Personally Identifiable Information (PII)",
+      "Protected Health Information (PHI) exclusively"
+    ],
+    "answer": 2,
+    "explanation": "Personally Identifiable Information (PII) refers to any data that can be used alone or in combination with other relevant information to identify, contact, or locate a specific individual (e.g., SSNs, full names, birthdates, biometric records, driver's license numbers). Protected Health Information (PHI) specifically involves medical records/health conditions tied to an individual. Public domain data is unrestrictedly open, and marketing metadata is non-identifying aggregate data.",
+    "distractor_analysis": {
+      "3": "PHI (Protected Health Information) specifically encompasses medical diagnoses, treatment notes, and healthcare billing records governed by HIPAA.",
+      "0": "Public domain information is freely publishable without restriction, which is the exact opposite of highly sensitive customer SSNs.",
+      "1": "Social Security numbers and residential addresses are strictly confidential regulatory data, not non-confidential marketing telemetry."
+    },
+    "video_reference": {
+      "title": "Incident Response - CompTIA A+ 220-1202 - 4.6",
+      "url": "https://www.youtube.com/watch?v=jKhIYQioCE8",
+      "duration": "6:43",
+      "objective": "4.6"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "privacy-regulations",
+      "pii",
+      "phi",
+      "gdpr",
+      "compliance"
+    ],
+    "id": "C2N-O-020"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.6",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A business purchases 50 standalone commercial software licenses for an image editing program. During an internal audit, the IT team discovers the software is installed on 85 corporate workstations. What type of compliance violation has occurred?",
+    "options": [
+      "Denial of Service (DoS) attack",
+      "Physical asset theft",
+      "Hardware warranty expiration",
+      "Software license compliance violation / under-licensing breach"
+    ],
+    "answer": 3,
+    "explanation": "Software licensing compliance requires organizations to possess valid, legal license entitlements for every active installation of proprietary commercial software. Having 85 active installations with only 50 purchased seats represents an under-licensing breach (software piracy/contract violation) that exposes the company to severe financial penalties and legal liability from vendor audits (e.g., BSA). It is not a DoS attack, physical theft, or warranty expiration.",
+    "distractor_analysis": {
+      "0": "A Denial of Service attack is a network cyberattack designed to overwhelm system resources, not a software license accounting deficit.",
+      "1": "Physical asset theft involves stealing physical hardware devices, whereas under-licensing is an intellectual property contract infringement.",
+      "2": "Hardware warranty expiration marks the end of OEM hardware repair coverage and does not relate to software seat count compliance."
+    },
+    "video_reference": {
+      "title": "Incident Response - CompTIA A+ 220-1202 - 4.6",
+      "url": "https://www.youtube.com/watch?v=jKhIYQioCE8",
+      "duration": "6:43",
+      "objective": "4.6"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "licensing",
+      "compliance",
+      "commercial-license",
+      "open-source"
+    ],
+    "id": "C2N-O-021"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.7",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "A frustrated user calls the help desk in an agitated state because a projector failed right before a major executive presentation. Which communication technique should the technician employ FIRST?",
+    "options": [
+      "Put the user on hold for 15 minutes to allow them to calm down",
+      "Argue with the user and state that AV equipment is not IT's responsibility",
+      "Practice active listening: remain calm, do not interrupt, acknowledge the user's urgency with empathy, and clarify the problem concisely",
+      "Immediately interrupt the user and explain that projectors fail all the time"
+    ],
+    "answer": 2,
+    "explanation": "CompTIA professional communication guidelines emphasize active listening and de-escalation when interacting with distressed or angry customers: maintain a calm, professional tone, allow the customer to explain without interruption, validate their situation with genuine empathy, and ask clarifying diagnostic questions to resolve the issue swiftly. Interrupting, argumentative behavior, or placing agitated users on long holds damages customer rapport and escalates tension.",
+    "distractor_analysis": {
+      "3": "Interrupting the customer invalidates their concern, creates defensive hostility, and prevents gathering essential troubleshooting details.",
+      "0": "Placing an agitated user on an unannounced hold increases customer frustration and delays time-critical presentation support.",
+      "1": "Arguing with customers or deflecting responsibility is unprofessional and directly violates customer service standards."
+    },
+    "video_reference": {
+      "title": "Professionalism - CompTIA A+ 220-1202 - 4.7",
+      "url": "https://www.youtube.com/watch?v=8kKg8RJHAFQ",
+      "duration": "4:47",
+      "objective": "4.7"
+    },
+    "notes_reference": "17_Support_Procedures_Professionalism_OS_Types.md",
+    "tags": [
+      "professionalism",
+      "communication",
+      "active-listening",
+      "customer-service"
+    ],
+    "id": "C2N-O-023"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.7",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "While explaining a printer connectivity issue to a non-technical marketing executive, how should the technician describe the root cause?",
+    "options": [
+      "Advise the user to read the IEEE 802.3 Ethernet standards documentation",
+      "Use clear, plain language avoiding obscure acronyms and technical jargon, explaining that the printer lost its network address assignment",
+      "Tell the user that 'the DHCP pool exhausted its lease scope and ARP requests dropped with 100% packet loss on the 802.1Q trunk'",
+      "Refuse to explain the issue because non-technical users cannot understand networking"
+    ],
+    "answer": 1,
+    "explanation": "Professional IT communication requires adapting technical language to the audience. When speaking with non-technical users, technicians should avoid heavy technical jargon, obscure protocol acronyms, and condescending terminology. Explaining concepts clearly in plain terms builds trust and ensures effective communication. Inundating users with low-level protocol acronyms or dismissing their questions violates professional standards.",
+    "distractor_analysis": {
+      "2": "Overloading non-technical clients with complex networking jargon confuses the customer and hampers collaborative communication.",
+      "3": "Refusing to communicate technical status is disrespectful, unhelpful, and fosters a toxic IT-business relationship.",
+      "0": "Instructing business executives to review IEEE technical specifications is dismissive and unprofessional."
+    },
+    "video_reference": {
+      "title": "Professionalism - CompTIA A+ 220-1202 - 4.7",
+      "url": "https://www.youtube.com/watch?v=8kKg8RJHAFQ",
+      "duration": "4:47",
+      "objective": "4.7"
+    },
+    "notes_reference": "17_Support_Procedures_Professionalism_OS_Types.md",
+    "tags": [
+      "professionalism",
+      "jargon",
+      "communication",
+      "clarity"
+    ],
+    "id": "C2N-O-022"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.7",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A technician determines that a replacement laptop display panel must be ordered from the vendor, which will take two business days to arrive. What should the technician communicate to the customer?",
+    "options": [
+      "Promise the customer that the laptop will definitely be ready in one hour",
+      "Close the ticket immediately and tell the customer to check back next week",
+      "Take the user's laptop home over the weekend without logging a ticket",
+      "Set realistic expectations by explaining the parts timeline, provide a temporary loaner laptop if available, and update the ticket with follow-up milestones"
+    ],
+    "answer": 3,
+    "explanation": "Setting clear and realistic expectations is a fundamental tenet of IT customer service. When parts must be ordered, the technician should provide an honest delivery timeline, offer interim solutions (such as a loaner machine) to maintain user productivity, document the status in the ticketing system, and provide periodic progress updates. Falsely promising unrealistic turnaround times, closing unresolved tickets, or removing hardware off-site violates professional ethics.",
+    "distractor_analysis": {
+      "0": "Promising a one-hour resolution when parts require two days to ship sets false expectations and destroys customer trust.",
+      "1": "Closing active tickets before hardware repair completion distorts service queues and leaves the customer without resolution tracking.",
+      "2": "Taking company hardware off-site without authorization violates asset management, security policy, and professional ethics."
+    },
+    "video_reference": {
+      "title": "Professionalism - CompTIA A+ 220-1202 - 4.7",
+      "url": "https://www.youtube.com/watch?v=8kKg8RJHAFQ",
+      "duration": "4:47",
+      "objective": "4.7"
+    },
+    "notes_reference": "17_Support_Procedures_Professionalism_OS_Types.md",
+    "tags": [
+      "professionalism",
+      "expectations",
+      "follow-up",
+      "documentation"
+    ],
+    "id": "C2N-O-024"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.8",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "A systems administrator is reviewing automated administrative maintenance scripts across Windows and Linux environments. Which script file extension is correctly paired with its native scripting interpreter?",
+    "options": [
+      "`.py` - AppleScript interpreter",
+      "`.ps1` - Microsoft PowerShell",
+      "`.sh` - Windows Command Prompt batch processor",
+      "`.bat` - Linux Bourne-Again Shell (Bash)"
+    ],
+    "answer": 1,
+    "explanation": "In system administration scripting: `.ps1` files execute in Microsoft PowerShell, `.sh` files are shell scripts executed by Unix/Linux shells (such as Bash), `.bat` and `.cmd` files are legacy batch scripts executed by Windows `cmd.exe`, and `.py` files execute in the Python runtime interpreter. `.vbs` represents VBScript and `.js` represents JavaScript.",
+    "distractor_analysis": {
+      "2": "`.sh` files are Unix/Linux Bourne/Bash shell scripts, not Windows Command Prompt batch files.",
+      "3": "`.bat` files are MS-DOS/Windows batch scripts, whereas Linux uses `.sh` shell scripts.",
+      "0": "`.py` files are executed by the Python runtime environment, whereas AppleScript uses `.scpt` or `.applescript`."
+    },
+    "video_reference": {
+      "title": "Scripting Languages - CompTIA A+ 220-1202 - 4.8",
+      "url": "https://www.youtube.com/watch?v=nJKUP1twjbY",
+      "duration": "6:00",
+      "objective": "4.8"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "scripting",
+      "file-extensions",
+      "powershell",
+      "bash",
+      "python"
+    ],
+    "id": "C2N-O-025"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.8",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A technician writes a script that must iterate through a text file containing 100 computer hostnames and execute a ping test on each machine one by one. Which programming construct is used to repeat this operation across the list?",
+    "options": [
+      "A comment block (`#` or `REM`)",
+      "An environment variable export",
+      "A loop construct (such as a `for` or `foreach` loop)",
+      "A constant variable declaration"
+    ],
+    "answer": 2,
+    "explanation": "A loop construct (such as `for`, `foreach`, or `while`) iterates over a collection or list of items (like 100 hostnames from a file), executing the defined block of commands once for each element in sequence until the collection is exhausted. Constants store immutable single values, comments are non-executing documentation annotations, and environment variables hold global OS session values.",
+    "distractor_analysis": {
+      "3": "Constants store fixed, non-changing data values and cannot iterate through arrays of hostnames.",
+      "0": "Comments provide explanatory notes within source code and are completely ignored by the script interpreter during execution.",
+      "1": "Environment variables store global system paths and configuration data rather than executing iterative programming logic."
+    },
+    "video_reference": {
+      "title": "Scripting Languages - CompTIA A+ 220-1202 - 4.8",
+      "url": "https://www.youtube.com/watch?v=nJKUP1twjbY",
+      "duration": "6:00",
+      "objective": "4.8"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "scripting",
+      "constructs",
+      "variables",
+      "loops",
+      "conditionals"
+    ],
+    "id": "C2N-O-026"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.8",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "In a PowerShell or Python script, a variable is assigned the value `$isServerOnline = $true` (or `is_server_online = True`). Which basic computer data type does this variable represent?",
+    "options": [
+      "Integer (whole numeric value)",
+      "Floating-point number (decimal value)",
+      "String (text character sequence)",
+      "Boolean (representing true or false)"
+    ],
+    "answer": 3,
+    "explanation": "A Boolean data type represents one of two binary truth values: True or False (often represented as 1 or 0). It is universally used in programming and scripting to evaluate conditionals (`if`/`else` statements). Integers represent whole numbers (e.g., 42), floating-point numbers represent decimals (e.g., 3.14), and strings represent alphanumeric text strings enclosed in quotes.",
+    "distractor_analysis": {
+      "0": "Integers represent whole numbers without decimal points (e.g., -5, 0, 100), not binary True/False logic states.",
+      "1": "Floating-point variables represent fractional numbers containing decimal points (e.g., 19.99), not Boolean truth states.",
+      "2": "Strings represent character arrays and textual data enclosed in quotation marks (e.g., \"Server01\"), not native Boolean primitives."
+    },
+    "video_reference": {
+      "title": "Scripting Languages - CompTIA A+ 220-1202 - 4.8",
+      "url": "https://www.youtube.com/watch?v=nJKUP1twjbY",
+      "duration": "6:00",
+      "objective": "4.8"
+    },
+    "notes_reference": "32_Change_Management_Safety_Environment_Scripting.md",
+    "tags": [
+      "scripting",
+      "data-types",
+      "string",
+      "integer",
+      "boolean"
+    ],
+    "id": "C2N-O-027"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.9",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A systems administrator needs to establish a fully encrypted graphical desktop management session into a remote Windows Server across the corporate LAN. Which native protocol and default TCP port does Windows Remote Desktop utilize?",
+    "options": [
+      "SSH over TCP port 22",
+      "RDP over TCP port 3389",
+      "Telnet over TCP port 23",
+      "VNC over TCP port 5900"
+    ],
+    "answer": 1,
+    "explanation": "Windows Remote Desktop utilizes Microsoft's proprietary Remote Desktop Protocol (RDP), which by default listens on TCP port 3389 (and optionally UDP 3389 for enhanced performance). RDP provides an encrypted, full GUI desktop session. Telnet operates on port 23 in unencrypted plaintext CLI, VNC defaults to TCP port 5900, and SSH operates over TCP port 22 for secure CLI access.",
+    "distractor_analysis": {
+      "2": "Telnet is a cleartext text-mode session with no graphical desktop and no encryption.",
+      "3": "VNC does provide a remote desktop, but it is not native to Windows and is not RDP.",
+      "0": "SSH is encrypted but gives a command-line session unless X11 forwarding is added."
+    },
+    "video_reference": {
+      "title": "Remote Access - CompTIA A+ 220-1202 - 4.9",
+      "url": "https://www.youtube.com/watch?v=B-xa0hjmuAs",
+      "duration": "12:49",
+      "objective": "4.9"
+    },
+    "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+    "tags": [
+      "remote-access",
+      "rdp",
+      "port-3389",
+      "windows-remote-desktop"
+    ],
+    "id": "C2N-O-028"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.9",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "A help desk technician needs to view an end user's desktop screen and provide guidance while the user remains logged in and actively watching the session. Which Windows built-in tool is designed specifically for this collaborative screen-sharing scenario?",
+    "options": [
+      "Secure Shell (`ssh.exe`)",
+      "Diskpart (`diskpart.exe`)",
+      "Windows Remote Assistance (`msra.exe`) / Quick Assist",
+      "Standard Remote Desktop Connection (`mstsc.exe`)"
+    ],
+    "answer": 2,
+    "explanation": "Windows Remote Assistance (`msra.exe`) and Quick Assist allow a technician and a remote user to view the same desktop screen simultaneously, share mouse/keyboard control upon user permission, and chat without logging the user out. In contrast, standard Remote Desktop (`mstsc.exe`) locks the local user's screen or disconnects their active interactive console session on client editions of Windows. SSH provides a CLI shell, and Diskpart manages disk partitions.",
+    "distractor_analysis": {
+      "3": "Standard Remote Desktop (`mstsc.exe`) locks out the local user or terminates their interactive desktop session, preventing collaborative troubleshooting.",
+      "0": "SSH (`ssh.exe`) opens a secure command-line terminal session without providing a shared graphical desktop interface.",
+      "1": "Diskpart is a command-line disk partitioning and storage configuration utility, completely unrelated to remote desktop assistance."
+    },
+    "video_reference": {
+      "title": "Remote Access - CompTIA A+ 220-1202 - 4.9",
+      "url": "https://www.youtube.com/watch?v=B-xa0hjmuAs",
+      "duration": "12:49",
+      "objective": "4.9"
+    },
+    "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+    "tags": [
+      "remote-access",
+      "msra",
+      "remote-assistance",
+      "rdp-vs-msra"
+    ],
+    "id": "C2N-O-029"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.9",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A systems engineer needs to securely connect to a remote headless Linux database server's command-line shell to modify configuration files over an untrusted network. Which protocol and default port must be used?",
+    "options": [
+      "Telnet over TCP port 23",
+      "FTP over TCP port 21",
+      "TFTP over UDP port 69",
+      "SSH (Secure Shell) over TCP port 22"
+    ],
+    "answer": 3,
+    "explanation": "SSH (Secure Shell) operates over TCP port 22 and provides strong public-key/password authentication and symmetric encryption for remote command-line access, file transfers (SFTP/SCP), and port forwarding. Telnet (port 23) transmits all session text unencrypted, FTP (port 21) transfers files in plaintext, and TFTP (UDP 69) is a simple unauthenticated UDP file transfer protocol.",
+    "distractor_analysis": {
+      "0": "Telnet operates on TCP port 23 and transmits all passwords and commands in cleartext, making it insecure for remote administration.",
+      "1": "FTP (File Transfer Protocol) runs on port 21 for transferring files and does not provide an interactive remote shell environment.",
+      "2": "TFTP (Trivial File Transfer Protocol) uses UDP 69 for basic bootstrap firmware transfers without authentication or shell access."
+    },
+    "video_reference": {
+      "title": "Remote Access - CompTIA A+ 220-1202 - 4.9",
+      "url": "https://www.youtube.com/watch?v=B-xa0hjmuAs",
+      "duration": "12:49",
+      "objective": "4.9"
+    },
+    "notes_reference": "21_Remote_Access_Performance_OS_Troubleshooting.md",
+    "tags": [
+      "remote-access",
+      "ssh",
+      "port-22",
+      "linux-management"
+    ],
+    "id": "C2N-O-030"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.10",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "A junior software developer pastes proprietary internal source code and customer database connection strings into a public, consumer-tier Generative AI chatbot to optimize a query. What major security and privacy risk has occurred?",
+    "options": [
+      "A credential rotation failure, because the strings were URL encoded",
+      "A data privacy breach and IP exfiltration, since prompts may be retained for training",
+      "A denial of service against the production database from the chatbot",
+      "A licence violation, because the generated output carries a copyleft licence"
+    ],
+    "answer": 1,
+    "explanation": "Pasting proprietary source code, credentials, API keys, or Personally Identifiable Information (PII) into public, unvetted consumer AI platforms exposes the organization to massive intellectual property leaks and regulatory compliance violations. Many public AI services retain prompt data to train future models, potentially exposing confidential data to external users. Enterprise AI deployments require data-retention opt-outs and privacy boundaries. It does not cause DoS attacks or hardware processor damage.",
+    "distractor_analysis": {
+      "2": "The chatbot never touched the database. Nothing was flooded; data simply left the boundary.",
+      "3": "Output licensing is a separate commercial question and is not the risk created by pasting secrets.",
+      "0": "Encoding does not protect a secret. The credentials were disclosed the moment they were pasted."
+    },
+    "video_reference": {
+      "title": "Managing AI - CompTIA A+ 220-1202 - 4.10",
+      "url": "https://www.youtube.com/watch?v=oofb6ROU7LM",
+      "duration": "10:38",
+      "objective": "4.10"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "artificial-intelligence",
+      "data-privacy",
+      "confidentiality",
+      "ip-leakage"
+    ],
+    "id": "C2N-O-031"
+  },
+  {
+    "exam": "core2",
+    "domain": "4.0 Operational Procedures",
+    "objective": "4.10",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "An IT technician uses an AI assistant to generate a complex PowerShell script for server provisioning. The AI produces code referencing non-existent cmdlet parameters that fail when executed. What AI phenomenon describes this behavior, and what operational procedure MUST the technician always follow?",
+    "options": [
+      "Phishing attack; the technician should immediately format the workstation drive",
+      "SQL Injection; the technician should replace the server RAM modules",
+      "AI Hallucination; the technician must always review, verify, and test all AI-generated code and configuration scripts in a sandbox before executing in production",
+      "Buffer Overflow; the technician should delete the PowerShell application from Windows"
+    ],
+    "answer": 2,
+    "explanation": "AI Hallucination refers to generative AI models confidently producing plausible-sounding but factually incorrect, synthetically fabricated, or non-existent syntax, commands, or data. IT operational best practices mandate that human engineers treat all AI-generated content as unverified drafts: technicians must critically review the syntax, verify command parameters against official documentation, and rigorously test scripts in an isolated sandbox environment before running them in production.",
+    "distractor_analysis": {
+      "3": "Buffer overflow is a memory management vulnerability in binary software, not an AI model generating non-existent script parameters.",
+      "0": "Phishing is social engineering via deceptive communication; receiving incorrect AI responses is not a phishing attack requiring drive wiping.",
+      "1": "SQL injection is a web database attack; erroneous AI script suggestions have zero connection to physical RAM hardware defects."
+    },
+    "video_reference": {
+      "title": "Managing AI - CompTIA A+ 220-1202 - 4.10",
+      "url": "https://www.youtube.com/watch?v=oofb6ROU7LM",
+      "duration": "10:38",
+      "objective": "4.10"
+    },
+    "notes_reference": "31_Backup_Data_Handling_AI.md",
+    "tags": [
+      "artificial-intelligence",
+      "hallucinations",
+      "verification",
+      "copilot"
+    ],
+    "id": "C2N-O-032"
+  }
+]

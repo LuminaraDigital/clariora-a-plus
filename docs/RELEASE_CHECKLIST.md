@@ -46,8 +46,8 @@ python tools\build_windows_installer.py --portable
 
 This takes about three minutes. When it finishes, `release\` contains:
 
-- `Clariora_Setup_<version>.exe` (the installer students download)
-- `Clariora_Portable_<version>.exe` (single file, no install)
+- `CompTIA_A_Plus_Setup_<version>.exe` (the installer students download)
+- `CompTIA_A_Plus_Portable_<version>.exe` (single file, no install)
 - `latest.yml` (tells installed copies that a new version exists)
 - a `.blockmap` file if electron-builder made one
 - `release\portable\` (the unpacked folder used by the smoke test)
@@ -70,10 +70,10 @@ machine in front of you, not over a background service.
 Put these four files into the `releases/` folder of the published site so they
 resolve at `https://comptia-a-plus-master.pages.dev/releases/<filename>`:
 
-1. `Clariora_Setup_<version>.exe`
+1. `CompTIA_A_Plus_Setup_<version>.exe`
 2. `latest.yml`
 3. the `.blockmap` file, if there is one
-4. `Clariora_Portable_<version>.exe`
+4. `CompTIA_A_Plus_Portable_<version>.exe`
 
 Leave the previous version's files in place. Do not delete old installers.
 
@@ -160,7 +160,7 @@ If the new version is broken:
    number that was already released.
 
 Learner progress is never lost by a rollback. The database lives in
-`%APPDATA%\Clariora\memory\` and uninstalling does not delete it.
+`%APPDATA%\CompTIA A+ Exam Simulator\memory\` and uninstalling does not delete it.
 
 If a learner reports a broken app after an update, tell them to uninstall,
 install the previous version from the site, and reopen it. Their progress will
@@ -197,16 +197,3 @@ rather than a draft and that `latest.yml` (Windows), `latest-mac.yml` and
 
 Versions 3.1.1 and earlier point at the old Cloudflare URL and cannot update
 themselves. Those installs need the new build once, by hand.
-
-## 8. Prove the upgrade is offered
-
-After the Windows assets and `latest.yml` are on the GitHub release, launch
-the previous version and confirm it sees the new one:
-
-```bat
-node tools\check_update_feed.js release\Clariora_Portable_<previous>.exe
-```
-
-It prints the updater status and ends with `RESULT: update to <new> is
-offered to <previous>`. If it says no update was offered, check that
-`latest.yml` is attached to the release and that the release is not a draft.

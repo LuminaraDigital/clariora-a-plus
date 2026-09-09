@@ -52,6 +52,7 @@ tools/c2_raw_dump.json
 tools/group*_raw.txt
 
 # Editor and tooling noise
+.pytest_cache/
 .cursor/
 .vscode/
 .idea/

@@ -491,55 +491,86 @@
     URL.revokeObjectURL(url);
   }
 
+  function askConfirmation(opts) {
+    if (global.APlus && global.APlus.dialog && typeof global.APlus.dialog.confirm === 'function') {
+      return global.APlus.dialog.confirm(opts);
+    }
+    const msg = opts.warning ? ((opts.title || 'Are you sure?') + '\n\n' + (opts.body || '') + '\n\n' + opts.warning) : ((opts.title || 'Are you sure?') + '\n\n' + (opts.body || ''));
+    return Promise.resolve(confirm(msg));
+  }
+
+  function importDatabaseFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async function (evt) {
+      try {
+        const parsed = JSON.parse(evt.target.result);
+        if (!parsed || typeof parsed !== 'object') {
+          throw new Error('Invalid database format');
+        }
+        const ok = await askConfirmation({
+          title: 'Import Database Backup?',
+          body: 'Importing this file will merge and update all history, SRS cards, and ledger records on this PC.',
+          confirmLabel: 'Import and Merge',
+          cancelLabel: 'Cancel'
+        });
+        if (ok) {
+          inMemoryCache = Object.assign({}, inMemoryCache, parsed);
+          Object.keys(inMemoryCache).forEach((k) => {
+            try {
+              if (isPersistableKey(k)) localStorage.setItem(k, inMemoryCache[k]);
+            } catch (_) {}
+          });
+          scheduleFlush();
+          alert('Database restored successfully! Reloading...');
+          global.location.reload();
+        }
+      } catch (err) {
+        alert('Failed to import database: ' + (err.message || 'Invalid JSON file'));
+      }
+    };
+    reader.readAsText(file);
+  }
+
   function importDatabaseJson() {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json,application/json';
-    input.onchange = function (e) {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function (evt) {
-        try {
-          const parsed = JSON.parse(evt.target.result);
-          if (!parsed || typeof parsed !== 'object') {
-            throw new Error('Invalid database format');
-          }
-          if (confirm('Importing this database will merge and update all history, SRS cards, and ledger records on this PC. Continue?')) {
-            inMemoryCache = Object.assign({}, inMemoryCache, parsed);
-            Object.keys(inMemoryCache).forEach((k) => {
-              try {
-                if (isPersistableKey(k)) localStorage.setItem(k, inMemoryCache[k]);
-              } catch (_) {}
-            });
-            scheduleFlush();
-            alert('Database restored successfully! Reloading...');
-            global.location.reload();
-          }
-        } catch (err) {
-          alert('Failed to import database: ' + (err.message || 'Invalid JSON file'));
-        }
-      };
-      reader.readAsText(file);
-    };
+    input.onchange = (e) => importDatabaseFile(e.target);
     input.click();
   }
 
-  function resetDatabaseFactory() {
-    if (confirm('CAUTION: Are you sure you want to reset your local database? All exam history and APX ledger blocks on this PC will be returned to initial state.')) {
-      if (confirm('Final confirmation: Reset all memory to clean state?')) {
-        inMemoryCache = createDefaultSchema();
-        localStorage.clear();
-        Object.keys(inMemoryCache).forEach((k) => {
-          try {
-            if (isPersistableKey(k)) localStorage.setItem(k, inMemoryCache[k]);
-          } catch (_) {}
-        });
-        scheduleFlush();
-        alert('Database has been reset to initial clean state. Reloading...');
-        global.location.reload();
-      }
-    }
+  async function resetDatabaseFactory() {
+    const ok1 = await askConfirmation({
+      title: 'Reset Local Database?',
+      body: 'All exam history and APX ledger blocks on this PC will be returned to initial state.',
+      warning: 'CAUTION: This action cannot be undone.',
+      confirmLabel: 'Reset Database',
+      cancelLabel: 'Cancel',
+      danger: true
+    });
+    if (!ok1) return;
+
+    const ok2 = await askConfirmation({
+      title: 'Final Confirmation',
+      body: 'Reset all local database memory to clean state?',
+      confirmLabel: 'Permanently Erase',
+      cancelLabel: 'Keep Data',
+      danger: true
+    });
+    if (!ok2) return;
+
+    inMemoryCache = createDefaultSchema();
+    localStorage.clear();
+    Object.keys(inMemoryCache).forEach((k) => {
+      try {
+        if (isPersistableKey(k)) localStorage.setItem(k, inMemoryCache[k]);
+      } catch (_) {}
+    });
+    scheduleFlush();
+    alert('Database has been reset to initial clean state. Reloading...');
+    global.location.reload();
   }
 
   function openDatabaseModal() {

@@ -37,8 +37,8 @@ The version itself is never typed into code. `APP_VERSION` in `main.js` reads
 
 ## Canonical ship artifacts
 
-- `release/Clariora_Setup_<version>.exe` (NSIS one-click installer, x64)
-- `release/Clariora_Portable_<version>.exe` (single-file portable, x64)
+- `release/CompTIA_A_Plus_Setup_<version>.exe` (NSIS one-click installer, x64)
+- `release/CompTIA_A_Plus_Portable_<version>.exe` (single-file portable, x64)
 - `release/portable/` (unpacked portable folder, produced with `--portable`)
 - `release/latest.yml` (auto-update metadata, must be uploaded next to the installer)
 
@@ -91,7 +91,7 @@ delivery section below.
 
 ## Desktop smoke test
 
-`node tools/smoke_electron.js` launches `release/portable/Clariora.exe`
+`node tools/smoke_electron.js` launches `release/portable/CompTIA_A_Plus_Simulator.exe`
 (or a path given as the first argument) with `--remote-debugging-port=9555` and a
 throwaway user data directory, drives it over the Chrome DevTools Protocol, and
 asserts:
@@ -207,7 +207,7 @@ Publishing a new version:
    files for you.
 2. Run `python tools/build_windows_installer.py --portable`.
 3. Upload these files from `release/` to the release directory of the host:
-   - `Clariora_Setup_<version>.exe`
+   - `CompTIA_A_Plus_Setup_<version>.exe`
    - `latest.yml`
    - the blockmap file if electron-builder produced one
 4. Keep older installers in place so learners on slow rollouts can still resolve
@@ -236,13 +236,7 @@ Runtime behavior in `main.js`:
 
 ## Logs location
 
-`%APPDATA%\Clariora\logs\main.log`
-
-Installs made before the rename stored everything under
-`%APPDATA%\CompTIA A+ Exam Simulator`. On the first launch of a Clariora build
-`main.js` moves that folder to `%APPDATA%\Clariora` when the new folder is
-still empty, so learner data carries over. If the move fails the app keeps
-reading from the old folder.
+`%APPDATA%\CompTIA A+ Exam Simulator\logs\main.log`
 
 Rotating: 1 MB cap, two files kept (`main.log` and `main.log.1`). The log
 records startup, uncaught exceptions, unhandled promise rejections, renderer
@@ -258,11 +252,11 @@ The Help menu has an "Open log folder" item.
 Installed build:
 
 ```
-%APPDATA%\Clariora\memory\aplus_user_db.json
-%APPDATA%\Clariora\memory\aplus_user_db.backup.json
-%APPDATA%\Clariora\aplus_progress.json
-%APPDATA%\Clariora\aplus_progress.backup.json
-%APPDATA%\Clariora\window-state.json
+%APPDATA%\CompTIA A+ Exam Simulator\memory\aplus_user_db.json
+%APPDATA%\CompTIA A+ Exam Simulator\memory\aplus_user_db.backup.json
+%APPDATA%\CompTIA A+ Exam Simulator\aplus_progress.json
+%APPDATA%\CompTIA A+ Exam Simulator\aplus_progress.backup.json
+%APPDATA%\CompTIA A+ Exam Simulator\window-state.json
 ```
 
 Portable build (a `portable.txt` file next to the executable):

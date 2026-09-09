@@ -461,6 +461,41 @@
         html += '</div>';
         mountEl.innerHTML = html;
       }
+    },
+
+    /**
+     * Performance-Based Question (PBQ Interactive Simulations)
+     */
+    pbq: {
+      render(q, userState, mountEl, callbacks) {
+        if (APlus.pbqEngine && typeof APlus.pbqEngine.render === 'function') {
+          APlus.pbqEngine.render(q, userState, mountEl, callbacks);
+        } else {
+          mountEl.innerHTML = '<div style="padding: 1rem; color: var(--accent-red);">Simulation engine loading...</div>';
+        }
+      },
+
+      score(q, userState) {
+        if (APlus.pbqEngine && typeof APlus.pbqEngine.score === 'function') {
+          return APlus.pbqEngine.score(q, userState);
+        }
+        return false;
+      },
+
+      isComplete(q, userState) {
+        if (APlus.pbqEngine && typeof APlus.pbqEngine.isComplete === 'function') {
+          return APlus.pbqEngine.isComplete(q, userState);
+        }
+        return false;
+      },
+
+      renderReview(q, userState, mountEl) {
+        if (APlus.pbqEngine && typeof APlus.pbqEngine.renderReview === 'function') {
+          APlus.pbqEngine.renderReview(q, userState, mountEl);
+        } else {
+          mountEl.innerHTML = '<div style="padding: 0.5rem;">Performance-Based Question completed.</div>';
+        }
+      }
     }
   };
 

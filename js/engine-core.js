@@ -121,37 +121,125 @@
     return shuffle(result);
   }
 
+  const DEFAULT_CORE1_PBQS = [
+    {
+      id: 'PBQ-C1-01',
+      exam: 'core1',
+      domain: '2.0 Networking',
+      objective: '2.3',
+      type: 'pbq',
+      pbqType: 'sohoRouter',
+      question: 'A branch office requires immediate network hardening. Audit and reconfigure the SOHO gateway to comply with modern enterprise security standards.',
+      explanation: 'WPA3-Personal (SAE) provides enhanced cryptographic protection over WPA2. An 80 MHz channel width on 5 GHz provides optimal throughput. Port 443 forwarding delivers secure HTTPS to the designated internal host.',
+      tags: ['pbq', 'router', 'networking']
+    },
+    {
+      id: 'PBQ-C1-02',
+      exam: 'core1',
+      domain: '3.0 Hardware',
+      objective: '3.4',
+      type: 'pbq',
+      pbqType: 'motherboardAssembly',
+      question: 'A custom CAD workstation requires core component installation on an ATX motherboard prior to chassis installation.',
+      explanation: 'CPUs must be installed in matching LGA/AM sockets. Discrete GPUs require full-length PCIe x16 slots with dedicated bandwidth. High-speed NVMe drives utilize dedicated M.2 PCIe lanes.',
+      tags: ['pbq', 'motherboard', 'hardware']
+    },
+    {
+      id: 'PBQ-C1-03',
+      exam: 'core1',
+      domain: '2.0 Networking',
+      objective: '2.1',
+      type: 'pbq',
+      pbqType: 'cablePinout',
+      question: 'A replacement Category 6 UTP patch cord is being terminated with an RJ-45 modular plug according to company T568B cabling standard.',
+      explanation: 'The T568B standard pinout from Pin 1 to Pin 8 is: White/Orange, Orange, White/Green, Blue, White/Blue, Green, White/Brown, Brown.',
+      tags: ['pbq', 'cabling', 'networking']
+    }
+  ];
+
+  const DEFAULT_CORE2_PBQS = [
+    {
+      id: 'PBQ-C2-01',
+      exam: 'core2',
+      domain: '1.0 Operating Systems',
+      objective: '1.4',
+      type: 'pbq',
+      pbqType: 'windowsConsole',
+      question: 'A new 2TB NVMe SSD has been installed as Disk 1. The user requires it prepared for large video production files.',
+      explanation: 'GPT (GUID Partition Table) partition style is required for modern UEFI systems and volumes exceeding 2TB. NTFS provides journaling, permissions, and compression for internal drives.',
+      tags: ['pbq', 'storage', 'operating-systems']
+    },
+    {
+      id: 'PBQ-C2-02',
+      exam: 'core2',
+      domain: '3.0 Software Troubleshooting',
+      objective: '3.1',
+      type: 'pbq',
+      pbqType: 'cliTerminal',
+      question: 'Overnight patching left the host booting slowly with intermittent errors. Run diagnostic commands to identify and repair corruption.',
+      explanation: 'SFC /scannow repairs corrupted system files using the component store. DISM restores the Windows component store health. CHKDSK scans the filesystem for metadata integrity.',
+      tags: ['pbq', 'cli', 'troubleshooting']
+    },
+    {
+      id: 'PBQ-C2-03',
+      exam: 'core2',
+      domain: '2.0 Security',
+      objective: '2.3',
+      type: 'pbq',
+      pbqType: 'sohoRouter',
+      question: 'Audit corporate office wireless security. Reconfigure the perimeter gateway to enforce WPA3 enterprise security standards.',
+      explanation: 'Hardening the gateway against legacy protocols like WEP and TKIP prevents credential sniffing and brute-force key retrieval.',
+      tags: ['pbq', 'security', 'wireless']
+    }
+  ];
+
   /**
    * Main Stratified Sampler
    * Supports 'core1', 'core2', 'both', 'quick'
+   * In full timed mock exams (targetCount >= 40), compulsory PBQs are placed first (Questions 1-3)
    */
   function sampleStratified(allQuestions, targetCount = 90, examType = 'core1') {
     if (!allQuestions || allQuestions.length === 0) return [];
 
+    let pbqsToPrepend = [];
+    let mcqTargetCount = targetCount;
+
+    if (targetCount >= 40) {
+      if (examType === 'core1') {
+        const poolPbqs = allQuestions.filter(q => (q.exam === 'core1' || !q.exam) && q.type === 'pbq');
+        pbqsToPrepend = poolPbqs.length > 0 ? shuffle(poolPbqs).slice(0, 3) : DEFAULT_CORE1_PBQS.slice(0, 3);
+      } else if (examType === 'core2') {
+        const poolPbqs = allQuestions.filter(q => q.exam === 'core2' && q.type === 'pbq');
+        pbqsToPrepend = poolPbqs.length > 0 ? shuffle(poolPbqs).slice(0, 3) : DEFAULT_CORE2_PBQS.slice(0, 3);
+      } else if (examType === 'both') {
+        const c1Pbqs = DEFAULT_CORE1_PBQS.slice(0, 2);
+        const c2Pbqs = DEFAULT_CORE2_PBQS.slice(0, 2);
+        pbqsToPrepend = [...c1Pbqs, ...c2Pbqs];
+      }
+      mcqTargetCount = Math.max(0, targetCount - pbqsToPrepend.length);
+    }
+
+    let sampled = [];
     if (examType === 'core1') {
-      const c1Pool = allQuestions.filter(q => q.exam === 'core1' || !q.exam);
-      return sampleCoreStratified(c1Pool, DOMAIN_BLUEPRINTS.core1, Math.min(targetCount, c1Pool.length));
-    }
-
-    if (examType === 'core2') {
-      const c2Pool = allQuestions.filter(q => q.exam === 'core2');
-      return sampleCoreStratified(c2Pool, DOMAIN_BLUEPRINTS.core2, Math.min(targetCount, c2Pool.length));
-    }
-
-    if (examType === 'both') {
-      const c1Count = Math.floor(targetCount / 2);
-      const c2Count = targetCount - c1Count;
-      const c1Pool = allQuestions.filter(q => q.exam === 'core1' || !q.exam);
-      const c2Pool = allQuestions.filter(q => q.exam === 'core2');
+      const c1Pool = allQuestions.filter(q => (q.exam === 'core1' || !q.exam) && q.type !== 'pbq');
+      sampled = sampleCoreStratified(c1Pool, DOMAIN_BLUEPRINTS.core1, Math.min(mcqTargetCount, c1Pool.length));
+    } else if (examType === 'core2') {
+      const c2Pool = allQuestions.filter(q => q.exam === 'core2' && q.type !== 'pbq');
+      sampled = sampleCoreStratified(c2Pool, DOMAIN_BLUEPRINTS.core2, Math.min(mcqTargetCount, c2Pool.length));
+    } else if (examType === 'both') {
+      const c1Count = Math.floor(mcqTargetCount / 2);
+      const c2Count = mcqTargetCount - c1Count;
+      const c1Pool = allQuestions.filter(q => (q.exam === 'core1' || !q.exam) && q.type !== 'pbq');
+      const c2Pool = allQuestions.filter(q => q.exam === 'core2' && q.type !== 'pbq');
 
       const c1Sample = sampleCoreStratified(c1Pool, DOMAIN_BLUEPRINTS.core1, Math.min(c1Count, c1Pool.length));
       const c2Sample = sampleCoreStratified(c2Pool, DOMAIN_BLUEPRINTS.core2, Math.min(c2Count, c2Pool.length));
-
-      return shuffle([...c1Sample, ...c2Sample]);
+      sampled = shuffle([...c1Sample, ...c2Sample]);
+    } else {
+      sampled = shuffle(allQuestions.filter(q => q.type !== 'pbq')).slice(0, mcqTargetCount);
     }
 
-    // Default fallback: random draw
-    return shuffle(allQuestions).slice(0, targetCount);
+    return [...pbqsToPrepend, ...sampled];
   }
 
   /**

@@ -1,0 +1,269 @@
+/* ==========================================================================
+   Clariora - Telegram Mini App (TMA) Mobile Overrides & Polish
+   Enforces Telegram App Center compliance, Apple HIG / Material guidelines:
+   - Touch targets >= 44px
+   - Safe area insets & notch handling
+   - Smooth bottom-sheets for AI Coach, Stars, and TON Connect
+   - Skeleton screen for sub-second visual load
+   ========================================================================== */
+
+:root {
+  --tma-safe-top: max(12px, env(safe-area-inset-top, 0px), var(--tg-safe-area-inset-top, 0px));
+  --tma-safe-bottom: max(16px, env(safe-area-inset-bottom, 0px), var(--tg-safe-area-inset-bottom, 0px));
+  --tma-touch-min: 44px;
+}
+
+/* Telegram container constraints */
+html, body {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: contain; /* Prevent jarring bounce/pull-down */
+}
+
+body {
+  padding-top: var(--tma-safe-top);
+  padding-bottom: calc(var(--tma-safe-bottom) + 16px);
+  min-height: var(--tg-viewport-height, 100vh);
+  box-sizing: border-box;
+}
+
+/* Header adaptation inside Telegram */
+header.app-header, .top-bar {
+  padding-top: 4px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Telegram User Badge & Status Pill */
+.tma-user-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #D4AF37;
+}
+
+.tma-user-avatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #D4AF37;
+  color: #07090E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+/* Minimum touch targets for mobile thumb usability */
+.option-item, 
+.action-btn, 
+.btn, 
+.matrix-btn,
+.nav-tab,
+.card {
+  min-height: var(--tma-touch-min);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.option-item {
+  padding: 14px 16px !important;
+  margin-bottom: 10px !important;
+  border-radius: 10px !important;
+  transition: transform 0.1s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.option-item:active {
+  transform: scale(0.985);
+}
+
+/* Bottom Action Bar for Mobile Viewports */
+.tma-bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 10px 16px calc(var(--tma-safe-bottom) + 8px);
+  background: rgba(7, 9, 14, 0.94);
+  border-top: 1px solid rgba(212, 175, 55, 0.25);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  gap: 12px;
+  z-index: 99;
+}
+
+.tma-bottom-bar .btn-primary {
+  flex: 1;
+  min-height: 48px;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #D4AF37 0%, #F5D061 50%, #B8860B 100%);
+  color: #07090E;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);
+}
+
+/* Bottom-Sheet Modals (Ghost Coach, Stars, TON Connect) */
+.tma-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #0D1017;
+  border-top: 2px solid #D4AF37;
+  border-radius: 20px 20px 0 0;
+  padding: 16px 20px calc(var(--tma-safe-bottom) + 16px);
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  max-height: 88vh;
+  overflow-y: auto;
+}
+
+.tma-sheet.is-open {
+  transform: translateY(0);
+}
+
+.tma-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.tma-sheet-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.tma-sheet-handle {
+  width: 40px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  margin: 0 auto 16px auto;
+}
+
+/* Telegram Stars Badge & Price Cards */
+.stars-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #F5D061;
+  font-weight: 700;
+}
+
+.stars-badge svg {
+  width: 16px;
+  height: 16px;
+  fill: #F5D061;
+}
+
+.stars-card {
+  background: #131722;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* TON Verified Badge Card */
+.ton-credential-card {
+  background: linear-gradient(135deg, rgba(0, 152, 234, 0.12) 0%, rgba(212, 175, 55, 0.12) 100%);
+  border: 1px solid rgba(0, 152, 234, 0.4);
+  border-radius: 16px;
+  padding: 18px;
+  margin-top: 16px;
+}
+
+.ton-credential-card .ton-btn {
+  background: #0098EA;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-weight: 700;
+  width: 100%;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+/* Mandatory Compliance Disclaimer Footer */
+.tma-legal-footer {
+  margin-top: 24px;
+  padding: 16px;
+  text-align: center;
+  font-size: 0.72rem;
+  color: #64748B;
+  line-height: 1.4;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tma-legal-footer a {
+  color: #94A3B8;
+  text-decoration: underline;
+}
+
+/* Skeleton Fast-Loader */
+.tma-skeleton-screen {
+  position: fixed;
+  inset: 0;
+  background: #07090E;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+.tma-skeleton-screen.is-loaded {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.tma-skeleton-pulse {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 3px solid rgba(212, 175, 55, 0.2);
+  border-top-color: #D4AF37;
+  animation: tmaSpin 0.9s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes tmaSpin {
+  to { transform: rotate(360deg); }
+}

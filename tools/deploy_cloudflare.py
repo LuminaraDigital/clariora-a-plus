@@ -109,6 +109,10 @@ def main() -> int:
     if not workers_ok and not pages_ok:
         print(
             "[deploy] FAILED. Cloudflare permanent host is not ready yet.\n"
+            "  Most common cause: the API token has only Read scopes. A Workers deploy needs\n"
+            "  account-level Workers Scripts: Edit (plus R2 Storage: Edit and KV Storage: Edit\n"
+            "  if used). Read-only tokens fail every write with Authentication error 10000.\n"
+            "  Fix it under Manage account -> Account API tokens, then re-run.\n"
             "  Do ONE of these once in the dashboard, then re-run this script:\n"
             "  A) Workers (recommended with current token):\n"
             "     Open https://dash.cloudflare.com/2373013c66331e9660e47ffa3ae40f5c/workers/onboarding\n"

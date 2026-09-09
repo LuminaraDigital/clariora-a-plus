@@ -2,7 +2,7 @@
 # Zone: clariora.com.au
 # Account: 2373013c66331e9660e47ffa3ae40f5c
 
-name = "comptia-a-plus-master"
+name = "clariora-a-plus"
 main = "workers/api_worker.js"
 compatibility_date = "2026-09-01"
 account_id = "2373013c66331e9660e47ffa3ae40f5c"
@@ -28,6 +28,10 @@ bucket_name = "clariora-media"
 
 [ai]
 binding = "AI"
+
+[build]
+# Local `wrangler deploy` only. Workers Builds ignores this; see package.json postinstall.
+command = "python tools/build_web_dist.py"
 
 # Environment Variables & Secrets (Set via `wrangler secret put <KEY>`):
 # - TELEGRAM_BOT_TOKEN: From @BotFather (for initData HMAC & Stars invoices)

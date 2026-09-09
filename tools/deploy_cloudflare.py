@@ -21,7 +21,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 ENV_PATH = ROOT / ".env"
 DIST = ROOT / "dist_web"
-PROJECT = "comptia-a-plus-master"
+WORKER_NAME = "clariora-a-plus"
+PAGES_PROJECT = "comptia-a-plus-master"
 
 
 def load_env(path: Path) -> None:
@@ -78,12 +79,12 @@ def main() -> int:
     if not args.pages_only:
         print("[deploy] Trying Workers assets deploy...", flush=True)
         code = run(
-            ["npx", "--yes", "wrangler", "deploy", "--assets=./dist_web", f"--name={PROJECT}"],
+            ["npx", "--yes", "wrangler", "deploy", "--assets=./dist_web", f"--name={WORKER_NAME}"],
             check=False,
         )
         workers_ok = code == 0
         if workers_ok:
-            url = f"https://{PROJECT}.<account>.workers.dev"
+            url = f"https://{WORKER_NAME}.<account>.workers.dev"
             print("[deploy] Workers deploy succeeded.", flush=True)
 
     if not workers_ok and not args.workers_only:
@@ -96,14 +97,14 @@ def main() -> int:
                 "pages",
                 "deploy",
                 "dist_web",
-                f"--project-name={PROJECT}",
+                f"--project-name={PAGES_PROJECT}",
                 "--commit-dirty=true",
             ],
             check=False,
         )
         pages_ok = code == 0
         if pages_ok:
-            url = f"https://{PROJECT}.pages.dev"
+            url = f"https://{PAGES_PROJECT}.pages.dev"
             print("[deploy] Pages deploy succeeded.", flush=True)
 
     if not workers_ok and not pages_ok:
@@ -120,6 +121,8 @@ def main() -> int:
             "  B) Pages:\n"
             "     Edit API token -> Account -> Cloudflare Pages: Edit (+ Account Settings: Read)\n"
             "     Then: npx wrangler pages project create comptia-a-plus-master --production-branch main\n"
+            "  Workers Builds (Git): set Build command to:\n"
+            "     python tools/build_web_dist.py && node tools/test_web_dist.js\n"
             "  Re-run: python tools/deploy_cloudflare.py",
             file=sys.stderr,
         )

@@ -6,6 +6,10 @@
   "scripts": {
     "start": "electron .",
     "check": "node --check main.js && node --check preload.js",
+    "build:web": "python tools/build_web_dist.py",
+    "test:web": "node tools/test_web_dist.js",
+    "deploy:cf": "python tools/deploy_cloudflare.py",
+    "postinstall": "node tools/cf_workers_ci_build.js",
     "package-win": "python tools/build_windows_installer.py --portable",
     "package-mac": "python3 tools/build_macos_app.py",
     "icons:mac": "python tools/make_macos_icon.py",

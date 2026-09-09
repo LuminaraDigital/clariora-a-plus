@@ -9,7 +9,8 @@ account_id = "2373013c66331e9660e47ffa3ae40f5c"
 workers_dev = true
 
 routes = [
-  { pattern = "clariora.com.au/api/v1/*", zone_name = "clariora.com.au" }
+  { pattern = "clariora.com.au/*", zone_name = "clariora.com.au" },
+  { pattern = "www.clariora.com.au/*", zone_name = "clariora.com.au" }
 ]
 
 [assets]

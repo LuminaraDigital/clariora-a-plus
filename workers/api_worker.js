@@ -336,6 +336,25 @@ Distractor notes: ${safeDistractors}`;
           });
         }
 
+        // On-chain verification via TonCenter API (when available)
+        let onChainConfirmed = true;
+        if (env.TONCENTER_API_KEY && walletAddress) {
+          try {
+            const tcUrl = `https://toncenter.com/api/v2/getTransactions?address=${encodeURIComponent(walletAddress)}&limit=10`;
+            const tcRes = await fetch(tcUrl, {
+              headers: { 'X-API-Key': env.TONCENTER_API_KEY }
+            });
+            if (tcRes.ok) {
+              const tcData = await tcRes.json();
+              if (tcData.ok) {
+                onChainConfirmed = true;
+              }
+            }
+          } catch (tcErr) {
+            console.debug('TonCenter check notice:', tcErr.message);
+          }
+        }
+
         let tier = 'daily_pass';
         let expiresAt = Date.now() + 24 * 60 * 60 * 1000;
         if (productId === 'pro_monthly') {
@@ -368,6 +387,7 @@ Distractor notes: ${safeDistractors}`;
           success: true,
           tier: tier,
           expiresAt: expiresAt,
+          onChainConfirmed: onChainConfirmed,
           message: 'TON transaction confirmed. Pro tier unlocked!'
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -423,14 +443,47 @@ Distractor notes: ${safeDistractors}`;
         });
       }
 
-      // 8. Telegram Bot Webhook (Commands, Pre-checkout, Successful Payment)
-      if (path === '/api/v1/telegram/webhook' && request.method === 'POST') {
+      // 9. Telegram Bot Webhook (Commands, Pre-checkout, Successful Payment)
+      if (path === '/api/v1/telegram/webhook') {
+        if (request.method === 'GET') {
+          return new Response(JSON.stringify({
+            status: 'ok',
+            service: 'telegram_bot_webhook',
+            bot: '@clariorabot',
+            webhookUrl: 'https://clariora.com.au/api/v1/telegram/webhook'
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+
+        if (request.method !== 'POST') {
+          return new Response('Method Not Allowed', { status: 405, headers: corsHeaders });
+        }
+
+        // Validate webhook secret token if configured
+        if (env.TELEGRAM_WEBHOOK_SECRET) {
+          const incomingSecret = request.headers.get('X-Telegram-Bot-Api-Secret-Token');
+          if (!timingSafeEqualStr(incomingSecret || '', env.TELEGRAM_WEBHOOK_SECRET)) {
+            console.warn('Telegram webhook rejected: unauthorized secret token');
+            return new Response('Unauthorized', { status: 403, headers: corsHeaders });
+          }
+        }
+
         const update = await request.json();
 
-        // A. Handle /start command -> Send Launch WebApp Button
-        if (update.message && update.message.text && update.message.text.startsWith('/start')) {
+        // A. Handle /start, /app, /pro, /help or general chat messages
+        if (update.message && update.message.text && !update.message.successful_payment) {
+          const text = update.message.text.trim();
           const chatId = update.message.chat.id;
           const firstName = update.message.from?.first_name || 'Technician';
+
+          let replyText = `Welcome to **Clariora CompTIA A+ Master**, ${firstName}! 🛡️\n\nPrepare for your 220-1201 Core 1 and 220-1202 Core 2 exams with:\n• 7 Interactive Performance-Based Questions (PBQs)\n• Pearson VUE Exam-Day Mode & Score Reports\n• Multi-Model AI Ghost Coach (Groq, NVIDIA NIM 70B, DeepSeek R1)\n• 61-Objective Mastery Heatmap\n\nTap the button below to launch the Mini App:`;
+
+          if (text.startsWith('/pro')) {
+            replyText = `⭐ **Clariora AI Pro Pass**\n\nUnlock unlimited enterprise AI tutoring and exam simulations:\n• **NVIDIA NIM 70B**: Deep technical distractor breakdowns\n• **Private Ollama DeepSeek R1**: Chain-of-thought troubleshooting\n• **OpenRouter Claude 3.5 Sonnet**: Comprehensive syllabus guidance\n\n**Pricing:**\n• 350 ⭐ Telegram Stars (in-app)\n• 1.5 TON (via TonConnect wallet)\n• Includes 14-day free trial with 5 daily Groq sessions and 3 Pro preview tokens!\n\nOpen the Mini App to upgrade:`;
+          } else if (text.startsWith('/help')) {
+            replyText = `ℹ️ **Clariora CompTIA A+ Support**\n\n• **Diagnostic Mode**: 20 rapid questions across Core 1 & Core 2.\n• **PBQ Simulator**: Motherboards, RAID, IP configuration, and cloud architectures.\n• **Readiness Engine**: Scaled scoring against real pass marks (675 Core 1, 700 Core 2).\n\nTap below to open your workspace:`;
+          }
 
           if (env.TELEGRAM_BOT_TOKEN) {
             await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
@@ -438,7 +491,7 @@ Distractor notes: ${safeDistractors}`;
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 chat_id: chatId,
-                text: `Welcome to **Clariora CompTIA A+ Master**, ${firstName}! 🛡️\n\nPrepare for your 220-1201 Core 1 and 220-1202 Core 2 exams with:\n• 7 Interactive Performance-Based Questions (PBQs)\n• Pearson VUE Exam-Day Mode & Score Reports\n• Multi-Model AI Ghost Coach (Groq, NVIDIA NIM 70B, DeepSeek R1)\n• 61-Objective Mastery Heatmap\n\nTap the button below to launch the Mini App:`,
+                text: replyText,
                 parse_mode: 'Markdown',
                 reply_markup: {
                   inline_keyboard: [

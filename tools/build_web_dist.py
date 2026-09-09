@@ -295,6 +295,20 @@ def main():
         text = landing_index.read_text(encoding="utf-8")
         landing_index.write_text(text.replace("__APLUS_VERSION__", version), encoding="utf-8")
 
+    # 4c. Create /app directory and redirect so relative links (../app)
+    #     resolve both at runtime and during landing verification checks.
+    app_dir = DIST / "app"
+    app_dir.mkdir(parents=True, exist_ok=True)
+    app_index = app_dir / "index.html"
+    app_index.write_text(
+        '<!DOCTYPE html><html><head><meta charset="utf-8">'
+        '<meta http-equiv="refresh" content="0; url=/index.html">'
+        '<title>Clariora A+</title></head><body>'
+        '<script>window.location.replace("/index.html" + window.location.search);</script>'
+        '</body></html>',
+        encoding="utf-8",
+    )
+
     # 5. Course media - only files actually referenced at runtime.
     #    media/videos ("Videos For A+", ~2.4 GB) is never shipped, even if
     #    referenced. "PowerPoint for A+" / "Labs for A+" (the original

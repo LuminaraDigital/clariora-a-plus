@@ -64,7 +64,7 @@
   /* Backdrop */
   --grid-line: rgba(255, 255, 255, 0.028);
   --glow: radial-gradient(ellipse 75% 50% at 50% -10%, rgba(212, 175, 55, 0.08), transparent 70%);
-  --hero-mesh-mask: radial-gradient(ellipse 90% 70% at 50% 30%, black 20%, transparent 85%);
+  --hero-mesh-mask: radial-gradient(ellipse 95% 80% at 50% 30%, black 40%, transparent 95%);
   --final-card-glow: radial-gradient(125% 125% at 50% 10%, rgba(212, 175, 55, 0.12) 0%, rgba(15, 19, 27, 0) 70%), var(--surface-1);
   --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.35);
 
@@ -132,7 +132,7 @@
     --info-bg: rgba(74, 84, 106, 0.10);
     --grid-line: rgba(15, 23, 42, 0.035);
     --glow: radial-gradient(ellipse 75% 50% at 50% -10%, rgba(184, 144, 30, 0.07), transparent 70%);
-    --hero-mesh-mask: radial-gradient(ellipse 90% 70% at 50% 30%, black 20%, transparent 85%);
+    --hero-mesh-mask: radial-gradient(ellipse 95% 80% at 50% 30%, black 35%, transparent 95%);
     --final-card-glow: radial-gradient(125% 125% at 50% 10%, rgba(184, 144, 30, 0.08) 0%, rgba(255, 255, 255, 0) 70%), var(--surface-1);
     --shadow-card: 0 8px 24px rgba(15, 23, 42, 0.08);
   }
@@ -570,7 +570,7 @@ ul {
   height: 100%;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.50;
+  opacity: 0.85;
   mask-image: var(--hero-mesh-mask);
   -webkit-mask-image: var(--hero-mesh-mask);
 }

@@ -165,9 +165,9 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (request.mode === 'navigate') {
-    // /landing (no trailing slash) redirects to /landing/ on the host; it
-    // must reach the network too, or the cached app shell would answer it.
-    if (url.pathname.includes('/landing')) {
+    // Root / and /landing navigations must reach the network so visitors
+    // reach the live landing page instead of a cached app shell.
+    if (url.pathname === '/' || url.pathname === '' || url.pathname.includes('/landing')) {
       event.respondWith(fetch(request));
       return;
     }

@@ -79,7 +79,7 @@ def main() -> int:
     if not args.pages_only:
         print("[deploy] Trying Workers assets deploy...", flush=True)
         code = run(
-            ["npx", "--yes", "wrangler", "deploy", "--assets=./dist_web", f"--name={WORKER_NAME}"],
+            ["npx", "--yes", "wrangler", "deploy"],
             check=False,
         )
         workers_ok = code == 0

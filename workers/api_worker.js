@@ -33,6 +33,19 @@ export default {
 
     const path = url.pathname;
 
+    // Route root to marketing landing page
+    if (path === '/' || path === '') {
+      return Response.redirect(`${url.origin}/landing/${url.search}`, 302);
+    }
+
+    // Route /app to exam simulator app shell
+    if (path === '/app' || path === '/app/') {
+      if (env.ASSETS) {
+        const appReq = new Request(new URL(`/${url.search}`, request.url), request);
+        return env.ASSETS.fetch(appReq);
+      }
+    }
+
     try {
       // 1. Health check
       if (path === '/api/v1/health') {
@@ -353,7 +366,7 @@ Distractor notes: ${JSON.stringify(distractorAnalysis || {})}`;
                     [
                       {
                         text: '🚀 Launch Clariora A+ Mini App',
-                        web_app: { url: 'https://clariora.com.au' }
+                        web_app: { url: 'https://clariora.com.au/app' }
                       }
                     ]
                   ]
@@ -447,6 +460,10 @@ Distractor notes: ${JSON.stringify(distractorAnalysis || {})}`;
         }
 
         return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
+      }
+
+      if (env.ASSETS) {
+        return await env.ASSETS.fetch(request);
       }
 
       return new Response('Not found', { status: 404, headers: corsHeaders });

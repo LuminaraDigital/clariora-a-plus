@@ -8,7 +8,7 @@
 
   if (!window.WebGLRenderingContext) return;
 
-  var DARK_PALETTE = ['#07090E', '#0F131B', '#1E180A', '#3A2D0C', '#7A5F18', '#D4AF37'];
+  var DARK_PALETTE = ['#07090E', '#151A25', '#2E220A', '#614811', '#B8860B', '#D4AF37'];
   var LIGHT_PALETTE = ['#F6F7F9', '#FFFFFF', '#F5EEDB', '#D9BC68', '#B8901E', '#856611'];
 
   function normalizeColor(hex) {
@@ -105,7 +105,8 @@
 
   function HeroMesh(canvas) {
     this.canvas = canvas;
-    this.gl = canvas.getContext('webgl', { antialias: false, powerPreference: 'low-power' });
+    this.gl = canvas.getContext('webgl', { antialias: false, powerPreference: 'low-power' }) ||
+              canvas.getContext('experimental-webgl', { antialias: false, powerPreference: 'low-power' });
     if (!this.gl) return;
 
     this.running = false;
@@ -211,8 +212,8 @@
     var parent = this.canvas.parentElement;
     if (!parent) return;
 
-    var w = parent.clientWidth;
-    var h = parent.clientHeight;
+    var w = parent.clientWidth || window.innerWidth || 800;
+    var h = parent.clientHeight || window.innerHeight || 600;
     var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
 
     this.canvas.width = Math.floor(w * dpr);
@@ -289,7 +290,7 @@
     }
   };
 
-  document.addEventListener('DOMContentLoaded', function () {
+  function boot() {
     var hero = document.querySelector('.hero');
     if (!hero) return;
 
@@ -297,12 +298,16 @@
       return;
     }
 
+    // Ensure we do not attach multiple canvases
+    if (hero.querySelector('.hero-mesh-canvas')) return;
+
     var canvas = document.createElement('canvas');
     canvas.className = 'hero-mesh-canvas';
     canvas.setAttribute('aria-hidden', 'true');
     hero.prepend(canvas);
 
     var mesh = new HeroMesh(canvas);
+    if (!mesh.gl) return;
 
     if ('IntersectionObserver' in window) {
       var observer = new IntersectionObserver(function (entries) {
@@ -318,5 +323,11 @@
     } else {
       mesh.start();
     }
-  });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
 })();

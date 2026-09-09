@@ -137,7 +137,7 @@
 
   /* ---- Backdrop ---------------------------------------------- */
   --bg-grid-line: rgba(255, 255, 255, 0.028);
-  --bg-glow-gold: radial-gradient(ellipse 75% 50% at 50% -10%, rgba(212, 175, 55, 0.08), transparent 70%);
+  --bg-glow-gold: radial-gradient(125% 125% at 50% 0%, rgba(212, 175, 55, 0.22) 0%, rgba(184, 134, 11, 0.12) 35%, rgba(15, 19, 27, 0.5) 60%, transparent 85%);
   --bg-glow-accent: radial-gradient(850px 500px at 85% -5%, rgba(56, 189, 248, 0.025), transparent 60%);
 }
 
@@ -194,7 +194,7 @@
   --scroll-thumb: #C2C8D2;
 
   --bg-grid-line: rgba(15, 23, 42, 0.035);
-  --bg-glow-gold: radial-gradient(ellipse 75% 50% at 50% -10%, rgba(184, 144, 30, 0.07), transparent 70%);
+  --bg-glow-gold: radial-gradient(125% 125% at 50% 0%, rgba(184, 144, 30, 0.16) 0%, rgba(209, 167, 46, 0.08) 35%, rgba(241, 243, 246, 0.5) 60%, transparent 85%);
   --bg-glow-accent: radial-gradient(850px 500px at 85% -5%, rgba(15, 23, 42, 0.02), transparent 60%);
 }
 

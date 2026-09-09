@@ -143,8 +143,10 @@
     }
 
     header {
-      background-color: var(--bg-secondary);
-      border-bottom: 1px solid var(--border-color);
+      background-color: rgba(7, 9, 14, 0.78);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(212, 175, 55, 0.22);
       padding: 0.85rem 1.75rem;
       display: flex;
       justify-content: space-between;
@@ -324,15 +326,16 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* START SCREEN */
     .hero-card {
-      background: linear-gradient(180deg, #0D1017 0%, #131722 100%);
-      border: 1px solid var(--border-color);
+      background: rgba(15, 19, 27, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(212, 175, 55, 0.16);
       border-radius: 14px;
       padding: 2.5rem;
       margin-bottom: 2rem;
       text-align: center;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(212, 175, 55, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(212, 175, 55, 0.18);
       position: relative;
       overflow: hidden;
     }

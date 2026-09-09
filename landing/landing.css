@@ -31,12 +31,12 @@
 
   /* Ground */
   --surface-0: #07090E;
-  --surface-1: #0F131B;
-  --surface-2: #151A25;
+  --surface-1: rgba(15, 19, 27, 0.82);
+  --surface-2: rgba(21, 26, 37, 0.75);
 
   /* Lines */
-  --line: rgba(255, 255, 255, 0.08);
-  --line-strong: rgba(255, 255, 255, 0.16);
+  --line: rgba(212, 175, 55, 0.16);
+  --line-strong: rgba(212, 175, 55, 0.28);
 
   /* Text */
   --text-1: #F3F4F6;
@@ -66,7 +66,7 @@
   --glow: radial-gradient(ellipse 75% 50% at 50% -10%, rgba(212, 175, 55, 0.08), transparent 70%);
   --hero-mesh-mask: radial-gradient(ellipse 95% 80% at 50% 30%, black 40%, transparent 95%);
   --final-card-glow: radial-gradient(125% 125% at 50% 10%, rgba(212, 175, 55, 0.12) 0%, rgba(15, 19, 27, 0) 70%), var(--surface-1);
-  --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-card: 0 12px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(212, 175, 55, 0.14);
 
   /* Type: fluid scale, one formula per step */
   --font: "Sora", system-ui, "Segoe UI", Roboto, sans-serif;
@@ -698,6 +698,9 @@ ul {
   border: 1px solid var(--line);
   border-radius: var(--r-card);
   background: var(--surface-1);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 .card h3 {
@@ -998,6 +1001,9 @@ td .cell {
   border: 1px solid var(--line);
   border-radius: var(--r-card);
   background: var(--surface-1);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 .plan-featured {

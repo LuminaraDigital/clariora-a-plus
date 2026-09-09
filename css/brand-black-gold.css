@@ -31,18 +31,18 @@
 :root {
   /* ---- Ground ------------------------------------------------ */
   --surface-0: #07090E;          /* page */
-  --surface-1: #0F131B;          /* card */
-  --surface-2: #151A25;          /* nested panel */
-  --surface-3: #151A25;          /* legacy alias of surface-2 */
+  --surface-1: rgba(15, 19, 27, 0.82);          /* card */
+  --surface-2: rgba(21, 26, 37, 0.70);          /* nested panel */
+  --surface-3: rgba(21, 26, 37, 0.70);          /* legacy alias of surface-2 */
 
   --bg-primary: var(--surface-0);
   --bg-secondary: var(--surface-1);
   --bg-card: var(--surface-2);
-  --bg-card-hover: var(--surface-2);
+  --bg-card-hover: rgba(30, 37, 52, 0.88);
   --bg-elevated: var(--surface-1);
 
   /* ---- Lines and edges --------------------------------------- */
-  --card-border: rgba(255, 255, 255, 0.07);
+  --card-border: rgba(212, 175, 55, 0.16);
   --border-light: rgba(255, 255, 255, 0.08);
   --border-color: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.16);
@@ -108,7 +108,7 @@
   --shadow-md: none;
   --shadow-gold: none;
   --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-  --card-inset: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --card-inset: inset 0 1px 0 rgba(212, 175, 55, 0.18);
   --elev-shadow: var(--card-inset), var(--card-shadow);
 
   --scroll-track: transparent;
@@ -136,9 +136,9 @@
   --dur-intro-long: 0.7s;
 
   /* ---- Backdrop ---------------------------------------------- */
-  --bg-grid-line: rgba(255, 255, 255, 0.028);
-  --bg-glow-gold: radial-gradient(125% 125% at 50% 0%, rgba(212, 175, 55, 0.22) 0%, rgba(184, 134, 11, 0.12) 35%, rgba(15, 19, 27, 0.5) 60%, transparent 85%);
-  --bg-glow-accent: radial-gradient(850px 500px at 85% -5%, rgba(56, 189, 248, 0.025), transparent 60%);
+  --bg-grid-line: rgba(212, 175, 55, 0.045);
+  --bg-glow-gold: radial-gradient(130% 85% at 50% -15%, rgba(212, 175, 55, 0.28) 0%, rgba(184, 134, 11, 0.16) 35%, rgba(15, 19, 27, 0.6) 65%, transparent 90%);
+  --bg-glow-accent: radial-gradient(900px 600px at 80% 10%, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
 }
 
 /* The light theme is a real inversion, not a tint. Every token above
@@ -249,8 +249,8 @@ body {
   background-size:
     100% 100%,
     100% 100%,
-    32px 32px,
-    32px 32px;
+    48px 48px,
+    48px 48px;
   background-position:
     center top,
     center top,
@@ -646,10 +646,12 @@ footer {
    ============================================================ */
 
 .hero-card {
-  background: var(--surface-2) !important;
-  border: 1px solid var(--border-light) !important;
+  background: var(--surface-1) !important;
+  border: 1px solid var(--card-border) !important;
   border-radius: var(--radius-card) !important;
   box-shadow: var(--elev-shadow) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   padding: var(--sp-3) !important;
   text-align: left !important;
   margin: 0 !important;
@@ -692,10 +694,12 @@ footer {
   flex-wrap: wrap;
   gap: var(--sp-1);
   padding: var(--sp-3);
-  background: var(--surface-2);
-  border: 1px solid var(--border-light);
+  background: var(--surface-1);
+  border: 1px solid var(--card-border);
   border-radius: var(--radius-card);
   box-shadow: var(--elev-shadow);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 .mock-exams {
@@ -1416,15 +1420,18 @@ footer {
 
 .modal-overlay {
   background: var(--scrim);
-  backdrop-filter: none;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   padding: var(--sp-2);
 }
 
 .modal-card {
   border-radius: var(--radius-card) !important;
-  box-shadow: none !important;
-  border: 1px solid var(--border-strong) !important;
-  background: var(--bg-secondary) !important;
+  box-shadow: var(--card-inset), var(--card-shadow) !important;
+  border: 1px solid var(--card-border) !important;
+  background: var(--surface-1) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
   padding: var(--sp-3) !important;
   max-height: min(88vh, 900px);
 }
@@ -3934,9 +3941,9 @@ body {
 /* ---- 18.2 Header, three things only ------------------------ */
 
 header {
-  background: var(--surface-0);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  background: rgba(7, 9, 14, 0.78);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   border-bottom: none;
   position: sticky;
 }
@@ -4007,6 +4014,8 @@ header::after {
   border: 1px solid var(--card-border) !important;
   border-radius: var(--radius-card) !important;
   box-shadow: var(--card-inset), var(--card-shadow) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 /* Nested panels: one step up, no shadow, and never a second border

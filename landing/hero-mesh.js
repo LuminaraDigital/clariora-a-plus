@@ -8,7 +8,7 @@
 
   if (!window.WebGLRenderingContext) return;
 
-  var DARK_PALETTE = ['#07090E', '#151A25', '#2E220A', '#614811', '#B8860B', '#D4AF37'];
+  var DARK_PALETTE = ['#07090E', '#111520', '#261C06', '#59410A', '#B8860B', '#F5D061'];
   var LIGHT_PALETTE = ['#F6F7F9', '#FFFFFF', '#F5EEDB', '#D9BC68', '#B8901E', '#856611'];
 
   function normalizeColor(hex) {
@@ -30,6 +30,7 @@
     'uniform mat4 modelViewMatrix;',
     'uniform vec2 resolution;',
     'uniform float u_time;',
+    'uniform vec2 u_mouse;',
     'uniform vec3 u_colors[6];',
     'varying vec3 v_color;',
     '',
@@ -79,16 +80,20 @@
     '}',
     '',
     'void main() {',
-    '  float time = u_time * 0.000025;',
+    '  float time = u_time * 0.000028;',
     '  vec2 noiseCoord = resolution * uvNorm * vec2(0.00010, 0.00014);',
-    '  float wave = snoise(vec3(noiseCoord.x * 2.0 + time * 0.9, noiseCoord.y * 2.0, time * 0.6)) * 110.0;',
-    '  wave *= (1.0 - pow(abs(uvNorm.y), 2.0));',
+    '  float distToMouse = length(uvNorm - u_mouse);',
+    '  float mouseWave = sin(distToMouse * 5.5 - time * 6.0) * smoothstep(1.2, 0.0, distToMouse) * 38.0;',
+    '  float baseWave = snoise(vec3(noiseCoord.x * 1.9 + time * 0.9, noiseCoord.y * 1.9, time * 0.6)) * 115.0;',
+    '  baseWave *= (1.0 - pow(abs(uvNorm.y), 2.2));',
+    '  float wave = baseWave + mouseWave;',
     '',
     '  vec3 pos = vec3(position.x, position.y + wave, position.z);',
     '  vec3 col = u_colors[0];',
     '  for (int i = 1; i < 6; i++) {',
-    '    float n = smoothstep(0.18, 0.82, snoise(vec3(noiseCoord * float(i) * 0.7, time * 0.45 + float(i))) * 0.5 + 0.5);',
-    '    col = mix(col, u_colors[i], pow(n, 2.4) * 0.58);',
+    '    float n = smoothstep(0.14, 0.86, snoise(vec3(noiseCoord * float(i) * 0.65, time * 0.45 + float(i))) * 0.5 + 0.5);',
+    '    float mouseGlow = (1.0 - smoothstep(0.0, 0.7, distToMouse)) * 0.22;',
+    '    col = mix(col, u_colors[i], pow(n, 2.2) * (0.60 + mouseGlow));',
     '  }',
     '  v_color = col;',
     '  gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);',
@@ -112,6 +117,8 @@
     this.running = false;
     this.time = 0;
     this.last = 0;
+    this.targetMouse = [0, 0];
+    this.curMouse = [0, 0];
 
     this.init();
   }
@@ -135,12 +142,34 @@
     gl.linkProgram(prog);
     this.prog = prog;
 
+    this.timeLoc = gl.getUniformLocation(prog, 'u_time');
+    this.mouseLoc = gl.getUniformLocation(prog, 'u_mouse');
+
     this.setupColors();
     this.setupMesh();
     this.resize();
 
     var self = this;
     window.addEventListener('resize', function () { self.resize(); }, { passive: true });
+
+    // Interactive fluid pointer tracking across hero
+    var hero = this.canvas.parentElement;
+    var onPointer = function (e) {
+      var rect = (hero || self.canvas).getBoundingClientRect();
+      var cx = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : rect.left + rect.width / 2);
+      var cy = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0] ? e.touches[0].clientY : rect.top + rect.height / 2);
+      var nx = ((cx - rect.left) / rect.width) * 2 - 1;
+      var ny = 1 - ((cy - rect.top) / rect.height) * 2;
+      self.targetMouse[0] = Math.max(-1.5, Math.min(1.5, nx));
+      self.targetMouse[1] = Math.max(-1.5, Math.min(1.5, ny));
+    };
+
+    window.addEventListener('pointermove', onPointer, { passive: true });
+    window.addEventListener('touchmove', onPointer, { passive: true });
+    document.addEventListener('mouseleave', function () {
+      self.targetMouse[0] = 0;
+      self.targetMouse[1] = 0;
+    }, { passive: true });
 
     if (window.matchMedia) {
       window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', function () {
@@ -164,8 +193,8 @@
 
   HeroMesh.prototype.setupMesh = function () {
     var gl = this.gl;
-    this.xSegs = 20;
-    this.ySegs = 14;
+    this.xSegs = 28;
+    this.ySegs = 18;
     var count = (this.xSegs + 1) * (this.ySegs + 1);
 
     this.posBuf = gl.createBuffer();
@@ -254,9 +283,14 @@
     this.time += Math.min(ts - (this.last || ts), 33);
     this.last = ts;
 
+    // Smooth fluid lerp interpolation
+    this.curMouse[0] += (this.targetMouse[0] - this.curMouse[0]) * 0.055;
+    this.curMouse[1] += (this.targetMouse[1] - this.curMouse[1]) * 0.055;
+
     var gl = this.gl;
     gl.useProgram(this.prog);
-    gl.uniform1f(gl.getUniformLocation(this.prog, 'u_time'), this.time);
+    gl.uniform1f(this.timeLoc, this.time);
+    gl.uniform2f(this.mouseLoc, this.curMouse[0], this.curMouse[1]);
 
     var posLoc = gl.getAttribLocation(this.prog, 'position');
     gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuf);

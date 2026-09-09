@@ -20,6 +20,8 @@ html, body {
   overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: contain; /* Prevent jarring bounce/pull-down */
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
 body {
@@ -27,6 +29,7 @@ body {
   padding-bottom: calc(var(--tma-safe-bottom) + 16px);
   min-height: var(--tg-viewport-height, 100vh);
   box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Header adaptation inside Telegram */
@@ -137,6 +140,24 @@ header.app-header, .top-bar {
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   max-height: 88vh;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior-y: contain;
+}
+
+/* Mobile Touch Scrolling Optimization */
+.drawer-panel,
+.modal-body,
+.study-library-content,
+.quiz-container,
+.main-content,
+.study-catalog,
+.exam-breakdown,
+.practice-container,
+.tabpanel {
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior-y: contain;
 }
 
 .tma-sheet.is-open {

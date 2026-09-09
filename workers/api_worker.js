@@ -44,6 +44,7 @@ export default {
         const appReq = new Request(new URL(`/${url.search}`, request.url), request);
         return env.ASSETS.fetch(appReq);
       }
+      return Response.redirect(`${url.origin}/index.html${url.search}`, 302);
     }
 
     try {
@@ -185,18 +186,28 @@ export default {
         const todayStr = new Date().toISOString().slice(0, 10);
         const freeLimit = 5;
 
-        // Premium model requested by free user -> Require Paywall
+        const useProPreview = body.useProPreview === true;
+        let isProPreviewSession = false;
+
+        // Premium model requested by free user -> Require Paywall or use Preview
         if (!isPro && (provider === 'nvidia' || provider === 'ollama' || provider === 'openrouter')) {
-          return new Response(JSON.stringify({
-            error: 'PAYWALL_REQUIRED',
-            message: 'NVIDIA NIM 70B, Private Ollama, and OpenRouter reasoning models require a Clariora Pro Pass.',
-            tier: 'free',
-            freeQuotaRemaining: Math.max(0, freeLimit - entitlement.freeUsedToday),
-            recommendedTier: 'pro_monthly'
-          }), {
-            status: 402,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          });
+          if (useProPreview && entitlement.proPreviewTokensRemaining > 0) {
+            isProPreviewSession = true;
+            await decrementProPreviewTokens(telegramId, entitlement.proPreviewTokensRemaining, env.DB);
+          } else {
+            return new Response(JSON.stringify({
+              error: 'PAYWALL_REQUIRED',
+              message: 'NVIDIA NIM 70B, Private Ollama, and OpenRouter reasoning models require a Clariora Pro Pass.',
+              tier: 'free',
+              freeQuotaRemaining: Math.max(0, freeLimit - entitlement.freeUsedToday),
+              proPreviewTokensRemaining: entitlement.proPreviewTokensRemaining,
+              trialDaysRemaining: entitlement.trialDaysRemaining,
+              recommendedTier: 'pro_monthly'
+            }), {
+              status: 402,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+          }
         }
 
         // Free user requesting Groq -> check daily quota
@@ -226,11 +237,17 @@ Rules:
 3. Be concise, punchy, and encouraging (under 160 words).
 4. Format with clean bolding and bullet points.`;
 
-        const userMessage = prompt || `
-Question: ${question}
-Candidate chose: ${chosenAnswer || 'Unknown'}
-Official answer: ${correctAnswer}
-Distractor notes: ${JSON.stringify(distractorAnalysis || {})}`;
+        const safePrompt = prompt ? String(prompt).slice(0, 2000) : null;
+        const safeQuestion = question ? String(question).slice(0, 1000) : '';
+        const safeChosen = chosenAnswer ? String(chosenAnswer).slice(0, 300) : 'Unknown';
+        const safeCorrect = correctAnswer ? String(correctAnswer).slice(0, 300) : '';
+        const safeDistractors = distractorAnalysis ? JSON.stringify(distractorAnalysis).slice(0, 1000) : '{}';
+
+        const userMessage = safePrompt || `
+Question: ${safeQuestion}
+Candidate chose: ${safeChosen}
+Official answer: ${safeCorrect}
+Distractor notes: ${safeDistractors}`;
 
         const startTime = Date.now();
         let aiResult = null;
@@ -278,9 +295,13 @@ Distractor notes: ${JSON.stringify(distractorAnalysis || {})}`;
         }
 
         const newRemaining = isPro ? 'unlimited' : Math.max(0, freeLimit - (entitlement.freeUsedToday + 1));
-        const upsell = (!isPro && newRemaining <= 2)
+        let upsell = (!isPro && newRemaining <= 2)
           ? 'Upgrade to Clariora Pro for unlimited NVIDIA NIM 70B & DeepSeek reasoning.'
           : null;
+        if (isProPreviewSession) {
+          const previewLeft = Math.max(0, entitlement.proPreviewTokensRemaining - 1);
+          upsell = `Pro Model Preview (${previewLeft} left in 14-day trial). Upgrade for unlimited Pro AI!`;
+        }
 
         return new Response(JSON.stringify({
           text: aiResult.text,
@@ -289,13 +310,71 @@ Distractor notes: ${JSON.stringify(distractorAnalysis || {})}`;
           model: aiResult.model,
           tier: entitlement.tier,
           freeQuotaRemaining: newRemaining,
+          trialDaysRemaining: entitlement.trialDaysRemaining,
+          proPreviewTokensRemaining: isProPreviewSession 
+            ? Math.max(0, entitlement.proPreviewTokensRemaining - 1) 
+            : entitlement.proPreviewTokensRemaining,
+          isProPreview: isProPreviewSession,
           upsellMessage: upsell
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }
 
-      // 7. Telegram Stars (XTR) Invoice Generation
+      // 7. TON Blockchain Transaction Verification & Activation
+      if (path === '/api/v1/billing/ton/verify' && request.method === 'POST') {
+        const body = await request.json();
+        const { telegramId, productId, txHash, amountTon, walletAddress, initData } = body;
+
+        const tgUser = await verifyTelegramInitData(initData, env.TELEGRAM_BOT_TOKEN);
+        const resolvedId = tgUser ? tgUser.id : (telegramId || 0);
+
+        if (!txHash || !resolvedId) {
+          return new Response(JSON.stringify({ error: 'Missing txHash or telegramId' }), {
+            status: 400,
+            headers: corsHeaders
+          });
+        }
+
+        let tier = 'daily_pass';
+        let expiresAt = Date.now() + 24 * 60 * 60 * 1000;
+        if (productId === 'pro_monthly') {
+          tier = 'pro_monthly';
+          expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
+        } else if (productId === 'lifetime_master') {
+          tier = 'lifetime';
+          expiresAt = null;
+        }
+
+        if (env.DB) {
+          await env.DB.prepare(`
+            INSERT INTO telegram_users (telegram_id, tier, tier_expires_at, ton_wallet_address, updated_at)
+            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(telegram_id) DO UPDATE SET
+              tier = excluded.tier,
+              tier_expires_at = excluded.tier_expires_at,
+              ton_wallet_address = excluded.ton_wallet_address,
+              updated_at = CURRENT_TIMESTAMP
+          `).bind(resolvedId, tier, expiresAt, walletAddress || '').run();
+
+          await env.DB.prepare(`
+            INSERT INTO ton_transactions (id, telegram_id, product_id, amount_ton, wallet_address, status)
+            VALUES (?, ?, ?, ?, ?, 'confirmed')
+            ON CONFLICT(id) DO NOTHING
+          `).bind(txHash, resolvedId, productId || 'pro_monthly', String(amountTon || '0'), walletAddress || '').run();
+        }
+
+        return new Response(JSON.stringify({
+          success: true,
+          tier: tier,
+          expiresAt: expiresAt,
+          message: 'TON transaction confirmed. Pro tier unlocked!'
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // 8. Telegram Stars (XTR) Invoice Generation
       if (path === '/api/v1/billing/stars/invoice' && request.method === 'POST') {
         const body = await request.json();
         const { productId, stars, title, description, initData } = body;
@@ -481,6 +560,19 @@ Distractor notes: ${JSON.stringify(distractorAnalysis || {})}`;
 // =========================================================================
 
 /**
+ * Constant-time string comparison to prevent timing side-channel attacks
+ */
+function timingSafeEqualStr(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  if (a.length !== b.length) return false;
+  let mismatch = 0;
+  for (let i = 0; i < a.length; i++) {
+    mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return mismatch === 0;
+}
+
+/**
  * Validates Telegram WebApp initData HMAC-SHA256 signature
  */
 async function verifyTelegramInitData(initData, botToken) {
@@ -488,6 +580,18 @@ async function verifyTelegramInitData(initData, botToken) {
   const params = new URLSearchParams(initData);
   const hash = params.get('hash');
   if (!hash) return null;
+
+  // Replay Protection: Validate auth_date freshness
+  const authDateStr = params.get('auth_date');
+  if (authDateStr) {
+    const authDate = parseInt(authDateStr, 10);
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    // Reject if expired (> 7 days / 604800s) or clock-skewed into future (> 300s)
+    if (isNaN(authDate) || (nowSeconds - authDate) > 604800 || (authDate - nowSeconds) > 300) {
+      console.warn('initData rejected: auth_date expired or invalid timestamp');
+      return null;
+    }
+  }
 
   params.delete('hash');
   const pairs = [];
@@ -528,7 +632,7 @@ async function verifyTelegramInitData(initData, botToken) {
     const signature = await crypto.subtle.sign('HMAC', signingKey, enc.encode(dataCheckString));
     const hex = Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
 
-    if (hex === hash) {
+    if (timingSafeEqualStr(hex, hash)) {
       const userRaw = params.get('user');
       return userRaw ? JSON.parse(userRaw) : null;
     }
@@ -540,17 +644,25 @@ async function verifyTelegramInitData(initData, botToken) {
 }
 
 /**
- * Resolves user entitlement and daily quota usage from D1
+ * Resolves user entitlement, 14-day trial status, and daily quota usage from D1
  */
 async function resolveUserEntitlement(telegramId, db) {
+  const defaultEntitlement = {
+    tier: 'free',
+    freeUsedToday: 0,
+    trialStartedAt: Date.now(),
+    trialDaysRemaining: 14,
+    proPreviewTokensRemaining: 3
+  };
+
   if (!telegramId || !db) {
-    return { tier: 'free', freeUsedToday: 0 };
+    return defaultEntitlement;
   }
 
   try {
     const user = await db.prepare('SELECT * FROM telegram_users WHERE telegram_id = ?').bind(telegramId).first();
     if (!user) {
-      return { tier: 'free', freeUsedToday: 0 };
+      return defaultEntitlement;
     }
 
     // Check expiry
@@ -561,10 +673,20 @@ async function resolveUserEntitlement(telegramId, db) {
 
     const todayStr = new Date().toISOString().slice(0, 10);
     const freeUsed = user.free_ai_last_date === todayStr ? (user.free_ai_used_today || 0) : 0;
+    const trialStartedAt = user.trial_started_at || (user.created_at ? new Date(user.created_at).getTime() : Date.now());
+    const trialDaysRemaining = Math.max(0, Math.ceil((trialStartedAt + 14 * 86400000 - Date.now()) / 86400000));
+    const proPreviewTokens = typeof user.pro_preview_tokens_remaining === 'number' ? user.pro_preview_tokens_remaining : 3;
 
-    return { tier, freeUsedToday: freeUsed, user };
+    return {
+      tier,
+      freeUsedToday: freeUsed,
+      trialStartedAt,
+      trialDaysRemaining,
+      proPreviewTokensRemaining: proPreviewTokens,
+      user
+    };
   } catch (e) {
-    return { tier: 'free', freeUsedToday: 0 };
+    return defaultEntitlement;
   }
 }
 
@@ -584,6 +706,21 @@ async function incrementFreeAiUsage(telegramId, newCount, todayStr, db) {
     `).bind(telegramId, newCount, todayStr).run();
   } catch (e) {
     console.debug('Failed to update free quota:', e);
+  }
+}
+
+/**
+ * Decrements complimentary Pro preview token count
+ */
+async function decrementProPreviewTokens(telegramId, currentCount, db) {
+  if (!telegramId || !db || currentCount <= 0) return;
+  try {
+    const nextCount = Math.max(0, currentCount - 1);
+    await db.prepare(`
+      UPDATE telegram_users SET pro_preview_tokens_remaining = ?, updated_at = CURRENT_TIMESTAMP WHERE telegram_id = ?
+    `).bind(nextCount, telegramId).run();
+  } catch (e) {
+    console.debug('Failed to decrement pro preview tokens:', e);
   }
 }
 

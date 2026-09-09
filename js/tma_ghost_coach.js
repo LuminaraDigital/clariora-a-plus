@@ -44,10 +44,12 @@ Rules:
 3. Provide one memorable mnemonic or real-world datacentre technician rule-of-thumb.
 4. Format with clean markdown (bolding and bullet points).`;
 
+  let proPreviewTokensRemaining = 3;
+
   /**
    * Explains a missed question via Edge AI Gateway
    */
-  async function explainQuestion(questionData, userChoice, providerOverride) {
+  async function explainQuestion(questionData, userChoice, providerOverride, useProPreview = false) {
     const provider = providerOverride || currentProvider;
     if (TMABridge) TMABridge.haptic('medium');
 
@@ -82,6 +84,7 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
           correctAnswer: questionData.answer,
           distractorAnalysis: questionData.distractor_analysis || {},
           provider: provider,
+          useProPreview: useProPreview,
           initData: initData
         })
       });
@@ -91,11 +94,15 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
       // Handle Paywall / Quota Exceeded (HTTP 402)
       if (res.status === 402 || data.error === 'PAYWALL_REQUIRED' || data.error === 'FREE_QUOTA_EXHAUSTED') {
         if (TMABridge) TMABridge.haptic('warning');
+        if (typeof data.proPreviewTokensRemaining !== 'undefined') {
+          proPreviewTokensRemaining = data.proPreviewTokensRemaining;
+        }
         return {
           paywallRequired: true,
           errorType: data.error,
           message: data.message,
           freeQuotaRemaining: data.freeQuotaRemaining || 0,
+          proPreviewTokensRemaining: data.proPreviewTokensRemaining || 0,
           provider: provider
         };
       }
@@ -289,22 +296,46 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
     bodyEl.innerHTML = `
       <div style="text-align: center; padding: 16px 8px;">
         <div style="font-size: 2rem; margin-bottom: 8px;">⭐</div>
-        <h4 style="color: #F5D061; margin: 0 0 8px 0; font-size: 1.1rem;">Unlock Clariora Pro AI</h4>
-        <p style="color: #94A3B8; font-size: 0.85rem; line-height: 1.5; margin: 0 0 16px 0;">
+        <h4 style="color: #F5D061; margin: 0 0 8px 0; font-size: 1.15rem;">Unlock Clariora Pro AI</h4>
+        <p style="color: #94A3B8; font-size: 0.85rem; line-height: 1.5; margin: 0 0 14px 0;">
           ${customMessage || `Access to <strong>${providerObj.name}</strong>, unlimited tutoring sessions, and deep reasoning models requires an active Pro Pass.`}
         </p>
+
+        ${proPreviewTokensRemaining > 0 ? `
+          <div style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <span style="color: #38BDF8; font-weight: 700; font-size: 0.85rem;">🎁 14-Day Trial Bonus</span>
+              <span style="color: #38BDF8; font-size: 0.75rem; font-weight: 600;">${proPreviewTokensRemaining} Tokens Left</span>
+            </div>
+            <p style="color: #94A3B8; font-size: 0.78rem; margin: 0 0 8px 0;">Sample enterprise ${providerObj.name} inference before upgrading.</p>
+            <button class="btn" onclick="TMAGhostCoach.usePreviewQuery()" style="
+              width: 100%; padding: 8px 14px; font-weight: 700; font-size: 0.85rem; border-radius: 8px;
+              background: #38BDF8; color: #07090E; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+            ">
+              <span>⚡ Use 1 Pro Preview Token</span>
+            </button>
+          </div>
+        ` : ''}
+
         <button class="btn btn-primary" onclick="if (window.StarsBilling) window.StarsBilling.openStarsUpgradeSheet()" style="
           width: 100%; padding: 12px 20px; font-weight: 700; font-size: 0.95rem; border-radius: 10px;
           background: linear-gradient(135deg, #D4AF37 0%, #F5D061 50%, #B8860B 100%);
           color: #07090E; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
         ">
-          <span>⭐ Unlock with Telegram Stars</span>
+          <span>⭐ Unlock Pro (Stars or TON)</span>
         </button>
         <p style="font-size: 0.72rem; color: #64748B; margin-top: 10px;">
           Available via Telegram Stars (XTR) or TON Blockchain. 24-hour, monthly, and lifetime passes available.
         </p>
       </div>
     `;
+  }
+
+  async function usePreviewQuery() {
+    if (!activeQuestion) return;
+    renderLoading();
+    const res = await explainQuestion(activeQuestion, activeChoice, currentProvider, true);
+    renderResponse(res);
   }
 
   function updateProviderButtons() {
@@ -356,6 +387,7 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
     explainQuestion,
     openCoachSheet,
     closeCoachSheet,
-    selectProvider
+    selectProvider,
+    usePreviewQuery
   };
 });

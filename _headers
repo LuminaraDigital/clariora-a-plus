@@ -2,7 +2,7 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://i.ytimg.com; media-src 'self' https://comptia-a-plus-master.pages.dev; connect-src 'self' https://api.groq.com https://*.supabase.co https://cdn.jsdelivr.net https://comptia-a-plus-master.pages.dev; frame-src https://www.youtube.com https://www.youtube-nocookie.com; font-src 'self'; object-src 'none'; base-uri 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://telegram.org https://cdn.jsdelivr.net https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://i.ytimg.com https://*.telegram.org https://lh3.googleusercontent.com https://*.googleusercontent.com; media-src 'self' https://comptia-a-plus-master.pages.dev; connect-src 'self' https://api.groq.com https://api.telegram.org https://tonconnect.org https://tonapi.io https://*.ton.org https://clariora.com.au https://*.supabase.co https://cdn.jsdelivr.net https://comptia-a-plus-master.pages.dev https://*.googleapis.com https://*.firebaseio.com https://clariora.firebaseapp.com https://*.firebasestorage.app; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://*.telegram.org https://clariora.firebaseapp.com https://accounts.google.com; font-src 'self'; object-src 'none'; base-uri 'self'
 
 # media-src/connect-src above include the mediaBaseUrl host from
 # release.config.json (https://comptia-a-plus-master.pages.dev/media/).

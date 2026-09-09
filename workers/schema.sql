@@ -77,13 +77,19 @@ CREATE TABLE IF NOT EXISTS telegram_users (
     last_name TEXT,
     tier TEXT NOT NULL DEFAULT 'free', -- 'free', 'daily_pass', 'pro_monthly', 'lifetime'
     tier_expires_at INTEGER,           -- unix timestamp ms or NULL for lifetime
+    trial_started_at INTEGER,          -- unix timestamp ms when user first launched TMA (for 14-day core trial)
+    pro_preview_tokens_remaining INTEGER NOT NULL DEFAULT 3, -- 3 free Pro AI queries (NVIDIA/Ollama/OpenRouter)
     stars_spent INTEGER NOT NULL DEFAULT 0,
+    ton_spent_nanoton TEXT DEFAULT '0',
+    ton_wallet_address TEXT,
     free_ai_used_today INTEGER NOT NULL DEFAULT 0,
     free_ai_last_date TEXT,            -- 'YYYY-MM-DD'
     preferred_ai_provider TEXT DEFAULT 'groq', -- 'groq', 'nvidia', 'ollama', 'openrouter'
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX IF NOT EXISTS idx_tg_users_trial ON telegram_users(trial_started_at);
 
 -- 7. Telegram Stars Payment Transactions
 CREATE TABLE IF NOT EXISTS stars_transactions (
@@ -98,7 +104,22 @@ CREATE TABLE IF NOT EXISTS stars_transactions (
 
 CREATE INDEX IF NOT EXISTS idx_stars_tx_user ON stars_transactions(telegram_id);
 
--- 8. Business AI Usage & Latency Audit Log
+-- 8. TON Blockchain Transactions & Verified Subscriptions
+CREATE TABLE IF NOT EXISTS ton_transactions (
+    id TEXT PRIMARY KEY,               -- transaction hash or boc
+    telegram_id INTEGER NOT NULL,
+    product_id TEXT NOT NULL,
+    amount_ton TEXT NOT NULL,
+    currency TEXT NOT NULL DEFAULT 'TON', -- 'TON' or 'USDT'
+    wallet_address TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'confirmed',
+    memo TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_ton_tx_user ON ton_transactions(telegram_id);
+
+-- 9. Business AI Usage & Latency Audit Log
 CREATE TABLE IF NOT EXISTS ai_usage_log (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     telegram_id INTEGER,

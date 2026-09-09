@@ -370,9 +370,10 @@
         const badge = document.getElementById('tmaUserTierBadge');
         if (badge && ent) {
           const isPro = ent.tier && ent.tier !== 'free';
-          badge.textContent = isPro ? 'PRO' : 'FREE';
-          badge.style.color = isPro ? '#10B981' : '#F5D061';
-          badge.style.background = isPro ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 208, 97, 0.15)';
+          const trialDays = typeof ent.trialDaysRemaining === 'number' ? ent.trialDaysRemaining : 14;
+          badge.textContent = isPro ? 'PRO' : (trialDays > 0 ? `TRIAL ${trialDays}D` : 'FREE');
+          badge.style.color = isPro ? '#10B981' : (trialDays > 0 ? '#38BDF8' : '#F5D061');
+          badge.style.background = isPro ? 'rgba(16, 185, 129, 0.15)' : (trialDays > 0 ? 'rgba(56, 189, 248, 0.15)' : 'rgba(245, 208, 97, 0.15)');
         }
       }).catch(() => {});
     }

@@ -31,9 +31,9 @@
 :root {
   /* ---- Ground ------------------------------------------------ */
   --surface-0: #07090E;          /* page */
-  --surface-1: rgba(15, 19, 27, 0.82);          /* card */
-  --surface-2: rgba(21, 26, 37, 0.70);          /* nested panel */
-  --surface-3: rgba(21, 26, 37, 0.70);          /* legacy alias of surface-2 */
+  --surface-1: #0F131B;          /* card */
+  --surface-2: #151A25;          /* nested panel */
+  --surface-3: #151A25;          /* legacy alias of surface-2 */
 
   --bg-primary: var(--surface-0);
   --bg-secondary: var(--surface-1);

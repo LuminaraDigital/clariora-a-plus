@@ -40,6 +40,21 @@
     var starsChip = document.getElementById('tmaStarsChip');
     if (starsChip) starsChip.style.display = 'none';
 
+    // Restore Telegram web session if logged in previously
+    var savedTg = localStorage.getItem('clariora_telegram_auth');
+    if (savedTg) {
+      try {
+        var tgUser = JSON.parse(savedTg);
+        var tgName = tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : '');
+        renderHeaderPill({
+          displayName: tgName,
+          photoURL: tgUser.photo_url,
+          email: tgUser.username ? '@' + tgUser.username : null,
+          isTelegram: true
+        });
+      } catch (e) {}
+    }
+
     var service = firebaseService || window.ClarioraFirebaseService;
     if (service) {
       service.onAuthStateChanged(function (user) {
@@ -183,6 +198,27 @@
       '  background: #F9FAFB;',
       '  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);',
       '}',
+      '.btn-telegram {',
+      '  width: 100%;',
+      '  display: flex;',
+      '  align-items: center;',
+      '  justify-content: center;',
+      '  gap: 12px;',
+      '  padding: 10px 16px;',
+      '  background: #24A1DE;',
+      '  color: #FFFFFF;',
+      '  border: 1px solid #1E88BE;',
+      '  border-radius: 8px;',
+      '  font-weight: 600;',
+      '  font-size: 0.95rem;',
+      '  cursor: pointer;',
+      '  margin-top: 10px;',
+      '  transition: background 0.15s ease, box-shadow 0.15s ease;',
+      '}',
+      '.btn-telegram:hover {',
+      '  background: #1E88BE;',
+      '  box-shadow: 0 4px 12px rgba(36, 161, 222, 0.25);',
+      '}',
       '.auth-divider {',
       '  display: flex;',
       '  align-items: center;',
@@ -317,6 +353,10 @@
       '  <button type="button" class="btn-google" onclick="ClarioraAuthUI.handleGoogleSignIn()">',
       '    <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/></svg>',
       '    <span>Continue with Google</span>',
+      '  </button>',
+      '  <button type="button" class="btn-telegram" onclick="ClarioraAuthUI.handleTelegramSignIn()">',
+      '    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>',
+      '    <span>Log in with Telegram</span>',
       '  </button>',
       '  <div class="auth-divider"><span>or with email</span></div>',
       '  <form id="authEmailForm" onsubmit="ClarioraAuthUI.handleEmailSubmit(event)">',
@@ -532,7 +572,79 @@
     }
   }
 
+  function handleTelegramSignIn() {
+    clearError();
+    if (!window.Telegram || !window.Telegram.Login) {
+      var script = document.createElement('script');
+      script.src = 'https://telegram.org/js/telegram-widget.js?22';
+      script.async = true;
+      script.onload = function () {
+        triggerTelegramPopup();
+      };
+      script.onerror = function () {
+        showError('Could not load Telegram login widget.');
+      };
+      document.body.appendChild(script);
+    } else {
+      triggerTelegramPopup();
+    }
+  }
+
+  function triggerTelegramPopup() {
+    if (!window.Telegram || !window.Telegram.Login) {
+      showError('Telegram login is initializing. Please try again.');
+      return;
+    }
+    window.Telegram.Login.auth(
+      { bot_id: '8280144046', request_access: true },
+      function (data) {
+        if (!data) {
+          showError('Telegram login cancelled.');
+          return;
+        }
+        fetch('/api/v1/auth/telegram', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (result) {
+          if (result.success && result.user) {
+            localStorage.setItem('clariora_telegram_auth', JSON.stringify(result.user));
+            var displayName = result.user.first_name + (result.user.last_name ? ' ' + result.user.last_name : '');
+            renderHeaderPill({
+              displayName: displayName,
+              photoURL: result.user.photo_url,
+              email: result.user.username ? '@' + result.user.username : null,
+              isTelegram: true
+            });
+            closeModal();
+          } else {
+            showError(result.error || 'Telegram verification failed.');
+          }
+        })
+        .catch(function (err) {
+          showError('Authentication error: ' + err.message);
+        });
+      }
+    );
+  }
+
   function openAccountMenu() {
+    var savedTg = localStorage.getItem('clariora_telegram_auth');
+    if (savedTg) {
+      try {
+        var tgUser = JSON.parse(savedTg);
+        var tgName = tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : '');
+        var confirmed = window.confirm('Signed in via Telegram as: ' + tgName + (tgUser.username ? ' (@' + tgUser.username + ')' : '') + '\n\nClick OK to Sign Out, or Cancel to keep studying.');
+        if (confirmed) {
+          localStorage.removeItem('clariora_telegram_auth');
+          renderHeaderPill(null);
+        }
+        return;
+      } catch (e) {}
+    }
+
     var service = firebaseService || window.ClarioraFirebaseService;
     var user = service ? service.getCurrentUser() : null;
     if (!user) return;
@@ -553,6 +665,7 @@
     closeModal: closeModal,
     toggleMode: toggleMode,
     handleGoogleSignIn: handleGoogleSignIn,
+    handleTelegramSignIn: handleTelegramSignIn,
     handleEmailSubmit: handleEmailSubmit,
     handleForgotPassword: handleForgotPassword,
     openAccountMenu: openAccountMenu

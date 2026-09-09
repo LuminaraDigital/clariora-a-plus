@@ -91,6 +91,40 @@ export default {
         });
       }
 
+      // 2b. Auth: Telegram Web Login Widget verification
+      if (path === '/api/v1/auth/telegram' && request.method === 'POST') {
+        const body = await request.json();
+        const verifiedUser = await verifyTelegramLoginWidget(body, env.TELEGRAM_BOT_TOKEN);
+        if (!verifiedUser) {
+          return new Response(JSON.stringify({ error: 'Invalid or expired Telegram login signature' }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+
+        if (env.DB) {
+          await env.DB.prepare(`
+            INSERT INTO telegram_users (telegram_id, username, first_name, last_name, updated_at)
+            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(telegram_id) DO UPDATE SET
+              username = excluded.username,
+              first_name = excluded.first_name,
+              last_name = excluded.last_name,
+              updated_at = CURRENT_TIMESTAMP
+          `).bind(verifiedUser.id, verifiedUser.username || '', verifiedUser.first_name || '', verifiedUser.last_name || '').run();
+        }
+
+        const entitlement = await resolveUserEntitlement(verifiedUser.id, env.DB);
+
+        return new Response(JSON.stringify({
+          success: true,
+          user: verifiedUser,
+          entitlement: entitlement
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
       // 3. Sync: Get or Save Learner State
       if (path === '/api/v1/sync') {
         const userId = request.headers.get('X-User-Id');
@@ -693,6 +727,69 @@ async function verifyTelegramInitData(initData, botToken) {
     console.debug('HMAC verification failure:', e);
   }
 
+  return null;
+}
+
+/**
+ * Validates Telegram Web Login Widget authorization data
+ * https://core.telegram.org/widgets/login#checking-authorization
+ */
+async function verifyTelegramLoginWidget(data, botToken) {
+  if (!data || !data.hash) return null;
+  const hash = data.hash;
+
+  // Validate auth_date freshness (within 24 hours)
+  const authDate = parseInt(data.auth_date, 10);
+  const now = Math.floor(Date.now() / 1000);
+  if (isNaN(authDate) || (now - authDate) > 86400 || (authDate - now) > 300) {
+    return null;
+  }
+
+  // Collect and sort data check string
+  const pairs = [];
+  for (const [k, v] of Object.entries(data)) {
+    if (k !== 'hash' && v !== undefined && v !== null && v !== '') {
+      pairs.push(`${k}=${v}`);
+    }
+  }
+  pairs.sort();
+  const dataCheckString = pairs.join('\n');
+
+  if (!botToken) {
+    return {
+      id: data.id,
+      first_name: data.first_name,
+      last_name: data.last_name,
+      username: data.username,
+      photo_url: data.photo_url
+    };
+  }
+
+  try {
+    const enc = new TextEncoder();
+    const secretKeyBuf = await crypto.subtle.digest('SHA-256', enc.encode(botToken));
+    const signingKey = await crypto.subtle.importKey(
+      'raw',
+      secretKeyBuf,
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+    const signature = await crypto.subtle.sign('HMAC', signingKey, enc.encode(dataCheckString));
+    const hex = Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+    if (timingSafeEqualStr(hex, hash)) {
+      return {
+        id: data.id,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        username: data.username,
+        photo_url: data.photo_url
+      };
+    }
+  } catch (e) {
+    console.debug('Telegram login widget HMAC error:', e);
+  }
   return null;
 }
 

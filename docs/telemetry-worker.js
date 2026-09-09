@@ -1,7 +1,7 @@
 /**
  * docs/telemetry-worker.js
  *
- * Minimal sample Cloudflare Worker for collecting CompTIA A+ Master
+ * Minimal sample Cloudflare Worker for collecting Clariora
  * telemetry uploads sent by js/telemetry.js. This is a reference
  * implementation, not wired into the app by default (upload is OFF until
  * you set js/telemetry-config.js and the user consents).

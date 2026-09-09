@@ -2,6 +2,19 @@
 
 All notable changes to this project are documented here. The format follows Keep a Changelog and the project uses semantic versioning.
 
+## [Unreleased]
+
+### Changed
+
+- The product is now called Clariora. The window title, boot screen, About
+  dialog, web manifests, installer and disk image file names, desktop
+  shortcut, and documentation all use the new name. Storage keys, the
+  Electron app id, the GitHub repository, and the Cloudflare worker name are
+  unchanged so existing installs keep updating and learners keep their data
+- On first launch after the rename the desktop app moves its data folder from
+  the old product name to the new one, so exam history, the learner database,
+  and window state carry over without any action from the learner
+
 ## [3.1.5] - 2026-09-07
 
 ### Changed

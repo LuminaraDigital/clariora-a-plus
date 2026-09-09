@@ -1,6 +1,6 @@
 # Telemetry and Analytics
 
-This document describes what the CompTIA A+ Master app collects, what it
+This document describes what the Clariora app collects, what it
 never collects, where the data lives, how to turn on optional upload, and
 how to compute the four core product KPIs.
 

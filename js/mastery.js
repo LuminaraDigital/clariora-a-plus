@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master Exam Simulator v3.0.0
+ * Clariora Exam Simulator v3.0.0
  * mastery.js - Practice drills, mistake logging and competency gates
  * File: js/mastery.js
  * 

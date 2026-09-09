@@ -72,7 +72,9 @@ ROOT_EXTRA_FILES = [
 ]
 
 # Whole directories copied in full (minus excluded extensions/paths).
-DIRS_TO_COPY = ["js", "css", "fonts", "icons"]
+# landing/ is the marketing page. It ships with the site but is not part
+# of the offline app shell, so it is copied and never precached.
+DIRS_TO_COPY = ["js", "css", "fonts", "icons", "landing"]
 
 EXCLUDED_EXTENSIONS = {".pdf", ".py", ".exe", ".pyc"}
 EXCLUDED_DIR_NAMES = {
@@ -281,6 +283,14 @@ def main():
                 continue
             add(rel)
 
+    # 4b. The landing page links to the release asset for the current
+    #     version. Substitute the placeholder so the link never goes stale.
+    landing_index = DIST / "landing" / "index.html"
+    if landing_index.exists():
+        version = load_version()
+        text = landing_index.read_text(encoding="utf-8")
+        landing_index.write_text(text.replace("__APLUS_VERSION__", version), encoding="utf-8")
+
     # 5. Course media - only files actually referenced at runtime.
     #    media/videos ("Videos For A+", ~2.4 GB) is never shipped, even if
     #    referenced. "PowerPoint for A+" / "Labs for A+" (the original
@@ -341,7 +351,7 @@ def main():
     for rel_posix in sorted(copied_rel_paths):
         if rel_posix in NOT_PRECACHED_NAMES:
             continue
-        if rel_posix.startswith("media/"):
+        if rel_posix.startswith("media/") or rel_posix.startswith("landing/"):
             continue
         f = DIST / rel_posix
         size = f.stat().st_size

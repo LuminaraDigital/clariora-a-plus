@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master Exam Simulator v3.0.0
+ * Clariora Exam Simulator v3.0.0
  * qtypes.js - Modular Handlers for Question Types (single, multi, match, order)
  * File: js/qtypes.js
  */

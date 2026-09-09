@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master Exam Simulator
+ * Clariora Exam Simulator
  * sync-config.js - Optional cloud sync configuration
  * File: js/sync-config.js
  *

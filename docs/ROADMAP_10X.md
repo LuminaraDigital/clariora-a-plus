@@ -1,6 +1,6 @@
 # Roadmap: the next order-of-magnitude
 
-An implementation plan for the changes that would make CompTIA A+ Master
+An implementation plan for the changes that would make Clariora
 materially better for a learner, not merely more polished. Each item states the
 problem it fixes, the design, the files it touches, how to know it is done, and
 the risks. Items are ordered by value per week of effort. Effort assumes one

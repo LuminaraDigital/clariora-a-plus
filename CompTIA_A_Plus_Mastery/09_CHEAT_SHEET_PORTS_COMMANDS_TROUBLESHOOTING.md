@@ -1,4 +1,4 @@
-# 09. CompTIA A+ Master Quick-Recall Cheat Sheet
+# 09. Clariora Quick-Recall Cheat Sheet
 
 Use this sheet for rapid last-minute revision before taking the **220-1201 (Core 1)** and **220-1202 (Core 2)** exams.
 

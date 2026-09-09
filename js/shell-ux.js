@@ -43,7 +43,7 @@
     gate.innerHTML =
       '<div class="boot-panel">' +
       '<div class="mark" aria-hidden="true">A+</div>' +
-      '<h2 id="aplusBootTitle">CompTIA A+ Master</h2>' +
+      '<h2 id="aplusBootTitle">Clariora</h2>' +
       '<p>Your progress is saved on this PC. No account needed.</p>' +
       '<div class="boot-progress" aria-hidden="true"><span id="aplusBootBar"></span></div>' +
       '<button type="button" class="btn" id="aplusBootStartBtn">Continue</button>' +

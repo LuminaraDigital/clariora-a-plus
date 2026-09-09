@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master Exam Simulator
+ * Clariora Exam Simulator
  * readiness-ui.js - Renders the readiness hero and the "today's plan" card.
  * File: js/readiness-ui.js
  *

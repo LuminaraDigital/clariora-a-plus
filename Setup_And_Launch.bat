@@ -1,6 +1,6 @@
 @echo off
-title CompTIA A+ Exam Simulator - setup and launch
-echo Setting up and starting the CompTIA A+ Exam Simulator.
+title Clariora - setup and launch
+echo Setting up and starting the Clariora.
 echo No Python and no Node.js are required.
 echo.
 call "%~dp0START_COMPTIA_A_PLUS.bat"

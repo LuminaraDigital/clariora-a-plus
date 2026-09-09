@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master Exam Simulator v3.0.0
+ * Clariora Exam Simulator v3.0.0
  * engine.js - Exam Session State Machine & Controller
  * File: js/engine.js
  */

@@ -1,9 +1,9 @@
 @echo off
-title CompTIA A+ Exam Simulator
+title Clariora
 setlocal enabledelayedexpansion
 
 echo ===============================================================================
-echo   CompTIA A+ Exam Simulator
+echo   Clariora
 echo   Core 1 (220-1201) and Core 2 (220-1202)
 echo ===============================================================================
 echo.
@@ -12,28 +12,28 @@ echo.
 if not exist "%~dp0data" mkdir "%~dp0data" >nul 2>&1
 
 :: 1. Portable build (no install, no dependencies)
-if exist "%~dp0release\portable\CompTIA_A_Plus_Simulator.exe" (
+if exist "%~dp0release\portable\Clariora.exe" (
     echo Starting the portable app...
-    start "" "%~dp0release\portable\CompTIA_A_Plus_Simulator.exe"
+    start "" "%~dp0release\portable\Clariora.exe"
     goto :done
 )
 
 :: 2. Single-file portable executable
-for %%F in ("%~dp0release\CompTIA_A_Plus_Portable_*.exe") do (
+for %%F in ("%~dp0release\Clariora_Portable_*.exe") do (
     echo Starting the portable app...
     start "" "%%~fF"
     goto :done
 )
 
 :: 3. Installed copy from the setup program
-if exist "%LOCALAPPDATA%\Programs\CompTIA A+ Exam Simulator\CompTIA_A_Plus_Simulator.exe" (
+if exist "%LOCALAPPDATA%\Programs\Clariora\Clariora.exe" (
     echo Starting the installed app...
-    start "" "%LOCALAPPDATA%\Programs\CompTIA A+ Exam Simulator\CompTIA_A_Plus_Simulator.exe"
+    start "" "%LOCALAPPDATA%\Programs\Clariora\Clariora.exe"
     goto :done
 )
 
 :: 4. Installer present but not yet run
-for %%F in ("%~dp0release\CompTIA_A_Plus_Setup_*.exe") do (
+for %%F in ("%~dp0release\Clariora_Setup_*.exe") do (
     echo The app is not installed yet. Running the setup program...
     start "" "%%~fF"
     goto :done

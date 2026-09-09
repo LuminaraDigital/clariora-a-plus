@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master Exam Simulator
+ * Clariora Exam Simulator
  * home-widgets.js - Picture-first home widgets: score ring, gap scale, sparkline,
  * activity strip, and the per-exam stats block injected into the mock exam cards.
  * File: js/home-widgets.js

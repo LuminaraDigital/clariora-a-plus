@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master Exam Simulator v3.0.0
+ * Clariora Exam Simulator v3.0.0
  * data.js - Data Provider Layer for Questions, Videos, Notes, and Objectives
  * File: js/data.js
  */

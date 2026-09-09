@@ -1,11 +1,11 @@
 @echo off
 setlocal enabledelayedexpansion
-title CompTIA A+ Master - Cloudflare Pages Deployment
+title Clariora - Cloudflare Pages Deployment
 
 :menu
 cls
 echo =====================================================================
-echo   CompTIA A+ Master - Cloudflare Pages Deployment
+echo   Clariora - Cloudflare Pages Deployment
 echo =====================================================================
 echo.
 echo   [1] Build web dist and deploy to Cloudflare Pages

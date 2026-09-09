@@ -1,4 +1,4 @@
-# CompTIA A+ Master - Cloudflare deploy
+# Clariora - Cloudflare deploy
 # Primary path: Workers static assets (workers.dev URL).
 # Pages remains available once the API token has Cloudflare Pages: Edit.
 

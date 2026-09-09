@@ -1,6 +1,6 @@
 # Third-party notices
 
-CompTIA A+ Master is licensed under AGPL-3.0-only. The components and content below are included or referenced under their own terms.
+Clariora is licensed under AGPL-3.0-only. The components and content below are included or referenced under their own terms.
 
 ## Git submodules (open course material)
 

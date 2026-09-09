@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master Exam Simulator v3.0.0
+ * Clariora Exam Simulator v3.0.0
  * ui.js - User Interface Controller (Screens, Question Runner, Matrix, Review Accordion, Modals)
  * File: js/ui.js
  *

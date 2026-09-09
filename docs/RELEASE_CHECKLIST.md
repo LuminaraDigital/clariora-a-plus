@@ -16,7 +16,7 @@ file where the version and the web addresses are set.
 ```json
 {
   "version": "3.1.0",
-  "productName": "CompTIA A+ Master",
+  "productName": "Clariora",
   "publisher": "Datacentre Academy",
   "updateBaseUrl": "https://comptia-a-plus-master.pages.dev/releases/",
   "mediaBaseUrl": "https://comptia-a-plus-master.pages.dev/media/",
@@ -46,8 +46,8 @@ python tools\build_windows_installer.py --portable
 
 This takes about three minutes. When it finishes, `release\` contains:
 
-- `CompTIA_A_Plus_Setup_<version>.exe` (the installer students download)
-- `CompTIA_A_Plus_Portable_<version>.exe` (single file, no install)
+- `Clariora_Setup_<version>.exe` (the installer students download)
+- `Clariora_Portable_<version>.exe` (single file, no install)
 - `latest.yml` (tells installed copies that a new version exists)
 - a `.blockmap` file if electron-builder made one
 - `release\portable\` (the unpacked folder used by the smoke test)
@@ -70,10 +70,10 @@ machine in front of you, not over a background service.
 Put these four files into the `releases/` folder of the published site so they
 resolve at `https://comptia-a-plus-master.pages.dev/releases/<filename>`:
 
-1. `CompTIA_A_Plus_Setup_<version>.exe`
+1. `Clariora_Setup_<version>.exe`
 2. `latest.yml`
 3. the `.blockmap` file, if there is one
-4. `CompTIA_A_Plus_Portable_<version>.exe`
+4. `Clariora_Portable_<version>.exe`
 
 Leave the previous version's files in place. Do not delete old installers.
 
@@ -160,7 +160,7 @@ If the new version is broken:
    number that was already released.
 
 Learner progress is never lost by a rollback. The database lives in
-`%APPDATA%\CompTIA A+ Exam Simulator\memory\` and uninstalling does not delete it.
+`%APPDATA%\Clariora\memory\` and uninstalling does not delete it.
 
 If a learner reports a broken app after an update, tell them to uninstall,
 install the previous version from the site, and reopen it. Their progress will
@@ -172,7 +172,7 @@ Push the release tag and GitHub Actions builds the AppImage and `.deb`,
 smoke tests them and attaches them to the release:
 
 ```bash
-git tag -a v<version> -m "CompTIA A+ Master <version>"
+git tag -a v<version> -m "Clariora <version>"
 git push origin v<version>
 ```
 
@@ -204,7 +204,7 @@ After the Windows assets and `latest.yml` are on the GitHub release, launch
 the previous version and confirm it sees the new one:
 
 ```bat
-node tools\check_update_feed.js release\CompTIA_A_Plus_Portable_<previous>.exe
+node tools\check_update_feed.js release\Clariora_Portable_<previous>.exe
 ```
 
 It prints the updater status and ends with `RESULT: update to <new> is

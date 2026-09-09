@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master Exam Simulator v3.0.0
+ * Clariora Exam Simulator v3.0.0
  * srs.js - SM-2 Spaced Repetition Scheduler & Deck Manager
  * File: js/srs.js
  */

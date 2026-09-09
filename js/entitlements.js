@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master Exam Simulator v3.0.0
+ * Clariora Exam Simulator v3.0.0
  * entitlements.js - Free tier limits, offline license verification, quiet upgrade card
  * File: js/entitlements.js
  *

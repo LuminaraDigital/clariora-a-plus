@@ -1,6 +1,6 @@
 # Monetization and licensing
 
-CompTIA A+ Master ships as a free app with a generous free tier and a single one-time
+Clariora ships as a free app with a generous free tier and a single one-time
 purchase that unlocks everything, forever, on that PC. There is no subscription, no
 account, no server call, and no phone-home. A license key is a signed string the buyer
 pastes into the app once.
@@ -243,11 +243,11 @@ export default {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        from: 'CompTIA A+ Master <licenses@datacentre.academy>',
+        from: 'Clariora <licenses@datacentre.academy>',
         to: email,
-        subject: 'Your CompTIA A+ Master license key',
+        subject: 'Your Clariora license key',
         text: [
-          'Thank you for buying CompTIA A+ Master.',
+          'Thank you for buying Clariora.',
           '',
           'Your license key:',
           '',

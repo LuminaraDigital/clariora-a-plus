@@ -1,6 +1,6 @@
 {
   "appId": "com.datacentreacademy.comptia-a-plus-master",
-  "productName": "CompTIA A+ Master",
+  "productName": "Clariora",
   "copyright": "Copyright Datacentre Academy",
   "directories": {
     "output": "release/linux",
@@ -87,10 +87,10 @@
     "maintainer": "Datacentre Academy <luminaradigitalagency@gmail.com>",
     "synopsis": "CompTIA A+ Core 1 and Core 2 exam simulator and study suite",
     "description": "Offline-first exam simulator and study suite for CompTIA A+ 220-1201 and 220-1202.",
-    "artifactName": "CompTIA_A_Plus_Linux_${version}_${arch}.${ext}",
+    "artifactName": "Clariora_Linux_${version}_${arch}.${ext}",
     "desktop": {
       "entry": {
-        "Name": "CompTIA A+ Master",
+        "Name": "Clariora",
         "Comment": "CompTIA A+ exam simulator and study suite",
         "Keywords": "comptia;exam;study;certification;"
       }

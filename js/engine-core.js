@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master Exam Simulator v3.0.0
+ * Clariora Exam Simulator v3.0.0
  * engine-core.js - Pure algorithmic logic (Sampling, Scoring, Option Shuffle Remap, SM-2)
  * File: js/engine-core.js
  * PURE LOGIC: Zero DOM references. Requireable from Node.js and Browser.

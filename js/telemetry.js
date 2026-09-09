@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master Exam Simulator v3.0.0
+ * Clariora Exam Simulator v3.0.0
  * telemetry.js - Privacy-respecting local-first usage telemetry
  * File: js/telemetry.js
  *

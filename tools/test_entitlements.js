@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * CompTIA A+ Master Exam Simulator v3.0.0
+ * Clariora Exam Simulator v3.0.0
  * tools/test_entitlements.js - Self-check for the entitlements module.
  * File: tools/test_entitlements.js
  *

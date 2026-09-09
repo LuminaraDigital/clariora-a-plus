@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master Exam Simulator v3.0.0
+ * Clariora Exam Simulator v3.0.0
  * groq-client.js - Groq chat client for ghost-coach background polish
  *
  * Key sources (first match wins):

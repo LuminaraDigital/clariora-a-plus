@@ -1,6 +1,6 @@
 # Optional cloud sync (Supabase)
 
-The CompTIA A+ Master Exam Simulator is **local-first**: exam history, missed
+The Clariora Exam Simulator is **local-first**: exam history, missed
 question pools, SRS decks, and the APX ledger all live on the device by
 default, with no server involved. Cloud sync is an **opt-in** feature that
 lets a learner sign in with an email magic link (or a 6-digit code on

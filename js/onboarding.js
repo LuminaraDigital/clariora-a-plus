@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master Exam Simulator
+ * Clariora Exam Simulator
  * onboarding.js - First-run diagnostic, readiness math (readiness2), and the daily plan builder.
  * File: js/onboarding.js
  *

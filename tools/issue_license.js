@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * CompTIA A+ Master Exam Simulator v3.0.0
+ * Clariora Exam Simulator v3.0.0
  * tools/issue_license.js - Issue one offline license key for a paying customer.
  * File: tools/issue_license.js
  *
@@ -163,7 +163,7 @@ function parseArgs(argv) {
 }
 
 const HELP = [
-  'Issue one CompTIA A+ Master license key.',
+  'Issue one Clariora license key.',
   '',
   '  node tools/issue_license.js --email buyer@example.com',
   '  node tools/issue_license.js --anon',

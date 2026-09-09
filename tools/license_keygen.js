@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * CompTIA A+ Master Exam Simulator v3.0.0
+ * Clariora Exam Simulator v3.0.0
  * tools/license_keygen.js - Generate the ECDSA P-256 license signing key pair. Run ONCE.
  * File: tools/license_keygen.js
  *

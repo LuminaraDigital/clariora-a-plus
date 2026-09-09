@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master Exam Simulator v3.0.0
+ * Clariora Exam Simulator v3.0.0
  * ghost-coach.js - Invisible study nervous system (no chat UI)
  *
  * Observe exam telemetry -> decide weak objectives / confusion pairs ->

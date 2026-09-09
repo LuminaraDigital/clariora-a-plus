@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master Exam Simulator v3.0.0
+ * Clariora Exam Simulator v3.0.0
  * app.js - Application Lifecycle, Sound Engine, Theme, and Modal-Safe Keyboard Shortcuts
  * File: js/app.js
  */
@@ -387,7 +387,7 @@
       }
     }
 
-    console.log('[APlus] Initialized CompTIA A+ Master Exam Simulator v' + (APlus.APP_VERSION || '3.1.4'));
+    console.log('[APlus] Initialized Clariora v' + (APlus.APP_VERSION || '3.1.4'));
   }
 
   APlus.init = initApp;

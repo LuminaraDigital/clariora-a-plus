@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Non-interactive Cloudflare deploy for CompTIA A+ Master.
+Non-interactive Cloudflare deploy for Clariora.
 
 Loads gitignored .env for CLOUDFLARE_* credentials, builds dist_web,
 runs dist tests, then deploys via Wrangler Workers assets (preferred)

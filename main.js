@@ -20,6 +20,41 @@ function readAppVersion() {
 }
 
 const APP_VERSION = readAppVersion();
+
+/* ---------------------------------------------------------------------------
+ * The app was renamed to Clariora. Electron derives the userData folder from
+ * the product name, so a learner who installed under the old name would
+ * otherwise start with an empty database. Before anything touches userData,
+ * move the legacy folder to the new location once. If the move fails (locked
+ * files, cross-volume), keep reading from the legacy folder instead.
+ * ------------------------------------------------------------------------ */
+const LEGACY_PRODUCT_NAMES = ['CompTIA A+ Exam Simulator', 'CompTIA A+ Master'];
+
+function migrateLegacyUserData() {
+  let current;
+  try { current = app.getPath('userData'); } catch (_) { return; }
+  try {
+    if (fs.existsSync(current) && fs.readdirSync(current).length > 0) return;
+  } catch (_) { return; }
+  const parent = path.dirname(current);
+  for (const legacyName of LEGACY_PRODUCT_NAMES) {
+    const legacy = path.join(parent, legacyName);
+    if (legacy === current) continue;
+    let hasData = false;
+    try { hasData = fs.existsSync(legacy) && fs.readdirSync(legacy).length > 0; } catch (_) {}
+    if (!hasData) continue;
+    try {
+      try { fs.rmdirSync(current); } catch (_) {}
+      fs.renameSync(legacy, current);
+    } catch (_) {
+      try { app.setPath('userData', legacy); } catch (_) {}
+    }
+    return;
+  }
+}
+
+migrateLegacyUserData();
+
 const PROGRESS_FILE = 'aplus_progress.json';
 const DATABASE_FILE = 'aplus_user_db.json';
 const WINDOW_STATE_FILE = 'window-state.json';
@@ -33,7 +68,7 @@ const WINDOW_STATE_FILE = 'window-state.json';
 const RELEASE_CONFIG_FILE = 'release.config.json';
 const RELEASE_CONFIG_DEFAULTS = {
   version: APP_VERSION,
-  productName: 'CompTIA A+ Master',
+  productName: 'Clariora',
   publisher: 'Datacentre Academy',
   updateBaseUrl: '',
   mediaBaseUrl: '',
@@ -1145,7 +1180,7 @@ function createWindow() {
     minHeight: MIN_HEIGHT,
     show: false,
     autoHideMenuBar: !isMac,
-    title: 'CompTIA A+ Master Exam Simulator',
+    title: 'Clariora',
     backgroundColor: '#07090E',
     icon: path.join(__dirname, 'icon.png'),
     webPreferences: {
@@ -1384,8 +1419,8 @@ function buildAppMenu() {
           click: () => {
             dialog.showMessageBox(mainWindow, {
               type: 'info',
-              title: 'About CompTIA A+ Master Simulator',
-              message: 'CompTIA A+ Master Exam Simulator v' + APP_VERSION,
+              title: 'About Clariora',
+              message: 'Clariora v' + APP_VERSION,
               detail: 'Built for Datacentre Academy.\n' +
                 'Core 1 (220-1201) and Core 2 (220-1202).\n' +
                 'Your progress: ' + getDatabasePath() + '\n' +

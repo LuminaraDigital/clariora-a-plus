@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "CompTIA A+ Master",
-  "short_name": "A+ Master",
+  "name": "Clariora A+",
+  "short_name": "Clariora A+",
   "description": "Offline-capable CompTIA A+ Core 1 and Core 2 exam simulator, study library, and adaptive practice tools.",
   "start_url": "./index.html",
   "scope": "./",

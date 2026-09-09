@@ -1,4 +1,4 @@
-// CompTIA A+ Master - Offline Service Worker
+// Clariora - Offline Service Worker
 // BUILD_ID is rewritten by tools/build_web_dist.py on every build.
 const BUILD_ID = 'dev';
 const CACHE_NAME = 'comptia-a-plus-' + BUILD_ID;
@@ -155,12 +155,22 @@ self.addEventListener('fetch', (event) => {
   // (slides, labs, brand video) is never part of the offline shell, and
   // the browser needs real byte-range responses from the network for
   // <video> seeking to work.
-  if (request.headers.has('range') || url.pathname.includes('/media/')) {
+  // The landing page under /landing/ is a separate document with its own
+  // stylesheet and images. It is not in the precache manifest, so a change
+  // to it does not change BUILD_ID; caching it here would leave repeat
+  // visitors on a stale copy. Always fetch it from the network.
+  if (request.headers.has('range') || url.pathname.includes('/media/') || url.pathname.includes('/landing/')) {
     event.respondWith(fetch(request));
     return;
   }
 
   if (request.mode === 'navigate') {
+    // /landing (no trailing slash) redirects to /landing/ on the host; it
+    // must reach the network too, or the cached app shell would answer it.
+    if (url.pathname.includes('/landing')) {
+      event.respondWith(fetch(request));
+      return;
+    }
     event.respondWith(navigationHandler(request));
     return;
   }

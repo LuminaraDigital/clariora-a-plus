@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master Exam Simulator
+ * Clariora Exam Simulator
  * Database & Memory Engine
  * File: js/database_memory_engine.js
  * 
@@ -110,7 +110,7 @@
           timestamp: nowIso,
           type: 'GENESIS',
           data: {
-            app: 'CompTIA A+ Master Exam Simulator',
+            app: 'Clariora Exam Simulator',
             version: SCHEMA_VERSION,
             message: 'Local memory database initialized on this PC'
           },

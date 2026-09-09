@@ -1,6 +1,6 @@
 @echo off
 setlocal enabledelayedexpansion
-title CompTIA A+ Master - Cloudflare Deploy (non-interactive)
+title Clariora - Cloudflare Deploy (non-interactive)
 
 REM Loads .env automatically via tools\deploy_cloudflare.py
 REM Preferred: Workers assets. Fallback: Pages.

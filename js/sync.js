@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master Exam Simulator
+ * Clariora Exam Simulator
  * sync.js - Optional cross-device cloud sync (Supabase Auth + Postgres)
  * File: js/sync.js
  *

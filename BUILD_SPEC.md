@@ -1,4 +1,4 @@
-# CompTIA A+ Master Simulator v3.0.0 - Engineering Build Specification
+# Clariora Simulator v3.0.0 - Engineering Build Specification
 
 **CEO Program Contract.** Every subagent works against this spec. The CEO (senior software
 engineer + IT lead) runs `tools/build_bank.py` and `tools/validate_bank.py` as the acceptance

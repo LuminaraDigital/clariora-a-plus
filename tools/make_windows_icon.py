@@ -1,4 +1,4 @@
-"""Build black-and-gold CompTIA A+ Master Windows icons (PNG + multi-size ICO)."""
+"""Build black-and-gold Clariora Windows icons (PNG + multi-size ICO)."""
 from __future__ import annotations
 
 import shutil

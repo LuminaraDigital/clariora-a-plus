@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master Exam Simulator v3.0.0
+ * Clariora Exam Simulator v3.0.0
  * telemetry-config.js - Optional upload configuration for js/telemetry.js
  * File: js/telemetry-config.js
  *

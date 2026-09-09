@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master Exam Simulator v3.0.0
+ * Clariora Exam Simulator v3.0.0
  * pbq.js - Performance-Based Question (PBQ) Interactive Simulation Labs
  * File: js/pbq.js
  */

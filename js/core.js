@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master Exam Simulator v3.0.0
+ * Clariora Exam Simulator v3.0.0
  * core.js - Core Application Namespace, Event Bus, Storage Adapter, and Utilities
  * File: js/core.js
  */
@@ -12,7 +12,7 @@
   const APlus = window.APlus;
 
   APlus.APP_VERSION = '3.1.5';
-  APlus.NAME = 'CompTIA A+ Master Exam Simulator';
+  APlus.NAME = 'Clariora';
 
   /**
    * Event Bus: publish-subscribe system for decoupled modular communication

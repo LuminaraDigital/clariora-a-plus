@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master - Adaptive Loop
+ * Clariora - Adaptive Loop
  * Post-exam weak-area plan, persistence, and a focused practice set.
  * File: js/adaptive-loop.js
  */

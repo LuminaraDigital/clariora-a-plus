@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master Exam Simulator v3.0.0
+ * Clariora Exam Simulator v3.0.0
  * analytics.js - Domain Performance & Error Taxonomy Analytics Engine
  * File: js/analytics.js
  */

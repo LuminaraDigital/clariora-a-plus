@@ -45,3 +45,10 @@
   Accept-Ranges: bytes
   Access-Control-Allow-Origin: https://comptia-a-plus-master.pages.dev
   Cache-Control: public, max-age=604800
+
+# Landing page. The HTML must stay fresh; images are small and rarely change.
+/landing/index.html
+  Cache-Control: no-cache
+
+/landing/img/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800

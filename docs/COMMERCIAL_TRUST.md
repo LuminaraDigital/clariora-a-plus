@@ -1,6 +1,6 @@
 # Commercial trust checklist (Datacentre Academy)
 
-This checklist is for shipping CompTIA A+ Master to external students with commercial-grade trust signals. Outcome evidence in the app is local learner metrics only. It does not replace code signing or SmartScreen reputation.
+This checklist is for shipping Clariora to external students with commercial-grade trust signals. Outcome evidence in the app is local learner metrics only. It does not replace code signing or SmartScreen reputation.
 
 **Important:** OV/EV Authenticode certificates must be purchased from a commercial CA. This project does not and cannot fabricate EV signing. Self-signed builds are academy/internal only.
 
@@ -65,7 +65,7 @@ static host:
 
 - TODO: that URL is a placeholder. Point it at the real Cloudflare Pages or R2
   release directory before the first public build.
-- Upload `CompTIA_A_Plus_Setup_<version>.exe` and `latest.yml` together. The
+- Upload `Clariora_Setup_<version>.exe` and `latest.yml` together. The
   updater reads `latest.yml` to decide whether a newer build exists.
 - The host must serve the files over HTTPS as plain static content. A redirect
   to an HTML page breaks the check silently.
@@ -110,10 +110,10 @@ static host:
 
 | What | Installed build | Portable build |
 | --- | --- | --- |
-| Learner database | `%APPDATA%\CompTIA A+ Exam Simulator\memory\aplus_user_db.json` | `<exe folder>\data\aplus_user_db.json` |
+| Learner database | `%APPDATA%\Clariora\memory\aplus_user_db.json` | `<exe folder>\data\aplus_user_db.json` |
 | One backup generation | the same path with `.backup.json` | the same path with `.backup.json` |
-| Settings and progress | `%APPDATA%\CompTIA A+ Exam Simulator\aplus_progress.json` | same |
-| Logs | `%APPDATA%\CompTIA A+ Exam Simulator\logs\main.log` | same |
+| Settings and progress | `%APPDATA%\Clariora\aplus_progress.json` | same |
+| Logs | `%APPDATA%\Clariora\logs\main.log` | same |
 
 - Writes are atomic (temp file, one backup copy, rename) so a crash cannot
   corrupt the database.

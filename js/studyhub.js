@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master Exam Simulator v3.0.0
+ * Clariora Exam Simulator v3.0.0
  * studyhub.js - Study Hub Module (Professor Messer Videos, Markdown Notes Browser)
  * File: js/studyhub.js
  */

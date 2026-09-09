@@ -7,7 +7,7 @@
  * and waits for the updater to report a phase. Exit 0 when the feed answers
  * "available" with a newer version, 1 otherwise.
  *
- * Usage: node tools/check_update_feed.js release/CompTIA_A_Plus_Portable_3.1.4.exe
+ * Usage: node tools/check_update_feed.js release/Clariora_Portable_3.1.4.exe
  */
 'use strict';
 

@@ -66,9 +66,9 @@
     '    <div class="boot-intro-vignette"></div>' +
     '  </div>' +
     '  <div class="boot-intro-copy">' +
-    '    <button type="button" class="boot-intro-mark" id="aplusBootIntroMark" aria-label="Enter CompTIA A+ Master" disabled>A+</button>' +
+    '    <button type="button" class="boot-intro-mark" id="aplusBootIntroMark" aria-label="Enter Clariora" disabled>A+</button>' +
     '    <p class="boot-intro-eyebrow">Datacentre Academy</p>' +
-    '    <h2 id="aplusBootIntroTitle" class="boot-intro-title">CompTIA A+ Master</h2>' +
+    '    <h2 id="aplusBootIntroTitle" class="boot-intro-title">Clariora</h2>' +
     '    <p class="boot-intro-sub" id="aplusBootIntroSub">Preparing your workspace</p>' +
     '    <div class="boot-intro-actions" id="aplusBootIntroActions">' +
     '      <button type="button" class="boot-intro-enter" id="aplusBootIntroEnter" disabled>Enter app</button>' +

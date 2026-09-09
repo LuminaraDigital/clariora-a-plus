@@ -5,7 +5,7 @@ Deprecated portable Electron-zip packaging. The supported Windows ship path is:
 
   python tools/build_windows_installer.py [--portable]
 
-That produces a signed NSIS installer at ROOT/release/CompTIA_A_Plus_Setup_<version>.exe
+That produces a signed NSIS installer at ROOT/release/Clariora_Setup_<version>.exe
 and optionally ROOT/release/portable/ from electron-builder win-unpacked.
 """
 

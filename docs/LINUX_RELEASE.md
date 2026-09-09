@@ -11,8 +11,8 @@ GitHub Actions builds them. Pushing a tag such as `v3.1.2` runs the
 `linux-build` job, smoke tests the unpacked app under a virtual display, and
 attaches these files to the GitHub release for that tag:
 
-- `CompTIA_A_Plus_Linux_<version>_x86_64.AppImage`
-- `CompTIA_A_Plus_Linux_<version>_amd64.deb`
+- `Clariora_Linux_<version>_x86_64.AppImage`
+- `Clariora_Linux_<version>_amd64.deb`
 - `latest-linux.yml` (tells AppImage installs that a new version exists)
 
 A manual run from the Actions tab (`Run workflow`) produces the same files as a
@@ -41,8 +41,8 @@ Linux packages cannot be built from Windows without Docker. Use CI instead.
 AppImage:
 
 ```bash
-chmod +x CompTIA_A_Plus_Linux_3.1.2_x86_64.AppImage
-./CompTIA_A_Plus_Linux_3.1.2_x86_64.AppImage
+chmod +x Clariora_Linux_3.1.2_x86_64.AppImage
+./Clariora_Linux_3.1.2_x86_64.AppImage
 ```
 
 Some distributions need `libfuse2` for AppImage (`sudo apt install libfuse2`).
@@ -50,7 +50,7 @@ Some distributions need `libfuse2` for AppImage (`sudo apt install libfuse2`).
 Debian and Ubuntu:
 
 ```bash
-sudo apt install ./CompTIA_A_Plus_Linux_3.1.2_amd64.deb
+sudo apt install ./Clariora_Linux_3.1.2_amd64.deb
 comptia-a-plus-master
 ```
 
@@ -65,7 +65,7 @@ same way as the first.
 ## Data location
 
 The learner database, logs and downloaded media live under
-`~/.config/CompTIA A+ Master/`. Removing that folder resets the app.
+`~/.config/Clariora/`. Removing that folder resets the app.
 
 ## Not signed
 

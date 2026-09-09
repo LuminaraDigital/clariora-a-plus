@@ -12,8 +12,8 @@ Thank you for helping technicians pass their exams. This guide covers how the pr
 ## Getting set up
 
 ```bash
-git clone https://github.com/LuminaraDigital/comptia-a-plus-master.git
-cd comptia-a-plus-master
+git clone https://github.com/LuminaraDigital/clariora-a-plus.git
+cd clariora-a-plus
 git submodule update --init --recursive
 npm install
 pip install -r requirements-dev.txt

@@ -1,10 +1,10 @@
-# CompTIA A+ Master
+# Clariora A+
 
 An offline-first exam simulator and study suite for the CompTIA A+ Core 1 (220-1201) and Core 2 (220-1202) certifications. It ships as a progressive web app, a Windows and macOS desktop app built on Electron, and a terminal exam runner in Python.
 
 Built by Datacentre Academy for technicians training for datacentre and enterprise IT support roles. Licensed under the GNU Affero General Public License v3.0.
 
-[![CI](https://github.com/LuminaraDigital/comptia-a-plus-master/actions/workflows/ci.yml/badge.svg)](https://github.com/LuminaraDigital/comptia-a-plus-master/actions/workflows/ci.yml)
+[![CI](https://github.com/LuminaraDigital/clariora-a-plus/actions/workflows/ci.yml/badge.svg)](https://github.com/LuminaraDigital/clariora-a-plus/actions/workflows/ci.yml)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-3.1.4-gold.svg)](CHANGELOG.md)
 

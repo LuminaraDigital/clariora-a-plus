@@ -1,6 +1,6 @@
 # macOS desktop release
 
-CompTIA A+ Master ships as a native-feeling Electron app on Apple desktop.
+Clariora ships as a native-feeling Electron app on Apple desktop.
 This is the same product as Windows, not a separate codebase.
 
 ## Use on a Mac today (no .dmg required)
@@ -52,10 +52,10 @@ python3 tools/build_macos_app.py --arm64-only
 Ship artifacts land in:
 
 ```text
-release/CompTIA_A_Plus_Mac_<version>_arm64.dmg
-release/CompTIA_A_Plus_Mac_<version>_x64.dmg
-release/CompTIA_A_Plus_Mac_<version>_arm64.zip
-release/CompTIA_A_Plus_Mac_<version>_x64.zip
+release/Clariora_Mac_<version>_arm64.dmg
+release/Clariora_Mac_<version>_x64.dmg
+release/Clariora_Mac_<version>_arm64.zip
+release/Clariora_Mac_<version>_x64.zip
 ```
 
 There is also `Package_MacOS_App.sh` as a one-shot wrapper.
@@ -78,12 +78,12 @@ For public download:
 3. Notarize (Apple requires this for clean Gatekeeper on modern macOS):
 
 ```bash
-xcrun notarytool submit release/CompTIA_A_Plus_Mac_3.0.0_arm64.dmg \
+xcrun notarytool submit release/Clariora_Mac_3.0.0_arm64.dmg \
   --apple-id "YOUR_APPLE_ID" \
   --team-id "YOUR_TEAM_ID" \
   --password "app-specific-password" \
   --wait
-xcrun stapler staple release/CompTIA_A_Plus_Mac_3.0.0_arm64.dmg
+xcrun stapler staple release/Clariora_Mac_3.0.0_arm64.dmg
 ```
 
 Set `CSC_NAME` if you have more than one signing identity:

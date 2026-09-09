@@ -1,4 +1,4 @@
-"""Build macOS icon.icns (and supporting PNGs) from the CompTIA A+ Master art.
+"""Build macOS icon.icns (and supporting PNGs) from the Clariora art.
 
 On macOS this produces a real .icns via `iconutil`.
 On Windows/Linux it writes the iconset PNG ladder plus a 1024 master PNG so a

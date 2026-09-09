@@ -1,13 +1,13 @@
 {
   "version": "3.1.5",
-  "productName": "CompTIA A+ Master",
+  "productName": "Clariora A+",
   "publisher": "Datacentre Academy",
   "updateBaseUrl": "https://comptia-a-plus-master.pages.dev/releases/",
   "mediaBaseUrl": "https://comptia-a-plus-master.pages.dev/media/",
   "mediaPackName": "CompTIA_A_Plus_Course_Videos_v1.zip",
   "github": {
     "owner": "LuminaraDigital",
-    "repo": "comptia-a-plus-master"
+    "repo": "clariora-a-plus"
   },
   "updateProvider": "github"
 }

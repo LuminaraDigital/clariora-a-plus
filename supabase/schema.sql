@@ -1,4 +1,4 @@
--- CompTIA A+ Master Exam Simulator
+-- Clariora Exam Simulator
 -- Optional cloud sync schema (Supabase / Postgres)
 --
 -- One row per user. Every device merges into the same row on sync.

@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master - Outcome Evidence Panel
+ * Clariora - Outcome Evidence Panel
  * Attempt metrics read from local history.
  * File: js/outcomes-evidence.js
  *

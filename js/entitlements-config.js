@@ -1,5 +1,5 @@
 /**
- * CompTIA A+ Master Exam Simulator v3.0.0
+ * Clariora Exam Simulator v3.0.0
  * entitlements-config.js - Monetization configuration (safe to edit by hand)
  * File: js/entitlements-config.js
  *

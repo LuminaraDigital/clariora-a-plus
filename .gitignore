@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------
-# CompTIA A+ Master  -  .gitignore
+# Clariora  -  .gitignore
 # Rule of thumb: source, generated exam data, and docs are tracked.
 # Secrets, build output, and third-party course media are never tracked.
 # ---------------------------------------------------------------------------

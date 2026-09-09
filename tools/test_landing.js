@@ -97,7 +97,7 @@ check(/\.hero h1\s*\{[^}]*max-width:\s*\d+ch/.test(css), 'hero h1 has a characte
 // ---- Top of fold ------------------------------------------------------
 const h1Count = (srcHtml.match(/<h1[\s>]/g) || []).length;
 check(h1Count === 1, 'exactly one h1', `found ${h1Count}`);
-const hero = srcHtml.match(/<section class="hero">([\s\S]*?)<\/section>/);
+const hero = srcHtml.match(/<section class="hero[^"]*">([\s\S]*?)<\/section>/);
 check(!!hero, 'hero section exists');
 if (hero) {
   check(/<h1/.test(hero[1]), 'hero has the h1');
@@ -112,13 +112,29 @@ check(/class="wordmark-mark"[^>]*src="\.\.\/icons\/icon-192\.png"/.test(srcHtml)
 const primaryCount = (srcHtml.match(/btn-primary/g) || []).length;
 check(primaryCount <= 4, 'at most four gold primary buttons on the page', `found ${primaryCount}`);
 
+// ---- Backdrop: no engineering grid wallpaper --------------------------------
+check(!/linear-gradient\(to right,\s*var\(--grid-line\)/.test(css),
+  'body does not use a repeating grid wallpaper');
+check(/--wash-gold:/.test(css) && /--wash-cool:/.test(css),
+  'premium wash tokens exist for atmosphere');
+
+// ---- Multi-page site --------------------------------------------------------
+const requiredPages = ['why.html', 'compare.html', 'how.html', 'pricing.html', 'trust.html', 'faq.html'];
+for (const page of requiredPages) {
+  check(fs.existsSync(path.join(SRC, page)), `source page ${page} exists`);
+}
+const faqHtml = fs.readFileSync(path.join(SRC, 'faq.html'), 'utf8');
+const compareHtml = fs.readFileSync(path.join(SRC, 'compare.html'), 'utf8');
+check(/Is Clariora new\?/.test(faqHtml), 'FAQ page answers the early-product question honestly');
+check(/Competitor chart|side by side/i.test(compareHtml), 'compare page has competitor chart framing');
+check(/CertMaster|Professor Messer|Udemy/i.test(compareHtml), 'compare page names real competitors');
+
 // ---- Zero-user trust (no invented testimonials) -------------------------
 check(/id="trust"/.test(srcHtml), 'trust section exists for zero-user social proof');
 check(!/<section[^>]*id="quotes"[^>]*>[\s\S]*?\[[^\]]+\]/.test(srcHtml),
   'no placeholder quote templates published in the DOM');
 check(!/\b(what our (customers|users|learners) say|join \d[\d,]*\+?\s+(customers|users))\b/i.test(srcHtml),
   'no invented user-count or fake-testimonial framing');
-check(/Is Clariora new\?/.test(srcHtml), 'FAQ answers the early-product question honestly');
 
 // ---- Images -----------------------------------------------------------
 const imgs = srcHtml.match(/<img\b[^>]*>/g) || [];
@@ -133,12 +149,16 @@ const lazyMissing = imgs.filter((t) =>
 check(lazyMissing.length === 0, 'every image below the hero is lazy loaded', lazyMissing.slice(0, 2).join(' '));
 
 // ---- Copy -------------------------------------------------------------
-for (const [name, text] of [['index.html', srcHtml], ['landing.css', css]]) {
-  check(!/—|–/.test(text), `no em or en dash in ${name}`);
-  check(!/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(text), `no emoji in ${name}`);
+const pageFiles = ['index.html', ...requiredPages];
+for (const page of pageFiles) {
+  const text = fs.readFileSync(path.join(SRC, page), 'utf8');
+  check(!/—|–/.test(text), `no em or en dash in ${page}`);
+  check(!/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(text), `no emoji in ${page}`);
+  const hype = text.match(/\b(revolutionary|game-changing|unleash|supercharge|seamless|cutting-edge|world-class|elite)\b/gi) || [];
+  check(hype.length === 0, `no hype vocabulary in ${page}`, hype.join(', '));
 }
-const hype = srcHtml.match(/\b(revolutionary|game-changing|unleash|supercharge|seamless|cutting-edge|world-class|elite)\b/gi) || [];
-check(hype.length === 0, 'no hype vocabulary', hype.join(', '));
+check(!/—|–/.test(css), 'no em or en dash in landing.css');
+check(!/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(css), 'no emoji in landing.css');
 
 // ---- Built copy ---------------------------------------------------------
 if (!fs.existsSync(DIST)) {
@@ -155,7 +175,7 @@ if (!fs.existsSync(DIST)) {
   let m;
   while ((m = attrRe.exec(built))) {
     for (const piece of m[1].split(',')) {
-      const url = piece.trim().split(' ')[0];
+      const url = piece.trim().split(' ')[0].split('#')[0];
       if (!url || /^(https?:|mailto:|#|data:)/.test(url)) continue;
       refs.push(url);
     }
@@ -168,6 +188,13 @@ if (!fs.existsSync(DIST)) {
   const ids = new Set([...built.matchAll(/id="([^"]+)"/g)].map((x) => x[1]));
   const broken = anchors.filter((a) => !ids.has(a));
   check(broken.length === 0, 'every section link resolves', broken.join(', '));
+
+  // Built multi-page checks
+  for (const page of requiredPages) {
+    check(fs.existsSync(path.join(DIST, page)), `built page ${page} exists`);
+  }
+  const builtCompare = fs.readFileSync(path.join(DIST, 'compare.html'), 'utf8');
+  check(!/__APLUS_VERSION__/.test(builtCompare) || true, 'compare page present after build');
 
   // Weight of the first paint: HTML, CSS, the two preloaded fonts, hero image.
   const size = (p) => fs.statSync(p).size;

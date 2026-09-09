@@ -1,0 +1,1035 @@
+﻿INTERNAL STRUCTURE CHECKLIST ONLY
+
+This file is a product-parity outline derived from CompTIA CertMaster Learn
+navigation labels (activity type, id-ish title, duration). It is NOT licensed
+content for redistribution inside Clariora.
+
+Do NOT copy CertMaster lesson bodies, quiz stems, lab scripts, or audio into
+the product. Use this file only to count gaps (topics/labs/videos/assessments)
+and to design Clariora-owned equivalents.
+
+---
+Topic Topic Course Introduction 5 min Start Studying start studying
+Topic Topic 1.0 What Does an IT Specialist Do? 1 min
+Topic Topic 1.1 The Hero of Problem Solving 1 min
+Topic Topic 1.1.1 Role of an IT Specialist 4 min
+Topic Topic 1.1.2 Skills and Abilities 12 min
+Topic Topic 1.2 The Troubleshooting Methodology 1 min
+Topic Topic 1.2.1 Best Practice Methodology 4 min
+Topic Topic 1.2.2 Identify the Problem 3 min
+Topic Topic 1.2.3 Establish and Test a Theory 4 min
+Topic Topic 1.2.4 Question the Obvious 2 min
+Topic Topic 1.2.5 Establish a New Theory or Escalate 3 min
+Topic Topic 1.2.6 Implement a Plan of Action 5 min
+Topic Topic 1.2.7 Verify and Document 4 min
+Topic Topic 1.3 Additional Resources 1 min
+Topic Topic 1.3.1 Troubleshooting Methodology 1 min
+Assessment Assessment 1.4 Module Quiz 5 min High Score: N/A
+Topic Topic 2.0 Installing Motherboards and Connectors 2 min
+Topic Topic 2.1 Cables and Connectors 2 min
+Topic Topic 2.1.1 Personal Computers 5 min
+Lab Lab 2.1.2 Explore the Lab Interface 12 min High Score: N/A
+Topic Topic 2.1.3 Peripheral Devices 3 min
+Topic Topic 2.1.4 Universal Serial Bus Cables 5 min
+Topic Topic 2.1.5 USB Standards 2 min
+Video Video 2.1.6 USB Cables and Standards 3 min
+Lab Lab 2.1.7 Install USB Devices 12 min High Score: N/A
+Topic Topic 2.1.8 Display Types 4 min
+Topic Topic 2.1.9 Display Components 9 min
+Topic Topic 2.1.10 HDMI and DisplayPort Video Cables 2 min
+Topic Topic 2.1.11 Thunderbolt Interface 3 min
+Topic Topic 2.1.12 Lightning Interface 2 min
+Topic Topic 2.1.13 Serial Advanced Technology Attachment Interface 2 min
+Topic Topic 2.1.14 Molex Power Connectors 1 min
+Topic Topic 2.1.15 External SATA 1 min
+Lab Lab 2.1.16 Set Up a Desktop Computer 12 min High Score: N/A
+Assessment Assessment 2.1.17 Lesson Review 15 min High Score: N/A
+Topic Topic 2.2 Motherboards 2 min
+Topic Topic 2.2.1 Motherboard Functions 3 min
+Topic Topic 2.2.2 Electrical Safety and ESD 2 min
+Topic Topic 2.2.3 Motherboard CPU and System Memory Connectors 9 min
+Topic Topic 2.2.4 Motherboard Storage Connectors 3 min
+Topic Topic 2.2.5 Peripheral Component Interconnect Express Interface 4 min
+Topic Topic 2.2.6 Peripheral Component Interconnect Interface 2 min
+Topic Topic 2.2.7 Motherboard Form Factors 2 min
+Topic Topic 2.2.8 Motherboard Installation 3 min
+Video Video 2.2.9 Install a Motherboard 6 min
+Topic Topic 2.2.10 Motherboard Headers and Power Connectors 4 min
+Lab Lab 2.2.11 Choose and Install a Motherboard 12 min High Score: N/A
+Topic Topic 2.2.12 Video Cards 3 min
+Lab Lab 2.2.13 Upgrade a Video Card 12 min High Score: N/A
+Topic Topic 2.2.14 Capture Cards 2 min
+Topic Topic 2.2.15 Sound Cards 2 min
+Topic Topic 2.2.16 Network Interface Cards 1 min
+Video Video 2.2.17 Installing & Configuring Motherboards, CPUs & Add-on Cards 5 min
+Assessment Assessment 2.2.18 Lesson Review 15 min High Score: N/A
+Topic Topic 2.3 Legacy Cables 2 min
+Topic Topic 2.3.1 DVI and VGA Video Cables 2 min
+Lab Lab 2.3.2 Select and Configure Dual Monitors 12 min High Score: N/A
+Topic Topic 2.3.3 Serial Cables 2 min
+Topic Topic 2.3.4 Adapter Cables 2 min
+Assessment Assessment 2.3.5 Lesson Review 10 min High Score: N/A
+Lab Lab 2.4 Set up an A/V Workstation 12 min High Score: N/A
+Topic Topic 2.5 Additional Resources 1 min
+Topic Topic 2.5.1 Cable Types 1 min
+Topic Topic 2.5.2 Motherboards 1 min
+Topic Topic 2.5.3 Exercise: History of Cables 3 min
+Topic Topic 2.5.4 Exercise: Motherboard Diagram Creation 3 min
+Topic Topic 2.5.5 Exercise: Legacy Cables Timeline 2 min
+Topic Topic 2.5.6 Exercise: Build a Cable Chart Capstone 3 min
+Assessment Assessment 2.6 Module Quiz 15 min High Score: N/A
+Topic Topic 3.0 Installing System Devices 1 min
+Topic Topic 3.1 Power Supplies and Cooling 2 min
+Topic Topic 3.1.1 Power Supply Units 2 min
+Lab Lab 3.1.2 Install a Power Supply 12 min High Score: N/A
+Topic Topic 3.1.3 Wattage Rating 6 min
+Topic Topic 3.1.4 Power Supply Connectors 1 min
+Topic Topic 3.1.5 20-pin to 24-pin Motherboard Adapter 1 min
+Topic Topic 3.1.6 Modular Power Supplies 1 min
+Topic Topic 3.1.7 Redundant Power Supplies 2 min
+Video Video 3.1.8 Change the Power Supply 3 min
+Lab Lab 3.1.9 Troubleshoot Power Supply Problems 12 min High Score: N/A
+Topic Topic 3.1.10 Fan Cooling Systems 6 min
+Topic Topic 3.1.11 Heat Sinks and Thermal Paste 2 min
+Topic Topic 3.1.12 Fans 2 min
+Topic Topic 3.1.13 Liquid Cooling Systems 2 min
+Assessment Assessment 3.1.14 Lesson Review 15 min High Score: N/A
+Topic Topic 3.2 Storage Devices 2 min
+Video Video 3.2.1 Storage Devices 4 min
+Topic Topic 3.2.2 Mass Storage Devices 3 min
+Topic Topic 3.2.3 Solid-State Drives 10 min
+Topic Topic 3.2.4 Hard Disk Drives 3 min
+Topic Topic 3.2.5 Redundant Array of Independent Disks 3 min
+Topic Topic 3.2.6 RAID 0 and RAID 1 3 min
+Topic Topic 3.2.7 RAID 5 and RAID 10 4 min
+Topic Topic 3.2.8 RAID 6 (Striping with Double Parity) 3 min
+Video Video 3.2.9 RAID Types 3 min
+Topic Topic 3.2.10 Removable Storage Drives 4 min
+Topic Topic 3.2.11 Optical Drives 4 min
+Lab Lab 3.2.12 Install SATA Devices 12 min High Score: N/A
+Assessment Assessment 3.2.13 Lesson Review 15 min High Score: N/A
+Topic Topic 3.3 System Memory 2 min
+Topic Topic 3.3.1 System RAM and Virtual Memory 3 min
+Topic Topic 3.3.2 RAM Types 5 min
+Topic Topic 3.3.3 Memory Modules 4 min
+Lab Lab 3.3.4 Select Memory by Sight 12 min High Score: N/A
+Topic Topic 3.3.5 Multi-channel System Memory 5 min
+Video Video 3.3.6 Memory Troubleshooting 2 min
+Lab Lab 3.3.7 Install Triple Channel Memory 12 min High Score: N/A
+Topic Topic 3.3.8 ECC RAM 3 min
+Assessment Assessment 3.3.9 Lesson Review 10 min High Score: N/A
+Topic Topic 3.4 CPUs 2 min
+Topic Topic 3.4.1 CPU Architecture 2 min
+Topic Topic 3.4.2 x86 CPU Architecture 3 min
+Topic Topic 3.4.3 x64 CPU Architecture 3 min
+Topic Topic 3.4.4 ARM CPU Architecture 4 min
+Topic Topic 3.4.5 CPU Features 4 min
+Topic Topic 3.4.6 CPU Socket Types 4 min
+Topic Topic 3.4.7 CPU Types and Motherboard Compatibility 9 min
+Video Video 3.4.8 Install a Processor 4 min
+Assessment Assessment 3.4.9 Lesson Review 10 min High Score: N/A
+Lab Lab 3.5 Troubleshoot Memory 12 min High Score: N/A
+Topic Topic 3.6 Additional Resources 1 min
+Topic Topic 3.6.1 System Memory 1 min
+Topic Topic 3.6.2 Matching Computer Components 1 min
+Topic Topic 3.6.3 Exercise: Cooling System Infographic 3 min
+Topic Topic 3.6.4 Exercise: Memory Performance Experiment 3 min
+Topic Topic 3.6.5 Exercise: Evolution of Storage Devices 3 min
+Topic Topic 3.6.6 Exercise: Create a CPU Architecture Diagram 3 min
+Topic Topic 3.6.7 Exercise: CPU Performance Experiment Capstone 4 min
+Assessment Assessment 3.7 Module Quiz 20 min High Score: N/A
+Topic Topic 4.0 Troubleshooting PC Hardware 1 min
+Topic Topic 4.1 BIOS and UEFI 2 min
+Topic Topic 4.1.1 BIOS and UEFI 4 min
+Lab Lab 4.1.2 Find BIOS/UEFI Settings 12 min High Score: N/A
+Topic Topic 4.1.3 Boot and Device Options 9 min
+Topic Topic 4.1.4 USB Permissions 2 min
+Topic Topic 4.1.5 Fan Considerations 3 min
+Topic Topic 4.1.6 Boot Passwords and Secure Boot 3 min
+Topic Topic 4.1.8 Trusted Platform Modules 4 min
+Lab Lab 4.1.10 Configure BIOS/UEFI Security 12 min High Score: N/A
+Assessment Assessment 4.1.11 Lesson Review 15 min High Score: N/A
+Topic Topic 4.2 Power and Disk Issues 2 min
+Topic Topic 4.2.1 Troubleshoot Power Issues 4 min
+Lab Lab 4.2.2 Troubleshoot System Power 12 min High Score: N/A
+Topic Topic 4.2.3 Troubleshoot POST Issues 10 min
+Lab Lab 4.2.4 Troubleshoot System Startup 12 min High Score: N/A
+Topic Topic 4.2.5 Troubleshoot Boot Issues 2 min
+Lab Lab 4.2.6 Troubleshoot Boot Issues 12 min High Score: N/A
+Topic Topic 4.2.7 Troubleshoot Boot Sector Issues 4 min
+Topic Topic 4.2.8 Troubleshoot OS Errors and Crash Screens 2 min
+Topic Topic 4.2.9 Troubleshoot Drive Availability 4 min
+Lab Lab 4.2.10 Troubleshoot Drive Availability 12 min High Score: N/A
+Topic Topic 4.2.11 Troubleshoot Drive Reliability and Performance 4 min
+Topic Topic 4.2.12 Troubleshoot RAID Failure 5 min
+Video Video 4.2.13 Troubleshooting Problems with Storage Drives & RAID Arrays 4 min
+Assessment Assessment 4.2.14 Lesson Review 15 min High Score: N/A
+Topic Topic 4.3 System and Display Issues 2 min
+Topic Topic 4.3.1 Troubleshoot Component Issues 7 min
+Topic Topic 4.3.2 Overheating 3 min
+Topic Topic 4.3.3 Physical Damage 2 min
+Topic Topic 4.3.4 Troubleshoot Performance Issues 3 min
+Topic Topic 4.3.5 Troubleshoot Inaccurate System Date/Time 2 min
+Topic Topic 4.3.6 Troubleshoot Missing Video Issues 5 min
+Topic Topic 4.3.7 Troubleshoot Video Quality Issues 6 min
+Video Video 4.3.8 Troubleshooting Video, Projector & Display Issues 6 min
+Lab Lab 4.3.9 Troubleshoot GPU 12 min High Score: N/A
+Assessment Assessment 4.3.10 Lesson Review 15 min High Score: N/A
+Lab Lab 4.4 Resolve PC Hardware Support Tickets 12 min High Score: N/A
+Lab Lab 4.5 Troubleshoot a Malfunctioning Computer 12 min High Score: N/A
+Topic Topic 4.6 Additional Resources 1 min
+Topic Topic 4.6.1 BIOS and UEFI 1 min
+Topic Topic 4.6.2 Troubleshooting Example: Video Issues 1 min
+Topic Topic 4.6.3 Exercise: Boot Process Walkthrough 3 min
+Topic Topic 4.6.4 Exercise: Hard Drive Health Monitoring 4 min
+Topic Topic 4.6.5 Exercise: Create a Troubleshooting Checklist 4 min
+Topic Topic 4.6.6 Exercise: Power Supply Wattage Calculation Capstone 4 min
+Assessment Assessment 4.7 Module Quiz 15 min High Score: N/A
+Assessment Assessment 4.8 Checkpoint Review 20 min High Score: N/A
+Topic Topic 5.0 Comparing Local Networking Hardware 2 min
+Topic Topic 5.1 Network Types 2 min
+Topic Topic 5.1.1 LANs and WANs 7 min
+Topic Topic 5.1.2 SOHO and Enterprise Networks 4 min
+Topic Topic 5.1.3 Datacenters 1 min
+Video Video 5.1.4 SOHO, Enterprise, and Personal Area Networks 2 min
+Assessment Assessment 5.1.5 Lesson Review 5 min High Score: N/A
+Topic Topic 5.2 Networking Hardware 2 min
+Topic Topic 5.2.1 Network Interface Cards 10 min
+Lab Lab 5.2.2 Select and Install a Network Adapter 12 min High Score: N/A
+Topic Topic 5.2.3 Patch Panels 2 min
+Video Video 5.2.4 Wiring a Patch Panel 2 min
+Lab Lab 5.2.5 Connect Patch Panel Cables 12 min High Score: N/A
+Topic Topic 5.2.6 Switches 4 min
+Video Video 5.2.7 How Does an Access Switch Forward Data? 2 min
+Lab Lab 5.2.8 Connect Computers with a Switch 12 min High Score: N/A
+Topic Topic 5.2.9 Unmanaged and Managed Switches 3 min
+Topic Topic 5.2.10 Power over Ethernet 3 min
+Assessment Assessment 5.2.11 Lesson Review 15 min High Score: N/A
+Topic Topic 5.3 Network Cable Types 2 min
+Topic Topic 5.3.1 Unshielded Twisted Pair 2 min
+Topic Topic 5.3.2 Shielded Twisted Pair 3 min
+Topic Topic 5.3.4 Cat Standards 4 min
+Topic Topic 5.3.5 Copper Cabling Connectors 3 min
+Topic Topic 5.3.7 Copper Cabling Installation Tools 5 min
+Topic Topic 5.3.8 Copper Cabling Test Tools 4 min
+Topic Topic 5.3.9 Network Taps 2 min
+Topic Topic 5.3.10 Copper Cabling Installation Considerations 3 min
+Topic Topic 5.3.11 Optical Cabling 4 min
+Topic Topic 5.3.13 Coaxial Cabling 2 min
+Assessment Assessment 5.3.14 Lesson Review 15 min High Score: N/A
+Topic Topic 5.4 Wireless Networking Types 2 min
+Topic Topic 5.4.1 Access Points 7 min
+Topic Topic 5.4.2 Frequency Bands 4 min
+Topic Topic 5.4.3 IEEE 802.11a 2 min
+Topic Topic 5.4.4 IEEE 802.11b/g 4 min
+Topic Topic 5.4.5 802.11n 4 min
+Video Video 5.4.6 Identify IEEE 802.11 Standards 3 min
+Topic Topic 5.4.7 Wi-Fi 5 and Wi-Fi 6 6 min
+Topic Topic 5.4.8 Wi-Fi 7 (802.11be) 2 min
+Topic Topic 5.4.9 Wireless LAN Installation Considerations 5 min
+Topic Topic 5.4.10 Wi-Fi Analyzers 5 min
+Topic Topic 5.4.11 Long-Range Fixed Wireless 4 min
+Topic Topic 5.4.12 Bluetooth, RFID, and NFC 5 min
+Lab Lab 5.4.13 Secure a Small Wireless Network 12 min High Score: N/A
+Lab Lab 5.4.14 SOHO Wi-Fi Configuration Settings 12 min High Score: N/A
+Assessment Assessment 5.4.15 Lesson Review 15 min High Score: N/A
+Topic Topic 5.5 Additional Resources 1 min
+Topic Topic 5.5.1 Network Switches 1 min
+Topic Topic 5.5.2 Building Wireless Networks 1 min
+Topic Topic 5.5.3 Exercise: Network Design Challenge 3 min
+Topic Topic 5.5.4 Exercise: Hardware Comparison Chart 3 min
+Topic Topic 5.5.5 Exercise: Network Cable Infographic 3 min
+Topic Topic 5.5.6 Exercise: Wireless Networking Timeline 3 min
+Topic Topic 5.5.7 Exercise: Create a Network Infographic Capstone 3 min
+Assessment Assessment 5.6 Module Quiz 20 min High Score: N/A
+Topic Topic 6.0 Configuring Network Addressing and Internet Connections 2 min
+Topic Topic 6.1 Internet Connection Types 2 min
+Topic Topic 6.1.1 Internet Connection Types and Modems 6 min
+Topic Topic 6.1.2 Digital Subscriber Line Modems 3 min
+Topic Topic 6.1.3 Cable Modems 2 min
+Lab Lab 6.1.4 Connect a Cable Modem 12 min High Score: N/A
+Topic Topic 6.1.5 Fiber to the Curb and Fiber to the Premises 3 min
+Lab Lab 6.1.6 Connect Fiber Optic Cables 12 min High Score: N/A
+Topic Topic 6.1.7 Fixed Wireless Internet Access 5 min
+Topic Topic 6.1.8 Cellular Radio Internet Connections 5 min
+Topic Topic 6.1.9 Routers 8 min
+Topic Topic 6.1.10 Firewalls 3 min
+Assessment Assessment 6.1.11 Lesson Review 15 min High Score: N/A
+Topic Topic 6.2 TCP/IP Concepts 1 min
+Topic Topic 6.2.1 TCP/IP 7 min
+Topic Topic 6.2.2 Link or Network Interface layer 1 min
+Topic Topic 6.2.3 Internet Layer 2 min
+Topic Topic 6.2.4 Transport Layer 2 min
+Topic Topic 6.2.5 Application Layer 1 min
+Topic Topic 6.2.6 IPv4 Addressing 5 min
+Lab Lab 6.2.7 Configure IP Addresses 12 min High Score: N/A
+Topic Topic 6.2.8 Network Prefixes 3 min
+Topic Topic 6.2.9 IPv4 Forwarding 9 min
+Topic Topic 6.2.10 Public and Private Addressing 4 min
+Topic Topic 6.2.11 IPv4 Host Address Configuration 4 min
+Topic Topic 6.2.12 Static Versus Dynamic Host Address Configuration 5 min
+Video Video 6.2.13 Static vs Dynamic 2 min
+Topic Topic 6.2.14 SOHO Router Configuration 7 min
+Topic Topic 6.2.15 IPv6 Addressing 5 min
+Assessment Assessment 6.2.16 Lesson Review 15 min High Score: N/A
+Topic Topic 6.3 Network Communications 2 min
+Topic Topic 6.3.1 Protocols and Ports 3 min
+Topic Topic 6.3.2 Transmission Control Protocol 4 min
+Video Video 6.3.3 Network Packets 2 min
+Topic Topic 6.3.4 User Datagram Protocol 4 min
+Video Video 6.3.5 Wireshark 4 min
+Topic Topic 6.3.6 Well-Known Ports 3 min
+Assessment Assessment 6.3.7 Lesson Review 10 min High Score: N/A
+Topic Topic 6.4 Network Configuration Concepts 2 min
+Topic Topic 6.4.1 DHCP Functions 8 min
+Topic Topic 6.4.2 Domain Name System 4 min
+Topic Topic 6.4.3 DNS Queries 8 min
+Topic Topic 6.4.4 DNS Record Types 4 min
+Topic Topic 6.4.5 DNS Spam Management Records 3 min
+Topic Topic 6.4.6 Virtual LANs 4 min
+Topic Topic 6.4.7 Virtual Private Networks 3 min
+Assessment Assessment 6.4.8 Lesson Review 15 min High Score: N/A
+Lab Lab 6.5 Install a SOHO Network 12 min High Score: N/A
+Topic Topic 6.6 Additional Resources 1 min
+Topic Topic 6.6.1 Ports and Protocols 1 min
+Topic Topic 6.6.2 DHCP and DNS Services 1 min
+Topic Topic 6.6.3 Exercise: Internet Connection History Timeline 3 min
+Topic Topic 6.6.4 Exercise: Create a TCP/IP Infographic 3 min
+Topic Topic 6.6.5 Exercise: Protocol Poster Project 3 min
+Topic Topic 6.6.6 Exercise: Visualizing the DHCP Process 4 min
+Topic Topic 6.6.7 Exercise: Protocol Timeline Capstone 3 min
+Assessment Assessment 6.7 Module Quiz 20 min High Score: N/A
+Topic Topic 7.0 Supporting Network Services 2 min
+Topic Topic 7.1 Networked Host Services 2 min
+Topic Topic 7.1.1 File/Print Servers 5 min
+Topic Topic 7.1.2 Database Servers 2 min
+Topic Topic 7.1.3 Web Servers 11 min
+Topic Topic 7.1.4 Hypertext Transfer Protocol Secure 4 min
+Topic Topic 7.1.5 Mail Servers 4 min
+Topic Topic 7.1.6 Mailbox Servers 5 min
+Video Video 7.1.7 Navigate a Mailbox Server 2 min
+Topic Topic 7.1.8 Directory and Authentication Servers 5 min
+Topic Topic 7.1.9 Remote Terminal Access Servers 4 min
+Topic Topic 7.1.10 Time Servers 2 min
+Topic Topic 7.1.11 Network Monitoring Servers 5 min
+Assessment Assessment 7.1.12 Lesson Review 15 min High Score: N/A
+Topic Topic 7.2 Internet and Embedded Appliances 2 min
+Topic Topic 7.2.1 Proxy Servers 4 min
+Lab Lab 7.2.2 Use a Proxy Server 12 min High Score: N/A
+Topic Topic 7.2.3 Spam Gateways and Unified Threat Management 3 min
+Topic Topic 7.2.4 Load Balancers 2 min
+Topic Topic 7.2.5 Legacy Systems 2 min
+Topic Topic 7.2.6 Embedded Systems and SCADA 4 min
+Topic Topic 7.2.7 Internet of Things Devices 3 min
+Assessment Assessment 7.2.8 Lesson Review 10 min High Score: N/A
+Topic Topic 7.3 Troubleshoot Networks 2 min
+Topic Topic 7.3.1 Troubleshoot Wired Connectivity 4 min
+Topic Topic 7.3.2 Troubleshoot Network Speed Issues 4 min
+Lab Lab 7.3.3 Fix a Network Connection 12 min High Score: N/A
+Topic Topic 7.3.4 Troubleshoot Wireless Issues 6 min
+Topic Topic 7.3.5 Troubleshoot VoIP Issues 6 min
+Topic Topic 7.3.6 Troubleshoot Limited Connectivity 3 min
+Assessment Assessment 7.3.7 Lesson Review 10 min High Score: N/A
+Lab Lab 7.4 Troubleshoot a Network Issue 12 min High Score: N/A
+Topic Topic 7.5 Additional Resources 1 min
+Topic Topic 7.5.1 Client Server Relationship 1 min
+Topic Topic 7.5.2 Troubleshooting Networks 1 min
+Topic Topic 7.5.3 Exercise: Server Comparison Project 3 min
+Topic Topic 7.5.4 Exercise: Exploring Everyday Embedded Systems 3 min
+Topic Topic 7.5.5 Exercise: Troubleshooting with Command-Line Tools 6 min
+Topic Topic 7.5.6 Exercise: Build a Smart Home Device Capstone 4 min
+Assessment Assessment 7.6 Module Quiz 15 min High Score: N/A
+Assessment Assessment 7.7 Checkpoint Review 20 min High Score: N/A
+Topic Topic 8.0 Summarizing Virtualization and Cloud Concepts 1 min
+Topic Topic 8.1 Client-Side Virtualization 2 min
+Topic Topic 8.1.1 Hypervisors 8 min
+Topic Topic 8.1.2 Uses for Virtualization 6 min
+Lab Lab 8.1.3 Explore Virtualization 12 min High Score: N/A
+Topic Topic 8.1.4 Virtualization Resource Requirements 6 min
+Topic Topic 8.1.5 Virtualization Security Requirements 6 min
+Lab Lab 8.1.6 Create Virtual Hard Disks 12 min High Score: N/A
+Assessment Assessment 8.1.7 Lesson Review 10 min High Score: N/A
+Topic Topic 8.2 Cloud Concepts 2 min
+Topic Topic 8.2.1 Cloud Characteristics 3 min
+Video Video 8.2.2 Cloud Deployment 3 min
+Topic Topic 8.2.3 Common Cloud Deployment Models 7 min
+Lab Lab 8.2.4 Use the Azure Interface 12 min High Score: N/A
+Topic Topic 8.2.5 Common Cloud Service Models 4 min
+Lab Lab 8.2.6 Manage IaaS Virtual Machines (VMs) in Azure That Run Windows Server 12 min High Score: N/A
+Topic Topic 8.2.7 Cloud File Storage 2 min
+Video Video 8.2.8 Content Delivery Networks (CDNs) 2 min
+Assessment Assessment 8.2.9 Lesson Review 10 min High Score: N/A
+Topic Topic 8.3 Additional Resources 1 min
+Topic Topic 8.3.1 Virtualization 1 min
+Topic Topic 8.3.2 Cloud Service Models 1 min
+Topic Topic 8.3.3 Exercise: Exploring Hypervisors 3 min
+Topic Topic 8.3.4 Exercise: Cloud Service Model Exploration 3 min
+Topic Topic 8.3.5 Exercise: Exploring Cloud Provider Services Capstone 3 min
+Assessment Assessment 8.4 Module Quiz 10 min High Score: N/A
+Topic Topic 9.0 Supporting Mobile Devices 1 min
+Topic Topic 9.1 Mobile Devices and Peripherals 3 min
+Topic Topic 9.1.1 Mobile Device Accessories 6 min
+Topic Topic 9.1.2 Mobile Device Wired Connection Methods 2 min
+Topic Topic 9.1.3 Port Replicators and Docking Stations 2 min
+Lab Lab 9.1.4 Manage Mobile Devices 12 min High Score: N/A
+Topic Topic 9.1.5 Wi-Fi Networking 5 min
+Video Video 9.1.6 Connect to a Wireless Network 2 min
+Topic Topic 9.1.7 Cellular Data Networking 6 min
+Topic Topic 9.1.8 Mobile Hotspots and Tethering 3 min
+Topic Topic 9.1.9 Bluetooth Wireless Connections 4 min
+Topic Topic 9.1.10 Near-Field Communication Wireless Connections 3 min
+Lab Lab 9.1.11 Configure a Laptop Dock and External Peripherals 12 min High Score: N/A
+Assessment Assessment 9.1.12 Lesson Review 15 min High Score: N/A
+Topic Topic 9.2 Mobile Apps and Data 2 min
+Topic Topic 9.2.1 Mobile Apps 5 min
+Topic Topic 9.2.2 Account Setup 4 min
+Topic Topic 9.2.3 Types of Data to Synchronize 5 min
+Topic Topic 9.2.4 Email Configuration Options 6 min
+Topic Topic 9.2.5 Synchronization Methods 3 min
+Topic Topic 9.2.6 Enterprise Mobility Management 4 min
+Topic Topic 9.2.7 Location Services 3 min
+Assessment Assessment 9.2.8 Lesson Review 15 min High Score: N/A
+Topic Topic 9.3 Laptop Hardware 2 min
+Topic Topic 9.3.1 Laptop Disassembly Processes 4 min
+Topic Topic 9.3.2 Battery Replacement 9 min
+Topic Topic 9.3.3 RAM and Adapter Replacement 4 min
+Topic Topic 9.3.4 Disk Upgrades and Replacement 5 min
+Topic Topic 9.3.5 Keyboard and Security Component Replacement 5 min
+Assessment Assessment 9.3.6 Lesson Review 15 min High Score: N/A
+Topic Topic 9.4 Troubleshoot Mobile Devices 2 min
+Topic Topic 9.4.1 Power and Battery Issues 8 min
+Topic Topic 9.4.2 Hardware Failure Issues 5 min
+Topic Topic 9.4.4 Screen and Calibration Issues 5 min
+Topic Topic 9.4.5 Connectivity Issues 3 min
+Topic Topic 9.4.6 Malware Issues 2 min
+Assessment Assessment 9.4.7 Lesson Review 10 min High Score: N/A
+Lab Lab 9.5 Mobile Hardware Support 12 min High Score: N/A
+Topic Topic 9.6 Additional Resources 1 min
+Topic Topic 9.6.1 Troubleshooting Mobile Devices 1 min
+Topic Topic 9.6.2 Exercise: Peripheral History Timeline 3 min
+Topic Topic 9.6.3 Exercise: App Exploration and Categorization 3 min
+Topic Topic 9.6.4 Exercise: Laptop Hardware Budgeting Activity 3 min
+Topic Topic 9.6.5 Exercise: Troubleshooting Flowchart Creation 4 min
+Topic Topic 9.6.6 Exercise: Peripheral Design Challenge Capstone 4 min
+Assessment Assessment 9.7 Module Quiz 20 min High Score: N/A
+Topic Topic 10.0 Supporting Print Devices 1 min
+Topic Topic 10.1 Printers and Multifunction Devices 2 min
+Topic Topic 10.1.1 Printer Unboxing and Setup Location 8 min
+Topic Topic 10.1.2 Firmware Management in MFDs and Printers 2 min
+Topic Topic 10.1.3 Print Device Connectivity 7 min
+Lab Lab 10.1.4 Select and Install a Printer 12 min High Score: N/A
+Topic Topic 10.1.5 Printer Drivers and Page Description Languages 11 min
+Topic Topic 10.1.6 Printer Properties 3 min
+Topic Topic 10.1.7 Printing Preferences 3 min
+Topic Topic 10.1.8 Printer Sharing 8 min
+Video Video 10.1.9 Connect to a Printer 2 min
+Lab Lab 10.1.10 Configure Network Printing 12 min High Score: N/A
+Topic Topic 10.1.11 Printer Security 3 min
+Topic Topic 10.1.13 Scanner Configuration 3 min
+Assessment Assessment 10.1.14 Lesson Review 15 min High Score: N/A
+Topic Topic 10.2 Print Device Maintenance 2 min
+Topic Topic 10.2.1 Laser Printer Imaging Process 9 min
+Topic Topic 10.2.2 Laser Printer Maintenance 11 min
+Topic Topic 10.2.3 Inkjet Printer Imaging Process 7 min
+Topic Topic 10.2.4 Inkjet Printer Maintenance 6 min
+Topic Topic 10.2.5 Thermal Printer Maintenance 8 min
+Topic Topic 10.2.6 Impact Printer Maintenance 3 min
+Video Video 10.2.7 Printer Basics 4 min
+Lab Lab 10.2.8 Replace a Printer Fuser 12 min High Score: N/A
+Lab Lab 10.2.9 Replace a Printer Toner 12 min High Score: N/A
+Lab Lab 10.2.10 Clear a Paper Jam in a Printer 12 min High Score: N/A
+Assessment Assessment 10.2.11 Lesson Review 15 min High Score: N/A
+Topic Topic 10.3 Troubleshoot Print Devices 2 min
+Topic Topic 10.3.1 Printer Connectivity Issues 3 min
+Topic Topic 10.3.2 Print Feed Issues 9 min
+Topic Topic 10.3.3 Print Quality Issues 4 min
+Topic Topic 10.3.4 Finishing Issues 3 min
+Topic Topic 10.3.5 Print Job Issues 11 min
+Assessment Assessment 10.3.7 Lesson Review 10 min High Score: N/A
+Lab Lab 10.4 Resolve Print Services Support Tickets 12 min High Score: N/A
+Topic Topic 10.5 Additional Resources 1 min
+Topic Topic 10.5.1 Connecting Printers 1 min
+Topic Topic 10.5.2 Printer Troubleshooting 1 min
+Topic Topic 10.5.3 Exercise: Compare Printer Types and Maintenance Practices 4 min
+Topic Topic 10.5.4 Exercise: Printer Maintenance Best Practices 4 min
+Topic Topic 10.5.5 Exercise: Troubleshooting Common Printer Problems 4 min
+Topic Topic 10.5.6 Exercise: Printer Troubleshooting Flowchart Capstone 4 min
+Assessment Assessment 10.6 Module Quiz 15 min High Score: N/A
+Assessment Assessment 10.7 Checkpoint Review 20 min High Score: N/A
+Topic Topic 11.0 Managing Support Procedures 2 min
+Topic Topic 11.1 Documentation 2 min
+Topic Topic 11.1.1 Standard Operating Procedure 3 min
+Topic Topic 11.1.2 Service Level Agreements 8 min
+Topic Topic 11.1.3 Incident and Ticketing Systems 2 min
+Topic Topic 11.1.4 Categories and Severity 4 min
+Topic Topic 11.1.5 Ticket Management 3 min
+Topic Topic 11.1.7 Support Documentation and Knowledge Base Articles 2 min
+Topic Topic 11.1.8 Lessons Learned 2 min
+Topic Topic 11.1.9 Clear Written Communication 2 min
+Topic Topic 11.1.10 Knowledge Base 3 min
+Video Video 11.1.11 Knowledge Base Articles 4 min
+Topic Topic 11.1.12 Policy Documentation 2 min
+Lab Lab 11.1.13 Create a Ticket 12 min High Score: N/A
+Lab Lab 11.1.14 Close a Ticket 12 min High Score: N/A
+Lab Lab 11.1.15 Use Help Desk System 12 min High Score: N/A
+Lab Lab 11.1.16 Live Lab: Explore the VM Lab Environment 30 min High Score: N/A
+Assessment Assessment 11.1.17 Lesson Review 15 min High Score: N/A
+Topic Topic 11.2 Professional Communication 3 min
+Topic Topic 11.2.1 Professional Support Processes 7 min
+Topic Topic 11.2.2 Professional Support Delivery 4 min
+Topic Topic 11.2.3 Professional Appearance 6 min
+Topic Topic 11.2.4 Professional Communications 2 min
+Topic Topic 11.2.5 Clarifying and Questioning Techniques 5 min
+Topic Topic 11.2.6 Difficult Situations 3 min
+Topic Topic 11.2.7 Dealing with Difficult Customers 2 min
+Topic Topic 11.2.8 Do Not Post Experiences on Social Media 1 min
+Assessment Assessment 11.2.9 Lesson Review 10 min High Score: N/A
+Topic Topic 11.3 Types of Operating Systems 2 min
+Topic Topic 11.3.1 Windows and macOS 3 min
+Topic Topic 11.3.2 UNIX, Linux, and Chrome OS 4 min
+Topic Topic 11.3.3 iOS and Android 3 min
+Topic Topic 11.3.4 Windows File System Types 6 min
+Topic Topic 11.3.5 Linux and macOS File System Types 3 min
+Topic Topic 11.3.6 OS Compatibility Issues 5 min
+Topic Topic 11.3.7 Vendor Life-cycle Limitations 2 min
+Lab Lab 11.3.8 : Manage a Support Ticket 30 min High Score: N/A
+Assessment Assessment 11.3.9 Lesson Review 15 min High Score: N/A
+Lab Lab 11.4 Challenge Live Lab: Resolve Help Desk Tickets 30 min High Score: N/A
+Topic Topic 11.5 Additional Resources 1 min
+Topic Topic 11.5.1 Operating System Types 1 min
+Topic Topic 11.5.2 Documentation Policies and Procedures 1 min
+Topic Topic 11.5.3 Exercise: Incident Lifecycle Mapping 4 min
+Topic Topic 11.5.4 Exercise: Elevator Pitch Practice 4 min
+Topic Topic 11.5.5 Exercise: Operating System History Timeline 3 min
+Topic Topic 11.5.6 Exercise: Incident Response Plan Capstone 4 min
+Assessment Assessment 11.6 Module Quiz 15 min High Score: N/A
+Topic Topic 12.0 Configuring Windows 2 min
+Topic Topic 12.1 Windows User Settings 2 min
+Topic Topic 12.1.1 Windows Interfaces 4 min
+Topic Topic 12.1.2 Windows Settings and Control Panel 5 min
+Lab Lab 12.1.3 Explore Windows Settings 12 min High Score: N/A
+Topic Topic 12.1.4 Accounts Settings 5 min
+Video Video 12.1.5 Using the Windows Desktop Interface 3 min
+Topic Topic 12.1.6 Privacy Settings 2 min
+Topic Topic 12.1.7 Desktop Settings 2 min
+Lab Lab 12.1.8 Require a Screen Saver Password 12 min High Score: N/A
+Topic Topic 12.1.9 Ease of Access Settings 2 min
+Topic Topic 12.1.10 File Explorer 6 min
+Topic Topic 12.1.11 File Explorer Options 3 min
+Topic Topic 12.1.12 Indexing Options 2 min
+Lab Lab 12.1.13 : Configure Desktop Settings 30 min High Score: N/A
+Assessment Assessment 12.1.14 Lesson Review 15 min High Score: N/A
+Topic Topic 12.2 Windows System Settings 2 min
+Topic Topic 12.2.1 System Settings 3 min
+Topic Topic 12.2.2 Update and Security Settings 5 min
+Lab Lab 12.2.3 Configure Windows Update 12 min High Score: N/A
+Topic Topic 12.2.4 Device Settings 9 min
+Topic Topic 12.2.5 Display and Sound Settings 3 min
+Topic Topic 12.2.6 Power Options 6 min
+Lab Lab 12.2.7 Edit Power Options 12 min High Score: N/A
+Topic Topic 12.2.8 Apps, Programs, and Features 2 min
+Topic Topic 12.2.9 Apps Settings 4 min
+Topic Topic 12.2.10 Network Settings 3 min
+Topic Topic 12.2.11 Administrative Tools 4 min
+Topic Topic 12.2.12 Management Shortcuts 3 min
+Assessment Assessment 12.2.13 Lesson Review 15 min High Score: N/A
+Topic Topic 12.3 Install and Configure Applications 2 min
+Topic Topic 12.3.1 System Requirements for Applications 4 min
+Topic Topic 12.3.2 OS Requirements for Applications 3 min
+Topic Topic 12.3.3 Distribution Methods 4 min
+Topic Topic 12.3.4 Other Considerations 7 min
+Lab Lab 12.3.5 : Configure Windows Apps 30 min High Score: N/A
+Assessment Assessment 12.3.6 Lesson Review 10 min High Score: N/A
+Topic Topic 12.4 Cloud-Based Applications 2 min
+Topic Topic 12.4.1 Email Systems 2 min
+Topic Topic 12.4.2 Storage 3 min
+Topic Topic 12.4.3 Collaboration Tools 4 min
+Topic Topic 12.4.4 User Licensing 3 min
+Topic Topic 12.4.5 Identity Synchronization 2 min
+Lab Lab 12.4.6 Create Azure Storage Account 12 min High Score: N/A
+Assessment Assessment 12.4.7 Lesson Review 10 min High Score: N/A
+Topic Topic 12.5 Additional Resources 1 min
+Topic Topic 12.5.1 Windows Utilities 1 min
+Topic Topic 12.5.2 Windows Network Settings 1 min
+Topic Topic 12.5.3 Exercise: Exploring the Purpose of Different Windows Utilities 4 min
+Topic Topic 12.5.4 Exercise: System Settings Hands-On Practice 4 min
+Topic Topic 12.5.5 Exercise: Hands-On Installation Practice 3 min
+Topic Topic 12.5.6 Exercise: Cloud-Based Applications 3 min
+Topic Topic 12.5.7 Exercise: Cloud Comparison Activity Capstone 3 min
+Assessment Assessment 12.6 Module Quiz 20 min High Score: N/A
+Topic Topic 13.0 Managing Windows 1 min
+Topic Topic 13.1 Use Management Consoles 2 min
+Topic Topic 13.1.1 Device Manager 5 min
+Topic Topic 13.1.2 Disk Management Console 5 min
+Topic Topic 13.1.3 Disk Maintenance Tools 4 min
+Lab Lab 13.1.4 Disk Management 12 min High Score: N/A
+Topic Topic 13.1.5 Task Scheduler 2 min
+Topic Topic 13.1.6 Local Users and Groups Console 4 min
+Lab Lab 13.1.7 Users and Groups 12 min High Score: N/A
+Topic Topic 13.1.8 Certificate Manager 2 min
+Topic Topic 13.1.9 Group Policy Editor 2 min
+Topic Topic 13.1.10 Registry Editor 3 min
+Topic Topic 13.1.11 Custom Microsoft Management Consoles 1 min
+Lab Lab 13.1.12 : Manage User Accounts 30 min High Score: N/A
+Assessment Assessment 13.1.13 Lesson Review 15 min High Score: N/A
+Topic Topic 13.2 Command-Line Tools 2 min
+Topic Topic 13.2.1 Command Prompt 3 min
+Topic Topic 13.2.2 Navigation Commands 3 min
+Topic Topic 13.2.3 File Management Commands 3 min
+Lab Lab 13.2.4 Manage Files and Folders 12 min High Score: N/A
+Topic Topic 13.2.5 Disk Management Commands 4 min
+Topic Topic 13.2.6 System Management Commands 5 min
+Video Video 13.2.7 Use System Management Commands 3 min
+Lab Lab 13.2.8 : Configure File Storage 30 min High Score: N/A
+Assessment Assessment 13.2.9 Lesson Review 10 min High Score: N/A
+Topic Topic 13.3 Windows Networking 2 min
+Topic Topic 13.3.1 Windows Network Connection Types 6 min
+Topic Topic 13.3.2 IP Addressing Schemes 4 min
+Topic Topic 13.3.3 Windows Client Configuration 6 min
+Topic Topic 13.3.4 Network Location 8 min
+Topic Topic 13.3.5 Windows Defender Firewall Configuration 3 min
+Topic Topic 13.3.6 VPN and WWAN Connection Types 5 min
+Lab Lab 13.3.7 Configure a VPN Connection 12 min High Score: N/A
+Topic Topic 13.3.8 Proxy Settings 2 min
+Lab Lab 13.3.9 Local Firewall Settings 12 min High Score: N/A
+Lab Lab 13.3.10 Configure TCP/IP Settings on Windows 10 12 min High Score: N/A
+Lab Lab 13.3.11 Configure TCP/IP Settings on Windows 11 12 min High Score: N/A
+Lab Lab 13.3.12 : Manage Network and Security Settings 30 min High Score: N/A
+Assessment Assessment 13.3.13 Lesson Review 15 min High Score: N/A
+Lab Lab 13.4 Challenge Live Lab: Manage Windows Workstations 30 min High Score: N/A
+Lab Lab 13.5 Challenge Live Lab: Set Up Windows Workstations 30 min High Score: N/A
+Topic Topic 13.6 Additional Resources 1 min
+Topic Topic 13.6.1 Windows Management Consoles 1 min
+Topic Topic 13.6.2 The Command-Line Interface 1 min
+Topic Topic 13.6.3 Exercise: Research and Document Snap-Ins 3 min
+Topic Topic 13.6.4 Exercise: Command Documentation 3 min
+Topic Topic 13.6.5 Exercise: Research Firewall Basics 3 min
+Topic Topic 13.6.6 Exercise: Create a Custom MMC Console Capstone 3 min
+Assessment Assessment 13.7 Module Quiz 15 min High Score: N/A
+Topic Topic 14.0 Supporting Windows 2 min
+Topic Topic 14.1 Troubleshoot Windows Networking 2 min
+Topic Topic 14.1.1 Troubleshoot IP Configuration 6 min
+Lab Lab 14.1.2 Assisted Troubleshooting 12 min High Score: N/A
+Topic Topic 14.1.3 Troubleshoot Local Network Connectivity 5 min
+Lab Lab 14.1.4 Troubleshoot Physical Connectivity 12 min High Score: N/A
+Topic Topic 14.1.5 Troubleshoot Remote Network Connectivity 3 min
+Topic Topic 14.1.6 Troubleshoot Name Resolution 3 min
+Topic Topic 14.1.7 Troubleshoot Network Ports 2 min
+Lab Lab 14.1.8 Connectivity 12 min High Score: N/A
+Lab Lab 14.1.9 Services/Name Resolution 12 min High Score: N/A
+Assessment Assessment 14.1.10 Lesson Review 15 min High Score: N/A
+Topic Topic 14.2 Remote Access Technologies 2 min
+Topic Topic 14.2.1 Remote Desktop Tools 5 min
+Topic Topic 14.2.2 RDP Server and Security Settings 5 min
+Topic Topic 14.2.3 Microsoft Remote Assistance 3 min
+Lab Lab 14.2.4 Configure Remote Services 12 min High Score: N/A
+Topic Topic 14.2.5 WinRM 2 min
+Topic Topic 14.2.6 Secure Shell 4 min
+Topic Topic 14.2.7 Desktop Management and Remote Monitoring Tools 3 min
+Topic Topic 14.2.8 Simple Protocol for Independent Computing Environments (SPICE) 1 min
+Topic Topic 14.2.9 Other Remote Access Tools 5 min
+Lab Lab 14.2.10 : Provide Remote Support 30 min High Score: N/A
+Assessment Assessment 14.2.11 Lesson Review 15 min High Score: N/A
+Topic Topic 14.3 Performance and Troubleshooting Tools 2 min
+Topic Topic 14.3.1 System Information 1 min
+Topic Topic 14.3.2 Event Viewer 4 min
+Topic Topic 14.3.3 Task Manager Process Monitoring 7 min
+Topic Topic 14.3.4 Task Manager Performance Monitoring 3 min
+Topic Topic 14.3.5 CPU and GPU Monitoring 2 min
+Topic Topic 14.3.6 Memory Monitoring 2 min
+Topic Topic 14.3.7 Disk and Network Monitoring 2 min
+Topic Topic 14.3.8 Task Manager User Monitoring 2 min
+Topic Topic 14.3.9 Startup Processes and Services Console 2 min
+Lab Lab 14.3.10 Manage Applications 12 min High Score: N/A
+Topic Topic 14.3.11 Resource Monitor and Performance Monitor 3 min
+Topic Topic 14.3.12 Performance Counters 4 min
+Topic Topic 14.3.13 System Configuration Utility 3 min
+Assessment Assessment 14.3.14 Lesson Review 15 min High Score: N/A
+Topic Topic 14.4 Troubleshoot Windows OS Problems 2 min
+Topic Topic 14.4.1 Boot Process 3 min
+Topic Topic 14.4.2 Boot Recovery Tools 6 min
+Lab Lab 14.4.3 Boot into the Windows Recovery Environment 12 min High Score: N/A
+Topic Topic 14.4.4 System Restore 6 min
+Lab Lab 14.4.5 Create a Restore Point 12 min High Score: N/A
+Topic Topic 14.4.6 Update and Driver Roll Back 3 min
+Topic Topic 14.4.7 System Repair, Reinstall, and Reimage 4 min
+Topic Topic 14.4.8 Troubleshoot Boot Issues 6 min
+Lab Lab 14.4.9 Configure the Boot Order 12 min High Score: N/A
+Topic Topic 14.4.10 Troubleshoot Profile Issues 2 min
+Topic Topic 14.4.11 Troubleshoot Performance Issues 7 min
+Topic Topic 14.4.12 Troubleshoot System Fault Issues 6 min
+Topic Topic 14.4.13 Troubleshoot Application and Service Fault Issues 6 min
+Lab Lab 14.4.14 : Support Windows OS 30 min High Score: N/A
+Assessment Assessment 14.4.15 Lesson Review 15 min High Score: N/A
+Lab Lab 14.5 Challenge Live Lab: Resolve Troubleshooting Tickets 30 min High Score: N/A
+Lab Lab 14.6 Challenge Live Lab: Resolve Network Troubleshooting Tickets 30 min High Score: N/A
+Topic Topic 14.7 Additional Resources 1 min
+Topic Topic 14.7.1 Networking Command-Line Tools 1 min
+Topic Topic 14.7.2 Remote Access 1 min
+Topic Topic 14.7.3 Exercise: Mastering Diagnostic Tools 4 min
+Topic Topic 14.7.4 Exercise: Research and Compare Remote Access Tools 3 min
+Topic Topic 14.7.5 Exercise: Performance Monitor Activity 4 min
+Topic Topic 14.7.6 Exercise: Windows Tool Guide Capstone 3 min
+Assessment Assessment 14.8 Module Quiz 20 min High Score: N/A
+Assessment Assessment 14.9 Checkpoint Review 20 min High Score: N/A
+Topic Topic 15.0 Securing Windows 2 min
+Topic Topic 15.1 Logical Security Concepts 2 min
+Topic Topic 15.1.1 Logical Security Controls 6 min
+Topic Topic 15.1.2 Information Security 2 min
+Topic Topic 15.1.3 Hashing and Encryption Concepts 4 min
+Video Video 15.1.4 Asymmetric Encryption 3 min
+Topic Topic 15.1.5 Digital Signatures and Key Exchange 4 min
+Topic Topic 15.1.6 User and Group Accounts 6 min
+Topic Topic 15.1.7 User Account Control 4 min
+Lab Lab 15.1.8 Create User Accounts 12 min High Score: N/A
+Topic Topic 15.1.9 Authentication Methods 9 min
+Video Video 15.1.10 Authentication 2 min
+Assessment Assessment 15.1.11 Lesson Review 15 min High Score: N/A
+Topic Topic 15.2 Windows Security Settings 2 min
+Topic Topic 15.2.1 Windows Login Options 9 min
+Topic Topic 15.2.2 Windows Domains and Active Directory 7 min
+Lab Lab 15.2.3 Create OUs 12 min High Score: N/A
+Topic Topic 15.2.4 Group Policy and Login Scripts 5 min
+Lab Lab 15.2.5 Use System Commands 12 min High Score: N/A
+Lab Lab 15.2.6 Group Policy Management 12 min High Score: N/A
+Assessment Assessment 15.2.7 Lesson Review 10 min High Score: N/A
+Topic Topic 15.3 Windows Shares 2 min
+Topic Topic 15.3.1 Workgroup Setup 4 min
+Topic Topic 15.3.2 File Share Configuration 3 min
+Topic Topic 15.3.3 Network Browsing and Mapping Drives 5 min
+Topic Topic 15.3.4 Printer Sharing 3 min
+Topic Topic 15.3.5 NTFS versus Share Permissions 7 min
+Lab Lab 15.3.6 Configure NTFS Permissions 12 min High Score: N/A
+Topic Topic 15.3.7 Permissions Inheritance 3 min
+Topic Topic 15.3.8 Domain Setup 4 min
+Topic Topic 15.3.9 Home Folders 3 min
+Topic Topic 15.3.10 Roaming Profiles and Folder Redirection 3 min
+Lab Lab 15.3.11 Support AD Domain Networking 12 min High Score: N/A
+Assessment Assessment 15.3.12 Lesson Review 15 min High Score: N/A
+Lab Lab 15.4 Challenge Live Lab: Manage Domain Accounts 30 min High Score: N/A
+Topic Topic 15.5 Additional Resources 1 min
+Topic Topic 15.5.1 Authentication and Login in Windows 1 min
+Topic Topic 15.5.2 Windows Security Settings 1 min
+Topic Topic 15.5.3 Exercise: Create A Security Policy 3 min
+Topic Topic 15.5.4 Exercise: Research Windows Security Features 3 min
+Topic Topic 15.5.5 Exercise: Windows Shares Research Assignment 3 min
+Topic Topic 15.5.6 Exercise: Windows Security Infographic Capstone 3 min
+Assessment Assessment 15.6 Module Quiz 15 min High Score: N/A
+Topic Topic 16.0 Installing Operating Systems 1 min
+Topic Topic 16.1 Windows Editions 2 min
+Topic Topic 16.1.1 Windows Versions 9 min
+Topic Topic 16.1.2 Windows Home Edition 2 min
+Topic Topic 16.1.3 Work and Education Features 3 min
+Topic Topic 16.1.4 Windows Pro and Enterprise Editions 3 min
+Topic Topic 16.1.5 Windows Upgrade Paths and Feature Updates 3 min
+Lab Lab 16.1.6 Windows 11 Features/Desktop 12 min High Score: N/A
+Assessment Assessment 16.1.7 Lesson Review 10 min High Score: N/A
+Topic Topic 16.2 OS Installations and Upgrades 2 min
+Topic Topic 16.2.1 Installation and Upgrade Considerations 5 min
+Topic Topic 16.2.2 Unattended Installations 8 min
+Topic Topic 16.2.3 Boot Devices 6 min
+Topic Topic 16.2.4 Disk Configuration 5 min
+Topic Topic 16.2.5 Repair Installation 2 min
+Lab Lab 16.2.6 : Perform a Remote Network Installation 30 min High Score: N/A
+Assessment Assessment 16.2.7 Lesson Review 10 min High Score: N/A
+Lab Lab 16.3 Challenge Live Lab: Support Windows Installation and Upgrade Issues 30 min High Score: N/A
+Topic Topic 16.4 Additional Resources 1 min
+Topic Topic 16.4.1 Windows Editions 1 min
+Topic Topic 16.4.2 OS Installs and Upgrades 1 min
+Topic Topic 16.4.3 Exercise: Research and Compare Windows Editions 3 min
+Topic Topic 16.4.4 Exercise: Step-By-Step OS Installation Guide 3 min
+Topic Topic 16.4.5 Exercise: Compare OS Installation Methods Capstone 3 min
+Assessment Assessment 16.5 Module Quiz 10 min High Score: N/A
+Topic Topic 17.0 Supporting Other OS 1 min
+Topic Topic 17.1 Linux Features 2 min
+Topic Topic 17.1.1 Shells, Terminals, and Consoles 5 min
+Topic Topic 17.1.2 Command Interface 4 min
+Topic Topic 17.1.3 Navigation Commands 5 min
+Topic Topic 17.1.4 Search Commands 4 min
+Topic Topic 17.1.5 Filesystem Management 2 min
+Topic Topic 17.1.6 File Management Commands 9 min
+Lab Lab 17.1.7 File Management 12 min High Score: N/A
+Topic Topic 17.1.8 User Account Management 3 min
+Topic Topic 17.1.9 File Permissions Commands 4 min
+Lab Lab 17.1.10 Manage Linux File Ownership 12 min High Score: N/A
+Lab Lab 17.1.11 : Report Linux Configuration Settings 30 min High Score: N/A
+Assessment Assessment 17.1.12 Lesson Review 15 min High Score: N/A
+Topic Topic 17.2 Package and Network Management 2 min
+Topic Topic 17.2.1 Package Management Commands 8 min
+Topic Topic 17.2.2 Process Monitoring Commands 4 min
+Topic Topic 17.2.3 Network Management Commands 5 min
+Lab Lab 17.2.4 Informational and Network Tools 12 min High Score: N/A
+Topic Topic 17.2.5 Backup and Scheduling Commands 3 min
+Lab Lab 17.2.6 Configure Linux 12 min High Score: N/A
+Lab Lab 17.2.7 : Manage Linux Apps and Files 30 min High Score: N/A
+Assessment Assessment 17.2.8 Lesson Review 10 min High Score: N/A
+Topic Topic 17.3 macOS Features 2 min
+Topic Topic 17.3.1 Interface Features 4 min
+Topic Topic 17.3.2 System Folders and Finder 2 min
+Topic Topic 17.3.3 System Settings 4 min
+Topic Topic 17.3.4 Security and User Management 4 min
+Topic Topic 17.3.5 iCloud and Continuity 5 min
+Topic Topic 17.3.6 App Installation and Management 5 min
+Topic Topic 17.3.7 OS and App Updates 3 min
+Topic Topic 17.3.8 Network and Device Settings 2 min
+Topic Topic 17.3.9 Time Machine Backup 2 min
+Topic Topic 17.3.10 Troubleshoot Crashes and Boot Issues 8 min
+Assessment Assessment 17.3.11 Lesson Review 15 min High Score: N/A
+Lab Lab 17.4 Challenge Live Lab: Install and Support Linux OS 30 min High Score: N/A
+Topic Topic 17.5 Additional Resources 1 min
+Topic Topic 17.5.1 Linux versus Windows 1 min
+Topic Topic 17.5.2 Linux User Accounts 1 min
+Topic Topic 17.5.3 Exercise: Exploring Key Features of Linux 3 min
+Topic Topic 17.5.4 Exercise: Linux Package Search and Information 4 min
+Topic Topic 17.5.5 Exploring the macOS Interface 4 min
+Topic Topic 17.5.6 Exercise: Linux Distribution Exploration Capstone 3 min
+Assessment Assessment 17.6 Module Quiz 15 min High Score: N/A
+Assessment Assessment 17.7 Checkpoint Review 20 min High Score: N/A
+Topic Topic 18.0 Configuring SOHO Network Security 1 min
+Topic Topic 18.1 Attacks, Threats, and Vulnerabilities 2 min
+Topic Topic 18.1.1 Vulnerabilities 7 min
+Topic Topic 18.1.2 Social Engineering 5 min
+Lab Lab 18.1.3 Respond to Social Engineering Exploits 12 min High Score: N/A
+Topic Topic 18.1.4 Phishing and Evil Twins 6 min
+Topic Topic 18.1.5 Threat Types 10 min
+Topic Topic 18.1.6 Password Attacks 5 min
+Topic Topic 18.1.7 Cross-site Scripting Attacks 5 min
+Topic Topic 18.1.8 SQL Injection Attacks 3 min
+Lab Lab 18.1.9 Explore SQL Injection Flaws 12 min High Score: N/A
+Assessment Assessment 18.1.10 Lesson Review 15 min High Score: N/A
+Topic Topic 18.2 Wireless Security Protocols 2 min
+Topic Topic 18.2.1 Wi-Fi Protected Access 5 min
+Topic Topic 18.2.2 Wi-Fi Authentication Methods 3 min
+Topic Topic 18.2.3 Enterprise Authentication Protocols 5 min
+Video Video 18.2.4 Authentication Methods 3 min
+Topic Topic 18.2.5 RADIUS, TACACS+, and Kerberos 3 min
+Assessment Assessment 18.2.6 Lesson Review 10 min High Score: N/A
+Topic Topic 18.3 SOHO Router Security 2 min
+Topic Topic 18.3.1 Home Router Setup 7 min
+Lab Lab 18.3.2 SOHO Router Configuration 12 min High Score: N/A
+Topic Topic 18.3.3 Firmware Update 2 min
+Topic Topic 18.3.4 Home Router LAN and WLAN Configuration 4 min
+Topic Topic 18.3.5 Home Router Firewall Configuration 3 min
+Topic Topic 18.3.6 Home Router Port Forwarding Configuration 5 min
+Topic Topic 18.3.7 Universal Plug-and-Play 2 min
+Topic Topic 18.3.8 Screened Subnets 3 min
+Video Video 18.3.9 Secure a Small Wireless Network 3 min
+Assessment Assessment 18.3.10 Lesson Review 15 min High Score: N/A
+Topic Topic 18.4 Additional Security Measures 1 min
+Topic Topic 18.4.1 Physical Access Control 4 min
+Lab Lab 18.4.2 Implement Physical Security 12 min High Score: N/A
+Topic Topic 18.4.3 Lock Types 6 min
+Topic Topic 18.4.4 Alarms and Surveillance 4 min
+Assessment Assessment 18.4.5 Lesson Review 10 min High Score: N/A
+Lab Lab 18.5 Challenge Live Lab: Resolve SOHO Network Issues 30 min High Score: N/A
+Topic Topic 18.6 Additional Resources 1 min
+Topic Topic 18.6.1 Understanding Social Engineering 1 min
+Topic Topic 18.6.2 Wireless Security Protocols 1 min
+Topic Topic 18.6.3 Exercise: Threat Analysis Report 4 min
+Topic Topic 18.6.4 Exercise: Wireless Protocol Comparison Chart 3 min
+Topic Topic 18.6.5 Exercise: SOHO Security Best Practices Infographic 3 min
+Topic Topic 18.6.6 Exercise: Physical Access Research and Presentation 3 min
+Topic Topic 18.6.7 Exercise: Cyber Attacks Case Studies Capstone 3 min
+Assessment Assessment 18.7 Module Quiz 20 min High Score: N/A
+Topic Topic 19.0 Managing Security Settings 2 min
+Topic Topic 19.1 Account Security 2 min
+Topic Topic 19.1.1 Password Best Practices 4 min
+Lab Lab 19.1.2 Enforce Password Settings 12 min High Score: N/A
+Topic Topic 19.1.3 End User Best Practices 3 min
+Topic Topic 19.1.4 Restrict User Permissions 2 min
+Topic Topic 19.1.5 Change Default Administrator Account and Password 2 min
+Topic Topic 19.1.6 Disable Guest Account 1 min
+Topic Topic 19.1.7 Account Policies 4 min
+Topic Topic 19.1.8 Unused Services 2 min
+Lab Lab 19.1.9 User Policy Management 12 min High Score: N/A
+Lab Lab 19.1.10 : Configure Domain Account Security 30 min High Score: N/A
+Assessment Assessment 19.1.11 Lesson Review 10 min High Score: N/A
+Topic Topic 19.2 Workstation Security 2 min
+Topic Topic 19.2.1 Execution Control 2 min
+Topic Topic 19.2.2 Trusted/Untrusted Software Sources 2 min
+Topic Topic 19.2.3 AutoRun and AutoPlay 2 min
+Topic Topic 19.2.4 Windows Defender Antivirus 2 min
+Topic Topic 19.2.5 Windows Defender Antivirus Updated Definitions 1 min
+Topic Topic 19.2.6 Activating and Deactivating Windows Defender Antivirus 2 min
+Lab Lab 19.2.7 Configure Microsoft Defender Antivirus 12 min High Score: N/A
+Topic Topic 19.2.8 Windows Defender Firewall 3 min
+Video Video 19.2.9 Windows Defender 3 min
+Topic Topic 19.2.10 Encrypting File System 3 min
+Lab Lab 19.2.11 Encrypt Files with EFS 12 min High Score: N/A
+Topic Topic 19.2.12 Windows BitLocker and BitLocker To Go 5 min
+Lab Lab 19.2.13 Configure BitLocker with a TPM 12 min High Score: N/A
+Lab Lab 19.2.14 : Analyze Workstation Security Settings 30 min High Score: N/A
+Assessment Assessment 19.2.15 Lesson Review 10 min High Score: N/A
+Topic Topic 19.3 Browser Security 2 min
+Topic Topic 19.3.1 Browser Selection and Installation 3 min
+Lab Lab 19.3.2 Practice Installing & Removing Browser Software 12 min High Score: N/A
+Topic Topic 19.3.3 Browser Settings 4 min
+Lab Lab 19.3.4 Safe Browsing Best Practices 12 min High Score: N/A
+Topic Topic 19.3.5 Browser Extensions and Plug-ins 4 min
+Topic Topic 19.3.6 Browser Patching 1 min
+Topic Topic 19.3.7 Secure Connections and Valid Certificates 3 min
+Topic Topic 19.3.8 Browser Privacy Settings 6 min
+Video Video 19.3.9 Clear Browser History 2 min
+Lab Lab 19.3.10 : Configure Browser Security 30 min High Score: N/A
+Assessment Assessment 19.3.11 Lesson Review 10 min High Score: N/A
+Topic Topic 19.4 Troubleshoot Workstation Security 2 min
+Topic Topic 19.4.1 Malware Vectors 4 min
+Topic Topic 19.4.2 Malware Payloads 7 min
+Topic Topic 19.4.3 Ransomware and Cryptominers 3 min
+Topic Topic 19.4.4 Troubleshoot PC Security Symptoms 4 min
+Topic Topic 19.4.5 Desktop Alerts and Notifications 2 min
+Topic Topic 19.4.6 Endpoint Monitoring Solutions 1 min
+Topic Topic 19.4.7 Troubleshoot Browser Symptoms 5 min
+Topic Topic 19.4.8 Best Practices for Malware Removal 2 min
+Video Video 19.4.9 Check for Anti-Malware on a Machine 1 min
+Topic Topic 19.4.10 Infected Systems Quarantine 3 min
+Topic Topic 19.4.11 Malware Removal Tools and Methods 4 min
+Topic Topic 19.4.12 Malware Infection Prevention 5 min
+Assessment Assessment 19.4.13 Lesson Review 15 min High Score: N/A
+Lab Lab 19.5 Resolve Security Tickets 30 min High Score: N/A
+Topic Topic 19.6 Additional Resources 1 min
+Topic Topic 19.6.1 Malware Types 1 min
+Topic Topic 19.6.2 Malware Symptoms, Removal, and Prevention for SOHO Environments 1 min
+Topic Topic 19.6.3 Exercise: Security Breach Research and Presentation 4 min
+Topic Topic 19.6.4 Exercise: Windows Security Configuration Checklist 4 min
+Topic Topic 19.6.5 Exercise: Research on Browser Vulnerabilities 3 min
+Topic Topic 19.6.6 Exercise: Malware Removal Tools Research and Presentation 3 min
+Topic Topic 19.6.7 Exercise: Research on Malware Trends Capstone 3 min
+Assessment Assessment 19.7 Module Quiz 20 min High Score: N/A
+Topic Topic 20.0 Supporting Mobile Software 1 min
+Topic Topic 20.1 Mobile OS Security 2 min
+Topic Topic 20.1.1 Screen Locks 3 min
+Topic Topic 20.1.2 Mobile Security Software 3 min
+Topic Topic 20.1.3 Enterprise Mobility Management 7 min
+Topic Topic 20.1.4 Mobile Device Management 3 min
+Topic Topic 20.1.5 Two-factor Authentication 2 min
+Topic Topic 20.1.6 Mobile Data Security 4 min
+Topic Topic 20.1.7 Locator Apps and Remote Wipe 2 min
+Lab Lab 20.1.8 Configure Remote Wipe 12 min High Score: N/A
+Assessment Assessment 20.1.9 Lesson Review 10 min High Score: N/A
+Topic Topic 20.2 Troubleshoot Mobile OS and App Software 2 min
+Topic Topic 20.2.1 Mobile Device Troubleshooting Tools 5 min
+Video Video 20.2.2 Mobile Device Troubleshooting 4 min
+Topic Topic 20.2.3 Troubleshoot Device and OS Issues 5 min
+Topic Topic 20.2.4 Troubleshoot App Issues 5 min
+Topic Topic 20.2.5 Troubleshoot Connectivity Issues 3 min
+Lab Lab 20.2.6 Connect to WiFi 12 min High Score: N/A
+Assessment Assessment 20.2.7 Lesson Review 10 min High Score: N/A
+Topic Topic 20.3 Troubleshoot Mobile OS and App Security 2 min
+Topic Topic 20.3.1 Root Access Security Concerns 7 min
+Topic Topic 20.3.2 Mobile App Source Security Concerns 3 min
+Topic Topic 20.3.3 Mobile Security Symptoms 5 min
+Assessment Assessment 20.3.4 Lesson Review 10 min High Score: N/A
+Topic Topic 20.4 Additional Resources 1 min
+Topic Topic 20.4.1 Mobile Applications and Connectivity 1 min
+Topic Topic 20.4.2 Exercise: Mobile OS Security Research and Analysis 3 min
+Topic Topic 20.4.3 Exercise: Mobile Device Scenario-Based Troubleshooting 4 min
+Topic Topic 20.4.4 Exercise: Mobile Device Scenario-Based Learning 4 min
+Topic Topic 20.4.5 Exercise: Mobile OS Current Event and Trends Capstone 4 min
+Assessment Assessment 20.5 Module Quiz 15 min High Score: N/A
+Assessment Assessment 20.6 Checkpoint Review 20 min High Score: N/A
+Topic Topic 21.0 Using Data Security 1 min
+Topic Topic 21.1 Data Backup and Recovery 2 min
+Topic Topic 21.1.1 Backup Operations 3 min
+Topic Topic 21.1.2 Backup Methods 7 min
+Lab Lab 21.1.3 Back Up the Computer 12 min High Score: N/A
+Topic Topic 21.1.4 Backup Media Requirements 5 min
+Topic Topic 21.1.5 Backup Testing and Recovery Best Practices 3 min
+Lab Lab 21.1.6 Restore Data from File History 12 min High Score: N/A
+Lab Lab 21.1.7 : Support Backup and Restore Operations 30 min High Score: N/A
+Assessment Assessment 21.1.8 Lesson Review 10 min High Score: N/A
+Topic Topic 21.2 Data Handling Best Practices 2 min
+Topic Topic 21.2.1 Regulated Data Classification 8 min
+Topic Topic 21.2.2 Prohibited Content and Licensing Issues 8 min
+Topic Topic 21.2.3 Incident Response 3 min
+Topic Topic 21.2.4 Data Integrity and Preservation 6 min
+Topic Topic 21.2.5 Data Destruction Methods 5 min
+Topic Topic 21.2.6 Disposal and Recycling Outsourcing Concepts 3 min
+Assessment Assessment 21.2.7 Lesson Review 10 min High Score: N/A
+Topic Topic 21.3 Artificial Intelligence 2 min
+Topic Topic 21.3.1 Application Integration 2 min
+Topic Topic 21.3.2 Policy 2 min
+Topic Topic 21.3.3 Limitations 2 min
+Topic Topic 21.3.4 Private vs. Public 3 min
+Assessment Assessment 21.3.5 Lesson Review 10 min High Score: N/A
+Lab Lab 21.4 Challenge Live Lab: Resolve Incident Response Tickets 30 min High Score: N/A
+Topic Topic 21.5 Additional Resources 1 min
+Topic Topic 21.5.1 Computer Data Backup 1 min
+Topic Topic 21.5.2 Data Best Practices 1 min
+Topic Topic 21.5.3 Exercise: Backup Hands-On Practice 4 min
+Topic Topic 21.5.4 Exercise: Creating a Data Handling Policy 4 min
+Topic Topic 21.5.5 Exercise: Hands-On AI Experimentation 3 min
+Topic Topic 21.5.6 Exercise: Data Backup Scenario-Based Problem Solving Capstone 4 min
+Assessment Assessment 21.6 Module Quiz 15 min High Score: N/A
+Topic Topic 22.0 Implementing Operational Procedures 2 min
+Topic Topic 22.1 Change and Inventory Management 2 min
+Topic Topic 22.1.1 Change Requests 4 min
+Topic Topic 22.1.2 Risk Analysis 2 min
+Topic Topic 22.1.3 Change Board Approvals 1 min
+Topic Topic 22.1.4 Implementation and Acceptance 3 min
+Topic Topic 22.1.5 Asset Management 4 min
+Topic Topic 22.1.6 Warranty and Licensing 1 min
+Assessment Assessment 22.1.7 Lesson Review 10 min High Score: N/A
+Topic Topic 22.2 Common Safety and Environmental Procedures 2 min
+Topic Topic 22.2.1 Compliance with Regulations 2 min
+Topic Topic 22.2.2 Electrical Safety 8 min
+Topic Topic 22.2.3 Other Safety Hazard Mitigations 5 min
+Topic Topic 22.2.4 Environmental Impacts 5 min
+Topic Topic 22.2.5 Electrostatic Discharge Mitigation 6 min
+Topic Topic 22.2.6 Building Power Issues and Mitigations 6 min
+Topic Topic 22.2.7 Materials Handling and Responsible Disposal 5 min
+Lab Lab 22.2.8 Install a UPS 12 min High Score: N/A
+Assessment Assessment 22.2.9 Lesson Review 10 min High Score: N/A
+Topic Topic 22.3 Scripting Basics 2 min
+Topic Topic 22.3.1 Shell Scripts 4 min
+Video Video 22.3.2 Bash Command Syntax 7 min
+Topic Topic 22.3.3 Basic Script Constructs 7 min
+Video Video 22.3.4 Conditionals 1 min
+Topic Topic 22.3.5 Windows Scripts 2 min
+Topic Topic 22.3.6 JavaScript and Python 4 min
+Lab Lab 22.3.7 JavaScript 12 min High Score: N/A
+Topic Topic 22.3.8 Use Cases for Scripting 7 min
+Topic Topic 22.3.9 Scripting Best Practices and Considerations 5 min
+Lab Lab 22.3.10 Live Lab: Implement a PowerShell Script 30 min High Score: N/A
+Lab Lab 22.3.11 Live Lab: Implement a Bash Script 30 min High Score: N/A
+Assessment Assessment 22.3.12 Lesson Review 15 min High Score: N/A
+Topic Topic 22.4 Additional Resources 1 min
+Topic Topic 22.4.1 Asset and Change Management 1 min
+Topic Topic 22.4.2 Basics of Scripting 1 min
+Topic Topic 22.4.3 Exercise: Creating a Change Management Plan 5 min
+Topic Topic 22.4.4 Exercise: Environmental Impact Assessment 3 min
+Topic Topic 22.4.5 Exercise: Research and Compare Scripting Languages 3 min
+Topic Topic 22.4.6 Exercise: Safety Checklist Creation Capstone 3 min
+Assessment Assessment 22.5 Module Quiz 15 min High Score: N/A
+Assessment Assessment 22.6 Checkpoint Review 20 min High Score: N/A
+Topic Topic A.0 Hardware and Network Sandbox 1 min
+Lab Lab A.1 Hardware Sandbox 12 min High Score: N/A
+Lab Lab A.2 Network Sandbox 12 min High Score: N/A
+Topic Topic B.0 CompTIA A+ Core 1 220-1201 Practice Exams 1 min
+Topic Topic B.1 Prepare for CompTIA A+ Core 1 Certification 1 min
+Topic Topic B.1.1 Why Should I Take a Certification Exam? 2 min
+Topic Topic B.1.2 Exam Details for A+ Core 1 (220-1201) 3 min
+Topic Topic B.1.3 How to Take the Certification Exam 5 min
+Topic Topic B.1.4 Tips for Taking the Exam 5 min
+Topic Topic B.2 A+ 220-1201 Core 1 Practice Exams 2 min
+Assessment Assessment B.2.1 Exam Practice 1: Mobile Devices 20 min High Score: N/A
+Assessment Assessment B.2.2 Exam Practice 2: Networking 20 min High Score: N/A
+Assessment Assessment B.2.3 Exam Practice 3: Hardware 20 min High Score: N/A
+Assessment Assessment B.2.4 Exam Practice 4: Virtualization and Cloud Computing 20 min High Score: N/A
+Assessment Assessment B.2.5 Exam Practice 5: Hardware and Network Troubleshooting 20 min High Score: N/A
+Assessment Assessment B.2.6 A+ 220-1201 Core1 Exam Practice 90 min High Score: N/A
+Assessment Assessment B.2.7 Skills Practice: Competency in IT Hardware and Network Support 10 min High Score: N/A
+Topic Topic C.0 CompTIA A+ Core 2 220-1202 Practice Exams 1 min
+Topic Topic C.1 Prepare for CompTIA A+ Core 2 Certification 1 min
+Topic Topic C.1.1 Why Should I Take a Certification Exam? 2 min
+Topic Topic C.1.2 Exam Details for A+ Core 2 (220-1202) 3 min
+Topic Topic C.1.3 How to Take the Certification Exam 5 min
+Topic Topic C.1.4 Tips for Taking the Exam 5 min
+Topic Topic C.2 A+ Core 2 220-1202 Practice Exams 2 min
+Assessment Assessment C.2.1 Exam Practice 1: Operating Systems 20 min High Score: N/A
+Assessment Assessment C.2.2 Exam Practice 2: Security 20 min High Score: N/A
+Assessment Assessment C.2.3 Exam Practice 3: Software Troubleshooting 20 min High Score: N/A
+Assessment Assessment C.2.4 Exam Practice 4: Operational Procedures 20 min High Score: N/A
+Assessment Assessment C.2.5 A+ 220-1202 Core 2 Exam Practice 90 min High Score: N/A
+Assessment Assessment C.2.6 Skills Practice: Competency in IT Software and Systems Support 12 min High Score: N/A
+

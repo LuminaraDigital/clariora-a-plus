@@ -62,8 +62,9 @@
   --info-bg: rgba(163, 173, 194, 0.12);
 
   /* Backdrop */
-  --grid-line: rgba(255, 255, 255, 0.028);
-  --glow: radial-gradient(ellipse 75% 50% at 50% -10%, rgba(212, 175, 55, 0.08), transparent 70%);
+  --wash-gold: rgba(212, 175, 55, 0.06);
+  --wash-cool: rgba(56, 189, 248, 0.04);
+  --glow: radial-gradient(ellipse 75% 50% at 50% -10%, rgba(212, 175, 55, 0.10), transparent 70%);
   --hero-mesh-mask: radial-gradient(ellipse 95% 80% at 50% 30%, black 40%, transparent 95%);
   --final-card-glow: radial-gradient(125% 125% at 50% 10%, rgba(212, 175, 55, 0.12) 0%, rgba(15, 19, 27, 0) 70%), var(--surface-1);
   --shadow-card: 0 12px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(212, 175, 55, 0.14);
@@ -130,8 +131,9 @@
     --danger-bg: rgba(162, 58, 46, 0.12);
     --info: #4A546A;
     --info-bg: rgba(74, 84, 106, 0.10);
-    --grid-line: rgba(15, 23, 42, 0.035);
-    --glow: radial-gradient(ellipse 75% 50% at 50% -10%, rgba(184, 144, 30, 0.07), transparent 70%);
+    --wash-gold: rgba(184, 144, 30, 0.07);
+    --wash-cool: rgba(2, 132, 199, 0.04);
+    --glow: radial-gradient(ellipse 75% 50% at 50% -10%, rgba(184, 144, 30, 0.09), transparent 70%);
     --hero-mesh-mask: radial-gradient(ellipse 95% 80% at 50% 30%, black 35%, transparent 95%);
     --final-card-glow: radial-gradient(125% 125% at 50% 10%, rgba(184, 144, 30, 0.08) 0%, rgba(255, 255, 255, 0) 70%), var(--surface-1);
     --shadow-card: 0 8px 24px rgba(15, 23, 42, 0.08);
@@ -167,10 +169,9 @@ body {
   background-color: var(--surface-0);
   background-image:
     var(--glow),
-    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-  background-size: 100% 100%, 32px 32px, 32px 32px;
-  background-repeat: no-repeat, repeat, repeat;
+    radial-gradient(ellipse 90% 55% at 85% 15%, var(--wash-gold), transparent 55%),
+    radial-gradient(ellipse 70% 45% at 10% 80%, var(--wash-cool), transparent 50%);
+  background-repeat: no-repeat;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
@@ -1260,3 +1261,93 @@ td .cell {
     align-items: start;
   }
 }
+
+
+/* ============================================================
+   Multi-page chrome and competitor compare
+   ============================================================ */
+
+.nav-links a.is-active,
+.nav-menu-panel a.is-active {
+  color: var(--gold-text);
+}
+
+.page-hero {
+  padding: calc(var(--nav-h) + var(--sp-6)) 0 var(--sp-5);
+}
+
+.page-hero .lead {
+  max-width: var(--measure);
+  color: var(--text-2);
+  font-size: var(--fs-lead);
+}
+
+.page-hero .eyebrow {
+  display: inline-block;
+  margin-bottom: var(--sp-2);
+}
+
+.compare-note {
+  margin: var(--sp-2) 0 var(--sp-4);
+  color: var(--text-3);
+  font-size: var(--fs-small);
+  max-width: var(--measure);
+}
+
+.table-wrap.table-compare {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  background: var(--surface-1);
+  box-shadow: var(--shadow-card);
+}
+
+.table-compare table {
+  min-width: 720px;
+}
+
+.table-compare th.col-us,
+.table-compare td.col-us {
+  background: var(--gold-tint);
+}
+
+.share-card {
+  margin-top: var(--sp-4);
+  padding: var(--sp-4);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-card);
+  background: var(--final-card-glow);
+}
+
+.share-card h3 {
+  margin-bottom: var(--sp-1);
+}
+
+.page-cta {
+  margin-top: var(--sp-5);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+@media (min-width: 900px) {
+  .hero-fullbleed {
+    position: relative;
+  }
+  .hero-fullbleed::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, var(--surface-0) 0%, color-mix(in srgb, var(--surface-0) 88%, transparent) 42%, transparent 70%),
+      radial-gradient(ellipse 60% 70% at 78% 40%, var(--wash-gold), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .hero-fullbleed .container {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.walk-spaced{margin-top:var(--sp-5);}

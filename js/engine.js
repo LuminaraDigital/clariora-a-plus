@@ -32,7 +32,8 @@
     plan: 'practice',
     coach: 'practice',
     memory: 'practice',
-    raid: 'practice'
+    raid: 'practice',
+    assessment: 'practice'
   };
 
   /** Resolve the session mode from a session type plus an optional override. */
@@ -118,6 +119,8 @@
       this.passingScore = 675;
       this.domainKey = null;
       this.coachMissionId = null;
+      this.assessmentId = null;
+      this.assessmentKind = null;
       this.questionEnteredAt = Date.now();
       this.questionSeconds = {};
     }
@@ -137,7 +140,7 @@
       }
 
       let sampled = [];
-      if (type === 'domain' || type === 'missed' || type === 'coach') {
+      if (type === 'domain' || type === 'missed' || type === 'coach' || type === 'assessment') {
         sampled = APlus.engineCore.shuffle(pool).slice(0, Math.min(questionCount, pool.length));
       } else {
         sampled = APlus.engineCore.sampleStratified(pool, questionCount, type);
@@ -158,9 +161,11 @@
       this.isPaused = false;
       this.domainKey = config.domainKey || null;
       this.coachMissionId = config.coachMissionId || null;
+      this.assessmentId = config.assessmentId || null;
+      this.assessmentKind = config.assessmentKind || null;
       this.questionSeconds = {};
       this.questionEnteredAt = Date.now();
-      this.passingScore = APlus.engineCore.getPassingScore(type);
+      this.passingScore = APlus.engineCore.getPassingScore(type === 'assessment' ? (config.exam || 'core1') : type);
 
       this.startTimer();
 
@@ -170,7 +175,10 @@
         totalQuestions: this.questions.length,
         totalSeconds: this.totalSeconds,
         passingScore: this.passingScore,
-        coachMissionId: this.coachMissionId
+        coachMissionId: this.coachMissionId,
+        assessmentId: this.assessmentId,
+        assessmentKind: this.assessmentKind,
+        domainKey: this.domainKey
       });
 
       return this;
@@ -400,10 +408,27 @@
         flaggedCount: this.flaggedQuestions.size,
         domainKey: this.domainKey,
         coachMissionId: this.coachMissionId,
+        assessmentId: this.assessmentId,
+        assessmentKind: this.assessmentKind,
         timestamp: new Date().toISOString()
       };
 
       APlus.bus.emit('exam:finished', resultsPayload);
+
+      // Per-item anonymised outcomes for premium item analysis (ids only).
+      if (APlus.bus && typeof APlus.bus.emit === 'function') {
+        perQuestion.forEach(function (row) {
+          APlus.bus.emit('item:answered', {
+            questionId: row.id,
+            objective: row.objective || null,
+            domain: row.domain || null,
+            correct: row.correct,
+            seconds: row.secondsOnQuestion || 0,
+            examType: resultsPayload.examType,
+            assessmentKind: resultsPayload.assessmentKind || null
+          });
+        });
+      }
 
       return resultsPayload;
     }

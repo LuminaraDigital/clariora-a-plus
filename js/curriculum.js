@@ -70,6 +70,9 @@
       parsed.slides = parsed.slides || {};
       parsed.labs = parsed.labs || {};
       parsed.videos = parsed.videos || {};
+      parsed.assessments = parsed.assessments || {};
+      parsed.bookmarks = parsed.bookmarks || {};
+      parsed.activityLog = Array.isArray(parsed.activityLog) ? parsed.activityLog : [];
       this.data = parsed;
       return parsed;
     },
@@ -80,28 +83,136 @@
     },
     deck: function (id) {
       var d = this.load().slides;
-      if (!d[id]) d[id] = { at: 1, seen: [] };
+      if (!d[id]) d[id] = { at: 1, seen: [], seconds: 0, startedAt: null, completedAt: null };
       if (!Array.isArray(d[id].seen)) d[id].seen = [];
+      if (typeof d[id].seconds !== 'number') d[id].seconds = 0;
       return d[id];
     },
     lab: function (id) {
       var d = this.load().labs;
-      if (!d[id]) d[id] = { done: {}, answers: {} };
+      if (!d[id]) d[id] = { done: {}, answers: {}, bestScore: null, seconds: 0, startedAt: null, completedAt: null };
       d[id].done = d[id].done || {};
       d[id].answers = d[id].answers || {};
+      if (typeof d[id].seconds !== 'number') d[id].seconds = 0;
       return d[id];
     },
     video: function (id) {
       var d = this.load().videos;
-      if (!d[id]) d[id] = { played: false };
+      if (!d[id]) d[id] = { played: false, seconds: 0, lastPosition: 0, completedAt: null };
+      if (typeof d[id].seconds !== 'number') d[id].seconds = 0;
+      if (typeof d[id].lastPosition !== 'number') d[id].lastPosition = 0;
       return d[id];
     },
+    assessment: function (id) {
+      var d = this.load().assessments;
+      if (!d[id]) {
+        d[id] = {
+          attempts: 0,
+          bestScore: null,
+          bestPercent: null,
+          lastScore: null,
+          lastPercent: null,
+          seconds: 0,
+          kind: null,
+          title: null,
+          lastStartedAt: null,
+          lastFinishedAt: null
+        };
+      }
+      return d[id];
+    },
+    toggleBookmark: function (kind, id) {
+      var key = String(kind || 'item') + ':' + String(id || '');
+      var b = this.load().bookmarks;
+      if (b[key]) delete b[key];
+      else b[key] = { kind: kind, id: id, at: new Date().toISOString() };
+      this.save();
+      return !!b[key];
+    },
+    isBookmarked: function (kind, id) {
+      return !!this.load().bookmarks[String(kind || 'item') + ':' + String(id || '')];
+    },
+    logActivity: function (entry) {
+      var log = this.load().activityLog;
+      log.push({
+        t: new Date().toISOString(),
+        kind: entry && entry.kind,
+        id: entry && entry.id,
+        action: entry && entry.action,
+        seconds: entry && entry.seconds,
+        score: entry && entry.score
+      });
+      if (log.length > 400) log.splice(0, log.length - 400);
+      this.save();
+    },
+    exportState: function () {
+      return JSON.parse(JSON.stringify(this.load()));
+    },
+    importState: function (raw) {
+      if (!raw || typeof raw !== 'object') return false;
+      this.data = {
+        slides: raw.slides || {},
+        labs: raw.labs || {},
+        videos: raw.videos || {},
+        assessments: raw.assessments || {},
+        bookmarks: raw.bookmarks || {},
+        activityLog: Array.isArray(raw.activityLog) ? raw.activityLog : []
+      };
+      this.save();
+      return true;
+    },
+    moduleProgress: function (moduleNo) {
+      var outline = window.COMPTIA_CURRICULUM_OUTLINE;
+      if (!outline || !Array.isArray(outline.modules)) return null;
+      var mod = null;
+      for (var i = 0; i < outline.modules.length; i++) {
+        if (outline.modules[i].module_no === moduleNo) {
+          mod = outline.modules[i];
+          break;
+        }
+      }
+      if (!mod) return null;
+      var total = mod.activities.length || 1;
+      var done = 0;
+      var bestScores = [];
+      var self = this;
+      mod.activities.forEach(function (act) {
+        if (act.kind === 'topic' && act.ref_id) {
+          var d = self.load().slides[act.ref_id];
+          if (d && d.completedAt) done++;
+          else if (d && d.seen && d.seen.length) done += 0.5;
+        } else if (act.kind === 'lab' && act.ref_id) {
+          var l = self.load().labs[act.ref_id];
+          if (l && (l.completedAt || (typeof l.bestScore === 'number' && l.bestScore >= 80))) done++;
+          else if (l && l.done && Object.keys(l.done).length) done += 0.5;
+          if (l && typeof l.bestScore === 'number') bestScores.push(l.bestScore);
+        } else if (act.kind === 'video' && act.ref_id) {
+          var v = self.load().videos[act.ref_id];
+          if (v && (v.played || v.completedAt)) done++;
+        } else if (act.kind === 'assessment' && act.ref_id) {
+          var a = self.load().assessments[act.ref_id];
+          if (a && typeof a.bestPercent === 'number') {
+            done += a.bestPercent >= 70 ? 1 : 0.5;
+            bestScores.push(a.bestPercent);
+          }
+        }
+      });
+      return {
+        module_no: moduleNo,
+        title: mod.title,
+        percent: Math.min(100, Math.round((done / total) * 100)),
+        done: done,
+        total: total,
+        highScore: bestScores.length ? Math.max.apply(null, bestScores) : null,
+        estimated_minutes: mod.estimated_minutes
+      };
+    },
     resetLab: function (id) {
-      this.load().labs[id] = { done: {}, answers: {} };
+      this.load().labs[id] = { done: {}, answers: {}, bestScore: null, seconds: 0, startedAt: null, completedAt: null };
       this.save();
     },
     resetDeck: function (id) {
-      this.load().slides[id] = { at: 1, seen: [] };
+      this.load().slides[id] = { at: 1, seen: [], seconds: 0, startedAt: null, completedAt: null };
       this.save();
     }
   };
@@ -999,6 +1110,16 @@
     } else if (item.kind === 'lab') {
       badge = item.lab_no ? 'Lab ' + pad2(item.lab_no) : item.format === 'markdown' ? 'Guide' : 'Project';
       meta = item.format === 'markdown' ? 'Reference' : 'Worksheet';
+    } else if (item.kind === 'assessment') {
+      badge =
+        item.assessment_kind === 'module_quiz'
+          ? 'Quiz'
+          : item.assessment_kind === 'checkpoint_review'
+            ? 'Check'
+            : item.assessment_kind === 'exam_practice'
+              ? 'Exam'
+              : 'Review';
+      meta = (item.question_count || '?') + ' Q · ' + (item.estimated_minutes || '?') + ' min';
     } else {
       badge = 'Play';
       meta = item.size_mb + ' MB';
@@ -1041,6 +1162,25 @@
 
     itemsForTab: function (tab) {
       var c = this.catalog();
+      if (tab === 'assessments') {
+        if (window.APlus && APlus.assessmentPacks && typeof APlus.assessmentPacks.list === 'function') {
+          return APlus.assessmentPacks.list({ exam: 'all' }).map(function (p) {
+            return {
+              id: p.id,
+              kind: 'assessment',
+              assessment_kind: p.kind,
+              title: p.title,
+              exam: p.exam,
+              domain: p.domain,
+              module_no: p.module_no,
+              question_count: p.question_count,
+              estimated_minutes: p.estimated_minutes,
+              excerpt: (p.kind || '') + ' · ' + (p.domain || p.exam || '')
+            };
+          });
+        }
+        return [];
+      }
       if (!c) return [];
       if (tab === 'labs') return this.sortLabs(c.labs || []);
       if (tab === 'slides') return c.slides || [];
@@ -1058,7 +1198,7 @@
     },
 
     open: function (tab, id) {
-      if (tab === 'labs' || tab === 'slides' || tab === 'videos') this.tab = tab;
+      if (tab === 'labs' || tab === 'slides' || tab === 'videos' || tab === 'assessments') this.tab = tab;
       var modal = document.getElementById('curriculumModal');
       if (!modal) return;
       modal.classList.add('active');
@@ -1104,19 +1244,32 @@
     syncTabs: function () {
       var self = this;
       var c = this.catalog();
-      ['videos', 'slides', 'labs'].forEach(function (t) {
+      var outline = window.COMPTIA_CURRICULUM_OUTLINE;
+      ['videos', 'slides', 'labs', 'assessments'].forEach(function (t) {
         var btn = document.getElementById('curriculumTab-' + t);
         if (!btn) return;
         var on = t === self.tab;
         btn.classList.toggle('is-active', on);
         btn.setAttribute('aria-selected', on ? 'true' : 'false');
         var countEl = btn.querySelector('.cl-tab-count');
-        if (countEl && c && c.stats) countEl.textContent = String(c.stats[t] || 0);
+        if (countEl) {
+          if (t === 'assessments') {
+            countEl.textContent = String((outline && outline.ours && outline.ours.assessments) || (outline && outline.assessments && outline.assessments.length) || 0);
+          } else if (c && c.stats) {
+            countEl.textContent = String(c.stats[t] || 0);
+          }
+        }
       });
       var search = document.getElementById('curriculumSearch');
       if (search) {
         search.placeholder =
-          this.tab === 'labs' ? 'Search labs' : this.tab === 'slides' ? 'Search slide decks' : 'Search videos';
+          this.tab === 'labs'
+            ? 'Search labs'
+            : this.tab === 'slides'
+              ? 'Search slide decks'
+              : this.tab === 'assessments'
+                ? 'Search assessments'
+                : 'Search videos';
       }
     },
 
@@ -1131,11 +1284,19 @@
       if (item.kind === 'lab') {
         var l = store.load().labs[item.id];
         if (!l) return '';
+        if (typeof l.bestScore === 'number') return 'High score ' + l.bestScore + '%';
         var n = 0;
         for (var k in l.done) if (l.done[k] && /^s\d+$/.test(k)) n++;
         if (!n) return '';
         var lab = model.labOf(item);
         return lab.checkables && n >= lab.checkables ? 'Complete' : n + ' steps done';
+      }
+      if (item.kind === 'assessment') {
+        var a = store.load().assessments[item.id];
+        if (!a) return (item.estimated_minutes || '?') + ' min';
+        if (typeof a.bestPercent === 'number') return 'High score ' + a.bestPercent + '%';
+        if (a.attempts) return a.attempts + ' attempt' + (a.attempts === 1 ? '' : 's');
+        return (item.estimated_minutes || '?') + ' min';
       }
       var v = store.load().videos[item.id];
       return v && v.played ? 'Watched' : '';
@@ -1209,6 +1370,13 @@
     },
 
     groupOf: function (item) {
+      if (item.kind === 'assessment') {
+        if (item.assessment_kind === 'lesson_review') return 'Lesson Reviews';
+        if (item.assessment_kind === 'module_quiz') return 'Module Quizzes';
+        if (item.assessment_kind === 'checkpoint_review') return 'Checkpoint Reviews';
+        if (item.assessment_kind === 'exam_practice') return 'Exam Practice';
+        return 'Assessments';
+      }
       if (item.kind === 'lab') {
         if (item.format === 'markdown') return 'Start here';
         if (item.lab_no) return 'Hands-on labs';
@@ -1232,16 +1400,88 @@
       this.selectedId = id;
       this.markSelected();
 
+      if (item.kind === 'assessment') {
+        var a = store.assessment(item.id);
+        var kindLabel =
+          item.assessment_kind === 'module_quiz'
+            ? 'Module Quiz'
+            : item.assessment_kind === 'checkpoint_review'
+              ? 'Checkpoint Review'
+              : item.assessment_kind === 'exam_practice'
+                ? 'Exam Practice'
+                : 'Lesson Review';
+        var high =
+          typeof a.bestPercent === 'number'
+            ? '<p class="cl-meta">High score: <strong>' + a.bestPercent + '%</strong>' + (typeof a.bestScore === 'number' ? ' (scaled ' + a.bestScore + ')' : '') + '</p>'
+            : '<p class="cl-meta">High score: N/A</p>';
+        viewer.innerHTML =
+          '<div class="cl-assessment">' +
+          '<header class="cl-head"><span class="cl-badge">' +
+          escapeHTML(kindLabel) +
+          '</span><div class="cl-head-text"><h4>' +
+          escapeHTML(item.title) +
+          '</h4><p class="cl-meta">' +
+          escapeHTML(examLabel(item.exam)) +
+          (item.domain ? ' · ' + escapeHTML(item.domain) : '') +
+          (item.module_no ? ' · Module ' + item.module_no : '') +
+          ' · ' +
+          (item.question_count || '?') +
+          ' questions · ' +
+          (item.estimated_minutes || '?') +
+          ' min</p></div></header>' +
+          high +
+          '<p>Questions are drawn from Clariora\'s exam bank for this domain. Scores are stored locally as high scores, the same way CertMaster tracks Lesson Reviews and Module Quizzes.</p>' +
+          '<div class="cl-head-actions" style="margin-top:1rem">' +
+          '<button type="button" class="btn btn-primary" data-cl-action="start-assessment" data-pack-id="' +
+          escapeHTML(item.id) +
+          '">Start assessment</button>' +
+          '<button type="button" class="btn btn-secondary" data-cl-action="toggle-bookmark" data-kind="assessment" data-id="' +
+          escapeHTML(item.id) +
+          '">' +
+          (store.isBookmarked('assessment', item.id) ? 'Remove bookmark' : 'Bookmark') +
+          '</button>' +
+          '</div></div>';
+        viewer.scrollTop = 0;
+        store.logActivity({ kind: 'assessment', id: item.id, action: 'view' });
+        return;
+      }
+
       if (item.kind === 'video') {
         viewer.innerHTML = html.video(item, store.video(item.id));
         var player = document.getElementById('curriculumVideoPlayer');
         if (player) {
+          var vidRec = store.video(item.id);
+          if (vidRec.lastPosition > 0) {
+            try {
+              player.currentTime = vidRec.lastPosition;
+            } catch (_) {}
+          }
           player.addEventListener('play', function () {
             var v = store.video(item.id);
             if (!v.played) {
               v.played = true;
               store.save();
+              store.logActivity({ kind: 'video', id: item.id, action: 'play' });
             }
+          });
+          player.addEventListener('timeupdate', function () {
+            var v = store.video(item.id);
+            v.lastPosition = Math.floor(player.currentTime || 0);
+            v.seconds = Math.max(v.seconds || 0, v.lastPosition);
+            if (player.duration && player.currentTime / player.duration >= 0.9) {
+              v.completedAt = v.completedAt || new Date().toISOString();
+              v.played = true;
+            }
+          });
+          player.addEventListener('pause', function () {
+            store.save();
+          });
+          player.addEventListener('ended', function () {
+            var v = store.video(item.id);
+            v.played = true;
+            v.completedAt = new Date().toISOString();
+            store.save();
+            store.logActivity({ kind: 'video', id: item.id, action: 'complete' });
           });
         }
         viewer.scrollTop = 0;
@@ -1251,6 +1491,7 @@
       if (item.kind === 'slide') {
         var deck = model.deckOf(item);
         var prog = store.deck(item.id);
+        if (!prog.startedAt) prog.startedAt = new Date().toISOString();
         var at = Math.max(1, Math.min(deck.length || 1, prog.at || 1));
         this.markSeen(item.id, at);
         viewer.innerHTML = deck.length
@@ -1261,11 +1502,16 @@
         return;
       }
 
+      var labProg = store.lab(item.id);
+      if (!labProg.startedAt) {
+        labProg.startedAt = new Date().toISOString();
+        store.save();
+      }
       if (item.format === 'markdown') {
         viewer.innerHTML = html.markdownLab(item);
       } else {
         var lab = model.labOf(item);
-        viewer.innerHTML = html.lab(item, lab, store.lab(item.id));
+        viewer.innerHTML = html.lab(item, lab, labProg);
       }
       viewer.scrollTop = 0;
     },
@@ -1297,6 +1543,11 @@
       var p = store.deck(deckId);
       p.at = n;
       if (p.seen.indexOf(n) < 0) p.seen.push(n);
+      var item = this.findItem(deckId);
+      var total = item ? model.deckOf(item).length : 0;
+      if (total && p.seen.length >= total) {
+        p.completedAt = p.completedAt || new Date().toISOString();
+      }
       store.save();
     },
 
@@ -1388,10 +1639,18 @@
       for (var k in prog.done) if (prog.done[k] && /^s\d+$/.test(k)) done++;
       var answered = 0;
       for (var q in prog.answers) if (String(prog.answers[q] || '').trim()) answered++;
+      var pct = lab.checkables ? Math.round((done / lab.checkables) * 100) : 0;
+      if (lab.checkables && done >= lab.checkables) {
+        prog.completedAt = prog.completedAt || new Date().toISOString();
+        if (typeof prog.bestScore !== 'number' || pct > prog.bestScore) prog.bestScore = pct;
+        store.logActivity({ kind: 'lab', id: item.id, action: 'complete', score: pct });
+      } else if (pct > 0 && (typeof prog.bestScore !== 'number' || pct > prog.bestScore)) {
+        prog.bestScore = pct;
+      }
+      store.save();
       var viewer = document.getElementById('curriculumViewer');
       if (!viewer) return;
       var bar = viewer.querySelector('.cl-lab-progress .cl-bar');
-      var pct = lab.checkables ? Math.round((done / lab.checkables) * 100) : 0;
       if (bar) {
         bar.setAttribute('aria-valuenow', String(pct));
         var fill = bar.querySelector('span');
@@ -1405,6 +1664,7 @@
           lab.checkables +
           ' steps done' +
           (lab.questions ? ' · ' + answered + ' of ' + lab.questions + ' answered' : '') +
+          (typeof prog.bestScore === 'number' ? ' · High score ' + prog.bestScore + '%' : '') +
           (lab.checkables && done === lab.checkables ? ' · Lab complete' : '');
       }
       Array.prototype.forEach.call(viewer.querySelectorAll('.cl-step'), function (stepEl) {
@@ -1456,6 +1716,14 @@
               self.show(self.selectedId);
               self.refreshListItem(self.findItem(self.selectedId));
             }
+          } else if (action === 'start-assessment') {
+            var packId = el.getAttribute('data-pack-id') || self.selectedId;
+            if (window.startAssessmentPack) window.startAssessmentPack(packId);
+          } else if (action === 'toggle-bookmark') {
+            var bk = el.getAttribute('data-kind') || 'assessment';
+            var bid = el.getAttribute('data-id') || self.selectedId;
+            store.toggleBookmark(bk, bid);
+            if (self.selectedId) self.show(self.selectedId);
           } else if (action === 'copy') {
             var text = el.getAttribute('data-copy') || '';
             var done = function () {

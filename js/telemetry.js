@@ -419,6 +419,27 @@
       payload = payload || {};
       track('feature_opened', { feature: payload.feature });
     });
+
+    bus.on('item:answered', function (payload) {
+      payload = payload || {};
+      track('item_answered', {
+        questionId: payload.questionId,
+        objective: payload.objective,
+        domain: payload.domain,
+        correct: payload.correct,
+        seconds: payload.seconds,
+        examType: payload.examType,
+        assessmentKind: payload.assessmentKind
+      });
+    });
+
+    bus.on('assessment:started', function (payload) {
+      track('assessment_started', sanitizeProps(payload || {}));
+    });
+
+    bus.on('assessment:finished', function (payload) {
+      track('assessment_finished', sanitizeProps(payload || {}));
+    });
   }
 
   function wireErrorHandlers() {

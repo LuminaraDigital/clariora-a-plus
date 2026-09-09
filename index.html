@@ -10,6 +10,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="stylesheet" href="css/tma-overrides.css">
+  <link rel="stylesheet" href="css/crucible-theme.css">
   <meta name="theme-color" content="#D4AF37">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1491,6 +1492,7 @@
   <script src="objectives_tracker.js"></script>
   <script src="study_library.js"></script>
   <script src="curriculum_data.js"></script>
+  <script src="curriculum_outline.js"></script>
   <script src="js/database_memory_engine.js"></script>
   <script src="profiles.js"></script>
   <script src="ledger_engine.js"></script>
@@ -1518,6 +1520,8 @@
   <script src="js/analytics.js"></script>
   <script src="js/studyhub.js"></script>
   <script src="js/curriculum.js"></script>
+  <script src="js/assessment-packs.js"></script>
+  <script src="js/share-loop.js"></script>
   <script src="js/groq-config.js"></script>
   <script src="js/groq-client.js"></script>
   <script src="js/ghost-coach.js"></script>
@@ -1555,6 +1559,9 @@
   <script src="js/firebase-config.js"></script>
   <script src="js/firebase-service.js"></script>
   <script src="js/firebase-auth-ui.js"></script>
+  <!-- Clariora Level 4: The Datacenter Crucible -->
+  <script src="js/crucible-engine.js"></script>
+  <script src="js/crucible-ui.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       var isTMA = false;
@@ -2087,7 +2094,7 @@
       <div class="modal-header">
         <div>
           <h3 id="curriculumModalTitle">Course library</h3>
-          <p>Lecture videos, module slide decks and hands-on labs for Core 1 and Core 2</p>
+          <p>Lecture videos, module slide decks, hands-on labs, and assessment packs for Core 1 and Core 2</p>
         </div>
         <button type="button" class="modal-close-btn" style="background: none; border: none; color: var(--text-secondary); font-size: 1.6rem; cursor: pointer;" onclick="closeCurriculumModal()" aria-label="Close course library">&times;</button>
       </div>
@@ -2097,6 +2104,7 @@
           <button type="button" id="curriculumTab-videos" class="cl-tab" role="tab" aria-selected="false" onclick="setCurriculumTab('videos')">Videos <span class="cl-tab-count">0</span></button>
           <button type="button" id="curriculumTab-slides" class="cl-tab" role="tab" aria-selected="false" onclick="setCurriculumTab('slides')">Slides <span class="cl-tab-count">0</span></button>
           <button type="button" id="curriculumTab-labs" class="cl-tab" role="tab" aria-selected="false" onclick="setCurriculumTab('labs')">Labs <span class="cl-tab-count">0</span></button>
+          <button type="button" id="curriculumTab-assessments" class="cl-tab" role="tab" aria-selected="false" onclick="setCurriculumTab('assessments')">Assessments <span class="cl-tab-count">0</span></button>
         </div>
         <input type="search" id="curriculumSearch" class="cl-search" placeholder="Search" aria-label="Search the course library" oninput="renderCurriculum()">
         <select id="curriculumExamFilter" class="cl-select" aria-label="Filter by exam" onchange="renderCurriculum()">
@@ -2284,6 +2292,7 @@
       if (hmMount && window.APlus && APlus.masteryHeatmap) {
         APlus.masteryHeatmap.render(hmMount);
       }
+      if (window.CrucibleUI) CrucibleUI.init();
     }
 
     /* NAVIGATION */
@@ -2470,6 +2479,7 @@
     /* TIMER */
     function startTimer() {
       if (currentExamSession.timerInterval) clearInterval(currentExamSession.timerInterval);
+      if (window.CrucibleUI) CrucibleUI.resetMutationTracker();
       updateTimerUI();
 
       currentExamSession.timerInterval = setInterval(() => {
@@ -2507,6 +2517,19 @@
         timerDisplay.classList.toggle('warning', level === 'warning');
       }
       if (timerDigits) timerDigits.classList.add('timer-digits');
+
+      if (window.CrucibleUI && currentExamSession.questions && currentExamSession.questions.length) {
+        CrucibleUI.renderToolbarPacing(
+          currentExamSession.currentIndex,
+          currentExamSession.remainingSeconds,
+          currentExamSession.questions.length,
+          currentExamSession.totalSeconds
+        );
+        if (CrucibleUI.getMutationTracker() && !currentExamSession.isPaused) {
+          const curQ = currentExamSession.questions[currentExamSession.currentIndex];
+          CrucibleUI.getMutationTracker().recordTimeSpent(currentExamSession.currentIndex, 1, curQ ? curQ.id : null);
+        }
+      }
     }
 
     function togglePause() {
@@ -2569,6 +2592,10 @@
         container.appendChild(item);
       });
 
+      if (window.CrucibleUI && CrucibleUI.isCrucibleActive()) {
+        CrucibleUI.enhanceQuestionOptions(container, idx, q, selectOption);
+      }
+
       // Update Prev / Next buttons
       document.getElementById('prevBtn').disabled = (idx === 0);
       const nextBtn = document.getElementById('nextBtn');
@@ -2584,6 +2611,16 @@
 
     function selectOption(optIdx) {
       const idx = currentExamSession.currentIndex;
+      const q = currentExamSession.questions[idx];
+      if (window.CrucibleUI && CrucibleUI.getMutationTracker() && q) {
+        CrucibleUI.getMutationTracker().recordSelection(
+          idx,
+          optIdx,
+          currentExamSession.remainingSeconds,
+          q.answer,
+          q.id
+        );
+      }
       currentExamSession.userAnswers[idx] = optIdx;
       renderQuestion();
       renderMatrix();
@@ -2600,6 +2637,14 @@
         set.delete(optIdx);
       } else {
         set.add(optIdx);
+      }
+      if (window.CrucibleUI && CrucibleUI.getMutationTracker() && currentExamSession.questions[idx]) {
+        CrucibleUI.getMutationTracker().recordElimination(
+          idx,
+          optIdx,
+          set.has(optIdx),
+          currentExamSession.questions[idx].id
+        );
       }
       renderQuestion();
     }
@@ -2877,6 +2922,16 @@
 
       // Render question review list
       renderReviewAccordion('all');
+
+      if (window.CrucibleUI && CrucibleUI.isCrucibleActive()) {
+        CrucibleUI.renderResultsDebrief(
+          document.getElementById('resultsScreen'),
+          currentExamSession,
+          questions,
+          currentExamSession.userAnswers,
+          CrucibleUI.getMutationTracker()
+        );
+      }
 
       showScreen('resultsScreen');
       updateMissedCountDisplay();
@@ -3883,6 +3938,7 @@
         <nav class="drawer-nav" aria-label="App settings">
           <ul>
             <li><button type="button" id="themeToggleBtn" class="drawer-item" onclick="toggleAppTheme()" title="Switch colour theme"><svg class="drawer-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/></svg><span class="drawer-item-text">Light</span></button></li>
+            <li><button type="button" id="crucibleDrawerToggleBtn" class="drawer-item" onclick="if(window.CrucibleUI) CrucibleUI.toggleCrucible();" title="Toggle Level 4 Datacenter Crucible Mode"><svg class="drawer-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg><span class="drawer-item-text">Crucible Mode</span><span class="drawer-item-meta">Level 4</span></button></li>
             <li><button type="button" id="soundToggleBtn" class="drawer-item" onclick="toggleSound()" title="Turn sound on or off"><svg class="drawer-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 10v4h3l4 3V7L8 10H5Z"/><path d="M16 9a4 4 0 0 1 0 6"/></svg><span class="drawer-item-text">Sound</span></button></li>
             <li><button type="button" id="tutorModeToggleBtn" data-tutor-toggle class="drawer-item" onclick="TutorMode.toggleFromUi()" aria-pressed="true" title="Show explanations while you answer"><svg class="drawer-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9V16h7v-2.1A6 6 0 0 0 12 3Z"/></svg><span class="drawer-item-text">Explanations</span><span class="drawer-item-meta">Practice only</span></button></li>
             <li><button type="button" id="telemetryConsentToggle" class="drawer-item drawer-switch" role="switch" aria-checked="false" hidden title="Share anonymous usage data"><svg class="drawer-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 18v-5M10 18V7M16 18v-8M21 18H3"/></svg><span class="drawer-item-text">Share anonymous usage data</span><span class="drawer-item-meta"><span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span></span></button></li>

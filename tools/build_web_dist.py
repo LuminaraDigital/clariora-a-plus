@@ -287,13 +287,18 @@ def main():
                 continue
             add(rel)
 
-    # 4b. The landing page links to the release asset for the current
-    #     version. Substitute the placeholder so the link never goes stale.
-    landing_index = DIST / "landing" / "index.html"
-    if landing_index.exists():
+    # 4b. Landing pages link to the release asset for the current version.
+    #     Substitute the placeholder in every landing HTML file.
+    landing_dir = DIST / "landing"
+    if landing_dir.is_dir():
         version = load_version()
-        text = landing_index.read_text(encoding="utf-8")
-        landing_index.write_text(text.replace("__APLUS_VERSION__", version), encoding="utf-8")
+        for landing_html in sorted(landing_dir.glob("*.html")):
+            text = landing_html.read_text(encoding="utf-8")
+            if "__APLUS_VERSION__" in text:
+                landing_html.write_text(
+                    text.replace("__APLUS_VERSION__", version), encoding="utf-8"
+                )
+                print(f"  version -> {landing_html.relative_to(DIST)}")
 
     # 4c. Create /app directory and redirect so relative links (../app)
     #     resolve both at runtime and during landing verification checks.

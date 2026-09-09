@@ -363,6 +363,10 @@
       activeProfileId: meta.activeProfileId,
       profilesMeta: meta,
       profilesData: data,
+      curriculumProgress:
+        global.APlus && APlus.curriculum && APlus.curriculum.store && typeof APlus.curriculum.store.exportState === "function"
+          ? APlus.curriculum.store.exportState()
+          : null,
       ledgerPublicKeyFingerprint: ledgerFingerprint,
       note: "Full local learner backup. Import replaces profile data on this device."
     };
@@ -410,6 +414,15 @@
       data: obj.profilesData
     });
     if (!imported.ok) return imported;
+    if (
+      obj.curriculumProgress &&
+      global.APlus &&
+      APlus.curriculum &&
+      APlus.curriculum.store &&
+      typeof APlus.curriculum.store.importState === "function"
+    ) {
+      APlus.curriculum.store.importState(obj.curriculumProgress);
+    }
     if (global.CompTIALedger && CompTIALedger.clearKeyCache) {
       CompTIALedger.clearKeyCache();
     }

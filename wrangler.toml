@@ -20,11 +20,12 @@ html_handling = "auto-trailing-slash"
 [[d1_databases]]
 binding = "DB"
 database_name = "clariora_edge_db"
-database_id = "clariora-edge-db-primary"
+database_id = "f1a42288-4259-4640-99dd-780845e9431f"
 
-[[r2_buckets]]
-binding = "MEDIA_BUCKET"
-bucket_name = "clariora-media"
+# R2 is not enabled on this account yet (dashboard: enable R2, then create clariora-media).
+# [[r2_buckets]]
+# binding = "MEDIA_BUCKET"
+# bucket_name = "clariora-media"
 
 [ai]
 binding = "AI"

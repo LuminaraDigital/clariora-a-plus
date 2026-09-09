@@ -1551,17 +1551,26 @@
   <script src="js/stars_billing.js"></script>
   <script src="js/ton_credentials.js"></script>
   <script src="js/tma_ghost_coach.js"></script>
+  <!-- Firebase Authentication & Cloud Learning Backend -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/firebase-service.js"></script>
+  <script src="js/firebase-auth-ui.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
+      var isTMA = false;
       if (window.TMABridge) {
         var bridge = window.TMABridge.init();
         if (bridge && bridge.isTMA) {
+          isTMA = true;
           var sub = document.getElementById('tmaSkeletonSubtext');
           if (sub) sub.textContent = 'Telegram Mini App Initializing...';
+          if (typeof window.TMABridge.mountUserPill === 'function') {
+            window.TMABridge.mountUserPill('tmaUserPillMount');
+          }
         }
-        if (typeof window.TMABridge.mountUserPill === 'function') {
-          window.TMABridge.mountUserPill('tmaUserPillMount');
-        }
+      }
+      if (!isTMA && window.ClarioraAuthUI) {
+        window.ClarioraAuthUI.init();
       }
       setTimeout(function () {
         var sk = document.getElementById('tmaSkeletonScreen');

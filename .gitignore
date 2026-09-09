@@ -12,6 +12,9 @@
 **/groq-secrets.local.js
 **/groq_secrets.local.json
 build/certs/
+credentials/
+*serviceAccount*.json
+serviceAccountKey.json
 **/*.pfx
 **/*.p12
 **/*.jwk
@@ -65,6 +68,8 @@ desktop.ini
 
 # Local preview config for the Claude desktop app
 .claude/
+.agents/
+skills-lock.json
 
 # Generated at build time from icons/icon-512.png
 build/icon.png

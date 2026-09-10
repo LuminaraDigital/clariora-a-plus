@@ -140,6 +140,15 @@ export default {
 
       // 2. Auth: Magic Link
       if (path === '/api/v1/auth/magic' && request.method === 'POST') {
+        const clientIp = request.headers.get('cf-connecting-ip') || 'unknown';
+        const rateCheck = await enforceCoachRateLimit(env, `magic:${clientIp}`, 5);
+        if (!rateCheck.allowed) {
+          return new Response(JSON.stringify({ error: 'Too many requests. Please wait a moment.' }), {
+            status: 429,
+            headers: { ...corsHeaders, 'Retry-After': '60' }
+          });
+        }
+
         const { email } = await request.json();
         if (!email || !email.includes('@')) {
           return new Response(JSON.stringify({ error: 'Valid email required' }), { status: 400, headers: corsHeaders });
@@ -1209,8 +1218,8 @@ async function verifyTelegramInitData(initData, botToken) {
   if (authDateStr) {
     const authDate = parseInt(authDateStr, 10);
     const nowSeconds = Math.floor(Date.now() / 1000);
-    // Reject if expired (> 7 days / 604800s) or clock-skewed into future (> 300s)
-    if (isNaN(authDate) || (nowSeconds - authDate) > 604800 || (authDate - nowSeconds) > 300) {
+    // Reject if expired (> 24 hours / 86400s) or clock-skewed into future (> 300s)
+    if (isNaN(authDate) || (nowSeconds - authDate) > 86400 || (authDate - nowSeconds) > 300) {
       console.warn('initData rejected: auth_date expired or invalid timestamp');
       return null;
     }

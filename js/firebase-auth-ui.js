@@ -40,13 +40,11 @@
     injectStyles();
     injectModalMarkup();
 
-    // Keep upgrade chip visible in regular browser with clear Upgrade label (Stars & TON)
+    // Upgrade chip is visible only inside native Telegram Mini App (TMA).
+    // In regular web browser, hide Stars & TON clutter from header.
     var starsChip = document.getElementById('tmaStarsChip');
     if (starsChip) {
-      starsChip.style.display = 'inline-flex';
-      starsChip.title = 'Upgrade Pass (Stars & TON)';
-      starsChip.setAttribute('aria-label', 'Upgrade Pass');
-      starsChip.innerHTML = '<strong style="color: #F5D061;">Upgrade</strong>';
+      starsChip.style.display = authState.isTMA ? 'inline-flex' : 'none';
     }
 
     // Restore Telegram web session if logged in previously
@@ -487,13 +485,14 @@
       '  </form>',
       '  <div class="auth-footer-links">',
       '    <button type="button" class="auth-link" id="authForgotBtn" onclick="ClarioraAuthUI.handleForgotPassword()">Forgot password?</button>',
+      '    <p style="margin: 14px 0 0; font-size: 11px; line-height: 1.45; color: #8B95A8; text-align: center;">Local-first privacy: Practice history is saved on this device. Sign in to sync across devices.</p>',
       '  </div>',
       '</div>'
     ].join('\n');
 
     document.body.appendChild(container);
 
-    // Close on backdrop click or Escape key (returns to wall when gated)
+    // Close on backdrop click or Escape key
     container.addEventListener('click', function (e) {
       if (e.target === container) closeModal();
     });
@@ -515,9 +514,9 @@
 
     if (!user) {
       mount.innerHTML = [
-        '<button type="button" class="streak-chip clariora-auth-chip" onclick="ClarioraAuthUI.openModal()" title="Sign in to save and sync progress" aria-label="Sign in">',
+        '<button type="button" class="streak-chip clariora-auth-chip" onclick="ClarioraAuthUI.openModal()" title="Sign in to save and sync progress across devices" aria-label="Sign in to sync">',
         '  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
-        '  <strong>Sign in</strong>',
+        '  <strong>Sign in to sync</strong>',
         '</button>'
       ].join('');
     } else {
@@ -868,35 +867,130 @@
 
   function openAccountMenu() {
     var savedTg = localStorage.getItem('clariora_telegram_auth');
+    var tgUser = null;
     if (savedTg) {
-      try {
-        var tgUser = JSON.parse(savedTg);
-        var tgName = tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : '');
-        var confirmed = window.confirm('Signed in via Telegram as: ' + tgName + (tgUser.username ? ' (@' + tgUser.username + ')' : '') + '\n\nClick OK to Sign Out, or Cancel to keep studying.');
-        if (confirmed) {
+      try { tgUser = JSON.parse(savedTg); } catch (_) {}
+    }
+    var service = firebaseService || window.ClarioraFirebaseService;
+    var user = service ? service.getCurrentUser() : null;
+
+    if (!tgUser && !user) {
+      openModal();
+      return;
+    }
+
+    var displayName = '';
+    var emailOrHandle = '';
+    var providerLabel = '';
+    var avatarHtml = '';
+
+    if (tgUser) {
+      displayName = tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : '');
+      emailOrHandle = tgUser.username ? '@' + tgUser.username : 'Telegram Account';
+      providerLabel = 'Telegram';
+      if (tgUser.photo_url) {
+        avatarHtml = '<img src="' + tgUser.photo_url + '" class="user-chip-avatar" style="width:42px;height:42px;" alt="' + displayName + '">';
+      } else {
+        avatarHtml = '<span class="user-chip-initials" style="width:42px;height:42px;font-size:16px;">' + (displayName.charAt(0) || 'T').toUpperCase() + '</span>';
+      }
+    } else {
+      displayName = user.displayName || (user.email ? user.email.split('@')[0] : 'Learner');
+      emailOrHandle = user.email || 'Cloud Account';
+      providerLabel = (user.providerData && user.providerData[0] && user.providerData[0].providerId === 'google.com') ? 'Google' : 'Email';
+      if (user.photoURL) {
+        avatarHtml = '<img src="' + user.photoURL + '" class="user-chip-avatar" style="width:42px;height:42px;" alt="' + displayName + '">';
+      } else {
+        avatarHtml = '<span class="user-chip-initials" style="width:42px;height:42px;font-size:16px;">' + (displayName.charAt(0) || 'L').toUpperCase() + '</span>';
+      }
+    }
+
+    var overlayId = 'clarioraAccountSheetOverlay';
+    var existing = document.getElementById(overlayId);
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+
+    var sheet = document.createElement('div');
+    sheet.id = overlayId;
+    sheet.className = 'auth-modal-overlay is-active';
+    sheet.setAttribute('role', 'dialog');
+    sheet.setAttribute('aria-modal', 'true');
+    sheet.setAttribute('aria-label', 'Account Settings');
+    sheet.innerHTML = [
+      '<div class="auth-modal-card" style="max-width: 380px; text-align: left;">',
+      '  <button type="button" class="auth-close-btn" id="clarioraAccountCloseBtn" aria-label="Close account settings">',
+      '    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+      '  </button>',
+      '  <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 18px;">',
+      '    ' + avatarHtml,
+      '    <div style="overflow: hidden;">',
+      '      <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #F3F4F6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' + displayName + '</h3>',
+      '      <p style="margin: 2px 0 0; font-size: 0.84rem; color: #94A3B8;">' + emailOrHandle + '</p>',
+      '    </div>',
+      '  </div>',
+      '  <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(212,175,55,0.2); border-radius: 8px; padding: 12px 14px; margin-bottom: 18px;">',
+      '    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">',
+      '      <span style="color: #94A3B8;">Sign-in method</span>',
+      '      <strong style="color: #D4AF37;">' + providerLabel + '</strong>',
+      '    </div>',
+      '    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px;">',
+      '      <span style="color: #94A3B8;">Cloud backup</span>',
+      '      <span style="color: #86EFAC; display: flex; align-items: center; gap: 6px;"><span class="sync-dot"></span> Synced</span>',
+      '    </div>',
+      '  </div>',
+      '  <div style="display: grid; gap: 10px;">',
+      '    <button type="button" class="btn" id="clarioraAccountSyncNowBtn" style="width: 100%; padding: 10px; background: rgba(212,175,55,0.14); border: 1px solid rgba(212,175,55,0.4); color: #F5D061; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">Sync Now</button>',
+      '    <button type="button" class="btn" id="clarioraAccountSignOutBtn" style="width: 100%; padding: 10px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #FCA5A5; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">Sign out</button>',
+      '  </div>',
+      '</div>'
+    ].join('\n');
+
+    document.body.appendChild(sheet);
+
+    function closeSheet() {
+      if (sheet && sheet.parentNode) sheet.parentNode.removeChild(sheet);
+    }
+
+    var closeBtn = document.getElementById('clarioraAccountCloseBtn');
+    if (closeBtn) closeBtn.onclick = closeSheet;
+    sheet.onclick = function (e) { if (e.target === sheet) closeSheet(); };
+
+    var syncBtn = document.getElementById('clarioraAccountSyncNowBtn');
+    if (syncBtn) {
+      syncBtn.onclick = async function () {
+        syncBtn.textContent = 'Syncing...';
+        syncBtn.disabled = true;
+        try {
+          if (service && typeof service.scheduleSyncToFirestore === 'function') {
+            await service.scheduleSyncToFirestore();
+          }
+          syncBtn.textContent = 'Synced successfully!';
+          setTimeout(function () {
+            if (syncBtn) { syncBtn.textContent = 'Sync Now'; syncBtn.disabled = false; }
+          }, 1500);
+        } catch (err) {
+          syncBtn.textContent = 'Sync delayed';
+          syncBtn.disabled = false;
+        }
+      };
+    }
+
+    var signOutBtn = document.getElementById('clarioraAccountSignOutBtn');
+    if (signOutBtn) {
+      signOutBtn.onclick = function () {
+        closeSheet();
+        if (tgUser) {
           localStorage.removeItem('clariora_telegram_auth');
           localStorage.removeItem('clariora_telegram_login_payload');
           localStorage.removeItem('clariora_auth_session_v1');
           renderHeaderPill(null);
           if (window.ClarioraAuthGate) window.ClarioraAuthGate.lock();
+        } else if (service) {
+          service.signOutUser().then(function () {
+            localStorage.removeItem('clariora_auth_session_v1');
+            renderHeaderPill(null);
+            if (window.ClarioraAuthGate) window.ClarioraAuthGate.lock();
+          });
         }
-        return;
-      } catch (e) {}
-    }
-
-    var service = firebaseService || window.ClarioraFirebaseService;
-    var user = service ? service.getCurrentUser() : null;
-    if (!user) return;
-
-    var email = user.email || 'Anonymous';
-    var name = user.displayName || email.split('@')[0];
-    var confirmed = window.confirm('Signed in as: ' + name + ' (' + email + ')\n\nClick OK to Sign Out, or Cancel to keep studying.');
-    if (confirmed) {
-      service.signOutUser().then(function () {
-        localStorage.removeItem('clariora_auth_session_v1');
-        renderHeaderPill(null);
-        if (window.ClarioraAuthGate) window.ClarioraAuthGate.lock();
-      });
+      };
     }
   }
 

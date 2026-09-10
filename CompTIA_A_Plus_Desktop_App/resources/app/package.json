@@ -1,0 +1,35 @@
+{
+  "name": "clariora-a-plus",
+  "version": "3.1.5",
+  "description": "Clariora A+, the CompTIA A+ exam simulator for Core 1 and Core 2",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "electron-updater": "^6.8.9"
+  },
+  "devDependencies": {
+    "electron": "^44.1.1",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.datacentreacademy.comptia-a-plus-master",
+    "productName": "Clariora",
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "https://comptia-a-plus-master.pages.dev/releases/"
+      }
+    ],
+    "files": [
+      "**/*",
+      "!Videos For A+/**",
+      "!media/videos/**",
+      "!**/groq-secrets.local.js",
+      "!**/groq_secrets.local.json"
+    ]
+  }
+}

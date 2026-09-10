@@ -270,7 +270,7 @@
         </p>
         ${isPassed ? `
           <button id="mint-ton-btn" class="ton-btn">
-            💎 Mint Verified Outcome on TON
+            Mint Verified Outcome on TON
           </button>
         ` : `
           <button disabled class="ton-btn" style="opacity: 0.5; cursor: not-allowed;">
@@ -284,17 +284,17 @@
     if (mintBtn) {
       mintBtn.onclick = async () => {
         mintBtn.disabled = true;
-        mintBtn.innerText = '⏳ Publishing to TON...';
+        mintBtn.innerText = 'Publishing to TON...';
         try {
           const res = await mintExamCredential(examResult);
-          mintBtn.innerText = '✅ Verified on TON!';
+          mintBtn.innerText = 'Verified on TON';
           mintBtn.style.background = '#10B981';
           if (res.record && res.record.explorerUrl) {
             window.open(res.record.explorerUrl, '_blank');
           }
         } catch (e) {
           mintBtn.disabled = false;
-          mintBtn.innerText = '❌ Failed (Retry)';
+          mintBtn.innerText = 'Failed (Retry)';
         }
       };
     }

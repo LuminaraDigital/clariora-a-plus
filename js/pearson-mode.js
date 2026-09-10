@@ -96,7 +96,7 @@
         cBtn.id = 'pearsonCalcBtn';
         cBtn.className = 'btn btn-secondary';
         cBtn.style = 'font-size: 0.82rem; padding: 0.35rem 0.7rem; align-items: center; gap: 0.35rem;';
-        cBtn.innerHTML = '🧮 <span>Calculator</span>';
+        cBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M8 18h.01M12 18h.01"/></svg><span>Calculator</span>';
         cBtn.onclick = () => this.toggleCalculator();
         headerControls.insertBefore(cBtn, headerControls.firstChild);
       }

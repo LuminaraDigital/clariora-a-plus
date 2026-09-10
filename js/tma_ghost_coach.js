@@ -24,10 +24,10 @@
     defaultProvider: 'groq',
     defaultIntent: 'explain',
     providers: [
-      { id: 'groq', name: 'Groq 8B', tier: 'free', icon: '⚡', desc: 'Fast diagnostic remediation' },
-      { id: 'nvidia', name: 'NVIDIA 70B', tier: 'pro', icon: '🟢', desc: 'Enterprise datacenter precision' },
-      { id: 'ollama', name: 'Ollama R1', tier: 'pro', icon: '🦙', desc: 'DeepSeek reasoning model' },
-      { id: 'openrouter', name: 'OpenRouter', tier: 'pro', icon: '🌐', desc: 'Claude 3.5 / GPT-4o multi-model' }
+      { id: 'groq', name: 'Groq 8B', tier: 'free', icon: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>', desc: 'Fast diagnostic remediation' },
+      { id: 'nvidia', name: 'NVIDIA 70B', tier: 'pro', icon: '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="7"/></svg>', desc: 'Enterprise datacenter precision' },
+      { id: 'ollama', name: 'Ollama R1', tier: 'pro', icon: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>', desc: 'DeepSeek reasoning model' },
+      { id: 'openrouter', name: 'OpenRouter', tier: 'pro', icon: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>', desc: 'Claude 3.5 / GPT-4o multi-model' }
     ]
   };
 
@@ -282,7 +282,7 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
     const distractors = q.distractor_analysis || {};
     const userDistractorNote = distractors[userChoice] || 'This option is either inapplicable to the scenario or solves a different layer of the stack.';
 
-    return `🤖 **Ghost Coach Remediation (Offline)**\n\n**Why You Hit the Trap:**\nYou picked *"${userChoice}"*. ${userDistractorNote}\n\n✅ **The Correct Answer: ${q.answer}**\n${q.explanation || 'Matches CompTIA standard troubleshooting methodology and hardware/network specifications.'}\n\n💡 **Technician Rule-of-Thumb:**\n> Always verify the physical layer and simplest failure points first before moving up the OSI model or replacing hardware components.`;
+    return `**Ghost Coach Remediation (Offline)**\n\n**Why You Hit the Trap:**\nYou picked *"${userChoice}"*. ${userDistractorNote}\n\n**The Correct Answer: ${q.answer}**\n${q.explanation || 'Matches CompTIA standard troubleshooting methodology and hardware/network specifications.'}\n\n**Technician Rule-of-Thumb:**\n> Always verify the physical layer and simplest failure points first before moving up the OSI model or replacing hardware components.`;
   }
 
   /**
@@ -341,7 +341,7 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
         <div class="tma-sheet-handle"></div>
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
           <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 1.3rem;">👻</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9 10h.01M15 10h.01"/><path d="M9.5 15a3.5 3.5 0 0 0 5 0"/></svg>
             <h3 style="color: #D4AF37; margin: 0; font-size: 1.1rem;">Ghost Coach AI</h3>
           </div>
           <div style="display: flex; align-items: center; gap: 6px;">
@@ -360,9 +360,9 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
               border: 1px solid ${p.id === currentProvider ? '#D4AF37' : 'rgba(255, 255, 255, 0.1)'};
               color: ${p.id === currentProvider ? '#F5D061' : '#94A3B8'};
             ">
-              <span>${p.icon}</span>
+              <span style="display: inline-flex; align-items: center;">${p.icon}</span>
               <span>${p.name}</span>
-              ${p.tier === 'pro' ? '<span style="color: #F5D061; font-size: 0.65rem;">⭐</span>' : ''}
+              ${p.tier === 'pro' ? '<span style="color: #F5D061; font-size: 0.65rem; font-weight: 800;">PRO</span>' : ''}
             </button>
           `).join('')}
         </div>
@@ -418,7 +418,7 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
     if (res.upsellMessage) {
       html += `
         <div style="margin-top: 16px; padding: 10px 14px; background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-          <span style="font-size: 0.8rem; color: #F5D061;">⭐ ${res.upsellMessage}</span>
+          <span style="font-size: 0.8rem; color: #F5D061; display: inline-flex; align-items: center; gap: 4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="#F5D061" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> ${res.upsellMessage}</span>
           <button onclick="if (window.StarsBilling) window.StarsBilling.openStarsUpgradeSheet()" style="background: #F5D061; color: #07090E; font-size: 0.75rem; font-weight: 700; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; white-space: nowrap;">
             Upgrade
           </button>
@@ -436,7 +436,7 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
 
     bodyEl.innerHTML = `
       <div style="text-align: center; padding: 16px 8px;">
-        <div style="font-size: 2rem; margin-bottom: 8px;">⭐</div>
+        <div style="margin-bottom: 8px;"><svg width="32" height="32" viewBox="0 0 24 24" fill="#F5D061" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
         <h4 style="color: #F5D061; margin: 0 0 8px 0; font-size: 1.15rem;">Unlock Clariora Pro AI</h4>
         <p style="color: #94A3B8; font-size: 0.85rem; line-height: 1.5; margin: 0 0 14px 0;">
           ${customMessage || `Access to <strong>${providerObj.name}</strong>, multi-specialist handoffs, streaming, and higher hard AI budgets requires an active pass.`}
@@ -445,7 +445,7 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
         ${proPreviewTokensRemaining > 0 ? `
           <div style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; text-align: left;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-              <span style="color: #38BDF8; font-weight: 700; font-size: 0.85rem;">🎁 14-Day Trial Bonus</span>
+              <span style="color: #38BDF8; font-weight: 700; font-size: 0.85rem;">14-Day Trial Bonus</span>
               <span style="color: #38BDF8; font-size: 0.75rem; font-weight: 600;">${proPreviewTokensRemaining} Tokens Left</span>
             </div>
             <p style="color: #94A3B8; font-size: 0.78rem; margin: 0 0 8px 0;">Sample enterprise ${providerObj.name} inference before upgrading.</p>
@@ -453,7 +453,7 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
               width: 100%; padding: 8px 14px; font-weight: 700; font-size: 0.85rem; border-radius: 8px;
               background: #38BDF8; color: #07090E; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
             ">
-              <span>⚡ Use 1 Pro Preview Token</span>
+              <span style="display: inline-flex; align-items: center; gap: 6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Use 1 Pro Preview Token</span>
             </button>
           </div>
         ` : ''}
@@ -463,7 +463,7 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
           background: linear-gradient(135deg, #D4AF37 0%, #F5D061 50%, #B8860B 100%);
           color: #07090E; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
         ">
-          <span>⭐ Unlock Pro (Stars or TON)</span>
+          <span style="display: inline-flex; align-items: center; gap: 6px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Unlock Pro (Stars or TON)</span>
         </button>
         <p style="font-size: 0.72rem; color: #64748B; margin-top: 10px;">
           Available via Telegram Stars (XTR) or TON Blockchain. 24-hour, monthly, and lifetime passes available.

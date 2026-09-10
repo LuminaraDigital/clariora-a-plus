@@ -133,8 +133,7 @@
       mountEl.innerHTML = `
         <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 1.25rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
-            <div>
-              <div style="font-size: 1.1rem; font-weight: 800; color: #fff;">🗺️ 61-Objective Mastery Heatmap</div>
+              <div style="font-size: 1.1rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 6px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg> 61-Objective Mastery Heatmap</div>
               <div style="font-size: 0.82rem; color: var(--text-secondary);">Click any sub-objective tile to launch a targeted 10-question drill.</div>
             </div>
             <div style="display: flex; gap: 0.4rem;">

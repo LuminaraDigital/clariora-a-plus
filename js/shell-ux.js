@@ -44,7 +44,7 @@
       '<div class="boot-panel">' +
       '<div class="mark" aria-hidden="true">A+</div>' +
       '<h2 id="aplusBootTitle">Clariora</h2>' +
-      '<p>Your progress is saved on this PC. No account needed.</p>' +
+      '<p>Local-first privacy: Progress is saved on this device. Sign in anytime to sync across devices.</p>' +
       '<div class="boot-progress" aria-hidden="true"><span id="aplusBootBar"></span></div>' +
       '<button type="button" class="btn" id="aplusBootStartBtn">Continue</button>' +
       '<div class="boot-meta" id="aplusBootMeta">Setting up</div>' +
@@ -495,6 +495,44 @@
   window.openMoreMenuAt = openMoreMenuAt;
   window.closeMoreMenu = closeMoreMenu;
   window.toggleMoreMenu = toggleMoreMenu;
+
+  function switchHomeTab(tab) {
+    tab = tab || 'practice';
+    var tabs = ['practice', 'study', 'progress'];
+    for (var i = 0; i < tabs.length; i++) {
+      var t = tabs[i];
+      var cap = t.charAt(0).toUpperCase() + t.slice(1);
+      var view = byId('homeView' + cap);
+      var nav = byId('navLink' + cap);
+      var btn = byId('tabBtn' + cap);
+      var isActive = (t === tab);
+      if (view) {
+        view.hidden = !isActive;
+        if (isActive) view.removeAttribute('hidden');
+        else view.setAttribute('hidden', '');
+      }
+      if (nav) {
+        nav.classList.toggle('active', isActive);
+        nav.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      }
+      if (btn) {
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      }
+    }
+    if (tab === 'progress' && window.APlus && APlus.masteryHeatmap) {
+      var mount = byId('masteryHeatmapMount');
+      if (mount) {
+        try { APlus.masteryHeatmap.render(mount); } catch (_) {}
+      }
+    }
+    var startScreen = byId('startScreen');
+    if (startScreen && window.scrollY > 100) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  window.switchHomeTab = switchHomeTab;
 
   /* ---------------------------------------------------------------
      Label hygiene

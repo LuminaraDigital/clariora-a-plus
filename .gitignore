@@ -26,7 +26,11 @@ release/
 dist/
 dist_web/
 **/dist/
-CompTIA_A_Plus_Desktop_App/
+CompTIA_A_Plus_Desktop_App/**
+!CompTIA_A_Plus_Desktop_App/
+!CompTIA_A_Plus_Desktop_App/resources/
+!CompTIA_A_Plus_Desktop_App/resources/app/
+!CompTIA_A_Plus_Desktop_App/resources/app/package.json
 node_modules/
 .wrangler/
 _backup/

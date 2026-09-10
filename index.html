@@ -1465,6 +1465,69 @@
       min-width: 160px;
     }
 
+    /* Clean Home Tab Navigation */
+    .home-tab-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 1.25rem;
+      padding: 4px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      border-radius: 10px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .home-tab-btn {
+      flex: 1;
+      min-width: 120px;
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-secondary, #94A3B8);
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      white-space: nowrap;
+    }
+    .home-tab-btn:hover {
+      color: var(--text-primary, #F3F4F6);
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .home-tab-btn.active, .home-tab-btn[aria-selected="true"] {
+      color: #07090E;
+      background: var(--gold-primary, #D4AF37);
+      border-color: var(--gold-primary, #D4AF37);
+      box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+    }
+    .home-tab-btn:focus-visible {
+      outline: 2px solid var(--gold-primary, #D4AF37);
+      outline-offset: 2px;
+    }
+    .header-nav-link.active {
+      color: var(--gold-primary, #D4AF37) !important;
+      background: rgba(212, 175, 55, 0.12) !important;
+      border-color: rgba(212, 175, 55, 0.35) !important;
+      font-weight: 700 !important;
+    }
+    .home-view-pane[hidden] {
+      display: none !important;
+    }
+    .study-resource-card {
+      transition: transform 0.16s ease, border-color 0.16s ease;
+    }
+    .study-resource-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(212, 175, 55, 0.5) !important;
+    }
   </style>
   <link rel="stylesheet" href="css/brand-black-gold.css?v=4.3.4">
   <style id="bootIntroCritical">
@@ -1631,9 +1694,9 @@
       </div>
     </div>
     <nav class="header-nav" aria-label="Sections">
-      <button type="button" class="header-nav-link" onclick="openMoreMenuAt('moreGroupPractice')">Practice</button>
-      <button type="button" class="header-nav-link" onclick="openMoreMenuAt('moreGroupStudy')">Study</button>
-      <button type="button" class="header-nav-link" onclick="openMoreMenuAt('moreGroupProgress')">Progress</button>
+      <button type="button" class="header-nav-link active" id="navLinkPractice" onclick="switchHomeTab('practice')">Practice</button>
+      <button type="button" class="header-nav-link" id="navLinkStudy" onclick="switchHomeTab('study')">Study</button>
+      <button type="button" class="header-nav-link" id="navLinkProgress" onclick="switchHomeTab('progress')">Progress</button>
     </nav>
     <div class="header-controls-wrap" role="group" aria-label="App controls">
       <div id="tmaUserPillMount" style="display: inline-flex; align-items: center;"></div>
@@ -1642,8 +1705,8 @@
         <strong id="apxStreakBadge">0</strong>
         <span class="streak-label">day streak</span>
       </button>
-      <button type="button" class="streak-chip tma-stars-chip" id="tmaStarsChip" onclick="StarsBilling.openStarsUpgradeSheet()" title="Upgrade Store (Stars & TON)" aria-label="Upgrade Store (Stars & TON)" style="border-color: rgba(245, 208, 97, 0.4); background: rgba(245, 208, 97, 0.1); cursor: pointer;">
-        <span style="color: #F5D061;">⭐</span>
+      <button type="button" class="streak-chip tma-stars-chip" id="tmaStarsChip" onclick="StarsBilling.openStarsUpgradeSheet()" title="Upgrade Store (Stars & TON)" aria-label="Upgrade Store (Stars & TON)" style="display: none; border-color: rgba(245, 208, 97, 0.4); background: rgba(245, 208, 97, 0.1); cursor: pointer;">
+        <span style="color: #F5D061; display: inline-flex; align-items: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
         <strong style="color: #F5D061; margin-left: 2px;">Upgrade</strong>
       </button>
       <button type="button" id="moreMenuBtn" class="btn btn-secondary more-btn" onclick="toggleMoreMenu()" aria-haspopup="dialog" aria-expanded="false" aria-controls="moreMenu">
@@ -1658,97 +1721,233 @@
     <!-- SCREEN 1: WELCOME & CONFIGURATION -->
     <div id="startScreen" class="screen active home-dashboard">
 
-      <aside class="home-rail" aria-label="Readiness and daily plan">
-        <!-- Readiness mount. Rendered by the onboarding module when present. -->
-        <section id="readinessHero" class="hero-card">
-          <div class="shell-fallback" data-shell-fallback>
-            <h2>Take the 20-question diagnostic to get your readiness score.</h2>
-            <p>About 20 minutes. It sets your predicted score and picks what to study first.</p>
-            <button type="button" class="btn btn-secondary" onclick="window.APlus &amp;&amp; APlus.onboarding ? APlus.onboarding.start() : startExam('both',20,20)">Start diagnostic</button>
-          </div>
-        </section>
+      <!-- Home Tab Navigation -->
+      <nav class="home-tab-nav" role="tablist" aria-label="Dashboard sections">
+        <button type="button" class="home-tab-btn active" id="tabBtnPractice" role="tab" aria-selected="true" onclick="switchHomeTab('practice')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+          <span>Practice Mocks</span>
+        </button>
+        <button type="button" class="home-tab-btn" id="tabBtnStudy" role="tab" aria-selected="false" onclick="switchHomeTab('study')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <span>Study Library</span>
+        </button>
+        <button type="button" class="home-tab-btn" id="tabBtnProgress" role="tab" aria-selected="false" onclick="switchHomeTab('progress')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <span>Progress & Analytics</span>
+        </button>
+      </nav>
 
-        <!-- Today plan mount. Rendered by the onboarding module when present. -->
-        <section id="todayPlanCard" class="plan-card">
-          <div class="shell-fallback" data-shell-fallback>
-            <button type="button" class="btn btn-primary-lg" onclick="window.APlus &amp;&amp; APlus.onboarding ? APlus.onboarding.startToday() : startExam('both',25,25)">Start today's 25 minutes</button>
-          </div>
-        </section>
-      </aside>
+      <!-- VIEW 1: PRACTICE (Default) -->
+      <div id="homeViewPractice" class="home-view-pane">
+        <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+          <aside class="home-rail" aria-label="Readiness and daily plan">
+            <!-- Readiness mount. Rendered by the onboarding module when present. -->
+            <section id="readinessHero" class="hero-card">
+              <div class="shell-fallback" data-shell-fallback>
+                <h2>Take the 20-question diagnostic to get your readiness score.</h2>
+                <p>About 20 minutes. It sets your predicted score and picks what to study first.</p>
+                <button type="button" class="btn btn-secondary" onclick="window.APlus &amp;&amp; APlus.onboarding ? APlus.onboarding.start() : startExam('both',20,20)">Start diagnostic</button>
+              </div>
+            </section>
 
-      <div class="home-main">
-        <section class="mock-exams" aria-labelledby="mockExamsHeading">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
-            <h3 id="mockExamsHeading" class="section-heading" style="margin-bottom: 0;">Full mock exams</h3>
-            <button type="button" id="pearsonModeToggleBtn" class="btn btn-secondary" onclick="APlus.pearsonMode.toggle()" style="font-size: 0.82rem; padding: 0.3rem 0.75rem; display: inline-flex; align-items: center; gap: 0.4rem;">
-              <span>Pearson VUE Mode:</span> <strong class="mode-badge" style="color: var(--accent-cyan);">OFF (Standard)</strong>
-            </button>
+            <!-- Today plan mount. Rendered by the onboarding module when present. -->
+            <section id="todayPlanCard" class="plan-card">
+              <div class="shell-fallback" data-shell-fallback>
+                <button type="button" class="btn btn-primary-lg" onclick="window.APlus &amp;&amp; APlus.onboarding ? APlus.onboarding.startToday() : startExam('both',25,25)">Start today's 25 minutes</button>
+              </div>
+            </section>
+          </aside>
+
+          <div class="home-main" style="flex: 1; min-width: 300px;">
+            <section class="mock-exams" aria-labelledby="mockExamsHeading">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
+                <h3 id="mockExamsHeading" class="section-heading" style="margin-bottom: 0;">Full mock exams</h3>
+                <button type="button" id="pearsonModeToggleBtn" class="btn btn-secondary" onclick="APlus.pearsonMode.toggle()" style="font-size: 0.82rem; padding: 0.3rem 0.75rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+                  <span>Pearson VUE Mode:</span> <strong class="mode-badge" style="color: var(--accent-cyan);">OFF (Standard)</strong>
+                </button>
+              </div>
+              <div class="mock-grid">
+                <div class="card">
+                  <div class="card-title">Core 1</div>
+                  <div class="card-meta">220-1201. 90 questions, 90 minutes, pass 675.</div>
+                  <details class="blueprint">
+                    <summary>Blueprint</summary>
+                    <ul class="domain-list">
+                      <li><span>1.0 Mobile devices</span> <span>13%</span></li>
+                      <li><span>2.0 Networking</span> <span>23%</span></li>
+                      <li><span>3.0 Hardware</span> <span>25%</span></li>
+                      <li><span>4.0 Virtualization and cloud</span> <span>11%</span></li>
+                      <li><span>5.0 Hardware and network troubleshooting</span> <span>28%</span></li>
+                    </ul>
+                  </details>
+                  <button type="button" class="btn btn-secondary card-cta" onclick="startExam('core1', 90, 90)">Start Core 1</button>
+                </div>
+                <div class="card">
+                  <div class="card-title">Core 2</div>
+                  <div class="card-meta">220-1202. 90 questions, 90 minutes, pass 700.</div>
+                  <details class="blueprint">
+                    <summary>Blueprint</summary>
+                    <ul class="domain-list">
+                      <li><span>1.0 Operating systems</span> <span>28%</span></li>
+                      <li><span>2.0 Security</span> <span>28%</span></li>
+                      <li><span>3.0 Software troubleshooting</span> <span>23%</span></li>
+                      <li><span>4.0 Operational procedures</span> <span>21%</span></li>
+                    </ul>
+                  </details>
+                  <button type="button" class="btn btn-secondary card-cta" onclick="startExam('core2', 90, 90)">Start Core 2</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- Quick Practice Modes Grid -->
+            <section class="card" style="margin: 1.25rem 0; padding: 1.15rem;">
+              <h3 class="section-heading" style="margin-bottom: 0.75rem; font-size: 0.95rem;">Targeted practice modes</h3>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+                <button type="button" class="btn btn-secondary" onclick="startExam('both', 20, 25)" style="text-align: left; padding: 10px 12px; display: flex; flex-direction: column; gap: 3px;">
+                  <strong style="color: var(--gold-light); font-size: 13px;">20-Question sprint</strong>
+                  <span style="font-size: 11px; color: var(--text-secondary);">Fast-paced mixed diagnostic</span>
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="openPBQModal()" style="text-align: left; padding: 10px 12px; display: flex; flex-direction: column; gap: 3px;">
+                  <strong style="color: var(--accent-cyan); font-size: 13px;">Performance labs (PBQ)</strong>
+                  <span style="font-size: 11px; color: var(--text-secondary);">Terminal, ports, wiring</span>
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="startExam('both', 90, 90)" style="text-align: left; padding: 10px 12px; display: flex; flex-direction: column; gap: 3px;">
+                  <strong style="color: var(--accent-green); font-size: 13px;">Mixed 90 mock</strong>
+                  <span style="font-size: 11px; color: var(--text-secondary);">Combined Core 1 + Core 2</span>
+                </button>
+              </div>
+            </section>
+
+            <!-- 61-Objective Interactive Mastery Heatmap -->
+            <section class="mastery-heatmap-section" id="homeMasteryHeatmapSection" style="margin: 1.5rem 0;">
+              <div id="masteryHeatmapMount"></div>
+            </section>
+
+            <section class="keep-going" aria-labelledby="keepGoingHeading">
+              <h3 id="keepGoingHeading" class="section-heading label">Keep going</h3>
+              <section id="homeMissionMount" class="home-mission" aria-label="Coach mission" hidden></section>
+              <nav class="quick-links" aria-label="Study shortcuts">
+                <button type="button" id="retakeMissedBtn" class="quick-link" disabled onclick="startMissedDrill()">
+                  <span class="quick-link-title">Review mistakes</span>
+                  <span class="quick-link-meta" id="missedCountText">0 saved</span>
+                </button>
+                <button type="button" class="quick-link" onclick="openMemoryModal()">
+                  <span class="quick-link-title">Flashcards due</span>
+                  <span class="quick-link-meta"><span id="memoryDueCount">0</span> due today</span>
+                </button>
+                <button type="button" class="quick-link" onclick="switchHomeTab('study')">
+                  <span class="quick-link-title">Study library</span>
+                  <span class="quick-link-meta">Notes, videos, slides</span>
+                </button>
+                <button type="button" class="quick-link" onclick="openPBQModal()">
+                  <span class="quick-link-title">PBQ labs</span>
+                  <span class="quick-link-meta">Interactive sims</span>
+                </button>
+                <button type="button" class="quick-link" onclick="APlus.passGuarantee.generateCertificate(prompt('Enter your full legal name for the readiness certificate:', 'Certified Technician') || 'Certified Technician', 'core1')">
+                  <span class="quick-link-title">Pass Guarantee</span>
+                  <span class="quick-link-meta">Verify certificate</span>
+                </button>
+              </nav>
+              <section id="recentAttemptsMount" class="card recent-attempts" aria-label="Recent attempts"></section>
+            </section>
           </div>
-          <div class="mock-grid">
-            <div class="card">
-              <div class="card-title">Core 1</div>
-              <div class="card-meta">220-1201. 90 questions, 90 minutes, pass 675.</div>
-              <details class="blueprint">
-                <summary>Blueprint</summary>
-                <ul class="domain-list">
-                  <li><span>1.0 Mobile devices</span> <span>13%</span></li>
-                  <li><span>2.0 Networking</span> <span>23%</span></li>
-                  <li><span>3.0 Hardware</span> <span>25%</span></li>
-                  <li><span>4.0 Virtualization and cloud</span> <span>11%</span></li>
-                  <li><span>5.0 Hardware and network troubleshooting</span> <span>28%</span></li>
-                </ul>
-              </details>
-              <button type="button" class="btn btn-secondary card-cta" onclick="startExam('core1', 90, 90)">Start Core 1</button>
+        </div>
+      </div>
+
+      <!-- VIEW 2: STUDY LIBRARY -->
+      <div id="homeViewStudy" class="home-view-pane" hidden>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 0.5rem;">
+          <div class="card study-resource-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 1.25rem;">
+            <div>
+              <div style="font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-primary); font-weight: 700; margin-bottom: 6px;">Text and notes</div>
+              <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0 0 8px;">CompTIA Study Library</h4>
+              <p style="font-size: 0.86rem; color: var(--text-secondary); line-height: 1.5; margin: 0 0 16px;">Comprehensive deep-dive study notes and searchable technical references for all Core 1 and Core 2 objectives.</p>
             </div>
-            <div class="card">
-              <div class="card-title">Core 2</div>
-              <div class="card-meta">220-1202. 90 questions, 90 minutes, pass 700.</div>
-              <details class="blueprint">
-                <summary>Blueprint</summary>
-                <ul class="domain-list">
-                  <li><span>1.0 Operating systems</span> <span>28%</span></li>
-                  <li><span>2.0 Security</span> <span>28%</span></li>
-                  <li><span>3.0 Software troubleshooting</span> <span>23%</span></li>
-                  <li><span>4.0 Operational procedures</span> <span>21%</span></li>
-                </ul>
-              </details>
-              <button type="button" class="btn btn-secondary card-cta" onclick="startExam('core2', 90, 90)">Start Core 2</button>
+            <button type="button" class="btn btn-secondary" onclick="openStudyLibraryModal()" style="width: 100%;">Open Study Library</button>
+          </div>
+
+          <div class="card study-resource-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 1.25rem;">
+            <div>
+              <div style="font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-primary); font-weight: 700; margin-bottom: 6px;">Video training</div>
+              <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0 0 8px;">Professor Messer Courses</h4>
+              <p style="font-size: 0.86rem; color: var(--text-secondary); line-height: 1.5; margin: 0 0 16px;">Full indexed video courses for 220-1201 Core 1 and 220-1202 Core 2 with direct timestamp navigation.</p>
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="openMesserModal()" style="width: 100%;">Watch Course Videos</button>
+          </div>
+
+          <div class="card study-resource-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 1.25rem;">
+            <div>
+              <div style="font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-primary); font-weight: 700; margin-bottom: 6px;">Active recall</div>
+              <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0 0 8px;">Flashcards (SM-2 Spaced Repetition)</h4>
+              <p style="font-size: 0.86rem; color: var(--text-secondary); line-height: 1.5; margin: 0 0 16px;">Intelligent flashcard queue powered by the SuperMemo SM-2 algorithm. Reinforce missed questions automatically.</p>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <button type="button" class="btn btn-primary" onclick="startMemoryRaid()">Start cards</button>
+              <button type="button" class="btn btn-secondary" onclick="openMemoryModal()">Deck settings</button>
             </div>
           </div>
-        </section>
 
-        <!-- 61-Objective Interactive Mastery Heatmap -->
-        <section class="mastery-heatmap-section" id="homeMasteryHeatmapSection" style="margin: 1.5rem 0;">
-          <div id="masteryHeatmapMount"></div>
-        </section>
+          <div class="card study-resource-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 1.25rem;">
+            <div>
+              <div style="font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-primary); font-weight: 700; margin-bottom: 6px;">Curriculum map</div>
+              <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0 0 8px;">Official CompTIA Objectives</h4>
+              <p style="font-size: 0.86rem; color: var(--text-secondary); line-height: 1.5; margin: 0 0 16px;">Interactive checklist of all 61 sub-objectives across both exams to track syllabus coverage.</p>
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="openObjectivesModal()" style="width: 100%;">View objectives</button>
+          </div>
 
-        <section class="keep-going" aria-labelledby="keepGoingHeading">
-        <h3 id="keepGoingHeading" class="section-heading label">Keep going</h3>
-        <section id="homeMissionMount" class="home-mission" aria-label="Coach mission" hidden></section>
-        <nav class="quick-links" aria-label="Study shortcuts">
-          <button type="button" id="retakeMissedBtn" class="quick-link" disabled onclick="startMissedDrill()">
-            <span class="quick-link-title">Review mistakes</span>
-            <span class="quick-link-meta" id="missedCountText">0 saved</span>
-          </button>
-          <button type="button" class="quick-link" onclick="openMemoryModal()">
-            <span class="quick-link-title">Flashcards due</span>
-            <span class="quick-link-meta"><span id="memoryDueCount">0</span> due today</span>
-          </button>
-          <button type="button" class="quick-link" onclick="openCurriculumModal('videos')">
-            <span class="quick-link-title">Course library</span>
-            <span class="quick-link-meta">Videos, slides, labs</span>
-          </button>
-          <button type="button" class="quick-link" onclick="openPBQModal()">
-            <span class="quick-link-title">PBQ labs</span>
-            <span class="quick-link-meta">Interactive sims</span>
-          </button>
-          <button type="button" class="quick-link" onclick="APlus.passGuarantee.generateCertificate(prompt('Enter your full legal name for the readiness certificate:', 'Certified Technician') || 'Certified Technician', 'core1')">
-            <span class="quick-link-title">Pass Guarantee</span>
-            <span class="quick-link-meta">Verify certificate</span>
-          </button>
-        </nav>
-        <section id="recentAttemptsMount" class="card recent-attempts" aria-label="Recent attempts"></section>
-        </section>
+          <div class="card study-resource-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 1.25rem;">
+            <div>
+              <div style="font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-primary); font-weight: 700; margin-bottom: 6px;">Course material</div>
+              <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0 0 8px;">PowerPoint Slides and Labs</h4>
+              <p style="font-size: 0.86rem; color: var(--text-secondary); line-height: 1.5; margin: 0 0 16px;">Visual classroom presentations and guided terminal and hardware walkthroughs.</p>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <button type="button" class="btn btn-secondary" onclick="openCurriculumModal('slides')">View slides</button>
+              <button type="button" class="btn btn-secondary" onclick="openCurriculumModal('labs')">View labs</button>
+            </div>
+          </div>
+
+          <div class="card study-resource-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 1.25rem;">
+            <div>
+              <div style="font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-primary); font-weight: 700; margin-bottom: 6px;">Study schedule</div>
+              <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0 0 8px;">12-Week Guided Study Plan</h4>
+              <p style="font-size: 0.86rem; color: var(--text-secondary); line-height: 1.5; margin: 0 0 16px;">Structured milestone planner that balances Core 1 and Core 2 across daily 25-minute blocks.</p>
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="openStudyPlanModal()" style="width: 100%;">Configure plan</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 3: PROGRESS & ANALYTICS -->
+      <div id="homeViewProgress" class="home-view-pane" hidden>
+        <div style="display: grid; gap: 20px; margin-top: 0.5rem;">
+          <section class="card" style="padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+              <h3 class="section-heading" style="margin-bottom: 0;">Exam history and trends</h3>
+              <button type="button" class="btn btn-secondary" style="font-size: 12px; padding: 4px 10px;" onclick="clearHistory()">Clear history</button>
+            </div>
+            <div id="historyTableContainer">
+              <p class="more-note">No attempts recorded yet.</p>
+            </div>
+          </section>
+
+          <section class="card" style="padding: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 0 0 4px;">Readiness Pass Guarantee</h4>
+              <p style="font-size: 0.86rem; color: var(--text-secondary); margin: 0;">Generate a tamper-evident certificate when your predicted score clears the CompTIA pass mark.</p>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="APlus.passGuarantee.generateCertificate(prompt('Enter your full legal name for the readiness certificate:', 'Certified Technician') || 'Certified Technician', 'core1')">Verify certificate</button>
+          </section>
+
+          <section class="card" style="padding: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 0 0 4px;">Progress Record (APX Ledger)</h4>
+              <p style="font-size: 0.86rem; color: var(--text-secondary); margin: 0;">Locally signed proof of study with verifiable cryptographic hashes.</p>
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="openLedgerModal()">Open progress record</button>
+          </section>
+        </div>
       </div>
     </div>
 
@@ -3919,7 +4118,7 @@
             <li id="mediaPackMount"></li>
           </ul>
         </nav>
-        <p class="more-note">Everything is stored on this PC. Nothing is uploaded.</p>
+        <p class="more-note">Local-first privacy: Your study history is stored privately on this device. Sign in anytime to enable encrypted cloud backup across your devices.</p>
       </section>
 
       <section class="more-group" aria-labelledby="moreGroupSettings">

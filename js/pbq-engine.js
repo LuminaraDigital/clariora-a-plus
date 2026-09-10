@@ -301,7 +301,7 @@
       container.innerHTML = `
         <div style="border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: #0f141c;">
           <div style="background: #18202c; padding: 0.6rem 1rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-            <div style="font-weight: 700; color: var(--accent-cyan); font-size: 0.9rem;">⚙️ SOHO Gateway Web Administration [v1.4.2]</div>
+            <div style="font-weight: 700; color: var(--accent-cyan); font-size: 0.9rem;">SOHO Gateway Web Administration [v1.4.2]</div>
             <div style="font-size: 0.8rem; color: #10b981;">● Connected (192.168.1.1)</div>
           </div>
           <div style="display: flex; background: #121822; border-bottom: 1px solid var(--border-color);">
@@ -448,7 +448,7 @@
             <div>
               <div style="font-size: 0.78rem; color: var(--gold-primary); font-weight: 700; text-transform: uppercase;">${escapeHTML(slotLabels[slotKey])}</div>
               <div style="font-size: 0.9rem; font-weight: 600; color: ${assignedComp ? '#fff' : 'var(--text-secondary)'};">
-                ${assignedComp ? `📦 ${escapeHTML(assignedComp.name)}` : '<em>[Empty Slot - Select component below]</em>'}
+                ${assignedComp ? `[Installed] ${escapeHTML(assignedComp.name)}` : '<em>[Empty Slot - Select component below]</em>'}
               </div>
             </div>
             <div>
@@ -466,7 +466,7 @@
 
       container.innerHTML = `
         <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; background: #0b0f19;">
-          <div style="font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.75rem; font-size: 0.95rem;">🖥️ ATX Workstation Motherboard Sockets & Headers:</div>
+          <div style="font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.75rem; font-size: 0.95rem;">ATX Workstation Motherboard Sockets and Headers:</div>
           ${slotsHtml}
         </div>
       `;
@@ -535,7 +535,7 @@
                 ` : !isVol ? `
                   <button type="button" id="btn_create_vol" class="btn btn-primary" style="font-size: 0.82rem;">Run New Simple Volume Wizard</button>
                 ` : `
-                  <div style="color: #10b981; font-weight: 700; font-size: 0.88rem;">✔ Volume (${escapeHTML(state.driveLetter)}) configured with ${escapeHTML(state.fileSystem)} and labeled ${escapeHTML(state.volumeLabel)}.</div>
+                  <div style="color: #10b981; font-weight: 700; font-size: 0.88rem;">Configured: Volume (${escapeHTML(state.driveLetter)}) configured with ${escapeHTML(state.fileSystem)} and labeled ${escapeHTML(state.volumeLabel)}.</div>
                   <button type="button" id="btn_reset_disk" class="btn btn-secondary" style="font-size: 0.78rem;">Reset Disk 1</button>
                 `}
               </div>
@@ -599,7 +599,7 @@
 
       container.innerHTML = `
         <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; background: #0b0f19;">
-          <div style="font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.75rem; font-size: 0.95rem;">🔌 RJ-45 (8P8C) Modular Plug Termination:</div>
+          <div style="font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.75rem; font-size: 0.95rem;">RJ-45 (8P8C) Modular Plug Termination:</div>
           ${pinsHtml}
           <div style="font-size: 0.8rem; color: var(--text-secondary); text-align: center;">Standard Pinout Reference: T568B sequence begins with White/Orange, Orange, White/Green...</div>
         </div>
@@ -865,7 +865,7 @@
       mountEl.innerHTML = `
         <div style="border-radius: 6px; border: 1px solid ${isPassed ? 'var(--accent-green)' : 'var(--accent-red)'}; background: ${isPassed ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)'}; padding: 0.8rem 1rem; margin-bottom: 0.8rem;">
           <div style="font-weight: 700; color: ${isPassed ? 'var(--accent-green)' : 'var(--accent-red)'}; font-size: 0.95rem; margin-bottom: 0.3rem;">
-            ${isPassed ? '✔ PBQ Simulation Solved Successfully' : '✖ PBQ Simulation Incomplete or Incorrect Configuration'}
+            ${isPassed ? 'PASS: PBQ Simulation Solved Successfully' : 'INCOMPLETE: PBQ Simulation Incomplete or Incorrect Configuration'}
           </div>
           <div style="font-size: 0.86rem; color: var(--text-secondary); line-height: 1.5;">
             <strong>Lab:</strong> ${escapeHTML(lab.title)}<br>

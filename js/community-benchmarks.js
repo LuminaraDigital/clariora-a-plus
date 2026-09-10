@@ -76,7 +76,7 @@
 
       return `
         <div class="community-benchmark-badge" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px; padding: 0.35rem 0.65rem; font-size: 0.78rem; margin-top: 0.5rem;">
-          <span style="color: var(--accent-cyan); font-weight: 700;">📊 Community Benchmark:</span>
+          <span style="color: var(--accent-cyan); font-weight: 700; display: inline-flex; align-items: center; gap: 4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="12" width="4" height="8" rx="1"/><rect x="10" y="8" width="4" height="12" rx="1"/><rect x="17" y="4" width="4" height="16" rx="1"/></svg> Community Benchmark:</span>
           <span><strong style="color: ${rateColor};">${b.correctRate}%</strong> of candidates answered correctly</span>
           <span style="color: var(--text-muted);">&bull;</span>
           <span style="color: var(--text-secondary);">${escapeHTML(b.difficultyTier)}</span>

@@ -793,9 +793,9 @@
               </div>
             ` : ''}
             <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-              <button type="button" class="btn btn-secondary" style="font-size: 0.78rem; padding: 0.25rem 0.55rem; color: var(--gold-light); border-color: var(--border-gold);" onclick="if(window.TMAGhostCoach)TMAGhostCoach.openCoachSheet(APlus.engine.questions[${idx}], (APlus.engine.userAnswers[${idx}] !== undefined && APlus.engine.questions[${idx}].options ? APlus.engine.questions[${idx}].options[APlus.engine.userAnswers[${idx}]] : 'None'))">👻 Ask Ghost Coach</button>
+              <button type="button" class="btn btn-secondary" style="font-size: 0.78rem; padding: 0.25rem 0.55rem; color: var(--gold-light); border-color: var(--border-gold);" onclick="if(window.TMAGhostCoach)TMAGhostCoach.openCoachSheet(APlus.engine.questions[${idx}], (APlus.engine.userAnswers[${idx}] !== undefined && APlus.engine.questions[${idx}].options ? APlus.engine.questions[${idx}].options[APlus.engine.userAnswers[${idx}]] : 'None'))">Ask Ghost Coach</button>
               <button type="button" class="btn btn-secondary" style="font-size: 0.78rem; padding: 0.25rem 0.55rem;" onclick="APlus.mastery.openHanseiModal(APlus.engine.questions[${idx}])">Why I missed this</button>
-              <button type="button" class="btn btn-secondary" style="font-size: 0.78rem; padding: 0.25rem 0.55rem; color: var(--accent-amber);" onclick="if(window.APlus&&APlus.problemReporter)APlus.problemReporter.openModal('${escapeHTML(q.id)}')">⚠️ Report a problem</button>
+              <button type="button" class="btn btn-secondary" style="font-size: 0.78rem; padding: 0.25rem 0.55rem; color: var(--accent-amber);" onclick="if(window.APlus&&APlus.problemReporter)APlus.problemReporter.openModal('${escapeHTML(q.id)}')">Report a problem</button>
             </div>
           </div>
         `;

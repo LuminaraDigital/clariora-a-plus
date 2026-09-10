@@ -45,7 +45,7 @@
       modal.innerHTML = `
         <div style="background: var(--bg-card); border: 1px solid var(--gold-primary); border-radius: 8px; width: 100%; max-width: 480px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); overflow: hidden;">
           <div style="background: rgba(212, 175, 55, 0.15); padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-            <div style="font-weight: 800; color: var(--gold-primary); font-size: 0.95rem;">⚠️ Report a Problem with Question <span id="reportQId"></span></div>
+            <div style="font-weight: 800; color: var(--gold-primary); font-size: 0.95rem; display: flex; align-items: center; gap: 6px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Report a Problem with Question <span id="reportQId"></span></div>
             <button type="button" onclick="APlus.problemReporter.closeModal()" style="background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">&times;</button>
           </div>
           <div style="padding: 1.2rem;">

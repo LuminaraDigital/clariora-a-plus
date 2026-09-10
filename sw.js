@@ -193,6 +193,38 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Auth and billing client modules must not stick on stale cache after deploys.
+  // Network-first with cache fallback keeps login wall / modal / Stars / TON current.
+  var path = url.pathname;
+  if (
+    path.indexOf('/js/auth-gate.js') !== -1 ||
+    path.indexOf('/js/firebase-auth-ui.js') !== -1 ||
+    path.indexOf('/js/firebase-service.js') !== -1 ||
+    path.indexOf('/js/firebase-config.js') !== -1 ||
+    path.indexOf('/js/stars_billing.js') !== -1 ||
+    path.indexOf('/js/ton_credentials.js') !== -1 ||
+    path.indexOf('/tonconnect-manifest.json') !== -1
+  ) {
+    event.respondWith(
+      fetch(request)
+        .then(function (network) {
+          if (network && network.status === 200) {
+            var copy = network.clone();
+            caches.open(CACHE_NAME).then(function (cache) {
+              cache.put(cacheKeyFor(request), copy);
+            }).catch(function () {});
+          }
+          return network;
+        })
+        .catch(function () {
+          return caches.open(CACHE_NAME).then(function (cache) {
+            return cache.match(cacheKeyFor(request), { ignoreSearch: true });
+          });
+        })
+    );
+    return;
+  }
+
   // Same-origin static assets: cache-first with network fallback.
   event.respondWith(
     cacheFirst(request).catch(() => fetch(request))

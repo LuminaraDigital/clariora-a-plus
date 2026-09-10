@@ -122,13 +122,17 @@ if errorlevel 1 (
 )
 
 echo.
-echo Deploying dist_web to Cloudflare Pages project: comptia-a-plus-master
+echo Deploying Cloudflare Worker + Static Assets (clariora-a-plus)...
 echo.
-call npx wrangler pages deploy dist_web --project-name comptia-a-plus-master
+call npx wrangler deploy
 if errorlevel 1 (
-  echo [ERROR] wrangler pages deploy failed. See the messages above.
-  pause
-  goto menu
+  echo [WARN] Workers deploy failed or not configured. Falling back to Cloudflare Pages deploy...
+  call npx wrangler pages deploy dist_web --project-name comptia-a-plus-master
+  if errorlevel 1 (
+    echo [ERROR] Both Workers and Pages deployments failed. See the messages above.
+    pause
+    goto menu
+  )
 )
 echo.
 echo Deployment succeeded. Your permanent URL is now live.

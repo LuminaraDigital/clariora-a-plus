@@ -398,15 +398,64 @@ function ensureStorageLayout() {
   } catch (_) {}
 }
 
+const MAX_IPC_KEY_LENGTH = 256;
+const MAX_STORAGE_VALUE_BYTES = 10 * 1024 * 1024; // 10 MB cap for storage values
+
+function validateStorageKey(key) {
+  return typeof key === 'string' && key.trim().length > 0 && key.length <= MAX_IPC_KEY_LENGTH;
+}
+
+function validateStorageValue(val) {
+  if (val === undefined || typeof val === 'function' || typeof val === 'symbol') {
+    return false;
+  }
+  if (typeof val === 'string') {
+    return val.length <= MAX_STORAGE_VALUE_BYTES;
+  }
+  if (typeof val === 'number' || typeof val === 'boolean' || val === null) {
+    return true;
+  }
+  if (typeof val === 'object') {
+    try {
+      const serialized = JSON.stringify(val);
+      return serialized !== undefined && serialized.length <= MAX_STORAGE_VALUE_BYTES;
+    } catch (_) {
+      return false; // circular or un-serializable
+    }
+  }
+  return false;
+}
+
+function validateDatabasePayload(data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return false;
+  }
+  try {
+    const serialized = JSON.stringify(data);
+    return serialized !== undefined && serialized.length <= DB_MAX_BYTES;
+  } catch (_) {
+    return false;
+  }
+}
+
 ipcMain.on('database:getAll', (event) => {
   event.returnValue = loadDatabase();
 });
 
 ipcMain.on('database:saveAll', (event, data) => {
+  if (!validateDatabasePayload(data)) {
+    writeLog('warn', 'database:saveAll rejected: malformed database payload');
+    event.returnValue = false;
+    return;
+  }
   event.returnValue = saveDatabase(data);
 });
 
 ipcMain.handle('database:saveAllAsync', async (_event, data) => {
+  if (!validateDatabasePayload(data)) {
+    writeLog('warn', 'database:saveAllAsync rejected: malformed database payload');
+    return { ok: false, error: 'invalid_database_payload' };
+  }
   try {
     return writeDatabaseAtomic(data);
   } catch (err) {
@@ -606,11 +655,16 @@ function extractZipSafely(zipPath, destDir) {
     const name = String(entry.entryName || '');
     const target = safeJoin(destDir, name);
     if (!target) throw new Error('unsafe_zip_entry');
+    const mode = (entry.attr >>> 16) & 0o170000;
+    if (mode === 0o120000) throw new Error('unsafe_zip_symlink_entry');
   }
   let written = 0;
   for (const entry of entries) {
     const target = safeJoin(destDir, String(entry.entryName || ''));
     if (!target) throw new Error('unsafe_zip_entry');
+    if (fs.existsSync(target) && fs.lstatSync(target).isSymbolicLink()) {
+      throw new Error('unsafe_zip_symlink_target');
+    }
     if (entry.isDirectory) {
       fs.mkdirSync(target, { recursive: true });
       continue;
@@ -733,6 +787,11 @@ ipcMain.on('storage:get', (event, key) => {
 });
 
 ipcMain.on('storage:set', (event, key, value) => {
+  if (!validateStorageKey(key) || !validateStorageValue(value)) {
+    writeLog('warn', 'storage:set rejected: invalid key length (>256) or malformed/oversized value (>10MB)');
+    event.returnValue = false;
+    return;
+  }
   try {
     const store = loadProgress();
     store[String(key)] = value;
@@ -762,6 +821,10 @@ ipcMain.handle('storage:getAsync', async (_event, key) => {
 });
 
 ipcMain.handle('storage:setAsync', async (_event, key, value) => {
+  if (!validateStorageKey(key) || !validateStorageValue(value)) {
+    writeLog('warn', 'storage:setAsync rejected: invalid key length (>256) or malformed/oversized value (>10MB)');
+    return false;
+  }
   try {
     const store = loadProgress();
     store[String(key)] = value;
@@ -806,9 +869,18 @@ ipcMain.handle('storage:exportFile', async (_event, name, content) => {
 
 ipcMain.handle('groq:chat', async (_event, payload) => {
   try {
-    const apiKey = payload && payload.apiKey ? String(payload.apiKey).trim() : '';
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+      writeLog('warn', 'groq:chat rejected non-object payload');
+      return { ok: false, error: 'invalid_payload' };
+    }
+
+    const apiKey = typeof payload.apiKey === 'string' ? payload.apiKey.trim() : '';
     if (!apiKey) {
       return { ok: false, error: 'missing_api_key' };
+    }
+    if (apiKey.length < 10 || apiKey.length > 512) {
+      writeLog('warn', 'groq:chat rejected API key with invalid bounds');
+      return { ok: false, error: 'invalid_api_key' };
     }
 
     // Hard guard: this handler only ever talks to api.groq.com.
@@ -818,11 +890,41 @@ ipcMain.handle('groq:chat', async (_event, payload) => {
       return { ok: false, error: 'blocked_endpoint' };
     }
 
+    if (!Array.isArray(payload.messages) || payload.messages.length === 0 || payload.messages.length > 50) {
+      writeLog('warn', 'groq:chat rejected invalid messages list');
+      return { ok: false, error: 'invalid_messages' };
+    }
+    for (const msg of payload.messages) {
+      if (!msg || typeof msg !== 'object' || typeof msg.role !== 'string' || typeof msg.content !== 'string') {
+        writeLog('warn', 'groq:chat rejected malformed message item');
+        return { ok: false, error: 'malformed_message_entry' };
+      }
+      if (msg.content.length > 65536) {
+        writeLog('warn', 'groq:chat rejected message exceeding 64KB');
+        return { ok: false, error: 'message_too_large' };
+      }
+    }
+
+    const model = typeof payload.model === 'string' && payload.model.trim()
+      ? payload.model.trim()
+      : 'qwen/qwen3.8-27b';
+    if (model.length > 128 || !/^[a-zA-Z0-9_.\-\/]+$/.test(model)) {
+      writeLog('warn', 'groq:chat rejected invalid model identifier');
+      return { ok: false, error: 'invalid_model' };
+    }
+
+    const temperature = typeof payload.temperature === 'number' && Number.isFinite(payload.temperature)
+      ? Math.max(0, Math.min(2, payload.temperature))
+      : 0.2;
+    const max_tokens = typeof payload.max_tokens === 'number' && Number.isFinite(payload.max_tokens)
+      ? Math.max(1, Math.min(4096, Math.floor(payload.max_tokens)))
+      : 220;
+
     const body = {
-      model: (payload && payload.model) || 'qwen/qwen3.8-27b',
-      messages: (payload && payload.messages) || [],
-      temperature: typeof (payload && payload.temperature) === 'number' ? payload.temperature : 0.2,
-      max_tokens: typeof (payload && payload.max_tokens) === 'number' ? payload.max_tokens : 220
+      model: model,
+      messages: payload.messages,
+      temperature: temperature,
+      max_tokens: max_tokens
     };
 
     const res = await fetch(GROQ_CHAT_URL, {
@@ -1157,6 +1259,8 @@ function attachRendererDiagnostics(contents) {
   });
 }
 
+const CSP_POLICY = "default-src 'self'; script-src 'self' 'unsafe-inline' https://telegram.org https://unpkg.com https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://i.ytimg.com https://*.telegram.org https://lh3.googleusercontent.com https://*.googleusercontent.com; media-src 'self' https://comptia-a-plus-master.pages.dev https://clariora.com.au; connect-src 'self' https://api.telegram.org https://tonconnect.org https://tonapi.io https://*.ton.org https://toncenter.com https://clariora.com.au https://*.supabase.co https://cdn.jsdelivr.net https://unpkg.com https://comptia-a-plus-master.pages.dev https://*.googleapis.com https://*.firebaseio.com https://clariora.firebaseapp.com https://*.firebasestorage.app https://bridge.tonapi.io https://*.tonconnect.org; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://*.telegram.org https://clariora.firebaseapp.com https://accounts.google.com; font-src 'self'; object-src 'none'; base-uri 'self'";
+
 function applySecurityPolicy() {
   const ses = session.defaultSession;
   if (!ses) return;
@@ -1165,6 +1269,13 @@ function applySecurityPolicy() {
   if (typeof ses.setPermissionCheckHandler === 'function') {
     ses.setPermissionCheckHandler(() => false);
   }
+  // Attach Content-Security-Policy header via ses.webRequest.onHeadersReceived
+  // for local and remote requests, mirroring the policy in _headers.
+  ses.webRequest.onHeadersReceived((details, callback) => {
+    const responseHeaders = Object.assign({}, details.responseHeaders);
+    responseHeaders['Content-Security-Policy'] = [CSP_POLICY];
+    callback({ responseHeaders });
+  });
 }
 
 function createWindow() {
@@ -1220,7 +1331,22 @@ function createWindow() {
   // The app is a local file:// document. Anything else opens in the system browser.
   mainWindow.webContents.on('will-navigate', (event, url) => {
     const proto = safeProtocol(url);
-    if (proto === 'file:') return;
+    if (proto === 'file:') {
+      try {
+        const parsed = new URL(url);
+        // Normalize pathname (on Windows, /C:/path -> C:/path)
+        const rawPath = decodeURIComponent(parsed.pathname).replace(/^\/([a-zA-Z]:)/, '$1');
+        const targetPath = path.normalize(rawPath);
+        const appRoot = path.normalize(app.getAppPath());
+        const dirRoot = path.normalize(__dirname);
+        if (isInsideRoot(appRoot, targetPath) || isInsideRoot(dirRoot, targetPath)) {
+          return;
+        }
+      } catch (_) {}
+      event.preventDefault();
+      writeLog('warn', 'blocked navigation to external local file: ' + url);
+      return;
+    }
     event.preventDefault();
     if (proto === 'http:' || proto === 'https:') {
       shell.openExternal(url);
@@ -1472,3 +1598,15 @@ app.on('window-all-closed', () => {
   flushProgress();
   if (process.platform !== 'darwin') app.quit();
 });
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    CSP_POLICY,
+    applySecurityPolicy,
+    validateStorageKey,
+    validateStorageValue,
+    validateDatabasePayload,
+    MAX_IPC_KEY_LENGTH,
+    MAX_STORAGE_VALUE_BYTES
+  };
+}

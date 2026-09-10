@@ -41,14 +41,21 @@ class_name = "CoachRateLimiter"
 tag = "v1-coach-rate-limiter"
 new_sqlite_classes = ["CoachRateLimiter"]
 
+[vars]
+ENVIRONMENT = "production"
+
 [build]
 # Local `wrangler deploy` only. Workers Builds ignores this; see package.json postinstall.
 command = "python tools/build_web_dist.py"
 
 # Environment Variables & Secrets (Set via `wrangler secret put <KEY>`):
 # - TELEGRAM_BOT_TOKEN: From @BotFather (for initData HMAC & Stars invoices)
+# - TELEGRAM_WEBHOOK_SECRET: Secret token for validating incoming Telegram webhooks (X-Telegram-Bot-Api-Secret-Token)
+# - EDGE_WEBHOOK_SECRET: Alias for TELEGRAM_WEBHOOK_SECRET
 # - ADMIN_API_KEY: Shared secret for GET /api/v1/auth/accounts and /admin/users.html
 # - FIREBASE_WEB_API_KEY: Optional override for Firebase ID token verification
+# - TON_MERCHANT_WALLET_ADDRESS: Production TON merchant wallet address
+# - TONCENTER_API_KEY: Mainnet TonCenter API Key for on-chain transaction verification
 # - GROQ_API_KEY: Free tier fast inference (Llama 3.1 8B)
 # - NVIDIA_API_KEY: Pro tier enterprise inference (Llama 3.1/3.3 70B)
 # - OLLAMA_ENDPOINT: Pro tier self-hosted Ollama URL

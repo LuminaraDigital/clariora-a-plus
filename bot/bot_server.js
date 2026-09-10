@@ -8,13 +8,14 @@
 
 const http = require('http');
 const https = require('https');
+const crypto = require('crypto');
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 const WEB_APP_URL = process.env.WEB_APP_URL || 'https://clariora.com.au/app';
 const PORT = process.env.PORT || 3000;
 const EDGE_WEBHOOK_URL = process.env.EDGE_WEBHOOK_URL || 'https://clariora.com.au/api/v1/telegram/webhook';
 const EDGE_ADMIN_KEY = process.env.ADMIN_API_KEY || process.env.EDGE_ADMIN_KEY || '';
-const TELEGRAM_WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET || '';
+const TELEGRAM_WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET || process.env.EDGE_WEBHOOK_SECRET || '';
 
 const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
@@ -203,10 +204,62 @@ async function handleUpdate(update) {
   }
 }
 
+function timingSafeEqualStr(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  const aBuf = Buffer.from(a);
+  const bBuf = Buffer.from(b);
+  if (aBuf.length !== bBuf.length) return false;
+  return crypto.timingSafeEqual(aBuf, bBuf);
+}
+
+const MAX_BODY_BYTES = 64 * 1024; // 64 KB ceiling
+
+function readJsonBody(req, res) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    let bytesReceived = 0;
+    req.on('data', chunk => {
+      bytesReceived += chunk.length;
+      if (bytesReceived > MAX_BODY_BYTES) {
+        req.destroy();
+        reject(new Error('PAYLOAD_TOO_LARGE'));
+        return;
+      }
+      body += chunk;
+    });
+    req.on('end', () => {
+      try {
+        resolve(JSON.parse(body || '{}'));
+      } catch (err) {
+        reject(new Error('INVALID_JSON'));
+      }
+    });
+    req.on('error', reject);
+  });
+}
+
 const server = http.createServer(async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const origin = req.headers['origin'] || '';
+  const allowedOrigins = [
+    'https://clariora.com.au',
+    'https://www.clariora.com.au',
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://localhost:8080',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:8080'
+  ];
+  const isAllowedOrigin = allowedOrigins.includes(origin) ||
+    /^https:\/\/([a-zA-Z0-9-]+\.)?pages\.dev$/.test(origin) ||
+    /^https:\/\/([a-zA-Z0-9-]+\.)?telegram\.org$/.test(origin);
+
+  if (isAllowedOrigin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Telegram-Bot-Api-Secret-Token, X-Admin-Key');
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
@@ -221,57 +274,90 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === 'POST' && (req.url === '/api/create-stars-invoice' || req.url === '/api/v1/billing/stars/invoice')) {
-    let body = '';
-    req.on('data', chunk => body += chunk);
-    req.on('end', async () => {
-      try {
-        const parsed = JSON.parse(body);
-        const product = STARS_PRODUCTS[parsed.productId];
-        if (!product) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Unknown Stars product' }));
-          return;
-        }
-        const telegramId = parsed.telegramId || 0;
-        const payload = JSON.stringify({ p: product.id, u: telegramId, s: product.stars });
-        const result = await callTelegram('createInvoiceLink', {
-          title: product.title,
-          description: product.description,
-          payload,
-          provider_token: '',
-          currency: 'XTR',
-          prices: [{ label: product.title, amount: product.stars }]
-        });
+    try {
+      const parsed = await readJsonBody(req, res);
+      // Protect invoice creation: require admin key or valid initData in production
+      const adminHeader = req.headers['x-admin-key'] || '';
+      const isInternalAdmin = EDGE_ADMIN_KEY && timingSafeEqualStr(adminHeader, EDGE_ADMIN_KEY);
+      if (!isInternalAdmin && !parsed.initData && (process.env.NODE_ENV === 'production' || process.env.ENVIRONMENT === 'production')) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Unauthorized: initData or X-Admin-Key required' }));
+        return;
+      }
+      const product = STARS_PRODUCTS[parsed.productId];
+      if (!product) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Unknown Stars product' }));
+        return;
+      }
+      const telegramId = parsed.telegramId || 0;
+      const payload = JSON.stringify({ p: product.id, u: telegramId, s: product.stars });
+      const result = await callTelegram('createInvoiceLink', {
+        title: product.title,
+        description: product.description,
+        payload,
+        provider_token: '',
+        currency: 'XTR',
+        prices: [{ label: product.title, amount: product.stars }]
+      });
 
-        if (result.ok) {
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ invoiceLink: result.result, success: true }));
-        } else {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: result.description }));
-        }
-      } catch (err) {
+      if (result.ok) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ invoiceLink: result.result, success: true }));
+      } else {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: result.description }));
+      }
+    } catch (err) {
+      if (err.message === 'PAYLOAD_TOO_LARGE') {
+        res.writeHead(413, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Payload Too Large' }));
+      } else if (err.message === 'INVALID_JSON') {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid JSON' }));
+      } else {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: err.message }));
       }
-    });
+    }
     return;
   }
 
   if (req.method === 'POST' && req.url === '/webhook') {
-    let body = '';
-    req.on('data', chunk => body += chunk);
-    req.on('end', async () => {
-      try {
-        await handleUpdate(JSON.parse(body));
-        res.writeHead(200);
-        res.end('OK');
-      } catch (err) {
+    // Validate secret token from Telegram
+    const incomingSecret = req.headers['x-telegram-bot-api-secret-token'] || '';
+    if (TELEGRAM_WEBHOOK_SECRET) {
+      if (!incomingSecret || !timingSafeEqualStr(incomingSecret, TELEGRAM_WEBHOOK_SECRET)) {
+        console.warn('[Bot] Webhook rejected: unauthorized secret token');
+        res.writeHead(403, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Unauthorized secret token' }));
+        return;
+      }
+    } else if (process.env.NODE_ENV === 'production' || process.env.ENVIRONMENT === 'production') {
+      console.error('[Bot] Webhook rejected: TELEGRAM_WEBHOOK_SECRET / EDGE_WEBHOOK_SECRET not configured in production');
+      res.writeHead(503, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Webhook secret unconfigured' }));
+      return;
+    }
+
+    try {
+      const update = await readJsonBody(req, res);
+      await handleUpdate(update);
+      res.writeHead(200);
+      res.end('OK');
+    } catch (err) {
+      if (err.message === 'PAYLOAD_TOO_LARGE') {
+        res.writeHead(413, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Payload Too Large' }));
+      } else if (err.message === 'INVALID_JSON') {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid JSON' }));
+      } else {
         console.error('[Bot] Webhook error:', err);
         res.writeHead(500);
         res.end();
       }
-    });
+    }
     return;
   }
 

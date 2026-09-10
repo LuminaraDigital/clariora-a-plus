@@ -24,8 +24,15 @@
   const isBrowser = typeof window !== 'undefined';
   const tg = isBrowser && window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
 
+  // Real TMA detection: must be running inside Telegram with valid initData or user
+  const isRealTMA = !!(
+    tg &&
+    ((typeof tg.initData === 'string' && tg.initData.length > 0) ||
+     (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id))
+  );
+
   const state = {
-    isTMA: !!tg,
+    isTMA: isRealTMA,
     user: null,
     navigationStack: [],
     onBackHandlers: [],
@@ -38,7 +45,7 @@
   function init() {
     if (!isBrowser) return state;
 
-    if (tg) {
+    if (tg && isRealTMA) {
       try {
         tg.ready();
         
@@ -272,12 +279,20 @@
    */
   function setCloudItem(key, value) {
     return new Promise((resolve, reject) => {
-      if (tg && tg.CloudStorage) {
-        tg.CloudStorage.setItem(key, JSON.stringify(value), (err, stored) => {
-          if (err) reject(err); else resolve(stored);
-        });
+      const hasCloudStorage = tg && tg.CloudStorage && typeof tg.isVersionAtLeast === 'function' && tg.isVersionAtLeast('6.9');
+      if (hasCloudStorage) {
+        try {
+          tg.CloudStorage.setItem(key, JSON.stringify(value), (err, stored) => {
+            if (err) reject(err); else resolve(stored);
+          });
+        } catch (e) {
+          fallbackLocal();
+        }
       } else {
-        // Fallback to localStorage
+        fallbackLocal();
+      }
+
+      function fallbackLocal() {
         try {
           localStorage.setItem(`tma_${key}`, JSON.stringify(value));
           resolve(true);
@@ -290,19 +305,27 @@
 
   function getCloudItem(key) {
     return new Promise((resolve, reject) => {
-      if (tg && tg.CloudStorage) {
-        tg.CloudStorage.getItem(key, (err, val) => {
-          if (err) reject(err);
-          else {
-            try {
-              resolve(val ? JSON.parse(val) : null);
-            } catch (e) {
-              resolve(val);
+      const hasCloudStorage = tg && tg.CloudStorage && typeof tg.isVersionAtLeast === 'function' && tg.isVersionAtLeast('6.9');
+      if (hasCloudStorage) {
+        try {
+          tg.CloudStorage.getItem(key, (err, val) => {
+            if (err) reject(err);
+            else {
+              try {
+                resolve(val ? JSON.parse(val) : null);
+              } catch (e) {
+                resolve(val);
+              }
             }
-          }
-        });
+          });
+        } catch (e) {
+          fallbackLocal();
+        }
       } else {
-        // Fallback to localStorage
+        fallbackLocal();
+      }
+
+      function fallbackLocal() {
         try {
           const val = localStorage.getItem(`tma_${key}`);
           resolve(val ? JSON.parse(val) : null);

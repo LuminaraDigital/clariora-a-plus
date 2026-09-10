@@ -5,9 +5,9 @@
 # ---------------------------------------------------------------------------
 
 # Secrets and credentials
-.env
-.env.*
+.env*
 !.env.example
+!.env.*.template
 .groq_key
 **/groq-secrets.local.js
 **/groq_secrets.local.json
@@ -60,19 +60,27 @@ tools/group*_raw.txt
 
 # Editor and tooling noise
 .pytest_cache/
+**/.pytest_cache/
 .cursor/
+**/.cursor/
 .vscode/
 .idea/
 __pycache__/
 *.pyc
 *.log
+*.log*
+firebase-debug*.log
+**/coverage/
+**/*.tmp
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# Local preview config for the Claude desktop app
+# Local preview config for AI desktop and agent environments
 .claude/
+**/.claude/
 .agents/
+**/.agents/
 skills-lock.json
 
 # Generated at build time from icons/icon-512.png

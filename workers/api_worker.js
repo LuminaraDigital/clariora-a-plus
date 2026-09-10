@@ -44,9 +44,26 @@ export default {
     const url = new URL(request.url);
     const origin = request.headers.get('Origin') || '';
 
-    // Standard CORS for clariora.com.au, telegram webviews, and development
+    // Strict CORS allowlist for clariora.com.au, telegram webviews, pages, and local dev
+    const ALLOWED_ORIGINS = [
+      'https://clariora.com.au',
+      'https://www.clariora.com.au',
+      'https://comptia-a-plus-master.pages.dev',
+      'https://web.telegram.org'
+    ];
+    let resolvedOrigin = 'https://clariora.com.au';
+    if (origin) {
+      const isAllowed = ALLOWED_ORIGINS.includes(origin) ||
+        /^https:\/\/([a-zA-Z0-9-]+\.)?telegram\.org$/.test(origin) ||
+        origin.startsWith('http://localhost:') ||
+        origin.startsWith('http://127.0.0.1:');
+      if (isAllowed) {
+        resolvedOrigin = origin;
+      }
+    }
+
     const corsHeaders = {
-      'Access-Control-Allow-Origin': origin || '*',
+      'Access-Control-Allow-Origin': resolvedOrigin,
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-User-Id, X-Telegram-Init-Data, X-Admin-Key',
       'Access-Control-Max-Age': '86400',
@@ -138,7 +155,7 @@ export default {
         });
       }
 
-      // 2. Auth: Magic Link
+      // 2. Auth: Magic Link Request
       if (path === '/api/v1/auth/magic' && request.method === 'POST') {
         const clientIp = request.headers.get('cf-connecting-ip') || 'unknown';
         const rateCheck = await enforceCoachRateLimit(env, `magic:${clientIp}`, 5);
@@ -167,11 +184,51 @@ export default {
           ).bind(token, email, expiresAt).run();
         }
 
+        // Security: Never leak the raw authentication token in the HTTP API response.
         return new Response(JSON.stringify({
           success: true,
-          message: 'Magic link generated',
-          token: token,
-          authUrl: `https://clariora.com.au/index.html?token=${token}`
+          message: 'If an account exists for this email address, a secure sign-in link has been sent.'
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // 2a. Auth: Magic Link Token Verification
+      if (path === '/api/v1/auth/magic/verify' && request.method === 'GET') {
+        const tokenParam = url.searchParams.get('token') || '';
+        if (!tokenParam || tokenParam.length < 16) {
+          return new Response(JSON.stringify({ error: 'Invalid or missing verification token' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        if (!env.DB) {
+          return new Response(JSON.stringify({ error: 'Database unavailable' }), {
+            status: 503,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        const record = await env.DB.prepare(
+          'SELECT token, email, expires_at FROM magic_links WHERE token = ?'
+        ).bind(tokenParam).first();
+
+        if (!record || Number(record.expires_at) < Date.now()) {
+          return new Response(JSON.stringify({ error: 'Magic link has expired or is invalid' }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+
+        // Single-use token consumption
+        await env.DB.prepare('DELETE FROM magic_links WHERE token = ?').bind(tokenParam).run();
+
+        const user = await env.DB.prepare('SELECT id, email FROM users WHERE email = ?').bind(record.email).first();
+        return new Response(JSON.stringify({
+          success: true,
+          verified: true,
+          email: record.email,
+          userId: user ? user.id : null,
+          message: 'Authentication successful'
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
@@ -279,18 +336,56 @@ export default {
 
       // 3. Sync: Get or Save Learner State
       if (path === '/api/v1/sync') {
-        const userId = request.headers.get('X-User-Id');
-        if (!userId) {
-          return new Response(JSON.stringify({ error: 'Unauthorized: X-User-Id header required' }), { status: 401, headers: corsHeaders });
+        const initDataRaw = request.headers.get('X-Telegram-Init-Data') || '';
+        const authHeader = request.headers.get('Authorization') || '';
+        const bearerToken = authHeader.toLowerCase().startsWith('bearer ') ? authHeader.slice(7).trim() : '';
+
+        let verifiedUserId = null;
+        if (initDataRaw && env.TELEGRAM_BOT_TOKEN) {
+          const tgUser = await verifyTelegramInitData(initDataRaw, env.TELEGRAM_BOT_TOKEN);
+          if (tgUser && tgUser.id) {
+            verifiedUserId = 'tg_' + tgUser.id;
+          }
         }
+        if (!verifiedUserId && bearerToken) {
+          const apiKey = env.FIREBASE_WEB_API_KEY || 'AIzaSyAt5MnWAXJcL84vG6gxRoIksJL2bcfr4y8';
+          const fbUser = await verifyFirebaseIdToken(bearerToken, apiKey);
+          if (fbUser && (fbUser.localId || fbUser.user_id || fbUser.uid)) {
+            verifiedUserId = fbUser.localId || fbUser.user_id || fbUser.uid;
+          }
+        }
+
+        // Support explicit test token / localhost development environments
+        const headerUserId = request.headers.get('X-User-Id');
+        if (!verifiedUserId && headerUserId && (env.ALLOW_TEST_AUTH === '1' || url.hostname === 'localhost' || url.hostname === '127.0.0.1')) {
+          verifiedUserId = headerUserId;
+        }
+
+        if (!verifiedUserId) {
+          return new Response(JSON.stringify({
+            error: 'AUTH_REQUIRED',
+            message: 'Valid Telegram initData or Firebase ID token required for cloud sync.'
+          }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+
+        const userId = verifiedUserId;
 
         if (request.method === 'GET') {
           if (!env.DB) {
             return new Response(JSON.stringify({ state: null }), { headers: corsHeaders });
           }
           const row = await env.DB.prepare('SELECT state_blob, revision, updated_at FROM learner_sync_state WHERE user_id = ?').bind(userId).first();
+          let parsedState = null;
+          if (row && row.state_blob) {
+            try {
+              parsedState = JSON.parse(row.state_blob);
+            } catch (_) {
+              console.warn('[Sync] Corrupt state blob detected for user', userId);
+              parsedState = null;
+            }
+          }
           return new Response(JSON.stringify({
-            state: row ? JSON.parse(row.state_blob) : null,
+            state: parsedState,
             revision: row ? row.revision : 0
           }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -298,7 +393,24 @@ export default {
         }
 
         if (request.method === 'POST') {
-          const { stateBlob, revision, deviceName } = await request.json();
+          const body = await request.json().catch(() => ({}));
+          const { stateBlob, revision, deviceName } = body || {};
+          if (!stateBlob || typeof stateBlob !== 'object' || Array.isArray(stateBlob)) {
+            return new Response(JSON.stringify({ error: 'stateBlob must be a valid non-null object' }), {
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+          }
+          const serializedBlob = JSON.stringify(stateBlob);
+          if (serializedBlob.length > 512 * 1024) {
+            return new Response(JSON.stringify({ error: 'stateBlob exceeds 512KB size ceiling' }), {
+              status: 413,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+          }
+          const safeDeviceName = String(deviceName || 'Web').slice(0, 64);
+          const safeRevision = Math.max(1, Math.min(2147483647, Number(revision) || 1));
+
           if (env.DB) {
             await env.DB.prepare(`
               INSERT INTO learner_sync_state (user_id, revision, state_blob, device_name, updated_at)
@@ -308,7 +420,7 @@ export default {
                 state_blob = excluded.state_blob,
                 device_name = excluded.device_name,
                 updated_at = CURRENT_TIMESTAMP
-            `).bind(userId, revision || 1, JSON.stringify(stateBlob), deviceName || 'Web').run();
+            `).bind(userId, safeRevision, serializedBlob, safeDeviceName).run();
           }
           return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
@@ -316,15 +428,32 @@ export default {
 
       // 4. Problem Reporting
       if (path === '/api/v1/items/report' && request.method === 'POST') {
-        const { questionId, category, details, userEmail } = await request.json();
-        if (!questionId || !category) {
-          return new Response(JSON.stringify({ error: 'Missing questionId or category' }), { status: 400, headers: corsHeaders });
+        const clientIp = request.headers.get('cf-connecting-ip') || 'unknown';
+        const rateCheck = await enforceCoachRateLimit(env, `report:${clientIp}`, 10);
+        if (!rateCheck.allowed) {
+          return new Response(JSON.stringify({ error: 'Too many reports submitted. Please wait a moment.' }), {
+            status: 429,
+            headers: { ...corsHeaders, 'Retry-After': '60' }
+          });
         }
+
+        const body = await request.json().catch(() => ({}));
+        const { questionId, category, details, userEmail } = body || {};
+        if (!questionId || !category || typeof questionId !== 'string' || typeof category !== 'string') {
+          return new Response(JSON.stringify({ error: 'Missing or invalid questionId or category' }), {
+            status: 400,
+            headers: corsHeaders
+          });
+        }
+        const safeQid = questionId.slice(0, 64);
+        const safeCat = category.slice(0, 64);
+        const safeDetails = String(details || '').slice(0, 1000);
+        const safeEmail = String(userEmail || 'anon').slice(0, 128);
 
         if (env.DB) {
           await env.DB.prepare(
             'INSERT INTO item_reports (question_id, category, details, user_email) VALUES (?, ?, ?, ?)'
-          ).bind(questionId, category, details || '', userEmail || 'anon').run();
+          ).bind(safeQid, safeCat, safeDetails, safeEmail).run();
         }
 
         return new Response(JSON.stringify({ success: true, message: 'Report received' }), {
@@ -489,8 +618,21 @@ export default {
         const resolvedId = tgUser ? tgUser.id : null;
         const firebaseUid = firebaseUser ? firebaseUser.localId || firebaseUser.user_id || firebaseUser.uid : null;
 
-        if (!txHash || !productId) {
+        const cleanTxHash = String(txHash || '').trim();
+        const cleanProductId = String(productId || '').trim();
+        if (!cleanTxHash || !cleanProductId) {
           return new Response(JSON.stringify({ error: 'Missing txHash or productId' }), {
+            status: 400,
+            headers: corsHeaders
+          });
+        }
+        const isTestPayment = env.ALLOW_TEST_PAYMENTS === '1' || env.TON_VERIFY_RELAXED === '1';
+        const isValidHashFormat = /^[a-fA-F0-9]{64}$/.test(cleanTxHash) || /^[a-zA-Z0-9+/]{42,44}={0,2}$/.test(cleanTxHash);
+        if (!isValidHashFormat && !isTestPayment) {
+          return new Response(JSON.stringify({
+            error: 'INVALID_TX_HASH_FORMAT',
+            message: 'Transaction hash must be a valid 64-char hex or 44-char base64 string.'
+          }), {
             status: 400,
             headers: corsHeaders
           });
@@ -499,7 +641,7 @@ export default {
         if (env.DB) {
           const prior = await env.DB.prepare(
             'SELECT id FROM ton_transactions WHERE id = ?'
-          ).bind(String(txHash)).first();
+          ).bind(cleanTxHash).first();
           if (prior) {
             return new Response(JSON.stringify({
               error: 'TX_ALREADY_USED',
@@ -512,6 +654,15 @@ export default {
         }
 
         let onChainConfirmed = false;
+        let canonicalTxHash = cleanTxHash;
+        const TON_PRICES = {
+          daily_unlimited: { nanotons: 1500000000 },
+          pro_monthly: { nanotons: 7000000000 },
+          lifetime_master: { nanotons: 35000000000 }
+        };
+        const expectedProduct = TON_PRICES[cleanProductId] || TON_PRICES.daily_unlimited;
+        const merchantWallet = env.TON_MERCHANT_WALLET_ADDRESS || (isTestPayment ? 'EQBvW8Z5huBkMJYdn3GuLD5Co_V7bB0N12_RegistryMockTON' : '');
+
         if (env.TONCENTER_API_KEY && walletAddress) {
           try {
             const tcUrl = 'https://toncenter.com/api/v2/getTransactions?address=' +
@@ -523,16 +674,62 @@ export default {
               const tcData = await tcRes.json();
               const txs = (tcData && tcData.result) || [];
               onChainConfirmed = txs.some((t) => {
-                const hash = t.transaction_id && (t.transaction_id.hash || t.transaction_id);
-                return String(hash || '').includes(String(txHash)) ||
-                  String(txHash).includes(String(hash || ''));
+                const onChainHash = t.transaction_id && (t.transaction_id.hash || t.transaction_id);
+                if (!onChainHash) return false;
+                const normOnChain = String(onChainHash).trim().toLowerCase();
+                const normInput = cleanTxHash.toLowerCase();
+                const hashMatch = normOnChain === normInput;
+                if (!hashMatch) return false;
+
+                // Validate recency: transaction must have been created within last 2 hours (7200s)
+                const nowSec = Math.floor(Date.now() / 1000);
+                const txTime = Number(t.utime || 0);
+                if (txTime > 0 && (nowSec - txTime > 7200 || txTime - nowSec > 300)) {
+                  console.warn('[TON] Transaction expired:', txTime, 'now:', nowSec);
+                  return false;
+                }
+
+                canonicalTxHash = t.transaction_id.hash || onChainHash;
+
+                // Validate destination wallet matches merchant wallet and payment amount
+                const outMsgs = t.out_msgs || [];
+                const destMatch = outMsgs.some((m) => {
+                  const dest = m.destination || '';
+                  const val = Number(m.value || 0);
+                  const validDest = isTestPayment ? true : (merchantWallet && dest.toLowerCase() === merchantWallet.toLowerCase());
+                  const validVal = val >= (expectedProduct.nanotons * 0.95);
+                  return validDest && validVal;
+                });
+                const inMsg = t.in_msg || {};
+                const inDestMatch = inMsg.destination &&
+                  (isTestPayment ? true : (merchantWallet && inMsg.destination.toLowerCase() === merchantWallet.toLowerCase())) &&
+                  Number(inMsg.value || 0) >= (expectedProduct.nanotons * 0.95);
+
+                const success = !t.compute_ph || t.compute_ph.exit_code === 0;
+                return success && (destMatch || inDestMatch);
               });
             }
           } catch (tcErr) {
             console.debug('TonCenter check notice:', tcErr.message);
           }
-        } else if (env.TON_VERIFY_RELAXED === '1') {
-          onChainConfirmed = String(txHash).length >= 16;
+        } else if (isTestPayment) {
+          // Strictly limited to automated test harnesses passing explicit flag in mockEnv
+          onChainConfirmed = cleanTxHash.length >= 16;
+        }
+
+        if (onChainConfirmed && env.DB && canonicalTxHash !== cleanTxHash) {
+          const priorCanonical = await env.DB.prepare(
+            'SELECT id FROM ton_transactions WHERE id = ?'
+          ).bind(canonicalTxHash).first();
+          if (priorCanonical) {
+            return new Response(JSON.stringify({
+              error: 'TX_ALREADY_USED',
+              message: 'This TON transaction was already redeemed.'
+            }), {
+              status: 409,
+              headers: corsHeaders
+            });
+          }
         }
 
         if (!onChainConfirmed) {
@@ -547,10 +744,10 @@ export default {
 
         let tier = 'daily_pass';
         let expiresAt = Date.now() + 24 * 60 * 60 * 1000;
-        if (productId === 'pro_monthly') {
+        if (cleanProductId === 'pro_monthly') {
           tier = 'pro_monthly';
           expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
-        } else if (productId === 'lifetime_master') {
+        } else if (cleanProductId === 'lifetime_master') {
           tier = 'lifetime';
           expiresAt = null;
         }
@@ -568,7 +765,7 @@ export default {
             await env.DB.prepare(
               'INSERT INTO ton_transactions (id, telegram_id, product_id, amount_ton, wallet_address, status) ' +
               "VALUES (?, ?, ?, ?, ?, 'confirmed') ON CONFLICT(id) DO NOTHING"
-            ).bind(String(txHash), resolvedId, productId, String(amountTon || '0'), walletAddress || '').run();
+            ).bind(canonicalTxHash, resolvedId, cleanProductId, String(amountTon || '0'), walletAddress || '').run();
           }
           if (firebaseUid) {
             await env.DB.prepare(`
@@ -702,16 +899,29 @@ export default {
           return new Response('Method Not Allowed', { status: 405, headers: corsHeaders });
         }
 
-        // Validate webhook secret token if configured
-        if (env.TELEGRAM_WEBHOOK_SECRET) {
+        // Validate webhook secret token (support both TELEGRAM_WEBHOOK_SECRET and EDGE_WEBHOOK_SECRET)
+        const webhookSecret = env.TELEGRAM_WEBHOOK_SECRET || env.EDGE_WEBHOOK_SECRET;
+        if (webhookSecret) {
           const incomingSecret = request.headers.get('X-Telegram-Bot-Api-Secret-Token');
-          if (!timingSafeEqualStr(incomingSecret || '', env.TELEGRAM_WEBHOOK_SECRET)) {
+          if (!incomingSecret || !timingSafeEqualStr(incomingSecret, webhookSecret)) {
             console.warn('Telegram webhook rejected: unauthorized secret token');
             return new Response('Unauthorized', { status: 403, headers: corsHeaders });
           }
+        } else if (env.ENVIRONMENT === 'production' || env.NODE_ENV === 'production') {
+          console.error('Telegram webhook rejected: TELEGRAM_WEBHOOK_SECRET / EDGE_WEBHOOK_SECRET is not configured in production');
+          return new Response('Webhook secret not configured', { status: 503, headers: corsHeaders });
         }
 
-        const update = await request.json();
+        const update = await request.json().catch(() => ({}));
+        if (!update || typeof update !== 'object') {
+          return new Response(JSON.stringify({ error: 'Invalid payload' }), { status: 400, headers: corsHeaders });
+        }
+
+        // Strict guard: if no webhook secret is configured, reject payment delivery outright
+        if (!webhookSecret && update.message && update.message.successful_payment && env.ALLOW_TEST_PAYMENTS !== '1') {
+          console.warn('Telegram webhook rejected: payment delivery requires configured webhook secret');
+          return new Response('Webhook secret required for payment confirmation', { status: 403, headers: corsHeaders });
+        }
 
         // A. Handle bot commands and chat messages (not payment receipts)
         if (update.message && update.message.text && !update.message.successful_payment) {
@@ -882,6 +1092,9 @@ function withAppBase(response) {
     }
     const headers = new Headers(response.headers);
     headers.set('Content-Type', 'text/html; charset=utf-8');
+    headers.set('X-Content-Type-Options', 'nosniff');
+    headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
     headers.delete('content-length');
     return new Response(out, { status: response.status, statusText: response.statusText, headers });
   });
@@ -893,7 +1106,7 @@ function isAdminAuthorized(request, env) {
   const headerKey = request.headers.get('X-Admin-Key') || '';
   const auth = request.headers.get('Authorization') || '';
   const bearer = auth.toLowerCase().startsWith('bearer ') ? auth.slice(7).trim() : '';
-  return headerKey === key || bearer === key;
+  return timingSafeEqualStr(headerKey, key) || timingSafeEqualStr(bearer, key);
 }
 
 async function verifyFirebaseIdToken(idToken, apiKey) {

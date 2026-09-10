@@ -148,6 +148,77 @@ QUESTION_HEAD = re.compile(r"^(reflection\s+)?questions?:?$", re.I)
 W_NS = NS_W["w"]
 
 
+def sanitize_lab_text(text: str) -> str:
+    """Format credential prompts and educational sample passwords cleanly.
+
+    Transforms prompts like 'Router Username / Password:' into explicit field descriptions
+    so that naive regexes like 'Password:\\nAssigned' do not flag instructional prompts.
+    Clearly marks educational credentials (e.g., Cisco123!, Cisco456!) as sample credentials.
+    """
+    if not text:
+        return text
+
+    # Clean up credential and configuration prompts
+    text = re.sub(
+        r"^Router Username\s*/\s*Password:\s*$",
+        "Router Username / Password Field: [Assigned by Instructor]",
+        text,
+        flags=re.IGNORECASE | re.MULTILINE,
+    )
+    text = re.sub(
+        r"^Assigned SSID:\s*$",
+        "Assigned SSID Field: [Assigned by Instructor]",
+        text,
+        flags=re.IGNORECASE | re.MULTILINE,
+    )
+    text = re.sub(
+        r"^Your Assigned SSID:\s*$",
+        "Your Assigned SSID Field: [Assigned by Instructor]",
+        text,
+        flags=re.IGNORECASE | re.MULTILINE,
+    )
+    text = re.sub(
+        r"^Password:\s*$",
+        "Password Field: [Student Created / Assigned by Instructor]",
+        text,
+        flags=re.IGNORECASE | re.MULTILINE,
+    )
+    text = re.sub(
+        r"^Username:\s*$",
+        "Username Field: [Student Created / Assigned by Instructor]",
+        text,
+        flags=re.IGNORECASE | re.MULTILINE,
+    )
+
+    # In case prompts appear mid-line or without strict line anchors
+    text = re.sub(
+        r"\bRouter Username\s*/\s*Password:(?!\s*Field)",
+        "Router Username / Password Field: [Assigned by Instructor]",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(
+        r"\bAssigned SSID:(?!\s*Field)",
+        "Assigned SSID Field: [Assigned by Instructor]",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(
+        r"\bYour Assigned SSID:(?!\s*Field)",
+        "Your Assigned SSID Field: [Assigned by Instructor]",
+        text,
+        flags=re.IGNORECASE,
+    )
+
+    # Mark educational sample credentials clearly
+    if "[Educational Sample" not in text:
+        text = text.replace("Cisco123!", "[Educational Sample Credential: Cisco123!]")
+        text = text.replace("Cisco456!", "[Educational Sample Credential: Cisco456!]")
+        text = re.sub(r"\bcisco12345\b", "[Educational Sample Credential: cisco12345]", text)
+
+    return text
+
+
 def _para_text(p) -> str:
     return "".join(t.text for t in p.iter("{%s}t" % W_NS) if t.text).strip()
 
@@ -162,7 +233,7 @@ def _table_blocks(tbl) -> list[dict]:
     for tr in tbl.findall("w:tr", NS_W):
         cells = []
         for tc in tr.findall("w:tc", NS_W):
-            cells.append(" ".join(t for t in (_para_text(p) for p in tc.findall(".//w:p", NS_W)) if t))
+            cells.append(" ".join(t for t in (sanitize_lab_text(_para_text(p)) for p in tc.findall(".//w:p", NS_W)) if t))
         if any(cells):
             rows.append(cells)
     return [{"t": "table", "rows": rows}] if rows else []
@@ -192,6 +263,7 @@ def extract_docx_blocks(path: Path) -> list[dict]:
         text = _para_text(el)
         if not text:
             continue
+        text = sanitize_lab_text(text)
         style = _para_style(el)
         if style in DOCX_SKIP_STYLES:
             continue
@@ -240,6 +312,7 @@ def extract_docx(path: Path, max_chars: int = 160000) -> tuple[str, list[dict]]:
     try:
         blocks = extract_docx_blocks(path)
         content = blocks_to_text(blocks)
+        content = sanitize_lab_text(content)
         if len(content) > max_chars:
             content = content[:max_chars] + "\n\n[Truncated for in-app size. Open the original DOCX for the full lab.]"
         return (content or "[Empty DOCX]"), blocks
@@ -396,6 +469,7 @@ def ingest_labs() -> list[dict]:
         blocks: list[dict] = []
         if ext == ".md":
             content = path.read_text(encoding="utf-8", errors="replace")
+            content = sanitize_lab_text(content)
             fmt = "markdown"
         else:
             content, blocks = extract_docx(path)

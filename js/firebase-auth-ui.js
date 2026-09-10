@@ -519,6 +519,10 @@
         '  <strong>Sign in to sync</strong>',
         '</button>'
       ].join('');
+      var dt = document.getElementById('drawerAccountText');
+      if (dt) dt.textContent = 'Sign in / Account';
+      var dm = document.getElementById('drawerAccountMeta');
+      if (dm) dm.textContent = 'Cloud Sync';
     } else {
       var name = user.displayName || (user.email ? user.email.split('@')[0] : 'Learner');
       var avatarHtml = '';
@@ -536,6 +540,10 @@
         '<span class="sync-dot" title="Cloud Synced" aria-hidden="true"></span>',
         '</button>'
       ].join('');
+      var dt = document.getElementById('drawerAccountText');
+      if (dt) dt.textContent = name;
+      var dm = document.getElementById('drawerAccountMeta');
+      if (dm) dm.textContent = 'Account';
     }
   }
 

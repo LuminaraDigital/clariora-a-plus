@@ -24,7 +24,7 @@
     auth: null,
     db: null,
     modules: null,
-    currentUser: null,
+    currentUser: undefined,
     firestoreAvailable: false,
     authSubscribers: [],
     firestoreUnsubscribe: null
@@ -223,7 +223,7 @@
    */
   function onAuthStateChanged(callback) {
     state.authSubscribers.push(callback);
-    if (state.currentUser !== undefined) {
+    if (state.initialized && state.currentUser !== undefined) {
       callback(state.currentUser);
     }
     return function unsubscribe() {

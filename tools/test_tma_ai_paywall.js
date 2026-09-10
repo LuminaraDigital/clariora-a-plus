@@ -156,6 +156,7 @@ async function runTests() {
   const mockEnv = {
     DB: mockDb,
     TELEGRAM_BOT_TOKEN: TEST_BOT_TOKEN,
+    TELEGRAM_WEBHOOK_SECRET: 'test_webhook_secret_stars_paywall',
     GROQ_API_KEY: 'gsk_mock_test_key_123',
     NVIDIA_API_KEY: 'nvapi_mock_test_key_456',
     OPENROUTER_API_KEY: 'sk-or-mock_test_key_789'
@@ -261,7 +262,10 @@ async function runTests() {
   console.log('2D. Testing Telegram Stars Payment & Tier Upgrade...');
   const webhookPaymentReq = new Request('https://clariora.com.au/api/v1/telegram/webhook', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Telegram-Bot-Api-Secret-Token': 'test_webhook_secret_stars_paywall'
+    },
     body: JSON.stringify({
       update_id: 10001,
       message: {
@@ -328,7 +332,10 @@ async function runTests() {
   };
   const badPre = new Request('https://clariora.com.au/api/v1/telegram/webhook', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Telegram-Bot-Api-Secret-Token': 'test_webhook_secret_stars_paywall'
+    },
     body: JSON.stringify({
       update_id: 10002,
       pre_checkout_query: {
@@ -344,7 +351,10 @@ async function runTests() {
 
   const goodPre = new Request('https://clariora.com.au/api/v1/telegram/webhook', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Telegram-Bot-Api-Secret-Token': 'test_webhook_secret_stars_paywall'
+    },
     body: JSON.stringify({
       update_id: 10003,
       pre_checkout_query: {

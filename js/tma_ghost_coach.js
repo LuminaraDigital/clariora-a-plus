@@ -416,9 +416,10 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
     let html = formatMarkdown(res.text || '');
 
     if (res.upsellMessage) {
+      const safeUpsell = escapeHtml(res.upsellMessage);
       html += `
         <div style="margin-top: 16px; padding: 10px 14px; background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-          <span style="font-size: 0.8rem; color: #F5D061; display: inline-flex; align-items: center; gap: 4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="#F5D061" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> ${res.upsellMessage}</span>
+          <span style="font-size: 0.8rem; color: #F5D061; display: inline-flex; align-items: center; gap: 4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="#F5D061" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> ${safeUpsell}</span>
           <button onclick="if (window.StarsBilling) window.StarsBilling.openStarsUpgradeSheet()" style="background: #F5D061; color: #07090E; font-size: 0.75rem; font-weight: 700; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; white-space: nowrap;">
             Upgrade
           </button>
@@ -434,12 +435,17 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
     const bodyEl = document.getElementById('tma-coach-body');
     if (!bodyEl) return;
 
+    const safeProviderName = escapeHtml(providerObj ? providerObj.name : 'AI Engine');
+    const safeMsg = customMessage
+      ? escapeHtml(customMessage)
+      : `Access to <strong>${safeProviderName}</strong>, multi-specialist handoffs, streaming, and higher hard AI budgets requires an active pass.`;
+
     bodyEl.innerHTML = `
       <div style="text-align: center; padding: 16px 8px;">
         <div style="margin-bottom: 8px;"><svg width="32" height="32" viewBox="0 0 24 24" fill="#F5D061" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
         <h4 style="color: #F5D061; margin: 0 0 8px 0; font-size: 1.15rem;">Unlock Clariora Pro AI</h4>
         <p style="color: #94A3B8; font-size: 0.85rem; line-height: 1.5; margin: 0 0 14px 0;">
-          ${customMessage || `Access to <strong>${providerObj.name}</strong>, multi-specialist handoffs, streaming, and higher hard AI budgets requires an active pass.`}
+          ${safeMsg}
         </p>
 
         ${proPreviewTokensRemaining > 0 ? `
@@ -518,11 +524,22 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
     if (TMABridge) TMABridge.haptic('light');
   }
 
+  function escapeHtml(str) {
+    if (typeof str !== 'string') return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   function formatMarkdown(text) {
-    return text
+    const escaped = escapeHtml(text || '');
+    return escaped
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/^> (.*$)/gim, '<blockquote style="border-left: 3px solid #D4AF37; padding-left: 10px; margin: 8px 0; color: #F5D061;">$1</blockquote>')
+      .replace(/^&gt; (.*$)/gim, '<blockquote style="border-left: 3px solid #D4AF37; padding-left: 10px; margin: 8px 0; color: #F5D061;">$1</blockquote>')
       .replace(/\n/g, '<br/>');
   }
 

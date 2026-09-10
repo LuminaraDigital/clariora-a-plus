@@ -44,8 +44,11 @@ contract ExamCredentialRegistry with Deployable {
         self.totalIssued = 0;
     }
 
-    // Accepts credential registration from authorized issuer or student self-declaration with APX proof
+    // Accepts credential registration from authorized issuer
     receive(msg: RecordExamCredential) {
+        // Enforce access control: only contract owner (authorized Clariora backend) may record credentials
+        require(sender() == self.owner, "Unauthorized credential issuer");
+
         // Enforce passing mark check (675 for Core 1, 700 for Core 2)
         require(msg.passed == true, "Cannot mint failing score as credential");
         if (msg.examCore == 1) {

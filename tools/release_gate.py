@@ -106,6 +106,8 @@ def check_node_syntax(res: Results) -> None:
             cwd=str(ROOT),
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             check=False,
         )
         if r.returncode != 0:
@@ -134,6 +136,8 @@ def check_node_suites(res: Results) -> None:
             cwd=str(ROOT),
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             check=False,
         )
         if r.returncode != 0:
@@ -161,6 +165,8 @@ def check_validate_bank(res: Results) -> None:
         cwd=str(ROOT),
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         check=False,
     )
     if r.returncode != 0:
@@ -290,6 +296,48 @@ def check_versions(res: Results) -> None:
         )
 
 
+def check_npm_audit(res: Results) -> None:
+    use_shell = sys.platform == "win32"
+    r = subprocess.run(
+        ["npm", "audit", "--audit-level=high"],
+        cwd=str(ROOT),
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        shell=use_shell,
+        check=False,
+    )
+    if r.returncode != 0:
+        tail = ((r.stdout or "") + (r.stderr or "")).strip().splitlines()
+        first_err = tail[-1] if tail else "vulnerabilities found"
+        res.fail("npm audit", first_err)
+    else:
+        res.ok("npm audit", "0 high/critical vulnerabilities")
+
+
+def check_security_scan(res: Results) -> None:
+    scanner = ROOT / "tools" / "security_scan.py"
+    if not scanner.is_file():
+        res.warn("security_scan.py", "not present")
+        return
+    r = subprocess.run(
+        [sys.executable, str(scanner)],
+        cwd=str(ROOT),
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
+    if r.returncode != 0:
+        tail = ((r.stdout or "") + (r.stderr or "")).strip().splitlines()
+        first_err = tail[-1] if tail else "secret scan failed"
+        res.fail("security_scan.py", first_err)
+    else:
+        res.ok("security_scan.py", "no leaks detected")
+
+
 def check_dist_web(res: Results) -> None:
     if not DIST_WEB.is_dir():
         res.ok("dist_web file sizes", "dist_web not built, skipped")
@@ -319,6 +367,8 @@ def main() -> int:
         ("node --check", check_node_syntax),
         ("node test suites", check_node_suites),
         ("validate_bank.py", check_validate_bank),
+        ("security_scan.py", check_security_scan),
+        ("npm audit", check_npm_audit),
         ("typography", scan_typography),
         ("intro gate key", check_intro_gate),
         ("package.json excludes", check_package_excludes),

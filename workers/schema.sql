@@ -27,8 +27,7 @@ CREATE TABLE IF NOT EXISTS learner_sync_state (
     revision INTEGER NOT NULL DEFAULT 1,
     state_blob TEXT NOT NULL, -- JSON encoded state (attempts, SRS cards, readiness, streak)
     device_name TEXT,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 3. Item Telemetry & Crowd Analytics

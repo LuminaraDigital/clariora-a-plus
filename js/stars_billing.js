@@ -92,11 +92,15 @@
 
   function cacheEntitlement(data) {
     const ent = data && typeof data === 'object' ? data : FREE_DEFAULT;
-    try {
-      window.__CLARIORA_SERVER_ENTITLEMENT__ = ent;
-      window.dispatchEvent(new CustomEvent('clariora:entitlement-updated', { detail: ent }));
-    } catch (_) {}
+    const prev = window.__CLARIORA_SERVER_ENTITLEMENT__;
+    window.__CLARIORA_SERVER_ENTITLEMENT__ = ent;
     safeSet('tma_user_entitlement', JSON.stringify(ent));
+    const changed = !prev || prev.tier !== ent.tier || prev.expiresAt !== ent.expiresAt || prev.trialDaysRemaining !== ent.trialDaysRemaining;
+    if (changed) {
+      try {
+        window.dispatchEvent(new CustomEvent('clariora:entitlement-updated', { detail: ent }));
+      } catch (_) {}
+    }
     return ent;
   }
 

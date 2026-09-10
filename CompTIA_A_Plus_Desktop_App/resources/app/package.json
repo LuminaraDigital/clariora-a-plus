@@ -8,7 +8,7 @@
     "dist:win": "electron-builder --win"
   },
   "dependencies": {
-    "adm-zip": "^0.5.16",
+    "adm-zip": "^0.6.0",
     "electron-updater": "^6.8.9"
   },
   "devDependencies": {
@@ -29,7 +29,11 @@
       "!Videos For A+/**",
       "!media/videos/**",
       "!**/groq-secrets.local.js",
-      "!**/groq_secrets.local.json"
+      "!**/groq_secrets.local.json",
+      "!credentials/**",
+      "!*serviceAccount*.json",
+      "!**/*.env*",
+      "!admin/**"
     ]
   }
 }

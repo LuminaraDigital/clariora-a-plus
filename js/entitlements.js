@@ -1380,8 +1380,10 @@
       wrapGhostCoach();
       syncStarsEntitlement();
       try {
-        window.addEventListener('clariora:entitlement-updated', function () {
-          syncStarsEntitlement();
+        window.addEventListener('clariora:entitlement-updated', function (e) {
+          if (e && e.detail) {
+            window.__CLARIORA_SERVER_ENTITLEMENT__ = e.detail;
+          }
           renderChip();
         });
       } catch (_) {}

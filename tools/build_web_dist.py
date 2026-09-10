@@ -78,12 +78,12 @@ ROOT_EXTRA_FILES = [
 # Whole directories copied in full (minus excluded extensions/paths).
 # landing/ is the marketing page. It ships with the site but is not part
 # of the offline app shell, so it is copied and never precached.
-DIRS_TO_COPY = ["js", "css", "fonts", "icons", "shards", "landing", "admin"]
+DIRS_TO_COPY = ["js", "css", "fonts", "icons", "shards", "landing"]
 
 EXCLUDED_EXTENSIONS = {".pdf", ".py", ".exe", ".pyc"}
 EXCLUDED_DIR_NAMES = {
     "__pycache__", "tools", "_bank", "_backup", "release", "node_modules",
-    "dist_web", "dist", "build", "notes",
+    "dist_web", "dist", "build", "notes", "admin", "credentials",
 }
 
 # Only match src=/href= inside actual <script>, <link>, or <img> tags -

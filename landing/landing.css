@@ -71,8 +71,11 @@
   --wash-gold: rgba(212, 175, 55, 0.13);
   --wash-cool: rgba(56, 189, 248, 0.11);
   --wash-teal: rgba(45, 212, 191, 0.10);
-  --wash-violet: rgba(139, 92, 246, 0.08);
+  --wash-violet: rgba(184, 134, 11, 0.08);
   --wash-emerald: rgba(52, 211, 153, 0.07);
+  --wash-ink: rgba(7, 9, 14, 0.72);
+  --hero-veil: linear-gradient(105deg, rgba(11, 11, 15, 0.94) 0%, rgba(11, 11, 15, 0.78) 42%, rgba(11, 11, 15, 0.28) 68%, rgba(11, 11, 15, 0.55) 100%),
+    linear-gradient(180deg, rgba(11, 11, 15, 0.35) 0%, transparent 28%, rgba(11, 11, 15, 0.72) 100%);
   --glow: radial-gradient(ellipse 80% 55% at 50% -8%, rgba(212, 175, 55, 0.14), transparent 68%);
   --hero-mesh-mask: radial-gradient(ellipse 95% 80% at 50% 30%, black 40%, transparent 95%);
   --final-card-glow: radial-gradient(125% 125% at 50% 10%, rgba(212, 175, 55, 0.14) 0%, transparent 70%), var(--glass-bg-strong);
@@ -146,8 +149,11 @@
     --wash-gold: rgba(184, 144, 30, 0.09);
     --wash-cool: rgba(14, 165, 233, 0.08);
     --wash-teal: rgba(13, 148, 136, 0.07);
-    --wash-violet: rgba(124, 58, 237, 0.06);
+    --wash-violet: rgba(184, 144, 30, 0.07);
     --wash-emerald: rgba(5, 150, 105, 0.06);
+    --wash-ink: rgba(250, 250, 249, 0.78);
+    --hero-veil: linear-gradient(105deg, rgba(250, 250, 249, 0.96) 0%, rgba(250, 250, 249, 0.82) 42%, rgba(250, 250, 249, 0.35) 68%, rgba(250, 250, 249, 0.62) 100%),
+      linear-gradient(180deg, rgba(250, 250, 249, 0.4) 0%, transparent 28%, rgba(250, 250, 249, 0.78) 100%);
     --glow: radial-gradient(ellipse 75% 50% at 50% -10%, rgba(184, 144, 30, 0.10), transparent 70%);
     --hero-mesh-mask: radial-gradient(ellipse 95% 80% at 50% 30%, black 35%, transparent 95%);
     --final-card-glow: radial-gradient(125% 125% at 50% 10%, rgba(184, 144, 30, 0.08) 0%, transparent 70%), var(--glass-bg-strong);
@@ -701,13 +707,45 @@ ul {
 }
 
 /* ============================================================
-   5. Hero
+   5. Hero (full-bleed product stage)
+   First viewport: brand, one headline, one lead, one CTA group,
+   one dominant product image. No inset media cards in the hero.
    ============================================================ */
 
 .hero {
   position: relative;
   overflow: hidden;
   padding-block: var(--sp-6) var(--sp-7);
+}
+
+.hero-stage {
+  min-height: calc(100svh - var(--nav-h));
+  display: flex;
+  align-items: center;
+  padding-block: var(--sp-5) var(--sp-6);
+}
+
+.hero-stage__media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: var(--surface-0);
+}
+
+.hero-stage__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 68% 42%;
+  transform: scale(1.04);
+}
+
+.hero-stage__veil {
+  position: absolute;
+  inset: 0;
+  background: var(--hero-veil);
+  pointer-events: none;
 }
 
 .hero-mesh-canvas {
@@ -717,36 +755,41 @@ ul {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 0;
-  opacity: 0.42;
+  z-index: 1;
+  opacity: 0.28;
   mask-image: var(--hero-mesh-mask);
   -webkit-mask-image: var(--hero-mesh-mask);
   mix-blend-mode: soft-light;
 }
 
-.hero .container {
+.hero .container,
+.hero-stage__copy {
   position: relative;
-  z-index: 1;
-  display: grid;
-  gap: var(--sp-5);
-  align-items: center;
+  z-index: 2;
+  min-width: 0;
 }
 
-@media (min-width: 900px) {
-  .hero .container {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
-    gap: var(--sp-6);
-  }
+.hero-brand {
+  margin: 0;
+  font-size: clamp(1.375rem, 1.05rem + 1.2vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--gold-text);
+  line-height: 1.15;
 }
 
 .hero h1 {
   margin-top: var(--sp-2);
-  max-width: 16ch;
+  max-width: 14ch;
+}
+
+.hero-stage h1 {
+  max-width: 15ch;
 }
 
 .hero .lead {
   margin-top: var(--sp-3);
-  max-width: 52ch;
+  max-width: 42ch;
   font-size: var(--fs-lead);
   color: var(--text-2);
 }
@@ -762,6 +805,7 @@ ul {
   margin-top: var(--sp-2);
   color: var(--text-3);
   font-size: var(--fs-small);
+  max-width: 42ch;
 }
 
 .shot {
@@ -778,10 +822,56 @@ ul {
   width: 100%;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .hero-stage__img {
+    animation: hero-ken 28s ease-in-out infinite alternate;
+  }
+  .hero-brand {
+    animation: hero-rise 700ms var(--ease) both;
+  }
+  .hero-stage h1 {
+    animation: hero-rise 700ms var(--ease) 80ms both;
+  }
+  .hero-stage .lead {
+    animation: hero-rise 700ms var(--ease) 140ms both;
+  }
+  .hero-stage .hero-actions {
+    animation: hero-rise 700ms var(--ease) 200ms both;
+  }
+}
+
+@keyframes hero-ken {
+  from { transform: scale(1.04) translate3d(0, 0, 0); }
+  to { transform: scale(1.08) translate3d(-1.5%, 1%, 0); }
+}
+
+@keyframes hero-rise {
+  from { opacity: 0; transform: translate3d(0, 12px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-stage__img,
+  .hero-brand,
+  .hero-stage h1,
+  .hero-stage .lead,
+  .hero-stage .hero-actions {
+    animation: none !important;
+  }
+}
+
 /* Narrow screens: a flex item's minimum width is its unwrapped content, so
    a nowrap label wider than the screen would push the whole column out.
    Let the label wrap and drop the minimum. */
 @media (max-width: 599px) {
+  .hero-stage {
+    min-height: calc(100svh - var(--nav-h));
+    align-items: flex-end;
+    padding-bottom: var(--sp-5);
+  }
+  .hero-stage__img {
+    object-position: 62% 30%;
+  }
   .hero-actions .btn {
     width: 100%;
     min-width: 0;
@@ -790,10 +880,6 @@ ul {
     padding-block: var(--sp-2);
     padding-inline: var(--sp-2);
   }
-}
-
-.hero .container > div {
-  min-width: 0;
 }
 
 /* ============================================================
@@ -1499,26 +1585,6 @@ td .cell {
   display: flex;
   flex-wrap: wrap;
   gap: var(--sp-2);
-}
-
-@media (min-width: 900px) {
-  .hero-fullbleed {
-    position: relative;
-  }
-  .hero-fullbleed::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(90deg, var(--surface-0) 0%, color-mix(in srgb, var(--surface-0) 72%, transparent) 38%, transparent 68%),
-      radial-gradient(ellipse 55% 65% at 78% 42%, var(--wash-gold), transparent 62%);
-    pointer-events: none;
-    z-index: 0;
-  }
-  .hero-fullbleed .container {
-    position: relative;
-    z-index: 1;
-  }
 }
 
 @media (max-width: 699px) {

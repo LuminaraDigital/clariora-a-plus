@@ -46,7 +46,7 @@
       starsChip.style.display = 'inline-flex';
       starsChip.title = 'Upgrade Pass (Stars & TON)';
       starsChip.setAttribute('aria-label', 'Upgrade Pass');
-      starsChip.innerHTML = '<span style="color: #F5D061;">⭐</span><strong style="color: #F5D061; margin-left: 3px;">Upgrade</strong>';
+      starsChip.innerHTML = '<strong style="color: #F5D061;">Upgrade</strong>';
     }
 
     // Restore Telegram web session if logged in previously
@@ -86,8 +86,9 @@
 
   function setWallMode(enabled) {
     authState.wallMode = !!enabled;
+    // Close button stays visible so email modal can return to the wall.
     var closeBtn = document.querySelector('#clarioraAuthModalOverlay .auth-close-btn');
-    if (closeBtn) closeBtn.style.display = authState.wallMode ? 'none' : '';
+    if (closeBtn) closeBtn.style.display = '';
   }
 
   function onAuthenticated(callback) {
@@ -206,9 +207,38 @@
       '.auth-modal-overlay.is-active .auth-modal-card {',
       '  transform: translateY(0);',
       '}',
+      '.auth-mode-tabs {',
+      '  display: grid;',
+      '  grid-template-columns: 1fr 1fr;',
+      '  gap: 4px;',
+      '  padding: 4px;',
+      '  margin-bottom: 18px;',
+      '  border: 1px solid rgba(255,255,255,0.12);',
+      '  border-radius: 8px;',
+      '  background: rgba(255,255,255,0.04);',
+      '}',
+      '.auth-mode-tab {',
+      '  min-height: 40px;',
+      '  border: 0;',
+      '  border-radius: 6px;',
+      '  background: transparent;',
+      '  color: #A3ADC2;',
+      '  font: inherit;',
+      '  font-size: 13px;',
+      '  font-weight: 700;',
+      '  cursor: pointer;',
+      '}',
+      '.auth-mode-tab[aria-selected="true"] {',
+      '  background: #D4AF37;',
+      '  color: #07090E;',
+      '}',
+      '.auth-mode-tab:hover:not([aria-selected="true"]) {',
+      '  color: #F3F4F6;',
+      '  background: rgba(255,255,255,0.06);',
+      '}',
       '.auth-modal-header {',
       '  text-align: center;',
-      '  margin-bottom: 22px;',
+      '  margin-bottom: 16px;',
       '}',
       '.auth-modal-header h3 {',
       '  margin: 0 0 6px;',
@@ -220,6 +250,34 @@
       '  margin: 0;',
       '  font-size: 0.86rem;',
       '  color: var(--text-secondary, #A3ADC2);',
+      '}',
+      '.auth-password-hint {',
+      '  margin: 6px 0 0;',
+      '  font-size: 11px;',
+      '  line-height: 1.4;',
+      '  color: #8B95A8;',
+      '}',
+      '.auth-input.is-invalid {',
+      '  border-color: #CB6E63;',
+      '}',
+      '.btn-google:focus-visible,',
+      '.btn-telegram:focus-visible,',
+      '.btn-auth-submit:focus-visible,',
+      '.auth-mode-tab:focus-visible,',
+      '.auth-link:focus-visible,',
+      '.auth-close-btn:focus-visible {',
+      '  outline: 2px solid #D4AF37;',
+      '  outline-offset: 2px;',
+      '}',
+      '.btn-auth-submit[disabled] {',
+      '  opacity: 0.55;',
+      '  cursor: not-allowed;',
+      '}',
+      '.auth-error-banner[hidden] { display: none !important; }',
+      '.auth-error-banner.is-info {',
+      '  background: rgba(88, 161, 119, 0.14);',
+      '  border-color: rgba(88, 161, 119, 0.4);',
+      '  color: #86EFAC;',
       '}',
       '.btn-google {',
       '  width: 100%;',
@@ -339,10 +397,11 @@
       '.auth-error-banner {',
       '  background: rgba(203, 110, 99, 0.15);',
       '  border: 1px solid rgba(203, 110, 99, 0.4);',
-      '  color: #CB6E63;',
-      '  padding: 8px 12px;',
-      '  border-radius: 6px;',
-      '  font-size: 12px;',
+      '  color: #FCA5A5;',
+      '  padding: 10px 12px;',
+      '  border-radius: 8px;',
+      '  font-size: 13px;',
+      '  line-height: 1.4;',
       '  margin-bottom: 14px;',
       '  display: none;',
       '}',
@@ -385,51 +444,56 @@
 
     container.innerHTML = [
       '<div class="auth-modal-card">',
-      '  <button type="button" class="auth-close-btn" onclick="ClarioraAuthUI.closeModal()" aria-label="Close dialog">',
+      '  <button type="button" class="auth-close-btn" onclick="ClarioraAuthUI.closeModal()" aria-label="Close and return to sign-in options">',
       '    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
       '  </button>',
-      '  <div class="auth-modal-header">',
-      '    <h3 id="authModalTitle">Sign in to Clariora</h3>',
-      '    <p id="authModalSubtitle">Sync your practice streaks and progress across devices.</p>',
+      '  <div class="auth-mode-tabs" role="tablist" aria-label="Account mode">',
+      '    <button type="button" class="auth-mode-tab" id="authTabSignin" role="tab" aria-selected="true" aria-controls="authEmailForm" onclick="ClarioraAuthUI.setMode(\'signin\')">Sign in</button>',
+      '    <button type="button" class="auth-mode-tab" id="authTabSignup" role="tab" aria-selected="false" aria-controls="authEmailForm" onclick="ClarioraAuthUI.setMode(\'signup\')">Create account</button>',
       '  </div>',
-      '  <div id="authErrorBanner" class="auth-error-banner" role="alert"></div>',
+      '  <div class="auth-modal-header">',
+      '    <h3 id="authModalTitle">Sign in with email</h3>',
+      '    <p id="authModalSubtitle">Your CompTIA A+ progress stays with this account.</p>',
+      '  </div>',
+      '  <div id="authErrorBanner" class="auth-error-banner" role="alert" aria-live="assertive"></div>',
       '  <button type="button" class="btn-google" onclick="ClarioraAuthUI.handleGoogleSignIn()">',
-      '    <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/></svg>',
+      '    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/></svg>',
       '    <span>Continue with Google</span>',
       '  </button>',
       '  <button type="button" class="btn-telegram" onclick="ClarioraAuthUI.handleTelegramSignIn()">',
-      '    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>',
-      '    <span>Log in with Telegram</span>',
+      '    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>',
+      '    <span>Continue with Telegram</span>',
       '  </button>',
       '  <div class="auth-divider"><span>or with email</span></div>',
-      '  <form id="authEmailForm" onsubmit="ClarioraAuthUI.handleEmailSubmit(event)">',
-      '    <div class="auth-input-group" id="authDisplayNameGroup" style="display: none;">',
-      '      <label for="authDisplayName">Full Name</label>',
-      '      <input type="text" id="authDisplayName" class="auth-input" placeholder="Technician Name" autocomplete="name">',
+      '  <form id="authEmailForm" onsubmit="ClarioraAuthUI.handleEmailSubmit(event)" novalidate>',
+      '    <div class="auth-input-group" id="authDisplayNameGroup" hidden>',
+      '      <label for="authDisplayName">Display name</label>',
+      '      <input type="text" id="authDisplayName" class="auth-input" placeholder="Your name" autocomplete="name" maxlength="80">',
       '    </div>',
       '    <div class="auth-input-group">',
-      '      <label for="authEmail">Email Address</label>',
-      '      <input type="email" id="authEmail" class="auth-input" placeholder="technician@example.com" required autocomplete="email">',
+      '      <label for="authEmail">Email</label>',
+      '      <input type="email" id="authEmail" class="auth-input" placeholder="you@example.com" required autocomplete="email" inputmode="email" spellcheck="false">',
       '    </div>',
       '    <div class="auth-input-group">',
       '      <label for="authPassword">Password</label>',
-      '      <input type="password" id="authPassword" class="auth-input" placeholder="Password" required autocomplete="current-password">',
+      '      <input type="password" id="authPassword" class="auth-input" placeholder="Password" required autocomplete="current-password" minlength="8">',
+      '      <p class="auth-password-hint" id="authPasswordHint">At least 8 characters. Use letters and a number.</p>',
       '    </div>',
-      '    <button type="submit" id="authSubmitBtn" class="btn-auth-submit">Sign In</button>',
+      '    <div class="auth-input-group" id="authConfirmGroup" hidden>',
+      '      <label for="authPasswordConfirm">Confirm password</label>',
+      '      <input type="password" id="authPasswordConfirm" class="auth-input" placeholder="Confirm password" autocomplete="new-password" minlength="8">',
+      '    </div>',
+      '    <button type="submit" id="authSubmitBtn" class="btn-auth-submit">Sign in</button>',
       '  </form>',
       '  <div class="auth-footer-links">',
-      '    <span id="authTogglePrompt">Need an account?</span>',
-      '    <button type="button" class="auth-link" id="authToggleBtn" onclick="ClarioraAuthUI.toggleMode()">Create one</button>',
-      '    <div style="margin-top: 8px;">',
-      '      <button type="button" class="auth-link" style="font-size: 12px; color: var(--text-muted, #8B95A8);" onclick="ClarioraAuthUI.handleForgotPassword()">Forgot password?</button>',
-      '    </div>',
+      '    <button type="button" class="auth-link" id="authForgotBtn" onclick="ClarioraAuthUI.handleForgotPassword()">Forgot password?</button>',
       '  </div>',
       '</div>'
     ].join('\n');
 
     document.body.appendChild(container);
 
-    // Close on backdrop click or Escape key
+    // Close on backdrop click or Escape key (returns to wall when gated)
     container.addEventListener('click', function (e) {
       if (e.target === container) closeModal();
     });
@@ -478,25 +542,27 @@
 
   function openModal(opts) {
     opts = opts || {};
-    if (opts.mode === 'signup' || opts.mode === 'signin') {
-      if (authState.mode !== opts.mode) {
-        authState.mode = opts.mode === 'signup' ? 'signin' : 'signup';
-        toggleMode();
-      }
-    }
+    injectStyles();
+    injectModalMarkup();
     if (opts.wall) setWallMode(true);
+    var desired = opts.mode === 'signup' ? 'signup' : 'signin';
+    setMode(desired);
     var overlay = document.getElementById('clarioraAuthModalOverlay');
     if (overlay) {
       overlay.classList.add('is-active');
       authState.modalOpen = true;
       clearError();
+      var closeBtn = overlay.querySelector('.auth-close-btn');
+      if (closeBtn) closeBtn.style.display = '';
+      var focusTarget = document.getElementById('authEmail') || closeBtn;
+      if (focusTarget && typeof focusTarget.focus === 'function') {
+        setTimeout(function () { focusTarget.focus(); }, 30);
+      }
     }
   }
 
   function closeModal() {
-    if (authState.wallMode && window.ClarioraAuthGate && !window.ClarioraAuthGate.isUnlocked()) {
-      return;
-    }
+    // Always allow dismissing the email modal. When gated, the wall remains underneath.
     var overlay = document.getElementById('clarioraAuthModalOverlay');
     if (overlay) {
       overlay.classList.remove('is-active');
@@ -505,40 +571,61 @@
     }
   }
 
-  function toggleMode() {
-    authState.mode = authState.mode === 'signin' ? 'signup' : 'signin';
+  function setMode(mode) {
+    authState.mode = mode === 'signup' ? 'signup' : 'signin';
     var isSignup = authState.mode === 'signup';
 
     var title = document.getElementById('authModalTitle');
     var subtitle = document.getElementById('authModalSubtitle');
     var submitBtn = document.getElementById('authSubmitBtn');
     var nameGroup = document.getElementById('authDisplayNameGroup');
-    var prompt = document.getElementById('authTogglePrompt');
-    var toggleBtn = document.getElementById('authToggleBtn');
+    var confirmGroup = document.getElementById('authConfirmGroup');
+    var passInput = document.getElementById('authPassword');
+    var hint = document.getElementById('authPasswordHint');
+    var tabSignin = document.getElementById('authTabSignin');
+    var tabSignup = document.getElementById('authTabSignup');
+    var forgotBtn = document.getElementById('authForgotBtn');
 
     if (isSignup) {
-      if (title) title.textContent = 'Create Clariora Account';
-      if (subtitle) subtitle.textContent = 'Save your certification journey and practice progress.';
-      if (submitBtn) submitBtn.textContent = 'Create Account';
-      if (nameGroup) nameGroup.style.display = 'block';
-      if (prompt) prompt.textContent = 'Already have an account?';
-      if (toggleBtn) toggleBtn.textContent = 'Sign in';
+      if (title) title.textContent = 'Create your Clariora account';
+      if (subtitle) subtitle.textContent = 'Save readiness, streaks, and mock history to this email.';
+      if (submitBtn) submitBtn.textContent = 'Create account';
+      if (nameGroup) nameGroup.hidden = false;
+      if (confirmGroup) confirmGroup.hidden = false;
+      if (passInput) passInput.setAttribute('autocomplete', 'new-password');
+      if (hint) hint.textContent = 'At least 8 characters. Use letters and a number.';
+      if (forgotBtn) forgotBtn.hidden = true;
     } else {
-      if (title) title.textContent = 'Sign in to Clariora';
-      if (subtitle) subtitle.textContent = 'Sync your practice streaks and progress across devices.';
-      if (submitBtn) submitBtn.textContent = 'Sign In';
-      if (nameGroup) nameGroup.style.display = 'none';
-      if (prompt) prompt.textContent = 'Need an account?';
-      if (toggleBtn) toggleBtn.textContent = 'Create one';
+      if (title) title.textContent = 'Sign in with email';
+      if (subtitle) subtitle.textContent = 'Your CompTIA A+ progress stays with this account.';
+      if (submitBtn) submitBtn.textContent = 'Sign in';
+      if (nameGroup) nameGroup.hidden = true;
+      if (confirmGroup) confirmGroup.hidden = true;
+      if (passInput) passInput.setAttribute('autocomplete', 'current-password');
+      if (hint) hint.textContent = 'Enter the password for this account.';
+      if (forgotBtn) forgotBtn.hidden = false;
+    }
+
+    if (tabSignin) {
+      tabSignin.setAttribute('aria-selected', isSignup ? 'false' : 'true');
+    }
+    if (tabSignup) {
+      tabSignup.setAttribute('aria-selected', isSignup ? 'true' : 'false');
     }
     clearError();
   }
 
-  function showError(msg) {
+  function toggleMode() {
+    setMode(authState.mode === 'signin' ? 'signup' : 'signin');
+  }
+
+  function showError(msg, isInfo) {
     var banner = document.getElementById('authErrorBanner');
     if (banner) {
       banner.textContent = msg;
       banner.style.display = 'block';
+      banner.classList.toggle('is-info', !!isInfo);
+      banner.hidden = false;
     }
   }
 
@@ -547,7 +634,25 @@
     if (banner) {
       banner.textContent = '';
       banner.style.display = 'none';
+      banner.classList.remove('is-info');
+      banner.hidden = true;
     }
+    ['authEmail', 'authPassword', 'authPasswordConfirm', 'authDisplayName'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.classList.remove('is-invalid');
+    });
+  }
+
+  function markInvalid(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.add('is-invalid');
+  }
+
+  function passwordMeetsRules(pass) {
+    if (!pass || pass.length < 8) return false;
+    if (!/[A-Za-z]/.test(pass)) return false;
+    if (!/[0-9]/.test(pass)) return false;
+    return true;
   }
 
   async function handleGoogleSignIn() {
@@ -561,7 +666,13 @@
     } catch (err) {
       console.warn('[AuthUI] Google sign-in failed:', err);
       if (err.code !== 'auth/popup-closed-by-user') {
-        showError(err.message || 'Google sign-in could not be completed.');
+        var msg = err.message || 'Google sign-in could not be completed.';
+        if (authState.modalOpen) showError(msg);
+        else if (window.ClarioraAuthGate && document.getElementById('gateErrorNote')) {
+          var gateErr = document.getElementById('gateErrorNote');
+          gateErr.hidden = false;
+          gateErr.textContent = msg;
+        }
       }
     }
   }
@@ -571,16 +682,51 @@
     clearError();
 
     var service = firebaseService || window.ClarioraFirebaseService;
-    if (!service) return;
-
-    var email = (document.getElementById('authEmail').value || '').trim();
-    var pass = document.getElementById('authPassword').value || '';
-    var name = (document.getElementById('authDisplayName').value || '').trim();
-
-    if (!email || !pass) {
-      showError('Please enter both email and password.');
+    if (!service) {
+      showError('Sign-in is temporarily unavailable. Refresh and try again.');
       return;
     }
+
+    var emailEl = document.getElementById('authEmail');
+    var passEl = document.getElementById('authPassword');
+    var confirmEl = document.getElementById('authPasswordConfirm');
+    var nameEl = document.getElementById('authDisplayName');
+    var submitBtn = document.getElementById('authSubmitBtn');
+
+    var email = (emailEl && emailEl.value || '').trim();
+    var pass = (passEl && passEl.value) || '';
+    var confirm = (confirmEl && confirmEl.value) || '';
+    var name = (nameEl && nameEl.value || '').trim();
+
+    if (!email) {
+      markInvalid('authEmail');
+      showError('Enter your email address.');
+      return;
+    }
+    if (!pass) {
+      markInvalid('authPassword');
+      showError('Enter your password.');
+      return;
+    }
+
+    if (authState.mode === 'signup') {
+      if (!passwordMeetsRules(pass)) {
+        markInvalid('authPassword');
+        showError('Password must be at least 8 characters and include a letter and a number.');
+        return;
+      }
+      if (pass !== confirm) {
+        markInvalid('authPasswordConfirm');
+        showError('Passwords do not match.');
+        return;
+      }
+    }
+
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.setAttribute('aria-busy', 'true');
+    }
+    authState.busy = true;
 
     try {
       if (authState.mode === 'signup') {
@@ -593,19 +739,34 @@
       closeModal();
     } catch (err) {
       console.warn('[AuthUI] Email auth failed:', err);
-      var userMessage = 'Authentication failed.';
+      var userMessage = 'Authentication failed. Check your details and try again.';
       if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
         userMessage = 'Incorrect email or password.';
+        markInvalid('authPassword');
       } else if (err.code === 'auth/user-not-found') {
-        userMessage = 'No account found with this email.';
+        userMessage = 'No account found with this email. Create an account instead.';
+        markInvalid('authEmail');
       } else if (err.code === 'auth/email-already-in-use') {
-        userMessage = 'An account with this email already exists.';
+        userMessage = 'An account with this email already exists. Sign in instead.';
+        markInvalid('authEmail');
       } else if (err.code === 'auth/weak-password') {
-        userMessage = 'Password should be at least 6 characters.';
+        userMessage = 'Password must be at least 8 characters and include a letter and a number.';
+        markInvalid('authPassword');
       } else if (err.code === 'auth/invalid-email') {
-        userMessage = 'Please enter a valid email address.';
+        userMessage = 'Enter a valid email address.';
+        markInvalid('authEmail');
+      } else if (err.code === 'auth/too-many-requests') {
+        userMessage = 'Too many attempts. Wait a moment, then try again.';
+      } else if (err.code === 'auth/network-request-failed') {
+        userMessage = 'Network error. Check your connection and try again.';
       }
       showError(userMessage);
+    } finally {
+      authState.busy = false;
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.removeAttribute('aria-busy');
+      }
     }
   }
 
@@ -613,7 +774,8 @@
     var emailInput = document.getElementById('authEmail');
     var email = (emailInput ? emailInput.value : '').trim();
     if (!email) {
-      showError('Please enter your email address above to reset password.');
+      markInvalid('authEmail');
+      showError('Enter your email address above to reset your password.');
       return;
     }
 
@@ -622,7 +784,7 @@
 
     try {
       await service.sendPasswordReset(email);
-      showError('Password reset link sent to ' + email + '.');
+      showError('Password reset link sent to ' + email + '.', true);
     } catch (err) {
       showError(err.message || 'Could not send reset email.');
     }
@@ -743,6 +905,7 @@
     openModal: openModal,
     closeModal: closeModal,
     toggleMode: toggleMode,
+    setMode: setMode,
     handleGoogleSignIn: handleGoogleSignIn,
     handleTelegramSignIn: handleTelegramSignIn,
     handleEmailSubmit: handleEmailSubmit,

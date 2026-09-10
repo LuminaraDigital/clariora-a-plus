@@ -285,6 +285,38 @@
     return false;
   }
 
+  function isExpired(payload) {
+    if (!payload || !payload.expires) return false;
+    try {
+      var expStr = String(payload.expires).trim();
+      var expTime = 0;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(expStr)) {
+        var parts = expStr.split('-');
+        var expDate = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]), 23, 59, 59, 999);
+        expTime = expDate.getTime();
+      } else {
+        expTime = new Date(expStr).getTime();
+      }
+      return !isNaN(expTime) && expTime < Date.now();
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function daysRemaining(payload) {
+    if (!payload || !payload.expires) return Infinity;
+    try {
+      var expStr = String(payload.expires).trim();
+      var parts = expStr.split('-');
+      var expDate = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]), 23, 59, 59, 999);
+      var diffMs = expDate.getTime() - Date.now();
+      if (diffMs <= 0) return 0;
+      return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    } catch (_) {
+      return Infinity;
+    }
+  }
+
   /**
    * Verifies a license key offline.
    * Resolves { ok, payload, error, unverifiable }.
@@ -314,6 +346,10 @@
     }
     if (isRevoked(key, payload)) {
       return Promise.resolve({ ok: false, payload: payload, error: 'This license key has been refunded and is no longer active.' });
+    }
+    if (isExpired(payload)) {
+      var expMsg = 'This license key expired on ' + payload.expires + '. Please renew your study pass.';
+      return Promise.resolve({ ok: false, payload: payload, error: expMsg });
     }
 
     var s = subtle();
@@ -391,7 +427,7 @@
   function loadLicense() {
     var rec = store.get('license', null);
     if (rec && typeof rec === 'object' && rec.key && rec.verifiedAt) {
-      if (isRevoked(rec.key, rec.payload)) {
+      if (isRevoked(rec.key, rec.payload) || isExpired(rec.payload)) {
         store.remove('license');
         state.pro = false;
         state.payload = null;
@@ -415,6 +451,13 @@
     return verifyKey(rec.key).then(function (res) {
       state.checked = true;
       if (res.ok) {
+        if (isExpired(res.payload)) {
+          store.remove('license');
+          state.pro = false;
+          state.payload = null;
+          renderChip();
+          return false;
+        }
         state.pro = true;
         state.payload = res.payload;
         return true;
@@ -449,7 +492,16 @@
 
   function isPro() {
     if (!gatingEnabled()) return true;
-    if (state.pro === true) return true;
+    if (state.pro === true) {
+      if (state.payload && isExpired(state.payload)) {
+        state.pro = false;
+        state.payload = null;
+        store.remove('license');
+        renderChip();
+        return false;
+      }
+      return true;
+    }
     try {
       if (starsTierIsPro(window.__CLARIORA_SERVER_ENTITLEMENT__)) return true;
     } catch (_) {}
@@ -541,7 +593,7 @@
           APlus.bus.emit('entitlements:activated', { payload: res.payload });
         }
       } catch (_) {}
-      return { ok: true };
+      return { ok: true, payload: res.payload };
     }).catch(function () {
       return { ok: false, error: 'This license key could not be verified.' };
     });
@@ -719,10 +771,11 @@
   }
 
   function titleForReason(reason) {
-    if (reason === 'full_mock') return 'Full 90 question mocks are in the full version';
-    if (reason === 'coach') return 'The study coach is in the full version';
+    if (reason === 'full_mock') return 'Full 90-question mocks require Pro';
+    if (reason === 'coach') return 'The study coach requires Pro';
     if (reason === 'flashcards') return 'You have used today\'s free flashcards';
     if (reason === 'labs') return 'You have used today\'s free lab';
+    if (reason === 'chip' || reason === 'upgrade') return 'Upgrade to Clariora Pro';
     return 'You have used today\'s free questions';
   }
 
@@ -764,11 +817,11 @@
     h.textContent = titleForReason(reason);
 
     var p = doc.createElement('p');
-    p.textContent = 'The full bank, 90-question mocks and the study coach are one purchase, yours forever on this PC.';
+    p.textContent = 'Unlock the complete question bank, full 90-question timed mocks, PBQ labs, and study coach.';
 
     var price = doc.createElement('p');
     price.className = 'ent-price';
-    price.textContent = 'One-time price: ' + String(cfg.priceLabel || '39 USD');
+    price.textContent = 'Pass option: ' + String(cfg.priceLabel || '39 USD or Telegram Stars');
 
     var actions = doc.createElement('div');
     actions.className = 'ent-actions';
@@ -828,7 +881,14 @@
       activate(value).then(function (res) {
         activateBtn.disabled = false;
         if (res && res.ok) {
-          setStatus('Thank you. The full version is unlocked on this PC.', 'ok');
+          var payload = res.payload || state.payload;
+          var msg = 'Thank you! The full version is unlocked.';
+          if (payload && payload.expires) {
+            var days = daysRemaining(payload);
+            var passName = payload.tier_name || 'Study Pass';
+            msg = 'Thank you! ' + passName + ' active until ' + payload.expires + ' (' + days + ' days left).';
+          }
+          setStatus(msg, 'ok');
         } else {
           setStatus((res && res.error) || 'This license key could not be verified.', 'error');
         }
@@ -1248,6 +1308,21 @@
     closeUpgrade: closeUpgrade,
     getUsage: getUsage,
     getLicensePayload: function () { return state.payload; },
+    getStatus: function () {
+      var pro = isPro();
+      var payload = state.payload;
+      return {
+        pro: pro,
+        tier: payload && payload.tier ? payload.tier : (pro ? 'pro' : 'free'),
+        tierName: payload && payload.tier_name ? payload.tier_name : (pro ? 'Pro' : 'Free'),
+        expires: payload && payload.expires ? payload.expires : null,
+        daysRemaining: pro ? (payload && payload.expires ? daysRemaining(payload) : Infinity) : 0,
+        isLifetime: pro && (!payload || !payload.expires)
+      };
+    },
+    daysRemaining: function () {
+      return daysRemaining(state.payload);
+    },
     isEnabled: gatingEnabled,
     todayKey: todayKey,
     refresh: renderChip,
@@ -1260,6 +1335,8 @@
       rewrapAll: rewrapAll,
       setUsage: setUsage,
       usageStorageKey: usageStorageKey,
+      isExpired: isExpired,
+      daysRemaining: daysRemaining,
       state: state,
       boot: boot
     }

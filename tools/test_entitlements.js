@@ -434,6 +434,79 @@ async function run() {
     check('kill switch runs the coach', coachRan === true);
   }
 
+  section('Timed study passes and expiration');
+  {
+    const env = loadEntitlements({ publicKeyJwk: keys.publicJwk });
+
+    // 1. Issue a 180-day pass
+    const pass180 = await issuer.issueLicense({
+      email: 'student@example.com',
+      days: 180,
+      tier: 'pass_180d',
+      tierName: '180-Day Study Pass',
+      privateJwk: keys.privateJwk
+    });
+
+    check('180-day pass has expires date in payload', typeof pass180.payload.expires === 'string');
+    check('180-day pass has tier_name in payload', pass180.payload.tier_name === '180-Day Study Pass');
+
+    const act180 = await env.ent.activate(pass180.key);
+    check('180-day pass activates successfully', act180.ok === true);
+    check('isPro is true with 180-day pass', env.ent.isPro() === true);
+
+    const status180 = env.ent.getStatus();
+    check('getStatus reports active pass', status180.pro === true && status180.isLifetime === false);
+    check('daysRemaining is positive', status180.daysRemaining >= 179 && status180.daysRemaining <= 181);
+
+    // Deactivate
+    env.ent.deactivate();
+    check('deactivated pass drops back to free', env.ent.isPro() === false);
+
+    // 2. Issue an expired pass (e.g. issued 40 days ago with 30-day limit, or expired yesterday)
+    const expiredPass = await issuer.issueLicense({
+      email: 'oldstudent@example.com',
+      issued: dayShift(-40),
+      expires: dayShift(-5),
+      tier: 'pass_30d',
+      tierName: 'Expired Sprint Pass',
+      privateJwk: keys.privateJwk
+    });
+
+    const verifyExpired = await env.ent.verifyKey(expiredPass.key);
+    check('expired key is rejected by verifyKey', verifyExpired.ok === false);
+    check('expired key has descriptive error', verifyExpired.error.indexOf('expired on') !== -1);
+
+    const actExpired = await env.ent.activate(expiredPass.key);
+    check('activating expired key fails', actExpired.ok === false);
+    check('app remains free after expired activation attempt', env.ent.isPro() === false);
+
+    // 3. Stored license expiration rollover:
+    // Case A: App is open and date passes expiration
+    const expiringPass = await issuer.issueLicense({
+      email: 'expiring@example.com',
+      expires: dayShift(1),
+      privateJwk: keys.privateJwk
+    });
+    await env.ent.activate(expiringPass.key);
+    check('nearly-expired pass is pro today', env.ent.isPro() === true);
+
+    // Simulate date rolling over past expiration date
+    env.ent._internal.state.payload.expires = dayShift(-1);
+    check('isPro detects expired in-memory pass and drops to free', env.ent.isPro() === false);
+    check('expired stored pass was evicted from storage', env.storage.getItem('aplus3_license') === null);
+
+    // Case B: Expired pass in storage during boot
+    const envReboot = loadEntitlements({ publicKeyJwk: keys.publicJwk });
+    envReboot.storage.setItem('aplus3_license', JSON.stringify({
+      key: expiredPass.key,
+      verifiedAt: new Date().toISOString(),
+      payload: expiredPass.payload
+    }));
+    envReboot.ent._internal.boot();
+    check('boot evicts expired license from storage on startup', envReboot.storage.getItem('aplus3_license') === null);
+    check('app is free after expired startup', envReboot.ent.isPro() === false);
+  }
+
   section('Loads safely without a DOM or WebCrypto');
   {
     let threw = null;

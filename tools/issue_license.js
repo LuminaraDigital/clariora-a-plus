@@ -77,15 +77,46 @@ function todayIso(date) {
   return `${y}-${m}-${day}`;
 }
 
+function addDaysIso(dateStr, days) {
+  const parts = String(dateStr).split('-');
+  const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+  d.setDate(d.getDate() + Number(days));
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 function buildPayload(options) {
   const opts = options || {};
-  return {
+  const issued = opts.issued || todayIso();
+  const payload = {
     v: 1,
-    sku: 'aplus_pro',
+    sku: opts.sku || 'aplus_pro',
     email_hash: opts.email ? emailHash(opts.email) : 'anon',
-    issued: opts.issued || todayIso(),
+    issued: issued,
     seats: typeof opts.seats === 'number' ? opts.seats : 1
   };
+
+  if (opts.tier) {
+    payload.tier = String(opts.tier);
+  }
+  if (opts.tierName) {
+    payload.tier_name = String(opts.tierName);
+  }
+
+  let expires = null;
+  if (opts.expires) {
+    expires = String(opts.expires);
+  } else if (typeof opts.days === 'number' && !isNaN(opts.days) && opts.days > 0) {
+    expires = addDaysIso(issued, opts.days);
+  }
+
+  if (expires) {
+    payload.expires = expires;
+  }
+
+  return payload;
 }
 
 async function importPrivateKey(jwk) {
@@ -110,7 +141,7 @@ async function importPrivateKey(jwk) {
 }
 
 /**
- * issueLicense({ email, issued, seats, privateJwk })
+ * issueLicense({ email, issued, seats, days, expires, tier, tierName, privateJwk })
  * Returns a Promise resolving to { key, payload }.
  */
 async function issueLicense(options) {
@@ -153,6 +184,11 @@ function parseArgs(argv) {
     const a = argv[i];
     if (a === '--email' || a === '-e') out.email = argv[++i];
     else if (a === '--issued') out.issued = argv[++i];
+    else if (a === '--days' || a === '-d') out.days = parseInt(argv[++i], 10);
+    else if (a === '--expires' || a === '--expiry') out.expires = argv[++i];
+    else if (a === '--tier' || a === '-t') out.tier = argv[++i];
+    else if (a === '--tier-name') out.tierName = argv[++i];
+    else if (a === '--lifetime') out.lifetime = true;
     else if (a === '--seats') out.seats = parseInt(argv[++i], 10) || 1;
     else if (a === '--key') out.privateKeyPath = argv[++i];
     else if (a === '--anon') out.email = '';
@@ -163,18 +199,25 @@ function parseArgs(argv) {
 }
 
 const HELP = [
-  'Issue one Clariora license key.',
+  'Issue one Clariora license key or study pass.',
   '',
-  '  node tools/issue_license.js --email buyer@example.com',
-  '  node tools/issue_license.js --anon',
+  '  node tools/issue_license.js --email buyer@example.com --days 180',
+  '  node tools/issue_license.js --email buyer@example.com --days 90',
+  '  node tools/issue_license.js --email buyer@example.com --lifetime',
+  '  node tools/issue_license.js --anon --days 180',
   '',
   'Options:',
-  '  --email <address>   Buyer email. Only an 8 hex character hash is stored in the key.',
-  '  --anon              Issue an anonymous key (email_hash "anon").',
-  '  --issued <date>     Issue date as YYYY-MM-DD. Defaults to today.',
-  '  --seats <n>         Seat count recorded in the payload. Defaults to 1.',
-  '  --key <path>        Private JWK path. Defaults to build/certs/license_private.jwk.',
-  '  --json              Print the result as JSON.',
+  '  --email <address>     Buyer email. Only an 8 hex character hash is stored in the key.',
+  '  --anon                Issue an anonymous key (email_hash "anon").',
+  '  --days <n>, -d <n>    Pass validity in days from issue date (e.g. 180 for 6mo pass, 90 for sprint).',
+  '  --expires <date>      Explicit expiration date as YYYY-MM-DD.',
+  '  --lifetime            Perpetual license with no expiration date.',
+  '  --tier <sku>          Tier code (e.g. pass_180d, pass_90d, lifetime). Defaults to aplus_pro.',
+  '  --tier-name <name>    Human-friendly pass name (e.g. "180-Day Study Pass").',
+  '  --issued <date>       Issue date as YYYY-MM-DD. Defaults to today.',
+  '  --seats <n>           Seat count recorded in the payload. Defaults to 1.',
+  '  --key <path>          Private JWK path. Defaults to build/certs/license_private.jwk.',
+  '  --json                Print the result as JSON.',
   ''
 ].join('\n');
 
@@ -197,20 +240,26 @@ async function main() {
     return;
   }
 
+  const durationStr = result.payload.expires
+    ? `Until ${result.payload.expires} (${result.payload.tier_name || (args.days ? args.days + '-day pass' : 'Timed Pass')})`
+    : 'Lifetime / Perpetual (No expiration)';
+
   process.stdout.write('\nLicense key issued\n');
   process.stdout.write('------------------\n');
   process.stdout.write('Buyer email hash : ' + result.payload.email_hash + '\n');
   process.stdout.write('Issued           : ' + result.payload.issued + '\n');
+  process.stdout.write('Validity         : ' + durationStr + '\n');
   process.stdout.write('Seats            : ' + result.payload.seats + '\n\n');
   process.stdout.write(result.key + '\n\n');
   process.stdout.write('Send this key to the buyer. They paste it into the app under\n');
-  process.stdout.write('"I have a license key" and it unlocks the full version offline forever.\n\n');
+  process.stdout.write('"I have a license key" to unlock the full version.\n\n');
 }
 
 module.exports = {
   issueLicense,
   buildPayload,
   emailHash,
+  addDaysIso,
   base32Encode,
   base32Decode,
   readPrivateJwk,

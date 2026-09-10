@@ -46,8 +46,8 @@ def nav(active: str) -> str:
 {chr(10).join(links)}
     </nav>
     <div class="nav-actions">
-      <a class="btn btn-secondary" href="https://t.me/ClarioraBot/app" target="_blank" rel="noopener">Telegram App</a>
-      <a class="btn btn-primary" href="/app" data-busy>Sign in to open</a>
+      <a class="btn btn-secondary" href="/app?signup=1" data-busy>Create account</a>
+      <a class="btn btn-primary" href="/app" data-busy>Sign in</a>
     </div>
     <details class="nav-menu">
       <summary aria-label="Open menu">
@@ -125,7 +125,7 @@ def shell(title: str, description: str, active: str, body: str, canonical: str) 
   <meta property="og:title" content="{title}">
   <meta property="og:description" content="{description}">
   <meta property="og:type" content="website">
-  <meta property="og:image" content="https://comptia-a-plus-master.sparkling-fog-be2d.workers.dev/landing/img/home-1280.webp">
+  <meta property="og:image" content="https://clariora.com.au/landing/img/home-1280.webp">
   <meta name="theme-color" content="#D4AF37">
   <link rel="icon" href="../favicon.ico" sizes="any">
   <link rel="icon" type="image/png" href="../favicon.png" sizes="64x64">
@@ -148,7 +148,7 @@ def shell(title: str, description: str, active: str, body: str, canonical: str) 
 """
 
 
-BASE = "https://comptia-a-plus-master.sparkling-fog-be2d.workers.dev/landing/"
+BASE = "https://clariora.com.au/landing/"
 
 
 def write(name: str, title: str, desc: str, body: str) -> None:
@@ -473,21 +473,29 @@ FAQ_BODY = r"""
 """
 
 INDEX_BODY = r"""
-  <section class="hero hero-fullbleed">
-    <div class="container">
-      <div>
-        <span class="eyebrow">Clariora for CompTIA A+ 220-1201 and 220-1202</span>
-        <h1>Know your A+ score before you pay for the voucher.</h1>
-        <p class="lead">A 90 question, 90 minute exam simulator that scores you on the real 100 to 900 scale, then shows which objectives to fix. 1,130 explained questions. Sign in once; your progress stays with your account.</p>
-        <div class="hero-actions">
-          <a class="btn btn-primary btn-lg" href="/app" data-busy>Sign in and take the diagnostic</a>
-          <a class="btn btn-secondary btn-lg" href="compare.html">Why we beat the packs</a>
-        </div>
-        <p class="hero-note">Runs in your browser. Source under AGPL-3.0. Version __APLUS_VERSION__.</p>
+  <section class="hero hero-stage">
+    <div class="hero-stage__media">
+      <img
+        class="hero-stage__img"
+        src="img/home-1280.webp"
+        srcset="img/home-640.webp 640w, img/home-1280.webp 1280w"
+        sizes="100vw"
+        width="1280"
+        height="800"
+        alt="Clariora home screen with readiness ring and Core 1 / Core 2 shortcuts"
+        fetchpriority="high"
+        decoding="async">
+      <div class="hero-stage__veil" aria-hidden="true"></div>
+    </div>
+    <div class="container hero-stage__copy">
+      <p class="hero-brand">Clariora A+</p>
+      <h1>Know your CompTIA A+ score before you book the exam.</h1>
+      <p class="lead">90 questions. 90 minutes. Real 100 to 900 scoring for Core 1 and Core 2, then a clear map of what to fix.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary btn-lg" href="/app" data-busy>Sign in and start</a>
+        <a class="btn btn-secondary btn-lg" href="/app?signup=1" data-busy>Create account</a>
       </div>
-      <div class="shot">
-        <img src="img/home-1280.webp" srcset="img/home-640.webp 640w, img/home-1280.webp 1280w" sizes="(min-width: 900px) 600px, 100vw" width="1280" height="800" alt="Clariora home screen with readiness ring and Core 1 / Core 2 shortcuts" fetchpriority="high">
-      </div>
+      <p class="hero-note">Browser-based CompTIA A+ simulator. AGPL-3.0. Version __APLUS_VERSION__.</p>
     </div>
   </section>
 

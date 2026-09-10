@@ -98,7 +98,14 @@ can paste the values yourself.
 ## 4. Issuing a key after a sale (manual, do this first)
 
 ```
-node tools/issue_license.js --email buyer@example.com
+# Recommended flagship: 180-day (6-month) study pass
+node tools/issue_license.js --email buyer@example.com --days 180 --tier-name "180-Day Study Pass"
+
+# 90-day exam sprint pass
+node tools/issue_license.js --email buyer@example.com --days 90 --tier-name "90-Day Sprint Pass"
+
+# Lifetime perpetual key (no expiration)
+node tools/issue_license.js --email buyer@example.com --lifetime
 ```
 
 Output is one line beginning `APLUS-`. Paste it into the fulfilment email. Options:
@@ -107,12 +114,17 @@ Output is one line beginning `APLUS-`. Paste it into the fulfilment email. Optio
 | --- | --- |
 | `--email <address>` | Buyer email. Only the first 8 hex characters of its SHA-256 go into the key. |
 | `--anon` | Anonymous key, `email_hash` is the literal string `anon`. Useful for gifts and reviewers. |
+| `--days <n>` | Pass validity in days from issue date (e.g. `180` for 6-month pass, `90` for sprint pass). |
+| `--expires YYYY-MM-DD` | Explicit expiration date. |
+| `--tier <sku>` | Tier code (e.g. `pass_180d`, `pass_90d`, `lifetime`). Defaults to `aplus_pro`. |
+| `--tier-name <name>` | Display name shown to the user (e.g. `"180-Day Study Pass"`). |
+| `--lifetime` | Perpetual license with no expiration date. |
 | `--issued YYYY-MM-DD` | Override the issue date. Defaults to today. |
 | `--seats <n>` | Seat count recorded in the payload. Defaults to 1. |
 | `--json` | Machine readable output, for the webhook path below. |
 
 Keep a simple ledger (a spreadsheet is fine) of: order id, buyer email, `email_hash`,
-issue date, key. You need the `email_hash` to revoke a refunded key later.
+issue date, expiration date, key. You need the `email_hash` to revoke a refunded key later.
 
 ### License format
 
@@ -120,12 +132,15 @@ issue date, key. You need the `email_hash` to revoke a refunded key later.
 APLUS-<base32 payload>-<base32 signature>
 ```
 
-- Payload is the UTF-8 JSON `{"v":1,"sku":"aplus_pro","email_hash":"973dfe46","issued":"2026-09-04","seats":1}`.
+- Payload is UTF-8 JSON:
+  - For timed passes: `{"v":1,"sku":"aplus_pro","email_hash":"973dfe46","issued":"2026-09-10","seats":1,"tier_name":"180-Day Study Pass","expires":"2027-03-09"}`
+  - For lifetime keys: `{"v":1,"sku":"aplus_pro","email_hash":"973dfe46","issued":"2026-09-10","seats":1}`
 - Signature is ECDSA P-256 over those exact payload bytes with SHA-256, raw `r||s`, 64 bytes.
 - Both segments use RFC 4648 base32 with no padding, so a key is uppercase A-Z and 2-7
   only. That survives being read over the phone and pasted out of any email client.
 - The app verifies with `crypto.subtle.verify` against the public JWK in
   `js/entitlements-config.js`. No network is involved at any point.
+- If an expiration date is present and has passed, the app rejects the key and prompts to renew.
 
 The buyer's email is never stored in the key, only an 8 hex character hash. That is
 enough to match a refund to a key and not enough to be personal data in the artifact.
@@ -134,7 +149,7 @@ enough to match a refund to a key and not enough to be personal data in the arti
 
 Use a **Stripe Payment Link** or a **Gumroad** product. Both work with no backend:
 
-- Stripe: create a Payment Link for 39 USD, one-time. Set the success page to a thank-you
+- Stripe: create a Payment Link for 39 USD (180-Day Study Pass) or 69 USD (Lifetime). Set the success page to a thank-you
   page that says the key arrives by email within a few hours.
 - Gumroad: create a product at 39 USD. Gumroad already emails the buyer.
 

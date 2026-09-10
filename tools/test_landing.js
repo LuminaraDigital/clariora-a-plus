@@ -187,7 +187,7 @@ if (!fs.existsSync(DIST)) {
   let m;
   while ((m = attrRe.exec(built))) {
     for (const piece of m[1].split(',')) {
-      const url = piece.trim().split(' ')[0].split('#')[0];
+      const url = piece.trim().split(' ')[0].split('#')[0].split('?')[0];
       if (!url || /^(https?:|mailto:|#|data:)/.test(url)) continue;
       refs.push(url);
     }

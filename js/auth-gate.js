@@ -120,40 +120,77 @@
       '#' + GATE_ID + ' {',
       '  position: fixed; inset: 0; z-index: 10050;',
       '  display: flex; align-items: center; justify-content: center;',
-      '  padding: 20px;',
-      '  background: rgba(5, 7, 11, 0.92);',
-      '  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);',
+      '  padding: 24px 16px;',
+      '  background:',
+      '    radial-gradient(ellipse 70% 50% at 50% -10%, rgba(212,175,55,0.16), transparent 60%),',
+      '    radial-gradient(ellipse 50% 40% at 85% 90%, rgba(45,212,191,0.08), transparent 55%),',
+      '    rgba(7, 9, 14, 0.94);',
+      '  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);',
       '}',
       '#' + GATE_ID + '[hidden] { display: none !important; }',
       '#' + GATE_ID + ' .gate-card {',
-      '  width: 100%; max-width: 420px;',
-      '  background: rgba(15, 19, 27, 0.96);',
-      '  border: 1px solid rgba(212, 175, 55, 0.32);',
-      '  border-radius: 16px;',
-      '  box-shadow: 0 24px 56px rgba(0,0,0,0.72), inset 0 1px 0 rgba(212,175,55,0.2);',
-      '  padding: 28px 24px 22px;',
+      '  width: 100%; max-width: 440px;',
+      '  background: linear-gradient(180deg, rgba(21,26,37,0.98) 0%, rgba(15,19,27,0.98) 100%);',
+      '  border: 1px solid rgba(212, 175, 55, 0.34);',
+      '  border-radius: 14px;',
+      '  box-shadow: 0 28px 64px rgba(0,0,0,0.78), inset 0 1px 0 rgba(212,175,55,0.22);',
+      '  padding: 28px 26px 24px;',
       '}',
-      '#' + GATE_ID + ' .gate-eyebrow {',
-      '  margin: 0 0 8px; font-size: 12px; letter-spacing: 0.08em;',
-      '  text-transform: uppercase; color: #D4AF37; font-weight: 700;',
+      '#' + GATE_ID + ' .gate-brand {',
+      '  display: flex; align-items: center; gap: 10px; margin: 0 0 18px;',
+      '}',
+      '#' + GATE_ID + ' .gate-brand img {',
+      '  width: 36px; height: 36px; border-radius: 8px; flex: none;',
+      '}',
+      '#' + GATE_ID + ' .gate-brand-name {',
+      '  margin: 0; font-size: 1.05rem; font-weight: 700; color: #F3F4F6; letter-spacing: -0.01em;',
+      '}',
+      '#' + GATE_ID + ' .gate-brand-sub {',
+      '  margin: 2px 0 0; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;',
+      '  color: #D4AF37; font-weight: 600;',
       '}',
       '#' + GATE_ID + ' h1 {',
-      '  margin: 0 0 8px; font-size: 1.45rem; color: #F3F4F6; font-weight: 700;',
+      '  margin: 0 0 8px; font-size: 1.5rem; color: #F3F4F6; font-weight: 700; letter-spacing: -0.02em;',
       '}',
       '#' + GATE_ID + ' .gate-lead {',
-      '  margin: 0 0 18px; font-size: 0.92rem; line-height: 1.45; color: #A3ADC2;',
+      '  margin: 0 0 20px; font-size: 0.92rem; line-height: 1.5; color: #A3ADC2;',
       '}',
       '#' + GATE_ID + ' .gate-actions { display: grid; gap: 10px; }',
+      '#' + GATE_ID + ' .gate-divider {',
+      '  display: flex; align-items: center; gap: 12px; margin: 4px 0;',
+      '  color: #8B95A8; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;',
+      '}',
+      '#' + GATE_ID + ' .gate-divider::before, #' + GATE_ID + ' .gate-divider::after {',
+      '  content: ""; flex: 1; height: 1px; background: rgba(255,255,255,0.1);',
+      '}',
+      '#' + GATE_ID + ' .gate-email-row {',
+      '  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;',
+      '}',
+      '#' + GATE_ID + ' .gate-btn-signin {',
+      '  width: 100%; padding: 11px 12px; border-radius: 8px; cursor: pointer; font: inherit;',
+      '  font-weight: 700; font-size: 13px;',
+      '  background: #D4AF37; color: #07090E; border: 1px solid #D4AF37;',
+      '}',
+      '#' + GATE_ID + ' .gate-btn-signin:hover { background: #E4C558; border-color: #E4C558; }',
+      '#' + GATE_ID + ' .gate-btn-signup {',
+      '  width: 100%; padding: 11px 12px; border-radius: 8px; cursor: pointer; font: inherit;',
+      '  font-weight: 700; font-size: 13px;',
+      '  background: transparent; color: #D4AF37; border: 1px solid rgba(212,175,55,0.55);',
+      '}',
+      '#' + GATE_ID + ' .gate-btn-signup:hover { background: rgba(212,175,55,0.12); border-color: #D4AF37; }',
       '#' + GATE_ID + ' .gate-note {',
-      '  margin: 16px 0 0; font-size: 12px; color: #8B95A8; text-align: center;',
+      '  margin: 18px 0 0; font-size: 12px; line-height: 1.45; color: #8B95A8; text-align: center;',
       '}',
       '#' + GATE_ID + ' .gate-note a { color: #D4AF37; }',
       '#' + GATE_ID + ' .gate-error {',
-      '  margin: 12px 0 0; font-size: 12px; line-height: 1.4; color: #FCA5A5; text-align: center;',
+      '  margin: 12px 0 0; font-size: 13px; line-height: 1.45; color: #FCA5A5; text-align: center;',
+      '  background: rgba(203,110,99,0.12); border: 1px solid rgba(203,110,99,0.35);',
+      '  border-radius: 8px; padding: 10px 12px;',
       '}',
       '#' + GATE_ID + ' .gate-warn {',
       '  margin: 12px 0 0; font-size: 12px; line-height: 1.4; color: #FCD34D; text-align: center;',
       '}',
+      '#' + GATE_ID + ' .btn-google, #' + GATE_ID + ' .btn-telegram { margin-top: 0; }',
       'html.clariora-auth-locked, html.clariora-auth-locked body {',
       '  overflow: hidden !important;',
       '}',
@@ -162,6 +199,9 @@
       'html.clariora-auth-locked .onboarding-overlay,',
       'html.clariora-auth-locked [data-onboarding] {',
       '  visibility: hidden !important; pointer-events: none !important;',
+      '}',
+      '@media (max-width: 420px) {',
+      '  #' + GATE_ID + ' .gate-email-row { grid-template-columns: 1fr; }',
       '}'
     ].join('\n');
     var el = document.createElement('style');
@@ -188,20 +228,29 @@
     wall.hidden = true;
     wall.innerHTML = [
       '<div class="gate-card">',
-      '  <p class="gate-eyebrow">Gated access</p>',
-      '  <h1 id="clarioraGateTitle">Sign in to open Clariora</h1>',
-      '  <p class="gate-lead">Your practice history, readiness, and streaks stay tied to your account so you can continue on any device.</p>',
+      '  <div class="gate-brand">',
+      '    <img src="/icons/icon-192.png" width="192" height="192" alt="" decoding="async">',
+      '    <div>',
+      '      <p class="gate-brand-name">Clariora A+</p>',
+      '      <p class="gate-brand-sub">Account required</p>',
+      '    </div>',
+      '  </div>',
+      '  <h1 id="clarioraGateTitle">Sign in to continue</h1>',
+      '  <p class="gate-lead">Practice history, readiness, and streaks stay with your account so you can pick up on any device.</p>',
       '  <div class="gate-actions">',
       '    <button type="button" class="btn-google" id="gateGoogleBtn">Continue with Google</button>',
-      '    <button type="button" class="btn-telegram" id="gateTelegramBtn">Log in with Telegram</button>',
-      '    <button type="button" class="btn-auth-submit" id="gateEmailBtn">Sign in with email</button>',
-      '    <button type="button" class="btn-auth-submit" id="gateSignupBtn" style="background:transparent;border:1px solid rgba(212,175,55,0.55);color:#D4AF37;">Create account</button>',
+      '    <button type="button" class="btn-telegram" id="gateTelegramBtn">Continue with Telegram</button>',
+      '    <div class="gate-divider" aria-hidden="true"><span>or email</span></div>',
+      '    <div class="gate-email-row">',
+      '      <button type="button" class="gate-btn-signin" id="gateEmailBtn">Sign in</button>',
+      '      <button type="button" class="gate-btn-signup" id="gateSignupBtn">Create account</button>',
+      '    </div>',
       offlineBtnHtml,
       '  </div>',
-      '  <p class="gate-note" id="gateStatusNote">Login required. Free practice after sign-in. AI coach uses daily quotas; upgrade with Telegram Stars in the Mini App or TON Blockchain.',
-      '    Prefer Telegram? <a href="https://t.me/ClarioraBot/app" target="_blank" rel="noopener">Open the Mini App</a>.',
+      '  <p class="gate-note" id="gateStatusNote">Free practice after you sign in. AI coach uses daily quotas.',
+      '    Prefer the Mini App? <a href="https://t.me/ClarioraBot/app" target="_blank" rel="noopener">Open in Telegram</a>.',
       '  </p>',
-      '  <p class="gate-error" id="gateErrorNote" hidden></p>',
+      '  <p class="gate-error" id="gateErrorNote" role="alert" hidden></p>',
       '</div>'
     ].join('\n');
     document.body.appendChild(wall);
@@ -221,9 +270,6 @@
 
     document.getElementById('gateGoogleBtn').addEventListener('click', function () {
       setGateError('');
-      if (authUI && authUI.openModal) {
-        authUI.openModal({ mode: 'signin', wall: true, prefer: 'google' });
-      }
       if (authUI && authUI.handleGoogleSignIn) authUI.handleGoogleSignIn();
     });
     document.getElementById('gateTelegramBtn').addEventListener('click', function () {
@@ -241,6 +287,24 @@
     });
 
     return wall;
+  }
+
+  function wantsCreateAccount() {
+    try {
+      var q = new URLSearchParams(window.location.search || '');
+      if (q.get('signup') === '1' || q.get('mode') === 'signup') return true;
+      var hash = String(window.location.hash || '').toLowerCase();
+      return hash === '#create-account' || hash === '#signup';
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function openSignupIntentIfRequested() {
+    if (!wantsCreateAccount()) return;
+    if (authUI && authUI.openModal) {
+      authUI.openModal({ mode: 'signup', wall: true });
+    }
   }
 
   function setGateError(message) {
@@ -562,6 +626,7 @@
 
     if (!state.unlocked) {
       showWall();
+      openSignupIntentIfRequested();
     }
 
     var service = firebaseService || window.ClarioraFirebaseService;

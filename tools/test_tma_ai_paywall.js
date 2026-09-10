@@ -15,6 +15,7 @@ const assert = require('assert');
 const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
+const { pathToFileURL } = require('url');
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -35,6 +36,16 @@ assert.ok(Array.isArray(starsBilling.PRODUCTS), 'PRODUCTS list must exist');
 assert.ok(starsBilling.PRODUCTS.find(p => p.id === 'daily_unlimited'), 'daily_unlimited product must exist');
 assert.ok(starsBilling.PRODUCTS.find(p => p.id === 'pro_monthly'), 'pro_monthly product must exist');
 assert.ok(starsBilling.PRODUCTS.find(p => p.id === 'lifetime_master'), 'lifetime_master product must exist');
+starsBilling.PRODUCTS.forEach((p) => {
+  assert.ok((p.invoiceTitle || p.title).length <= 32, `${p.id} invoice title must be <= 32 chars`);
+  assert.ok(Number.isInteger(p.stars) && p.stars > 0, `${p.id} stars must be a positive integer`);
+});
+assert.ok(typeof starsBilling.purchaseProduct === 'function', 'purchaseProduct must exist');
+assert.ok(typeof starsBilling.purchaseProductWithTon === 'function', 'Web TON unlock helper may exist');
+assert.ok(
+  String(starsBilling.purchaseProductWithTon).includes('Inside Telegram, use Stars'),
+  'TON helper must refuse TMA digital-goods checkout and force Stars'
+);
 
 const ghostCoach = require(path.join(ROOT, 'js', 'tma_ghost_coach.js'));
 assert.ok(ghostCoach, 'TMAGhostCoach must export');
@@ -44,9 +55,15 @@ console.log('   ✔ Client TMA modules verified.\n');
 
 // 2. Test Edge Worker Logic
 console.log('2. Testing Edge Worker AI Router & Paywall...');
-const workerModule = require(path.join(ROOT, 'workers', 'api_worker.js')).default;
-assert.ok(workerModule, 'api_worker default export must exist');
-assert.ok(typeof workerModule.fetch === 'function', 'api_worker.fetch must exist');
+let workerModule;
+async function loadWorker() {
+  if (!workerModule) {
+    workerModule = (await import(pathToFileURL(path.join(ROOT, 'workers', 'api_worker.js')).href)).default;
+  }
+  assert.ok(workerModule, 'api_worker default export must exist');
+  assert.ok(typeof workerModule.fetch === 'function', 'api_worker.fetch must exist');
+  return workerModule;
+}
 
 // In-Memory D1 Mock
 class MockD1 {
@@ -65,6 +82,9 @@ class MockD1 {
             if (sql.includes('FROM telegram_users WHERE telegram_id = ?')) {
               const id = params[0];
               return self.users.get(id) || null;
+            }
+            if (sql.includes('FROM stars_transactions WHERE id = ?')) {
+              return self.transactions.find(t => t.id === params[0]) || null;
             }
             return null;
           },
@@ -127,6 +147,7 @@ function createTestInitData(userObj, botToken) {
 }
 
 async function runTests() {
+  await loadWorker();
   const mockDb = new MockD1();
   const TEST_BOT_TOKEN = '123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ';
   const testUser = { id: 777888999, first_name: 'Alex', username: 'alex_tech' };
@@ -265,6 +286,79 @@ async function runTests() {
   assert.strictEqual(upgradedUser.stars_spent, 250, 'Stars spent must be 250');
   console.log('   ✔ Telegram Stars payment verified. User upgraded to Pro Monthly.');
 
+  // 2D2. Invoice link uses catalog price + empty provider_token + XTR
+  console.log('2D2. Testing createInvoiceLink (XTR) request shape...');
+  let capturedInvoiceBody = null;
+  global.fetch = async function (url, opts) {
+    if (url.includes('/createInvoiceLink')) {
+      capturedInvoiceBody = JSON.parse(opts.body);
+      return { ok: true, json: async () => ({ ok: true, result: 'https://t.me/$XTR_invoice_live' }) };
+    }
+    return { ok: true, json: async () => ({ ok: true }) };
+  };
+  const invoiceReq = new Request('https://clariora.com.au/api/v1/billing/stars/invoice', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      productId: 'pro_monthly',
+      stars: 1,
+      title: 'Hacked Overlong Title That Would Break Telegram Invoice Limits!!!!!',
+      initData: validInitData
+    })
+  });
+  const invoiceRes = await workerModule.fetch(invoiceReq, mockEnv, {});
+  assert.strictEqual(invoiceRes.status, 200, 'Invoice endpoint must return 200');
+  const invoiceData = await invoiceRes.json();
+  assert.strictEqual(invoiceData.invoiceLink, 'https://t.me/$XTR_invoice_live');
+  assert.strictEqual(capturedInvoiceBody.currency, 'XTR');
+  assert.strictEqual(capturedInvoiceBody.provider_token, '');
+  assert.strictEqual(capturedInvoiceBody.prices[0].amount, 250, 'Must use server catalog Stars amount, not client');
+  assert.ok(capturedInvoiceBody.title.length <= 32, 'Invoice title must be <= 32');
+  console.log('   ✔ createInvoiceLink uses XTR, empty provider_token, and server-side catalog price.');
+
+  // 2D3. Pre-checkout rejects non-XTR / bad amount
+  console.log('2D3. Testing pre_checkout_query validation...');
+  let preCheckoutAnswer = null;
+  global.fetch = async function (url, opts) {
+    if (url.includes('answerPreCheckoutQuery')) {
+      preCheckoutAnswer = JSON.parse(opts.body);
+      return { ok: true, json: async () => ({ ok: true }) };
+    }
+    return { ok: true, json: async () => ({ ok: true }) };
+  };
+  const badPre = new Request('https://clariora.com.au/api/v1/telegram/webhook', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      update_id: 10002,
+      pre_checkout_query: {
+        id: 'pcq_bad_1',
+        currency: 'USD',
+        total_amount: 250,
+        invoice_payload: JSON.stringify({ p: 'pro_monthly', u: testUser.id, s: 250 })
+      }
+    })
+  });
+  await workerModule.fetch(badPre, mockEnv, {});
+  assert.strictEqual(preCheckoutAnswer.ok, false, 'Non-XTR pre-checkout must be rejected');
+
+  const goodPre = new Request('https://clariora.com.au/api/v1/telegram/webhook', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      update_id: 10003,
+      pre_checkout_query: {
+        id: 'pcq_ok_1',
+        currency: 'XTR',
+        total_amount: 250,
+        invoice_payload: JSON.stringify({ p: 'pro_monthly', u: testUser.id, s: 250 })
+      }
+    })
+  });
+  await workerModule.fetch(goodPre, mockEnv, {});
+  assert.strictEqual(preCheckoutAnswer.ok, true, 'Valid XTR pre-checkout must be approved');
+  console.log('   ✔ pre_checkout_query validates currency and catalog price.');
+
   // 2E. Test Upgraded User accessing Pro NVIDIA model -> Success
   console.log('2E. Testing Upgraded Pro User accessing NVIDIA NIM...');
   global.fetch = async function (url, opts) {
@@ -297,7 +391,8 @@ async function runTests() {
   assert.strictEqual(resProNvidia.status, 200, 'Pro user must receive 200 for NVIDIA model');
   const dataProNvidia = await resProNvidia.json();
   assert.strictEqual(dataProNvidia.provider, 'nvidia', 'Provider must be nvidia');
-  assert.strictEqual(dataProNvidia.freeQuotaRemaining, 'unlimited', 'Quota must be unlimited');
+  assert.ok(typeof dataProNvidia.freeQuotaRemaining === 'number', 'Pro quota must be a hard remaining call count');
+  assert.ok(dataProNvidia.budget && dataProNvidia.budget.dailyTokenBudget > 0, 'Pro must expose hard token budget');
   console.log('   ✔ Pro user successfully received NVIDIA NIM 70B inference.');
 
   // Restore fetch

@@ -16,9 +16,10 @@
   'use strict';
 
   const CONFIG = {
-    manifestUrl: 'https://comptia-a-plus.datacentre.academy/tonconnect-manifest.json',
+    manifestUrl: 'https://clariora.com.au/tonconnect-manifest.json',
     registryContractAddress: 'EQBvW8Z5huBkMJYdn3GuLD5Co_V7bB0N12_RegistryMockTON',
-    network: 'testnet' // 'testnet' or 'mainnet'
+    network: 'mainnet',
+    allowSimulatedMint: false
   };
 
   let tonConnectUI = null;
@@ -95,7 +96,7 @@
   /**
    * Sends an on-chain verification transaction to the TON registry
    */
-  async function mintExamCredential(examResult) {
+  async function mintExamCredential(examResult, options = {}) {
     if (TMABridge) TMABridge.haptic('medium');
 
     const payload = buildCredentialPayload(examResult);
@@ -135,7 +136,11 @@
       }
     }
 
-    // 2. Offline / Simulation mode for demonstration and testing
+    // 2. Simulation only when explicitly allowed (local demos, tests). Production real browser requires wallet.
+    const isRealBrowser = typeof window !== 'undefined' && typeof window.document !== 'undefined' && typeof window.document.getElementById === 'function';
+    if (!CONFIG.allowSimulatedMint && !(options && options.simulate) && isRealBrowser) {
+      throw new Error('Connect a TON wallet to mint an on-chain mastery credential.');
+    }
     console.log('[TON] Simulating on-chain ledger registration...');
     const simulatedRecord = {
       ...payload.fullRecord,
@@ -146,6 +151,58 @@
 
     saveVerifiedCredential(simulatedRecord);
     return { success: true, record: simulatedRecord, simulated: true };
+  }
+
+  /**
+   * 1-Click TON payment for subscription tier upgrades (https://docs.ton.org/)
+   */
+  async function sendTonPayment(productId, options = {}) {
+    const TON_PRICES = {
+      daily_unlimited: { amountTon: '1.5', nanotons: '1500000000', title: '24-Hour Study Pass' },
+      pro_monthly: { amountTon: '7.0', nanotons: '7000000000', title: 'Monthly Pro Pass' },
+      lifetime_master: { amountTon: '35.0', nanotons: '35000000000', title: 'Lifetime Master Pass' }
+    };
+
+    const item = TON_PRICES[productId] || TON_PRICES.daily_unlimited;
+    const recipient = options.recipient || CONFIG.merchantWalletAddress || CONFIG.registryContractAddress;
+    const userId = options.userId || safeGet('clariora_sync_user_id') || 'technician';
+
+    if (!tonConnectUI || !currentWallet) {
+      if (CONFIG.allowSimulatedMint || (options && options.simulate) || typeof window === 'undefined') {
+        return {
+          success: true,
+          txHash: 'ton_sim_' + Date.now().toString(16),
+          amountTon: item.amountTon,
+          walletAddress: 'EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N',
+          simulated: true
+        };
+      }
+      throw new Error('Please connect your TON wallet first using the button above.');
+    }
+
+    const memo = `APX:SUB:${productId}:${userId}`;
+    const transaction = {
+      validUntil: Math.floor(Date.now() / 1000) + 600,
+      messages: [
+        {
+          address: recipient,
+          amount: item.nanotons,
+          payload: btoa(memo)
+        }
+      ]
+    };
+
+    const result = await tonConnectUI.sendTransaction(transaction);
+    const txHash = result && (result.boc ? result.boc.slice(0, 64) : 'ton_' + Date.now().toString(16));
+
+    if (TMABridge) TMABridge.haptic('success');
+    return {
+      success: true,
+      txHash,
+      boc: result ? result.boc : null,
+      amountTon: item.amountTon,
+      walletAddress: getWalletAddress()
+    };
   }
 
   function safeGet(key) {
@@ -243,12 +300,19 @@
     }
   }
 
+  function setConfig(newConfig = {}) {
+    Object.assign(CONFIG, newConfig);
+    return CONFIG;
+  }
+
   return {
     CONFIG,
+    setConfig,
     initTonConnect,
     getWalletAddress,
     buildCredentialPayload,
     mintExamCredential,
+    sendTonPayment,
     getVerifiedCredentials,
     renderCredentialCard
   };

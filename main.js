@@ -1229,8 +1229,8 @@ function createWindow() {
     }
   });
 
-  const entry = path.join(__dirname, 'A_Plus_Exam_Simulator.html');
-  const fallback = path.join(__dirname, 'index.html');
+  const entry = path.join(__dirname, 'index.html');
+  const fallback = path.join(__dirname, 'A_Plus_Exam_Simulator.html');
   mainWindow.loadFile(fs.existsSync(entry) ? entry : fallback).catch((err) => {
     writeLog('error', 'loadFile failed: ' + ((err && err.message) || err));
   });

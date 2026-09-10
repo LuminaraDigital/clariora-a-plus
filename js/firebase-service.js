@@ -93,6 +93,15 @@
 
           // Real-time synchronization when user logs in
           if (user && state.firestoreAvailable) {
+            ensureUserProfile({
+              uid: user.uid,
+              email: user.email || '',
+              displayName: user.displayName || '',
+              photoURL: user.photoURL || '',
+              provider: (user.providerData && user.providerData[0] && user.providerData[0].providerId) || 'password'
+            }).catch(function (e) {
+              console.debug('[Firebase] profile upsert notice:', e);
+            });
             setupRealtimeLearningSync(user.uid);
           } else if (!user && state.firestoreUnsubscribe) {
             state.firestoreUnsubscribe();
@@ -233,6 +242,46 @@
   /* ============================================================
      Real-time Learning State Synchronization (Firestore)
      ============================================================ */
+
+  /**
+   * Upsert per-account profile doc so each learner has durable identity + timestamps.
+   * Path: users/{uid}
+   */
+  async function ensureUserProfile(sessionOrUser) {
+    await init();
+    if (!state.db || !state.modules || !state.firestoreAvailable) return false;
+    var uid = sessionOrUser && (sessionOrUser.uid || sessionOrUser.id);
+    if (!uid) return false;
+
+    var fsMod = state.modules.firestore;
+    var docRef = fsMod.doc(state.db, 'users', uid);
+    var now = new Date().toISOString();
+    var existing = null;
+    try {
+      var snap = await fsMod.getDoc(docRef);
+      if (snap.exists()) existing = snap.data();
+    } catch (_) {}
+
+    var payload = {
+      uid: uid,
+      email: (sessionOrUser && sessionOrUser.email) || (existing && existing.email) || '',
+      displayName: (sessionOrUser && sessionOrUser.displayName) || (existing && existing.displayName) || '',
+      photoURL: (sessionOrUser && sessionOrUser.photoURL) || (existing && existing.photoURL) || '',
+      provider: (sessionOrUser && sessionOrUser.provider) || (existing && existing.provider) || 'unknown',
+      lastSignInAt: now,
+      updatedAt: now
+    };
+    if (!existing || !existing.createdAt) payload.createdAt = now;
+    if (!existing) payload.signupAt = now;
+
+    try {
+      await fsMod.setDoc(docRef, payload, { merge: true });
+      return true;
+    } catch (err) {
+      console.warn('[Firebase] profile save notice:', err.message);
+      return false;
+    }
+  }
 
   /**
    * Listen to real-time learner updates from Firestore
@@ -378,9 +427,11 @@
     signUpWithEmail: signUpWithEmail,
     sendPasswordReset: sendPasswordReset,
     signOutUser: signOutUser,
+    ensureUserProfile: ensureUserProfile,
     saveLearnerProgress: saveLearnerProgress,
     loadLearnerProgress: loadLearnerProgress,
     syncLocalToFirestore: syncLocalToFirestore,
-    scheduleSyncToFirestore: scheduleSyncToFirestore
+    scheduleSyncToFirestore: scheduleSyncToFirestore,
+    applyRemoteToLocal: applyRemoteToLocal
   };
 });

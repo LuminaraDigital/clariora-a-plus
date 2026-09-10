@@ -47,7 +47,7 @@ def nav(active: str) -> str:
     </nav>
     <div class="nav-actions">
       <a class="btn btn-secondary" href="https://t.me/ClarioraBot/app" target="_blank" rel="noopener">Telegram App</a>
-      <a class="btn btn-primary" href="../app" data-busy>Open the app</a>
+      <a class="btn btn-primary" href="/app" data-busy>Sign in to open</a>
     </div>
     <details class="nav-menu">
       <summary aria-label="Open menu">
@@ -166,7 +166,7 @@ COMPARE_BODY = r"""
       <h1>Built to beat the packs people actually buy.</h1>
       <p class="lead">Most A+ prep either dumps questions or sells a closed portal. Clariora measures you the way the exam reports scores, keeps your data on your machine, and costs a fraction of official tooling.</p>
       <div class="page-cta">
-        <a class="btn btn-primary btn-lg" href="../app" data-busy>Take the free diagnostic</a>
+        <a class="btn btn-primary btn-lg" href="/app" data-busy>Take the free diagnostic</a>
         <a class="btn btn-secondary btn-lg" href="pricing.html">See pricing</a>
       </div>
     </div>
@@ -259,9 +259,9 @@ COMPARE_BODY = r"""
       </div>
       <div class="share-card">
         <h3>The one-line pitch you can send a friend</h3>
-        <p>"Open Clariora, take the free 20-question diagnostic, and you get a 100 to 900 scaled score against the real pass marks with no account."</p>
+        <p>"Open Clariora, sign in, take the free 20-question diagnostic, and you get a 100 to 900 scaled score against the real pass marks with progress saved to your account."</p>
         <div class="page-cta">
-          <a class="btn btn-primary" href="../app" data-busy>Open Clariora</a>
+          <a class="btn btn-primary" href="/app" data-busy>Open Clariora</a>
           <a class="btn btn-secondary" href="https://t.me/ClarioraBot/app" target="_blank" rel="noopener">Share via Telegram</a>
         </div>
       </div>
@@ -299,7 +299,7 @@ WHY_BODY = r"""
       </div>
       <div class="page-cta">
         <a class="btn btn-primary" href="compare.html">See the competitor chart</a>
-        <a class="btn btn-secondary" href="../app" data-busy>Try the diagnostic</a>
+        <a class="btn btn-secondary" href="/app" data-busy>Try the diagnostic</a>
       </div>
     </div>
   </section>
@@ -310,13 +310,13 @@ HOW_BODY = r"""
     <div class="container">
       <span class="eyebrow">How it works</span>
       <h1>Three steps. The first takes twenty minutes.</h1>
-      <p class="lead">No account wizard. No content unlock maze. Open the app, sit a short diagnostic, then let readiness drive the daily plan.</p>
+      <p class="lead">Sign in once. No content unlock maze. Open the app, sit a short diagnostic, then let readiness drive the daily plan.</p>
     </div>
   </section>
   <section class="section">
     <div class="container">
       <ol class="steps">
-        <li class="step"><h3>Open the app</h3><p>Browser, desktop, or Telegram. Nothing to configure.</p></li>
+        <li class="step"><h3>Sign in</h3><p>Google, email, or Telegram. Progress stays on your account.</p></li>
         <li class="step"><h3>Take the 20 question diagnostic</h3><p>Mixed Core 1 and Core 2 under exam conditions. First readiness score and weak objectives.</p></li>
         <li class="step"><h3>Follow the plan until readiness says go</h3><p>Drill weak objectives, use spaced repetition, sit full 90 in 90 mocks, run module quizzes, then book when scaled scores clear the pass mark consistently.</p></li>
       </ol>
@@ -335,7 +335,7 @@ HOW_BODY = r"""
         </figure>
       </div>
       <div class="page-cta">
-        <a class="btn btn-primary" href="../app" data-busy>Start step one</a>
+        <a class="btn btn-primary" href="/app" data-busy>Start step one</a>
       </div>
     </div>
   </section>
@@ -361,7 +361,7 @@ PRICING_BODY = r"""
             <li><svg class="ic ic-ok" aria-hidden="true"><use href="#i-ok"/></svg><span>20 practice questions, 20 flashcards and one lab per day once limits arrive</span></li>
             <li><svg class="ic ic-ok" aria-hidden="true"><use href="#i-ok"/></svg><span>Unlimited review of every explanation</span></li>
           </ul>
-          <a class="btn btn-primary" href="../app" data-busy>Open the app free</a>
+          <a class="btn btn-primary" href="/app" data-busy>Sign in to start free</a>
         </div>
         <div class="plan plan-featured">
           <div class="plan-head"><h3>Personal licence</h3><span class="badge badge-warn">Planned</span></div>
@@ -478,9 +478,9 @@ INDEX_BODY = r"""
       <div>
         <span class="eyebrow">Clariora for CompTIA A+ 220-1201 and 220-1202</span>
         <h1>Know your A+ score before you pay for the voucher.</h1>
-        <p class="lead">A 90 question, 90 minute exam simulator that scores you on the real 100 to 900 scale, then shows which objectives to fix. 1,130 explained questions. Free, no account, works offline.</p>
+        <p class="lead">A 90 question, 90 minute exam simulator that scores you on the real 100 to 900 scale, then shows which objectives to fix. 1,130 explained questions. Sign in once; your progress stays with your account.</p>
         <div class="hero-actions">
-          <a class="btn btn-primary btn-lg" href="../app" data-busy>Take the free 20 question diagnostic</a>
+          <a class="btn btn-primary btn-lg" href="/app" data-busy>Sign in and take the diagnostic</a>
           <a class="btn btn-secondary btn-lg" href="compare.html">Why we beat the packs</a>
         </div>
         <p class="hero-note">Runs in your browser. Source under AGPL-3.0. Version __APLUS_VERSION__.</p>
@@ -497,7 +497,7 @@ INDEX_BODY = r"""
         <li><strong>1,130</strong><span>questions with explanations and distractor analysis</span></li>
         <li><strong>675 / 700</strong><span>real pass marks on the 100 to 900 scale</span></li>
         <li><strong>$39</strong><span>planned one-time licence vs hundreds for official bundles</span></li>
-        <li><strong>0</strong><span>accounts required to start studying</span></li>
+        <li><strong>1</strong><span>sign-in gates the product so progress is yours</span></li>
       </ul>
     </div>
   </section>
@@ -570,7 +570,7 @@ INDEX_BODY = r"""
         <h2>Book the exam when the score says you are ready.</h2>
         <p>Start with the free diagnostic. Share your readiness when it climbs. Bring a friend into the same loop.</p>
         <div class="hero-actions">
-          <a class="btn btn-primary btn-lg" href="../app" data-busy>Open Clariora</a>
+          <a class="btn btn-primary btn-lg" href="/app" data-busy>Open Clariora</a>
           <a class="btn btn-secondary btn-lg" href="compare.html">Competitor chart</a>
           <a class="btn btn-secondary btn-lg" href="https://github.com/LuminaraDigital/clariora-a-plus/releases/download/v__APLUS_VERSION__/CompTIA_A_Plus_Setup___APLUS_VERSION__.exe">Download for Windows</a>
         </div>

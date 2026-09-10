@@ -20,12 +20,14 @@
      * Master switch. Set to false for internal academy builds: everything is
      * unlocked, no chip is rendered, no upgrade card is ever shown.
      */
-    enabled: false,
+    enabled: true,
 
     /** Free tier daily allowances (local midnight boundary). */
     freeQuestionsPerDay: 20,
     freeCardsPerDay: 20,
     freeLabsPerDay: 1,
+    /** Free Ghost Coach sessions per day (aligned with edge Groq quota). */
+    freeCoachPerDay: 5,
 
     /** The free diagnostic: one full run per day, does not spend the question budget. */
     diagnostic: {
@@ -44,9 +46,9 @@
     minTrimmedSession: 5,
 
     /** Commercial copy. */
-    priceLabel: '39 USD',
-    buyUrl: 'https://datacentre.academy/aplus',
-    supportEmail: 'support@datacentre.academy',
+    priceLabel: '39 USD or Telegram Stars',
+    buyUrl: 'https://clariora.com.au/landing/pricing.html',
+    supportEmail: 'support@clariora.com.au',
 
     /**
      * Offline revocation list, checked on every boot and on every activate().
@@ -62,8 +64,8 @@
     publicKeyJwk: {
       kty: 'EC',
       crv: 'P-256',
-      x: 'REPLACE_WITH_PUBLIC_KEY_X',
-      y: 'REPLACE_WITH_PUBLIC_KEY_Y'
+      x: 'K-P0UCqKN6atuMO5KmkM9q7SUMt9chUjj5onNYQOYBA',
+      y: '_OCzoqA04x6sGd7--BRnsonbd8TuIocCIiwXbNWrS3g'
     }
   };
 

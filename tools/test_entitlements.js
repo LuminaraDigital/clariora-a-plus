@@ -224,7 +224,8 @@ async function run() {
     const env = loadEntitlements({ publicKeyJwk: keys.publicJwk });
     check('free full_mock is blocked', env.ent.can('full_mock').ok === false);
     check('free full_mock reason is pro_only', env.ent.can('full_mock').reason === 'pro_only');
-    check('free coach is blocked', env.ent.can('coach').ok === false);
+    check('free coach allowed within daily quota', env.ent.can('coach').ok === true);
+    check('free coach remaining is 5', env.ent.remainingToday('coach') === 5);
     check('free questions allowed', env.ent.can('questions', { count: 1 }).ok === true);
     check('free diagnostic allowed once', env.ent.can('diagnostic').ok === true);
     check('free flashcards allowed', env.ent.can('flashcards', { count: 1 }).ok === true);
@@ -365,25 +366,28 @@ async function run() {
 
   section('Ghost Coach gate');
   {
-    const env = loadEntitlements({ publicKeyJwk: keys.publicJwk });
-    let coachRan = false;
-    env.win.startGhostCoachMission = function () { coachRan = true; return 'coach'; };
+    const env = loadEntitlements({ publicKeyJwk: keys.publicJwk, freeCoachPerDay: 2 });
+    let coachRan = 0;
+    env.win.startGhostCoachMission = function () { coachRan++; return 'coach'; };
     check('coach entry point is wrapped', env.win.startGhostCoachMission.__aplusEntitled === true);
     env.win.startGhostCoachMission();
-    check('free users do not reach the coach', coachRan === false);
+    env.win.startGhostCoachMission();
+    env.win.startGhostCoachMission();
+    check('free users stop at daily coach allowance', coachRan === 2, 'ran=' + coachRan);
     await env.ent.activate(issued.key);
     env.win.startGhostCoachMission();
-    check('pro users reach the coach', coachRan === true);
+    check('pro users reach the coach past free quota', coachRan === 3);
 
     // APlus.ghostCoach methods are wrapped on the late re-check.
-    const env2 = loadEntitlements({ publicKeyJwk: keys.publicJwk });
-    let missionRan = false;
-    env2.win.APlus.ghostCoach = { startCurrentMission: function () { missionRan = true; } };
+    const env2 = loadEntitlements({ publicKeyJwk: keys.publicJwk, freeCoachPerDay: 1 });
+    let missionRan = 0;
+    env2.win.APlus.ghostCoach = { startCurrentMission: function () { missionRan++; } };
     env2.ent._internal.rewrapAll();
     check('APlus.ghostCoach.startCurrentMission is wrapped',
       env2.win.APlus.ghostCoach.startCurrentMission.__aplusEntitled === true);
     env2.win.APlus.ghostCoach.startCurrentMission();
-    check('free users do not reach the coach mission', missionRan === false);
+    env2.win.APlus.ghostCoach.startCurrentMission();
+    check('free users stop at coach mission allowance', missionRan === 1, 'ran=' + missionRan);
   }
 
   section('Flashcards and labs gates');

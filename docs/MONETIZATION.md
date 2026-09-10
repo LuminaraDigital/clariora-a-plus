@@ -367,6 +367,8 @@ Storage keys, all under the standard `aplus3_` prefix:
 Events on `APlus.bus`: `entitlements:usage`, `entitlements:activated`,
 `entitlements:deactivated`, `entitlements:upgrade:shown`.
 
-## Current status (2026-09-04)
+## Current status (2026-09-10)
 
-Gating is switched OFF in js/entitlements-config.js (enabled: false). Every feature is free for all users until the academy decides to charge. To turn the free tier and license flow on later, set enabled: true and run node tools/license_keygen.js once.
+Gating is switched ON in js/entitlements-config.js (enabled: true). Free tier daily
+limits apply. Telegram Stars Pro and offline license keys unlock full access.
+Ghost Coach requires verified auth and enforces a 5/day free Groq quota on the edge.

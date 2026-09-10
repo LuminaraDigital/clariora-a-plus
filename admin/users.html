@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Clariora Auth Accounts</title>
+  <style>
+    :root { color-scheme: dark; --bg: #07090E; --card: #0F131B; --gold: #D4AF37; --text: #F3F4F6; --muted: #8B95A8; --line: rgba(212,175,55,0.25); }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Segoe UI, system-ui, sans-serif; background: var(--bg); color: var(--text); }
+    main { max-width: 1100px; margin: 0 auto; padding: 28px 18px 48px; }
+    h1 { margin: 0 0 8px; font-size: 1.5rem; }
+    p { color: var(--muted); }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; margin: 18px 0 22px; }
+    input, button { font: inherit; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); }
+    input { min-width: 280px; flex: 1; }
+    button { background: var(--gold); color: #07090E; font-weight: 700; border: none; cursor: pointer; }
+    .grid { display: grid; gap: 18px; }
+    table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 13px; }
+    th { color: var(--gold); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .err { color: #CB6E63; }
+    .ok { color: #58A177; }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); font-size: 11px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Clariora gated accounts</h1>
+    <p>Who signed up and who signed in. Requires the worker <code>ADMIN_API_KEY</code> secret.</p>
+    <div class="row">
+      <input id="adminKey" type="password" placeholder="Admin API key" autocomplete="off">
+      <button type="button" id="loadBtn">Load accounts</button>
+    </div>
+    <p id="status" class="err" hidden></p>
+    <div class="grid">
+      <section>
+        <h2>Accounts</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th><th>Email / handle</th><th>Provider</th><th>Signups</th><th>Last sign-in</th><th>Count</th>
+            </tr>
+          </thead>
+          <tbody id="accountsBody"></tbody>
+        </table>
+      </section>
+      <section>
+        <h2>Recent events</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>When</th><th>Event</th><th>Provider</th><th>Name</th><th>Email</th><th>UID</th>
+            </tr>
+          </thead>
+          <tbody id="eventsBody"></tbody>
+        </table>
+      </section>
+    </div>
+  </main>
+  <script>
+    (function () {
+      var keyInput = document.getElementById('adminKey');
+      var statusEl = document.getElementById('status');
+      try {
+        var saved = sessionStorage.getItem('clariora_admin_key');
+        if (saved) keyInput.value = saved;
+      } catch (_) {}
+
+      function showStatus(msg, ok) {
+        statusEl.hidden = !msg;
+        statusEl.textContent = msg || '';
+        statusEl.className = ok ? 'ok' : 'err';
+      }
+
+      function esc(s) {
+        return String(s == null ? '' : s)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      document.getElementById('loadBtn').addEventListener('click', async function () {
+        var key = (keyInput.value || '').trim();
+        if (!key) {
+          showStatus('Enter ADMIN_API_KEY first.');
+          return;
+        }
+        try { sessionStorage.setItem('clariora_admin_key', key); } catch (_) {}
+        showStatus('Loading…', true);
+        try {
+          var res = await fetch('/api/v1/auth/accounts?limit=200', {
+            headers: { 'X-Admin-Key': key }
+          });
+          var data = await res.json();
+          if (!res.ok) {
+            showStatus(data.error || ('HTTP ' + res.status));
+            return;
+          }
+          var accounts = data.accounts || [];
+          var events = data.events || [];
+          document.getElementById('accountsBody').innerHTML = accounts.map(function (a) {
+            return '<tr>' +
+              '<td>' + esc(a.display_name) + '</td>' +
+              '<td>' + esc(a.email) + '</td>' +
+              '<td><span class="pill">' + esc(a.provider) + '</span></td>' +
+              '<td>' + esc(a.signup_at) + '</td>' +
+              '<td>' + esc(a.last_signin_at) + '</td>' +
+              '<td>' + esc(a.signin_count) + '</td>' +
+              '</tr>';
+          }).join('') || '<tr><td colspan="6">No accounts yet.</td></tr>';
+          document.getElementById('eventsBody').innerHTML = events.map(function (e) {
+            return '<tr>' +
+              '<td>' + esc(e.created_at) + '</td>' +
+              '<td><span class="pill">' + esc(e.event) + '</span></td>' +
+              '<td>' + esc(e.provider) + '</td>' +
+              '<td>' + esc(e.display_name) + '</td>' +
+              '<td>' + esc(e.email) + '</td>' +
+              '<td>' + esc(e.uid) + '</td>' +
+              '</tr>';
+          }).join('') || '<tr><td colspan="6">No events yet.</td></tr>';
+          showStatus('Loaded ' + accounts.length + ' accounts and ' + events.length + ' events.', true);
+        } catch (err) {
+          showStatus(err.message || 'Request failed');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

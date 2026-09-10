@@ -33,12 +33,22 @@ database_id = "f1a42288-4259-4640-99dd-780845e9431f"
 [ai]
 binding = "AI"
 
+[[durable_objects.bindings]]
+name = "COACH_RATE_LIMITER"
+class_name = "CoachRateLimiter"
+
+[[migrations]]
+tag = "v1-coach-rate-limiter"
+new_sqlite_classes = ["CoachRateLimiter"]
+
 [build]
 # Local `wrangler deploy` only. Workers Builds ignores this; see package.json postinstall.
 command = "python tools/build_web_dist.py"
 
 # Environment Variables & Secrets (Set via `wrangler secret put <KEY>`):
 # - TELEGRAM_BOT_TOKEN: From @BotFather (for initData HMAC & Stars invoices)
+# - ADMIN_API_KEY: Shared secret for GET /api/v1/auth/accounts and /admin/users.html
+# - FIREBASE_WEB_API_KEY: Optional override for Firebase ID token verification
 # - GROQ_API_KEY: Free tier fast inference (Llama 3.1 8B)
 # - NVIDIA_API_KEY: Pro tier enterprise inference (Llama 3.1/3.3 70B)
 # - OLLAMA_ENDPOINT: Pro tier self-hosted Ollama URL

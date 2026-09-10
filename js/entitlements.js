@@ -31,12 +31,13 @@
     freeQuestionsPerDay: 20,
     freeCardsPerDay: 20,
     freeLabsPerDay: 1,
+    freeCoachPerDay: 5,
     diagnostic: { type: 'both', count: 20 },
     fullMockThreshold: 90,
     minTrimmedSession: 5,
-    priceLabel: '39 USD',
-    buyUrl: 'https://datacentre.academy/aplus',
-    supportEmail: 'support@datacentre.academy',
+    priceLabel: '39 USD or Telegram Stars',
+    buyUrl: 'https://clariora.com.au/landing/pricing.html',
+    supportEmail: 'support@clariora.com.au',
     revoked: [],
     publicKeyJwk: null
   };
@@ -133,12 +134,13 @@
 
   function getUsage(dayKey) {
     var raw = store.get(usageStorageKey(dayKey), null);
-    var out = { questions: 0, cards: 0, diagnostics: 0, labs: 0 };
+    var out = { questions: 0, cards: 0, diagnostics: 0, labs: 0, coach: 0 };
     if (raw && typeof raw === 'object') {
       out.questions = numberOr(raw.questions, 0);
       out.cards = numberOr(raw.cards, 0);
       out.diagnostics = numberOr(raw.diagnostics, 0);
       out.labs = numberOr(raw.labs, 0);
+      out.coach = numberOr(raw.coach, 0);
     }
     return out;
   }
@@ -148,7 +150,8 @@
       questions: numberOr(usage.questions, 0),
       cards: numberOr(usage.cards, 0),
       diagnostics: numberOr(usage.diagnostics, 0),
-      labs: numberOr(usage.labs, 0)
+      labs: numberOr(usage.labs, 0),
+      coach: numberOr(usage.coach, 0)
     });
   }
 
@@ -438,15 +441,26 @@
 
   var UNLIMITED = Infinity;
 
+  function starsTierIsPro(ent) {
+    if (!ent || !ent.tier || ent.tier === 'free') return false;
+    if (ent.expiresAt && Number(ent.expiresAt) > 0 && Number(ent.expiresAt) < Date.now()) return false;
+    return true;
+  }
+
   function isPro() {
     if (!gatingEnabled()) return true;
-    return state.pro === true;
+    if (state.pro === true) return true;
+    try {
+      if (starsTierIsPro(window.__CLARIORA_SERVER_ENTITLEMENT__)) return true;
+    } catch (_) {}
+    return false;
   }
 
   function limitFor(feature) {
     var cfg = config();
     if (feature === 'cards' || feature === 'flashcards') return numberOr(cfg.freeCardsPerDay, 20);
     if (feature === 'labs') return numberOr(cfg.freeLabsPerDay, 1);
+    if (feature === 'coach') return numberOr(cfg.freeCoachPerDay, 5);
     if (feature === 'diagnostic') return 1;
     return numberOr(cfg.freeQuestionsPerDay, 20);
   }
@@ -454,6 +468,7 @@
   function counterFor(feature) {
     if (feature === 'cards' || feature === 'flashcards') return 'cards';
     if (feature === 'labs') return 'labs';
+    if (feature === 'coach') return 'coach';
     if (feature === 'diagnostic') return 'diagnostics';
     return 'questions';
   }
@@ -480,9 +495,6 @@
     }
 
     if (f === 'full_mock') {
-      return { ok: false, reason: 'pro_only', remaining: 0 };
-    }
-    if (f === 'coach') {
       return { ok: false, reason: 'pro_only', remaining: 0 };
     }
 
@@ -1089,7 +1101,7 @@
       for (i = 0; i < names.length; i++) {
         var n = names[i];
         if (typeof gc[n] === 'function' && !gc[n][WRAP_FLAG]) {
-          gc[n] = wrapOnce(gc[n], proOnlyFactory('coach'));
+          gc[n] = wrapOnce(gc[n], dailyFeatureFactory('coach', 'coach'));
           did = true;
         }
       }
@@ -1165,9 +1177,21 @@
         }
       };
     });
-    installTrap('startGhostCoachMission', proOnlyFactory('coach'));
+    installTrap('startGhostCoachMission', dailyFeatureFactory('coach', 'coach'));
     installTrap('openMemoryModal', dailyFeatureFactory('flashcards', 'flashcards'));
     installTrap('openPBQModal', dailyFeatureFactory('labs', 'labs'));
+  }
+
+  function syncStarsEntitlement() {
+    try {
+      if (!window.StarsBilling || typeof window.StarsBilling.getEntitlements !== 'function') return;
+      window.StarsBilling.getEntitlements().then(function (ent) {
+        try {
+          window.__CLARIORA_SERVER_ENTITLEMENT__ = ent || { tier: 'free' };
+          renderChip();
+        } catch (_) {}
+      }).catch(function () {});
+    } catch (_) {}
   }
 
   function boot() {
@@ -1176,6 +1200,13 @@
       renderChip();
       bindBus();
       wrapGhostCoach();
+      syncStarsEntitlement();
+      try {
+        window.addEventListener('clariora:entitlement-updated', function () {
+          syncStarsEntitlement();
+          renderChip();
+        });
+      } catch (_) {}
       reverifyStoredLicense().then(function () {
         renderChip();
       });

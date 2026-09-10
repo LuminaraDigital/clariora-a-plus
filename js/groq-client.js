@@ -9,7 +9,8 @@
  *
  * Transport:
  * - Desktop: electronAPI.groq.chat (main-process HTTPS, avoids CORS)
- * - Browser: fetch to https://api.groq.com/openai/v1/chat/completions
+ * - Browser web: blocked (use edge /api/v1/coach so quotas and rate limits apply)
+ * - Electron without IPC: fetch to https://api.groq.com (user-supplied key only)
  */
 
 (function (window) {
@@ -106,6 +107,18 @@
           content: result.content || '',
           model: result.model || model,
           raw: result.raw || null
+        };
+      }
+
+      // Web builds must use the edge coach gateway (auth, quotas, rate limits).
+      // Direct browser calls to Groq bypass paywalls and metering.
+      var isElectron = !!(window.electronAPI);
+      if (!isElectron) {
+        return {
+          ok: false,
+          error: 'use_edge_coach',
+          content: null,
+          message: 'Browser AI must use /api/v1/coach with an authenticated session.'
         };
       }
 

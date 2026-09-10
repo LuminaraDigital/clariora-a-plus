@@ -14,6 +14,7 @@
 const assert = require('assert');
 const crypto = require('crypto');
 const path = require('path');
+const { pathToFileURL } = require('url');
 const fs = require('fs');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -84,8 +85,13 @@ const starsBilling = require(path.join(ROOT, 'js', 'stars_billing.js'));
 assert.ok(starsBilling.PRODUCTS.length >= 3, 'Must define at least 3 products');
 const proProduct = starsBilling.PRODUCTS.find(p => p.id === 'pro_monthly');
 assert.strictEqual(proProduct.stars, 250, 'Pro monthly must cost 250 Stars');
-assert.strictEqual(proProduct.ton, 1.0, 'Pro monthly must cost 1.0 TON');
-console.log('   ✔ Dual-rail pricing (Telegram Stars + TON Blockchain) verified.');
+assert.ok(proProduct.invoiceTitle.length <= 32, 'Invoice title must be <= 32 chars for Bot API');
+assert.ok(typeof starsBilling.purchaseProductWithTon === 'function', 'Web may expose TON unlock helper');
+assert.ok(
+  String(starsBilling.purchaseProductWithTon).includes('Inside Telegram, use Stars'),
+  'TMA digital goods must force Stars instead of TON checkout'
+);
+console.log('   ✔ Telegram Stars (XTR) product catalog verified.');
 
 const ghostCoach = require(path.join(ROOT, 'js', 'tma_ghost_coach.js'));
 assert.strictEqual(ghostCoach.COACH_CONFIG.providers.length, 4, 'Must support Groq, NVIDIA, Ollama, OpenRouter');
@@ -96,7 +102,13 @@ console.log('   ✔ Multi-Model AI Coach client module verified.\n');
 // -----------------------------------------------------------------------------
 console.log('2. Testing Edge Worker Business AI Gateway & Dual-Rail Paywall...');
 
-const workerModule = require(path.join(ROOT, 'workers', 'api_worker.js')).default;
+let workerModule;
+async function loadWorker() {
+  if (!workerModule) {
+    workerModule = (await import(pathToFileURL(path.join(ROOT, 'workers', 'api_worker.js')).href)).default;
+  }
+  return workerModule;
+}
 
 // In-Memory D1 Mock Database
 class MockD1 {
@@ -115,6 +127,12 @@ class MockD1 {
           async first() {
             if (sql.includes('FROM telegram_users WHERE telegram_id = ?')) {
               return self.users.get(params[0]) || null;
+            }
+            if (sql.includes('FROM stars_transactions WHERE id = ?')) {
+              return self.starsTransactions.find(t => t.id === params[0]) || null;
+            }
+            if (sql.includes('FROM ton_transactions WHERE id = ?')) {
+              return self.tonTransactions.find(t => t.id === params[0]) || null;
             }
             return null;
           },
@@ -192,6 +210,7 @@ function generateValidInitData(userObj, botToken) {
 }
 
 async function runProductionTests() {
+  workerModule = await loadWorker();
   const mockDb = new MockD1();
   const TEST_BOT_TOKEN = '987654321:ABC_DefGhIklmnOpqrstuvwxyz123';
   const testUser = { id: 888999111, first_name: 'Jordan', username: 'jordan_engineer' };
@@ -200,6 +219,7 @@ async function runProductionTests() {
   const mockEnv = {
     DB: mockDb,
     TELEGRAM_BOT_TOKEN: TEST_BOT_TOKEN,
+    TON_VERIFY_RELAXED: '1',
     GROQ_API_KEY: 'gsk_mock_groq_production_test',
     NVIDIA_API_KEY: 'nvapi_mock_nvidia_70b_test',
     OLLAMA_ENDPOINT: 'https://ollama.internal.datacenter.lan',
@@ -320,11 +340,11 @@ async function runProductionTests() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': validInitData },
     body: JSON.stringify({
-      telegramId: testUser.id,
       productId: 'pro_monthly',
       txHash: '0x99a8b7c6d5e4f3a2b1c099887766554433221100aabbccddeeff001122334455',
       amountTon: '1.0',
-      walletAddress: 'EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N'
+      walletAddress: 'EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N',
+      initData: validInitData
     })
   });
   const resTonVerify = await workerModule.fetch(reqTonVerify, mockEnv, {});
@@ -346,7 +366,7 @@ async function runProductionTests() {
   assert.strictEqual(resOllama.status, 200, 'Ollama call for Pro user must return 200');
   const dataOllama = await resOllama.json();
   assert.strictEqual(dataOllama.provider, 'ollama', 'Provider must be ollama');
-  assert.strictEqual(dataOllama.freeQuotaRemaining, 'unlimited', 'Quota must be unlimited for Pro');
+  assert.ok(typeof dataOllama.freeQuotaRemaining === 'number', 'Pro quota must be a hard remaining call count');
 
   // OpenRouter
   const reqOpenRouter = new Request('https://clariora.com.au/api/v1/coach', {

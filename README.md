@@ -148,7 +148,7 @@ Code signing reads its password from the `CSC_KEY_PASSWORD` environment variable
 
 | File | What it controls |
 | --- | --- |
-| `js/entitlements-config.js` | Free tier limits and the paid tier switch. Disabled by default so every feature is open. |
+| `js/entitlements-config.js` | Free tier limits and the paid tier switch. Enabled for production free/paid gates. |
 | `js/groq-config.js` | Ghost Coach model and endpoint. The API key is supplied at runtime, never stored in the repo. |
 | `js/sync-config.js` | Supabase project URL and anon key for optional cloud sync. |
 | `js/telemetry-config.js` | Opt-in usage telemetry. See [docs/ANALYTICS.md](docs/ANALYTICS.md). |

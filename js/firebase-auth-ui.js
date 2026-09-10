@@ -19,26 +19,35 @@
     mode: 'signin', // 'signin' | 'signup'
     modalOpen: false,
     accountOpen: false,
-    busy: false
+    busy: false,
+    wallMode: false,
+    authListeners: []
   };
 
   /**
    * Initializes the Auth UI layer
    */
-  function init() {
-    // Detect if running inside Telegram Mini App
+  function init(options) {
+    options = options || {};
+
+    // Detect if running inside Telegram Mini App with real initData
     if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) {
       authState.isTMA = true;
-      console.log('[AuthUI] Telegram Mini App active. Native TMA pill preserved.');
+      console.log('[AuthUI] Telegram Mini App active. Native TMA identity used.');
       return;
     }
 
     injectStyles();
     injectModalMarkup();
 
-    // Hide Telegram-only Stars chip in regular browser
+    // Keep upgrade chip visible in regular browser with clear Upgrade label (Stars & TON)
     var starsChip = document.getElementById('tmaStarsChip');
-    if (starsChip) starsChip.style.display = 'none';
+    if (starsChip) {
+      starsChip.style.display = 'inline-flex';
+      starsChip.title = 'Upgrade Pass (Stars & TON)';
+      starsChip.setAttribute('aria-label', 'Upgrade Pass');
+      starsChip.innerHTML = '<span style="color: #F5D061;">⭐</span><strong style="color: #F5D061; margin-left: 3px;">Upgrade</strong>';
+    }
 
     // Restore Telegram web session if logged in previously
     var savedTg = localStorage.getItem('clariora_telegram_auth');
@@ -52,6 +61,7 @@
           email: tgUser.username ? '@' + tgUser.username : null,
           isTelegram: true
         });
+        notifyAuthenticated({ isTelegram: true, user: tgUser, event: 'signin' });
       } catch (e) {}
     }
 
@@ -62,10 +72,42 @@
         if (user && authState.modalOpen) {
           closeModal();
         }
+        if (user) {
+          notifyAuthenticated({ isTelegram: false, user: user, event: 'signin' });
+        }
       });
       service.init();
     } else {
       renderHeaderPill(null);
+    }
+
+    if (options.wall) setWallMode(true);
+  }
+
+  function setWallMode(enabled) {
+    authState.wallMode = !!enabled;
+    var closeBtn = document.querySelector('#clarioraAuthModalOverlay .auth-close-btn');
+    if (closeBtn) closeBtn.style.display = authState.wallMode ? 'none' : '';
+  }
+
+  function onAuthenticated(callback) {
+    if (typeof callback === 'function') authState.authListeners.push(callback);
+    return function unsubscribe() {
+      var idx = authState.authListeners.indexOf(callback);
+      if (idx !== -1) authState.authListeners.splice(idx, 1);
+    };
+  }
+
+  function notifyAuthenticated(payload) {
+    for (var i = 0; i < authState.authListeners.length; i++) {
+      try { authState.authListeners[i](payload); } catch (e) {
+        console.error('[AuthUI] auth listener error:', e);
+      }
+    }
+    if (window.ClarioraAuthGate) {
+      if (payload && payload.isTelegram && payload.user && window.ClarioraAuthGate.onTelegramWebLogin) {
+        window.ClarioraAuthGate.onTelegramWebLogin(payload.user);
+      }
     }
   }
 
@@ -135,7 +177,7 @@
       '  background: rgba(5, 7, 11, 0.75);',
       '  backdrop-filter: blur(12px);',
       '  -webkit-backdrop-filter: blur(12px);',
-      '  z-index: 1000;',
+      '  z-index: 10120;',
       '  display: flex;',
       '  align-items: center;',
       '  justify-content: center;',
@@ -147,6 +189,7 @@
       '.auth-modal-overlay.is-active {',
       '  opacity: 1;',
       '  visibility: visible;',
+      '  z-index: 10120;',
       '}',
       '.auth-modal-card {',
       '  background: rgba(15, 19, 27, 0.94);',
@@ -433,7 +476,15 @@
     }
   }
 
-  function openModal() {
+  function openModal(opts) {
+    opts = opts || {};
+    if (opts.mode === 'signup' || opts.mode === 'signin') {
+      if (authState.mode !== opts.mode) {
+        authState.mode = opts.mode === 'signup' ? 'signin' : 'signup';
+        toggleMode();
+      }
+    }
+    if (opts.wall) setWallMode(true);
     var overlay = document.getElementById('clarioraAuthModalOverlay');
     if (overlay) {
       overlay.classList.add('is-active');
@@ -443,6 +494,9 @@
   }
 
   function closeModal() {
+    if (authState.wallMode && window.ClarioraAuthGate && !window.ClarioraAuthGate.isUnlocked()) {
+      return;
+    }
     var overlay = document.getElementById('clarioraAuthModalOverlay');
     if (overlay) {
       overlay.classList.remove('is-active');
@@ -530,9 +584,11 @@
 
     try {
       if (authState.mode === 'signup') {
-        await service.signUpWithEmail(email, pass, name);
+        var created = await service.signUpWithEmail(email, pass, name);
+        notifyAuthenticated({ isTelegram: false, user: created, event: 'signup' });
       } else {
-        await service.signInWithEmail(email, pass);
+        var signedIn = await service.signInWithEmail(email, pass);
+        notifyAuthenticated({ isTelegram: false, user: signedIn, event: 'signin' });
       }
       closeModal();
     } catch (err) {
@@ -595,7 +651,7 @@
       showError('Telegram login is initializing. Please try again.');
       return;
     }
-    window.Telegram.Login.auth(
+        window.Telegram.Login.auth(
       { bot_id: '8280144046', request_access: true },
       function (data) {
         if (!data) {
@@ -610,13 +666,31 @@
         .then(function (res) { return res.json(); })
         .then(function (result) {
           if (result.success && result.user) {
-            localStorage.setItem('clariora_telegram_auth', JSON.stringify(result.user));
+            try {
+              localStorage.setItem('clariora_telegram_auth', JSON.stringify(result.user));
+              localStorage.setItem('clariora_telegram_login_payload', JSON.stringify(data));
+            } catch (_) {}
+            if (window.ClarioraAuthGate && window.ClarioraAuthGate.storeTelegramLoginPayload) {
+              window.ClarioraAuthGate.storeTelegramLoginPayload(data);
+            }
+            if (result.entitlement) {
+              try {
+                window.__CLARIORA_SERVER_ENTITLEMENT__ = result.entitlement;
+                window.dispatchEvent(new CustomEvent('clariora:entitlement-updated'));
+              } catch (_) {}
+            }
             var displayName = result.user.first_name + (result.user.last_name ? ' ' + result.user.last_name : '');
             renderHeaderPill({
               displayName: displayName,
               photoURL: result.user.photo_url,
               email: result.user.username ? '@' + result.user.username : null,
               isTelegram: true
+            });
+            notifyAuthenticated({
+              isTelegram: true,
+              user: result.user,
+              loginPayload: data,
+              event: 'signin'
             });
             closeModal();
           } else {
@@ -639,7 +713,10 @@
         var confirmed = window.confirm('Signed in via Telegram as: ' + tgName + (tgUser.username ? ' (@' + tgUser.username + ')' : '') + '\n\nClick OK to Sign Out, or Cancel to keep studying.');
         if (confirmed) {
           localStorage.removeItem('clariora_telegram_auth');
+          localStorage.removeItem('clariora_telegram_login_payload');
+          localStorage.removeItem('clariora_auth_session_v1');
           renderHeaderPill(null);
+          if (window.ClarioraAuthGate) window.ClarioraAuthGate.lock();
         }
         return;
       } catch (e) {}
@@ -654,7 +731,9 @@
     var confirmed = window.confirm('Signed in as: ' + name + ' (' + email + ')\n\nClick OK to Sign Out, or Cancel to keep studying.');
     if (confirmed) {
       service.signOutUser().then(function () {
+        localStorage.removeItem('clariora_auth_session_v1');
         renderHeaderPill(null);
+        if (window.ClarioraAuthGate) window.ClarioraAuthGate.lock();
       });
     }
   }
@@ -668,6 +747,8 @@
     handleTelegramSignIn: handleTelegramSignIn,
     handleEmailSubmit: handleEmailSubmit,
     handleForgotPassword: handleForgotPassword,
-    openAccountMenu: openAccountMenu
+    openAccountMenu: openAccountMenu,
+    setWallMode: setWallMode,
+    onAuthenticated: onAuthenticated
   };
 });

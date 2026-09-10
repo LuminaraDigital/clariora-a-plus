@@ -150,6 +150,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Never cache API traffic. Auth, billing, and coach must hit the Worker.
+  if (url.pathname.indexOf('/api/') === 0) {
+    event.respondWith(fetch(request));
+    return;
+  }
+
   // Range requests (audio/video seeking) and anything under /media/ must
   // pass straight through untouched and uncached - large course media
   // (slides, labs, brand video) is never part of the offline shell, and
@@ -167,7 +173,14 @@ self.addEventListener('fetch', (event) => {
   if (request.mode === 'navigate') {
     // Root / and /landing navigations must reach the network so visitors
     // reach the live landing page instead of a cached app shell.
-    if (url.pathname === '/' || url.pathname === '' || url.pathname.includes('/landing')) {
+    // /app must also network-first so auth gate and shell updates ship.
+    if (
+      url.pathname === '/' ||
+      url.pathname === '' ||
+      url.pathname === '/app' ||
+      url.pathname.indexOf('/app/') === 0 ||
+      url.pathname.includes('/landing')
+    ) {
       event.respondWith(fetch(request));
       return;
     }

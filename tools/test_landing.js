@@ -192,7 +192,19 @@ if (!fs.existsSync(DIST)) {
       refs.push(url);
     }
   }
-  const missing = refs.filter((r) => !fs.existsSync(path.resolve(DIST, r)));
+  const missing = refs.filter((r) => {
+    if (r.startsWith('/')) {
+      // Site-absolute paths resolve from dist_web root (e.g. /app -> dist_web/app).
+      const abs = path.join(ROOT, 'dist_web', r.replace(/^\//, ''), r.endsWith('/') ? 'index.html' : '');
+      const asFile = path.join(ROOT, 'dist_web', r.replace(/^\//, ''));
+      const asIndex = path.join(ROOT, 'dist_web', r.replace(/^\//, ''), 'index.html');
+      const asApp = r === '/app' || r === '/app/'
+        ? path.join(ROOT, 'dist_web', 'app', 'index.html')
+        : null;
+      return !(fs.existsSync(asFile) || fs.existsSync(asIndex) || (asApp && fs.existsSync(asApp)));
+    }
+    return !fs.existsSync(path.resolve(DIST, r));
+  });
   check(missing.length === 0, `all ${refs.length} local references exist in dist_web`, missing.join(', '));
 
   // Internal anchors resolve.

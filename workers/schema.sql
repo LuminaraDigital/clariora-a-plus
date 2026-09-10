@@ -133,3 +133,75 @@ CREATE TABLE IF NOT EXISTS ai_usage_log (
 
 CREATE INDEX IF NOT EXISTS idx_ai_log_user ON ai_usage_log(telegram_id);
 
+-- 9b. Provider circuit breaker + async coach jobs / DLQ (AI production)
+CREATE TABLE IF NOT EXISTS provider_circuit_state (
+    provider TEXT PRIMARY KEY,
+    state TEXT NOT NULL DEFAULT 'closed',
+    failure_count INTEGER NOT NULL DEFAULT 0,
+    success_count INTEGER NOT NULL DEFAULT 0,
+    opened_at INTEGER,
+    next_attempt_at INTEGER,
+    last_error TEXT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS coach_jobs (
+    id TEXT PRIMARY KEY,
+    telegram_id INTEGER NOT NULL,
+    tier TEXT NOT NULL,
+    job_type TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    attempts INTEGER NOT NULL DEFAULT 0,
+    max_attempts INTEGER NOT NULL DEFAULT 3,
+    result_json TEXT,
+    last_error TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    available_at INTEGER
+);
+
+CREATE INDEX IF NOT EXISTS idx_coach_jobs_user_status ON coach_jobs(telegram_id, status);
+
+CREATE TABLE IF NOT EXISTS coach_job_dlq (
+    id TEXT PRIMARY KEY,
+    job_id TEXT NOT NULL,
+    telegram_id INTEGER NOT NULL,
+    job_type TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    last_error TEXT,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 10. Auth accounts (Firebase Google/email + Telegram) for gated product visibility
+CREATE TABLE IF NOT EXISTS auth_accounts (
+    uid TEXT PRIMARY KEY,
+    provider TEXT NOT NULL,              -- 'google', 'email', 'telegram', 'telegram_tma'
+    email TEXT,
+    display_name TEXT,
+    photo_url TEXT,
+    telegram_id INTEGER,
+    signup_at TIMESTAMP,
+    last_signin_at TIMESTAMP,
+    signin_count INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_auth_accounts_signin ON auth_accounts(last_signin_at);
+CREATE INDEX IF NOT EXISTS idx_auth_accounts_provider ON auth_accounts(provider);
+
+CREATE TABLE IF NOT EXISTS auth_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    uid TEXT NOT NULL,
+    event TEXT NOT NULL,                 -- 'signup' | 'signin'
+    provider TEXT NOT NULL,
+    email TEXT,
+    display_name TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_auth_events_uid ON auth_events(uid);
+CREATE INDEX IF NOT EXISTS idx_auth_events_created ON auth_events(created_at);
+

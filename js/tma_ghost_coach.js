@@ -20,7 +20,9 @@
 
   const COACH_CONFIG = {
     proxyEndpoint: '/api/v1/coach',
+    streamEndpoint: '/api/v1/coach/stream',
     defaultProvider: 'groq',
+    defaultIntent: 'explain',
     providers: [
       { id: 'groq', name: 'Groq 8B', tier: 'free', icon: '⚡', desc: 'Fast diagnostic remediation' },
       { id: 'nvidia', name: 'NVIDIA 70B', tier: 'pro', icon: '🟢', desc: 'Enterprise datacenter precision' },
@@ -49,8 +51,11 @@ Rules:
   /**
    * Explains a missed question via Edge AI Gateway
    */
-  async function explainQuestion(questionData, userChoice, providerOverride, useProPreview = false) {
+  async function explainQuestion(questionData, userChoice, providerOverride, useProPreview = false, options) {
     const provider = providerOverride || currentProvider;
+    const opts = options && typeof options === 'object' ? options : {};
+    const intent = opts.intent || COACH_CONFIG.defaultIntent;
+    const stream = opts.stream === true;
     if (TMABridge) TMABridge.haptic('medium');
 
     const prompt = `CompTIA Objective: ${questionData.objective || 'General'}
@@ -66,9 +71,41 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
     // 1. Live Edge Request via Cloudflare Worker
     try {
       const initData = (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) || '';
-      const endpoint = (typeof window !== 'undefined' && window.location && (window.location.hostname.endsWith('clariora.com.au') || window.location.hostname.endsWith('pages.dev')))
-        ? COACH_CONFIG.proxyEndpoint
-        : 'https://clariora.com.au' + COACH_CONFIG.proxyEndpoint;
+      let idToken = null;
+      try {
+        const svc = window.ClarioraFirebaseService;
+        const user = svc && svc.getCurrentUser && svc.getCurrentUser();
+        if (user && user.getIdToken) idToken = await user.getIdToken();
+      } catch (_) {}
+      const baseOk = (typeof window !== 'undefined' && window.location && (window.location.hostname.endsWith('clariora.com.au') || window.location.hostname.endsWith('pages.dev')));
+      const endpoint = baseOk
+        ? (stream ? COACH_CONFIG.streamEndpoint : COACH_CONFIG.proxyEndpoint)
+        : ('https://clariora.com.au' + (stream ? COACH_CONFIG.streamEndpoint : COACH_CONFIG.proxyEndpoint));
+
+      const payload = {
+        intent: intent,
+        specialist: opts.specialist || undefined,
+        tools: opts.tools || ['lookup_objective'],
+        objective: questionData.objective || '',
+        missHistory: opts.missHistory || [],
+        weakDomains: opts.weakDomains || [],
+        system: SYSTEM_PROMPT,
+        prompt: prompt,
+        question: questionData.question,
+        chosenAnswer: userChoice,
+        correctAnswer: questionData.answer,
+        distractorAnalysis: questionData.distractor_analysis || {},
+        provider: provider,
+        useProPreview: useProPreview,
+        stream: stream,
+        initData: initData,
+        idToken: idToken
+      };
+
+      if (stream) {
+        const streamed = await fetchCoachStream(endpoint, payload, initData);
+        if (streamed) return streamed;
+      }
 
       const res = await fetch(endpoint, {
         method: 'POST',
@@ -76,23 +113,36 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
           'Content-Type': 'application/json',
           'X-Telegram-Init-Data': initData
         },
-        body: JSON.stringify({
-          system: SYSTEM_PROMPT,
-          prompt: prompt,
-          question: questionData.question,
-          chosenAnswer: userChoice,
-          correctAnswer: questionData.answer,
-          distractorAnalysis: questionData.distractor_analysis || {},
-          provider: provider,
-          useProPreview: useProPreview,
-          initData: initData
-        })
+        body: JSON.stringify(payload)
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(function () { return {}; });
+
+      if (res.status === 401 || data.error === 'AUTH_REQUIRED') {
+        return {
+          paywallRequired: true,
+          errorType: 'AUTH_REQUIRED',
+          message: data.message || 'Sign in required for Ghost Coach.',
+          freeQuotaRemaining: 0,
+          provider: provider
+        };
+      }
+
+      if (res.status === 429 || data.error === 'RATE_LIMITED' || data.error === 'IP_RATE_LIMITED') {
+        return {
+          paywallRequired: false,
+          rateLimited: true,
+          errorType: data.error || 'RATE_LIMITED',
+          message: data.message || 'Too many requests. Retry shortly.',
+          retryAfter: data.retryAfter || 60,
+          provider: provider
+        };
+      }
 
       // Handle Paywall / Quota Exceeded (HTTP 402)
-      if (res.status === 402 || data.error === 'PAYWALL_REQUIRED' || data.error === 'FREE_QUOTA_EXHAUSTED') {
+      if (res.status === 402 || data.error === 'PAYWALL_REQUIRED' || data.error === 'FREE_QUOTA_EXHAUSTED' ||
+          data.error === 'DAILY_CALL_BUDGET_EXHAUSTED' || data.error === 'DAILY_TOKEN_BUDGET_EXHAUSTED' ||
+          data.error === 'MONTHLY_TOKEN_BUDGET_EXHAUSTED' || data.error === 'STREAMING_PAYWALL') {
         if (TMABridge) TMABridge.haptic('warning');
         if (typeof data.proPreviewTokensRemaining !== 'undefined') {
           proPreviewTokensRemaining = data.proPreviewTokensRemaining;
@@ -103,6 +153,8 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
           message: data.message,
           freeQuotaRemaining: data.freeQuotaRemaining || 0,
           proPreviewTokensRemaining: data.proPreviewTokensRemaining || 0,
+          budget: data.budget || null,
+          features: data.features || null,
           provider: provider
         };
       }
@@ -118,20 +170,109 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
           provider: data.provider || provider,
           model: data.model,
           freeQuotaRemaining: data.freeQuotaRemaining,
-          upsellMessage: data.upsellMessage
+          upsellMessage: data.upsellMessage,
+          triage: data.triage || null,
+          tokensUsed: data.tokensUsed,
+          budget: data.budget || null,
+          features: data.features || null
         };
       }
     } catch (e) {
       console.debug('[GhostCoach] Remote AI Gateway call failed, falling back to local Socratic synthesis.');
     }
 
-    // 2. High-quality structured local fallback
+    // 2. High-quality structured local fallback (free surface)
     return {
       paywallRequired: false,
       text: generateLocalRemediation(questionData, userChoice),
       provider: 'local_offline',
       model: 'offline'
     };
+  }
+
+  async function fetchCoachStream(endpoint, payload, initData) {
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Telegram-Init-Data': initData,
+          'Accept': 'text/event-stream'
+        },
+        body: JSON.stringify(payload)
+      });
+      if (res.status === 402 || res.status === 401 || res.status === 429) {
+        const data = await res.json().catch(function () { return { error: 'PAYWALL_REQUIRED' }; });
+        return {
+          paywallRequired: res.status === 402 || res.status === 401,
+          rateLimited: res.status === 429,
+          errorType: data.error,
+          message: data.message,
+          freeQuotaRemaining: data.freeQuotaRemaining || 0,
+          provider: payload.provider
+        };
+      }
+      if (!res.ok || !res.body || !res.body.getReader) return null;
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let finalPayload = null;
+      let assembled = '';
+
+      while (true) {
+        const chunk = await reader.read();
+        if (chunk.done) break;
+        buffer += decoder.decode(chunk.value, { stream: true });
+        const parts = buffer.split('\n\n');
+        buffer = parts.pop() || '';
+        for (let i = 0; i < parts.length; i += 1) {
+          const block = parts[i];
+          const lines = block.split('\n');
+          let event = 'message';
+          let dataLine = '';
+          lines.forEach(function (line) {
+            if (line.indexOf('event:') === 0) event = line.slice(6).trim();
+            if (line.indexOf('data:') === 0) dataLine += line.slice(5).trim();
+          });
+          if (!dataLine) continue;
+          let parsed = null;
+          try { parsed = JSON.parse(dataLine); } catch (_) { parsed = null; }
+          if (!parsed) continue;
+          if (event === 'token' && parsed.text) assembled = parsed.text;
+          if (event === 'done') finalPayload = parsed;
+          if (event === 'error') {
+            return { paywallRequired: false, text: parsed.message || 'Stream error', provider: 'stream_error' };
+          }
+        }
+      }
+
+      if (finalPayload && finalPayload.text) {
+        if (typeof finalPayload.freeQuotaRemaining !== 'undefined') {
+          freeQuotaRemaining = finalPayload.freeQuotaRemaining;
+          updateQuotaBadge();
+        }
+        return {
+          paywallRequired: false,
+          text: finalPayload.text,
+          provider: finalPayload.provider,
+          model: finalPayload.model,
+          freeQuotaRemaining: finalPayload.freeQuotaRemaining,
+          upsellMessage: finalPayload.upsellMessage,
+          triage: finalPayload.triage || null,
+          tokensUsed: finalPayload.tokensUsed,
+          budget: finalPayload.budget || null,
+          features: finalPayload.features || null,
+          streamed: true
+        };
+      }
+      if (assembled) {
+        return { paywallRequired: false, text: assembled, provider: payload.provider, streamed: true };
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
   }
 
   /**
@@ -298,7 +439,7 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
         <div style="font-size: 2rem; margin-bottom: 8px;">⭐</div>
         <h4 style="color: #F5D061; margin: 0 0 8px 0; font-size: 1.15rem;">Unlock Clariora Pro AI</h4>
         <p style="color: #94A3B8; font-size: 0.85rem; line-height: 1.5; margin: 0 0 14px 0;">
-          ${customMessage || `Access to <strong>${providerObj.name}</strong>, unlimited tutoring sessions, and deep reasoning models requires an active Pro Pass.`}
+          ${customMessage || `Access to <strong>${providerObj.name}</strong>, multi-specialist handoffs, streaming, and higher hard AI budgets requires an active pass.`}
         </p>
 
         ${proPreviewTokensRemaining > 0 ? `
@@ -354,10 +495,13 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
   function updateQuotaBadge() {
     const badge = document.getElementById('tmaCoachQuotaBadge');
     if (badge) {
-      badge.textContent = freeQuotaRemaining === 'unlimited'
-        ? 'Pro: Unlimited'
-        : `Free: ${freeQuotaRemaining}/5 left`;
-      badge.style.color = freeQuotaRemaining === 'unlimited' ? '#10B981' : '#38BDF8';
+      if (typeof freeQuotaRemaining === 'number' && freeQuotaRemaining > 40) {
+        badge.textContent = 'Paid: hard AI budgets apply';
+        badge.style.color = '#10B981';
+      } else {
+        badge.textContent = `Free: ${freeQuotaRemaining}/5 left`;
+        badge.style.color = '#38BDF8';
+      }
     }
   }
 

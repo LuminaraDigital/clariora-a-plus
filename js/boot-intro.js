@@ -13,11 +13,11 @@
   var VIDEO_SRC = 'media/brand/huly_laser_remix_scene.webm';
   var POSTER_SRC = 'media/brand/huly_laser_remix_scene.png';
 
-  var REVEAL_MS = 900;
-  var REVEAL_REDUCED_MS = 350;
-  var EXIT_MS = 650;
-  var ARM_FAILSAFE_MS = 8000;
-  var VIDEO_WAIT_MS = 2500;
+  var REVEAL_MS = 600;
+  var REVEAL_REDUCED_MS = 250;
+  var EXIT_MS = 400;
+  var ARM_FAILSAFE_MS = 1500;
+  var VIDEO_WAIT_MS = 1200;
   var LAYOUT = 'lean-v1';
 
   var introRunning = false;
@@ -275,6 +275,10 @@
     if (!opts.force && hasSeenIntro()) {
       return quickPass(opts);
     }
+    if (document.documentElement.classList.contains('clariora-auth-locked') ||
+        (window.ClarioraAuthGate && typeof window.ClarioraAuthGate.isUnlocked === 'function' && !window.ClarioraAuthGate.isUnlocked())) {
+      return quickPass(opts);
+    }
 
     if (typeof activeCleanup === 'function') {
       try {
@@ -408,7 +412,7 @@
     function maybeArm() {
       if (!isCurrent() || armed || finished) return;
       if (!(provisionDone && revealDone)) return;
-      var minShow = reduced ? 700 : 1800;
+      var minShow = reduced ? 300 : 700;
       var waited = Date.now() - startedAt;
       if (waited < minShow) {
         timers.push(

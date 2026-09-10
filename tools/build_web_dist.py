@@ -78,7 +78,7 @@ ROOT_EXTRA_FILES = [
 # Whole directories copied in full (minus excluded extensions/paths).
 # landing/ is the marketing page. It ships with the site but is not part
 # of the offline app shell, so it is copied and never precached.
-DIRS_TO_COPY = ["js", "css", "fonts", "icons", "shards", "landing"]
+DIRS_TO_COPY = ["js", "css", "fonts", "icons", "shards", "landing", "admin"]
 
 EXCLUDED_EXTENSIONS = {".pdf", ".py", ".exe", ".pyc"}
 EXCLUDED_DIR_NAMES = {
@@ -300,19 +300,31 @@ def main():
                 )
                 print(f"  version -> {landing_html.relative_to(DIST)}")
 
-    # 4c. Create /app directory and redirect so relative links (../app)
-    #     resolve both at runtime and during landing verification checks.
+    # 4c. Create /app/index.html as a full app shell copy with <base href="/">
+    #     so landing links to /app work even when Assets html_handling would
+    #     bounce /index.html -> / -> /landing through the worker.
     app_dir = DIST / "app"
     app_dir.mkdir(parents=True, exist_ok=True)
+    src_index = DIST / "index.html"
     app_index = app_dir / "index.html"
-    app_index.write_text(
-        '<!DOCTYPE html><html><head><meta charset="utf-8">'
-        '<meta http-equiv="refresh" content="0; url=/index.html">'
-        '<title>Clariora A+</title></head><body>'
-        '<script>window.location.replace("/index.html" + window.location.search);</script>'
-        '</body></html>',
-        encoding="utf-8",
-    )
+    if src_index.is_file():
+        html = src_index.read_text(encoding="utf-8")
+        if "<base " not in html.lower():
+            html = html.replace("<head>", '<head>\n  <base href="/">', 1)
+            if "<base " not in html.lower():
+                html = html.replace("<head ", '<head><base href="/">', 1)
+        app_index.write_text(html, encoding="utf-8")
+        print("  app shell -> app/index.html (full copy + base href)")
+    else:
+        app_index.write_text(
+            '<!DOCTYPE html><html><head><meta charset="utf-8">'
+            '<base href="/">'
+            '<meta http-equiv="refresh" content="0; url=/app">'
+            '<title>Clariora A+</title></head><body>'
+            '<script>window.location.replace("/app" + window.location.search);</script>'
+            '</body></html>',
+            encoding="utf-8",
+        )
 
     # 5. Course media - only files actually referenced at runtime.
     #    media/videos ("Videos For A+", ~2.4 GB) is never shipped, even if

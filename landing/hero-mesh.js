@@ -193,8 +193,8 @@
 
   HeroMesh.prototype.setupMesh = function () {
     var gl = this.gl;
-    this.xSegs = 28;
-    this.ySegs = 18;
+    this.xSegs = 48;
+    this.ySegs = 28;
     var count = (this.xSegs + 1) * (this.ySegs + 1);
 
     this.posBuf = gl.createBuffer();
@@ -324,11 +324,41 @@
     }
   };
 
+  function ensureAmbient() {
+    if (document.querySelector('.ambient')) {
+      tagAmbientMode();
+      return;
+    }
+    var root = document.createElement('div');
+    root.className = 'ambient';
+    root.setAttribute('aria-hidden', 'true');
+    root.innerHTML =
+      '<div class="ambient__mesh"></div>' +
+      '<div class="ambient__orb ambient__orb--gold"></div>' +
+      '<div class="ambient__orb ambient__orb--teal"></div>' +
+      '<div class="ambient__orb ambient__orb--violet"></div>';
+    document.body.prepend(root);
+    tagAmbientMode();
+  }
+
+  function tagAmbientMode() {
+    var path = (location.pathname || '').toLowerCase();
+    var rich = /\/landing\/?$/.test(path) || path.indexOf('index.html') !== -1;
+    document.body.classList.toggle('ambient-rich', rich);
+    document.body.classList.toggle('ambient-calm', !rich);
+  }
+
   function boot() {
+    ensureAmbient();
+
     var hero = document.querySelector('.hero');
     if (!hero) return;
 
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+
+    if (window.matchMedia && window.matchMedia('(max-width: 699px)').matches) {
       return;
     }
 

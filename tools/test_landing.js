@@ -112,11 +112,23 @@ check(/class="wordmark-mark"[^>]*src="\.\.\/icons\/icon-192\.png"/.test(srcHtml)
 const primaryCount = (srcHtml.match(/btn-primary/g) || []).length;
 check(primaryCount <= 4, 'at most four gold primary buttons on the page', `found ${primaryCount}`);
 
-// ---- Backdrop: no engineering grid wallpaper --------------------------------
-check(!/linear-gradient\(to right,\s*var\(--grid-line\)/.test(css),
-  'body does not use a repeating grid wallpaper');
-check(/--wash-gold:/.test(css) && /--wash-cool:/.test(css),
-  'premium wash tokens exist for atmosphere');
+// ---- Backdrop: layered ambient system, never an engineering grid ----------
+check(!/linear-gradient\(\s*to right,\s*[^)]*1px/.test(css),
+  'landing CSS has no horizontal 1px grid wallpaper');
+check(!/linear-gradient\(\s*to bottom,\s*[^)]*1px/.test(css),
+  'landing CSS has no vertical 1px grid wallpaper');
+check(!/background-size:\s*\d+px\s+\d+px/.test(css),
+  'landing CSS does not tile a grid via background-size');
+check(/\.ambient\s*\{/.test(css) && /\.ambient__mesh\s*\{/.test(css),
+  'ambient mesh layer exists');
+check(/--glass-bg:/.test(css) && /--glass-blur:/.test(css),
+  'glassmorphic surface tokens exist');
+check(/--wash-gold:/.test(css) && /--wash-cool:/.test(css) && /--wash-teal:/.test(css),
+  'premium multi-hue wash tokens exist for atmosphere');
+check(/prefers-reduced-motion/.test(css),
+  'ambient motion respects prefers-reduced-motion');
+check(/class="ambient"/.test(srcHtml),
+  'home page ships the ambient layer in HTML');
 
 // ---- Multi-page site --------------------------------------------------------
 const requiredPages = ['why.html', 'compare.html', 'how.html', 'pricing.html', 'trust.html', 'faq.html'];

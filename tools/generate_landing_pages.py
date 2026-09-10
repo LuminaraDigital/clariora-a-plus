@@ -106,6 +106,14 @@ def footer() -> str:
 
 
 def shell(title: str, description: str, active: str, body: str, canonical: str) -> str:
+    body_class = "ambient-rich" if active == "index.html" else "ambient-calm"
+    ambient = """<div class="ambient" aria-hidden="true">
+  <div class="ambient__mesh"></div>
+  <div class="ambient__orb ambient__orb--gold"></div>
+  <div class="ambient__orb ambient__orb--teal"></div>
+  <div class="ambient__orb ambient__orb--violet"></div>
+</div>
+"""
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -127,7 +135,8 @@ def shell(title: str, description: str, active: str, body: str, canonical: str) 
   <link rel="stylesheet" href="landing.css">
   <script>document.documentElement.classList.add('js');</script>
 </head>
-<body>
+<body class="{body_class}">
+{ambient}
 {SVG}
 {nav(active)}
 <main id="top">

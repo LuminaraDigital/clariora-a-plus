@@ -30,7 +30,7 @@
 
 :root {
   /* ---- Ground ------------------------------------------------ */
-  --surface-0: #07090E;          /* page */
+  --surface-0: #0B0B0F;          /* page */
   --surface-1: #0F131B;          /* card */
   --surface-2: #151A25;          /* nested panel */
   --surface-3: #151A25;          /* legacy alias of surface-2 */
@@ -137,8 +137,8 @@
 
   /* ---- Backdrop ---------------------------------------------- */
   --bg-grid-line: rgba(212, 175, 55, 0.045);
-  --bg-glow-gold: radial-gradient(130% 85% at 50% -15%, rgba(212, 175, 55, 0.28) 0%, rgba(184, 134, 11, 0.16) 35%, rgba(15, 19, 27, 0.6) 65%, transparent 90%);
-  --bg-glow-accent: radial-gradient(900px 600px at 80% 10%, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
+  --bg-glow-gold: radial-gradient(130% 85% at 50% -15%, rgba(212, 175, 55, 0.22) 0%, rgba(184, 134, 11, 0.12) 35%, transparent 70%);
+  --bg-glow-accent: radial-gradient(900px 600px at 80% 10%, rgba(56, 189, 248, 0.07) 0%, transparent 70%);
 }
 
 /* The light theme is a real inversion, not a tint. Every token above
@@ -244,24 +244,24 @@ body {
   background-image:
     var(--bg-glow-gold),
     var(--bg-glow-accent),
-    linear-gradient(to right, var(--bg-grid-line) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--bg-grid-line) 1px, transparent 1px);
+    radial-gradient(ellipse 48% 42% at 12% 78%, rgba(56, 189, 248, 0.08), transparent 58%),
+    radial-gradient(ellipse 40% 36% at 88% 72%, rgba(45, 212, 191, 0.07), transparent 55%),
+    radial-gradient(ellipse 36% 30% at 70% 18%, rgba(139, 92, 246, 0.05), transparent 50%);
   background-size:
     100% 100%,
     100% 100%,
-    48px 48px,
-    48px 48px;
+    100% 100%,
+    100% 100%,
+    100% 100%;
   background-position:
     center top,
     center top,
     center top,
+    center top,
     center top;
-  background-repeat:
-    no-repeat,
-    no-repeat,
-    repeat,
-    repeat;
+  background-repeat: no-repeat;
   background-attachment:
+    fixed,
     fixed,
     fixed,
     fixed,

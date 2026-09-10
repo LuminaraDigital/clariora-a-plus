@@ -776,27 +776,89 @@
     if (reason === 'flashcards') return 'You have used today\'s free flashcards';
     if (reason === 'labs') return 'You have used today\'s free lab';
     if (reason === 'chip' || reason === 'upgrade') return 'Upgrade to Clariora Pro';
+    if (reason === 'license_prompt') return 'Have a license key?';
     return 'You have used today\'s free questions';
+  }
+
+  function isTelegramMiniApp() {
+    try {
+      var tg = window.Telegram && window.Telegram.WebApp;
+      if (!tg) return false;
+      if (tg.initData && String(tg.initData).length > 0) return true;
+      if (tg.initDataUnsafe && tg.initDataUnsafe.user) return true;
+      if (window.TMABridge && window.TMABridge.state && window.TMABridge.state.isTMA) return true;
+      return false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  var LICENSE_PROMPT_DISMISS_KEY = 'license_prompt_dismissed';
+
+  function wasLicensePromptDismissed() {
+    try {
+      if (window.sessionStorage &&
+          window.sessionStorage.getItem(PREFIX + LICENSE_PROMPT_DISMISS_KEY) === '1') {
+        return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  function markLicensePromptDismissed() {
+    try {
+      if (window.sessionStorage) {
+        window.sessionStorage.setItem(PREFIX + LICENSE_PROMPT_DISMISS_KEY, '1');
+      }
+    } catch (_) {}
+  }
+
+  function homeReadyForLicensePrompt() {
+    if (!hasDom()) return false;
+    var doc = window.document;
+    try {
+      if (doc.querySelector('.modal-overlay.active')) return false;
+      if (doc.querySelector('#onboardingRoot .onb-overlay, #onboardingRoot [role="dialog"]')) return false;
+      if (doc.querySelector('#entitlementsRoot .ent-overlay')) return false;
+      var starsSheet = doc.getElementById('tma-stars-sheet');
+      if (starsSheet && starsSheet.classList.contains('is-open')) return false;
+      var gate = doc.getElementById('aplusBootGate');
+      if (gate && !gate.hidden) return false;
+      var start = doc.getElementById('startScreen');
+      if (start && !start.classList.contains('active')) return false;
+    } catch (_) {
+      return false;
+    }
+    return true;
   }
 
   function closeUpgrade() {
     if (!hasDom()) return;
     var doc = window.document;
     var overlay = doc.getElementById('entitlementsUpgrade');
-    if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    if (overlay) {
+      if (overlay.getAttribute('data-license-prompt') === '1') {
+        markLicensePromptDismissed();
+      }
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    }
     if (lastFocused && typeof lastFocused.focus === 'function') {
       try { lastFocused.focus(); } catch (_) {}
     }
     lastFocused = null;
   }
 
-  function openUpgrade(reason) {
+  function openUpgrade(reason, opts) {
     if (!gatingEnabled() || isPro()) return;
     if (!hasDom()) return;
     var root = ensureRoot();
     if (!root) return;
     var doc = window.document;
     if (doc.getElementById('entitlementsUpgrade')) return;
+
+    opts = opts || {};
+    var isLicensePrompt = reason === 'license_prompt' || opts.licensePrompt === true;
+    var expandKey = isLicensePrompt || opts.expandKey === true || isTelegramMiniApp();
 
     try { lastFocused = doc.activeElement; } catch (_) { lastFocused = null; }
 
@@ -805,6 +867,7 @@
     var overlay = doc.createElement('div');
     overlay.id = 'entitlementsUpgrade';
     overlay.className = 'ent-overlay';
+    if (isLicensePrompt) overlay.setAttribute('data-license-prompt', '1');
 
     var card = doc.createElement('div');
     card.className = 'ent-card';
@@ -817,7 +880,9 @@
     h.textContent = titleForReason(reason);
 
     var p = doc.createElement('p');
-    p.textContent = 'Unlock the complete question bank, full 90-question timed mocks, PBQ labs, and study coach.';
+    p.textContent = isLicensePrompt
+      ? 'If you already bought a pass, paste your APLUS- license key below to unlock Pro. Otherwise you can continue on the free tier.'
+      : 'Unlock the complete question bank, full 90-question timed mocks, PBQ labs, and study coach.';
 
     var price = doc.createElement('p');
     price.className = 'ent-price';
@@ -829,22 +894,30 @@
     var buy = doc.createElement('button');
     buy.type = 'button';
     buy.className = 'ent-btn ent-btn-primary';
-    buy.textContent = 'Get the full version';
+    buy.textContent = isTelegramMiniApp() ? 'Get Pro with Stars or TON' : 'Get the full version';
     buy.addEventListener('click', function () {
-      try { window.open(String(cfg.buyUrl || ''), '_blank', 'noopener'); } catch (_) {}
+      try {
+        if (isTelegramMiniApp() && window.StarsBilling &&
+            typeof window.StarsBilling.openStarsUpgradeSheet === 'function') {
+          closeUpgrade();
+          window.StarsBilling.openStarsUpgradeSheet();
+          return;
+        }
+        window.open(String(cfg.buyUrl || ''), '_blank', 'noopener');
+      } catch (_) {}
     });
 
     var haveKey = doc.createElement('button');
     haveKey.type = 'button';
     haveKey.className = 'ent-btn ent-btn-secondary';
     haveKey.textContent = 'I have a license key';
-    haveKey.setAttribute('aria-expanded', 'false');
+    haveKey.setAttribute('aria-expanded', expandKey ? 'true' : 'false');
     haveKey.setAttribute('aria-controls', 'entitlementsActivate');
 
     var activateBox = doc.createElement('div');
     activateBox.className = 'ent-activate';
     activateBox.id = 'entitlementsActivate';
-    activateBox.hidden = true;
+    activateBox.hidden = !expandKey;
 
     var input = doc.createElement('input');
     input.type = 'text';
@@ -852,13 +925,14 @@
     input.id = 'entitlementsKeyInput';
     input.setAttribute('spellcheck', 'false');
     input.setAttribute('autocomplete', 'off');
+    input.setAttribute('autocapitalize', 'characters');
     input.setAttribute('aria-label', 'License key');
     input.placeholder = 'APLUS-...';
 
     var activateBtn = doc.createElement('button');
     activateBtn.type = 'button';
     activateBtn.className = 'ent-btn ent-btn-secondary';
-    activateBtn.textContent = 'Activate';
+    activateBtn.textContent = 'Activate license key';
 
     var status = doc.createElement('p');
     status.className = 'ent-status';
@@ -881,6 +955,7 @@
       activate(value).then(function (res) {
         activateBtn.disabled = false;
         if (res && res.ok) {
+          markLicensePromptDismissed();
           var payload = res.payload || state.payload;
           var msg = 'Thank you! The full version is unlocked.';
           if (payload && payload.expires) {
@@ -918,21 +993,27 @@
     var notNow = doc.createElement('button');
     notNow.type = 'button';
     notNow.className = 'ent-link';
-    notNow.textContent = 'Not now';
+    notNow.textContent = isLicensePrompt ? 'Continue without a key' : 'Not now';
     notNow.addEventListener('click', closeUpgrade);
 
     activateBox.appendChild(input);
     activateBox.appendChild(activateBtn);
     activateBox.appendChild(status);
 
-    actions.appendChild(buy);
-    actions.appendChild(haveKey);
-    actions.appendChild(activateBox);
-    actions.appendChild(notNow);
+    if (isLicensePrompt) {
+      actions.appendChild(activateBox);
+      actions.appendChild(buy);
+      actions.appendChild(notNow);
+    } else {
+      actions.appendChild(buy);
+      actions.appendChild(haveKey);
+      actions.appendChild(activateBox);
+      actions.appendChild(notNow);
+    }
 
     card.appendChild(h);
     card.appendChild(p);
-    card.appendChild(price);
+    if (!isLicensePrompt) card.appendChild(price);
     card.appendChild(actions);
     overlay.appendChild(card);
 
@@ -947,10 +1028,11 @@
         return;
       }
       if (e.key === 'Tab') {
-        var focusables = card.querySelectorAll('button:not([disabled]), input:not([disabled])');
+        var focusables = card.querySelectorAll('button:not([disabled]):not([hidden]), input:not([disabled])');
         var visible = [];
         var i;
         for (i = 0; i < focusables.length; i++) {
+          if (focusables[i].hidden) continue;
           if (focusables[i].offsetParent !== null || focusables[i] === doc.activeElement) {
             visible.push(focusables[i]);
           }
@@ -969,13 +1051,49 @@
     });
 
     root.appendChild(overlay);
-    try { buy.focus(); } catch (_) {}
+    try {
+      if (expandKey) input.focus();
+      else buy.focus();
+    } catch (_) {}
 
     try {
       if (APlus.bus && typeof APlus.bus.emit === 'function') {
         APlus.bus.emit('entitlements:upgrade:shown', { reason: reason || 'daily_limit' });
       }
     } catch (_) {}
+  }
+
+  function maybeAutoPromptLicenseKey() {
+    try {
+      if (!gatingEnabled() || isPro()) return false;
+      if (!isTelegramMiniApp()) return false;
+      if (wasLicensePromptDismissed()) return false;
+      if (!homeReadyForLicensePrompt()) return false;
+      openUpgrade('license_prompt', { licensePrompt: true, expandKey: true });
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  var autoLicensePromptArmed = false;
+
+  function scheduleAutoLicensePrompt() {
+    if (autoLicensePromptArmed) return;
+    autoLicensePromptArmed = true;
+    var attempts = 0;
+    var maxAttempts = 60;
+    function tick() {
+      attempts += 1;
+      try {
+        if (isPro() || wasLicensePromptDismissed()) return;
+        if (maybeAutoPromptLicenseKey()) return;
+      } catch (_) {}
+      if (attempts < maxAttempts) {
+        try { window.setTimeout(tick, 500); } catch (_) {}
+      }
+    }
+    try { window.setTimeout(tick, 900); } catch (_) {}
   }
 
   /* ----------------------------------------------------------------------- */
@@ -1269,7 +1387,11 @@
       } catch (_) {}
       reverifyStoredLicense().then(function () {
         renderChip();
+        scheduleAutoLicensePrompt();
+      }).catch(function () {
+        scheduleAutoLicensePrompt();
       });
+      scheduleAutoLicensePrompt();
     } catch (err) {
       try { console.warn(LOG, 'boot error', err); } catch (_) {}
     }
@@ -1306,6 +1428,10 @@
     deactivate: deactivate,
     openUpgrade: openUpgrade,
     closeUpgrade: closeUpgrade,
+    promptLicenseKey: function () {
+      return openUpgrade('license_prompt', { licensePrompt: true, expandKey: true });
+    },
+    maybeAutoPromptLicenseKey: maybeAutoPromptLicenseKey,
     getUsage: getUsage,
     getLicensePayload: function () { return state.payload; },
     getStatus: function () {

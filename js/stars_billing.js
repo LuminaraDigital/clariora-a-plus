@@ -446,6 +446,53 @@
     }
   }
 
+  function activateLicenseFromSheet() {
+    const input = document.getElementById('tma-license-key-input');
+    const status = document.getElementById('tma-license-key-status');
+    const btn = document.getElementById('tma-license-key-activate');
+    if (!input || !status) return;
+    const value = String(input.value || '').trim();
+    if (!value) {
+      status.textContent = 'Paste your APLUS- license key first.';
+      status.style.color = '#F87171';
+      return;
+    }
+    const ent = (typeof window !== 'undefined' && window.APlus && window.APlus.entitlements) || null;
+    if (!ent || typeof ent.activate !== 'function') {
+      status.textContent = 'License activation is not available in this build.';
+      status.style.color = '#F87171';
+      return;
+    }
+    if (btn) btn.disabled = true;
+    status.textContent = 'Checking the key...';
+    status.style.color = '#94A3B8';
+    Promise.resolve(ent.activate(value)).then(function (res) {
+      if (btn) btn.disabled = false;
+      if (res && res.ok) {
+        status.textContent = 'License activated. Pro is unlocked.';
+        status.style.color = '#10B981';
+        try {
+          if (TMABridge) TMABridge.haptic('success');
+        } catch (_) {}
+        try {
+          window.setTimeout(closeStarsUpgradeSheet, 700);
+        } catch (_) {
+          closeStarsUpgradeSheet();
+        }
+        return;
+      }
+      status.textContent = (res && res.error) || 'This license key could not be verified.';
+      status.style.color = '#F87171';
+      try {
+        if (TMABridge) TMABridge.haptic('error');
+      } catch (_) {}
+    }).catch(function () {
+      if (btn) btn.disabled = false;
+      status.textContent = 'This license key could not be verified.';
+      status.style.color = '#F87171';
+    });
+  }
+
   function openStarsUpgradeSheet() {
     let sheet = document.getElementById('tma-stars-sheet');
     let backdrop = document.getElementById('tma-stars-backdrop');
@@ -472,10 +519,29 @@
           '<p style="color: #64748B; font-size: 0.72rem; margin: 0;">Billing help: /paysupport in the bot chat. Terms: /terms</p>' +
         '</div>' +
         '<div id="tma-stars-products"></div>' +
+        '<div id="tma-license-key-panel" style="margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.08);">' +
+          '<div style="color: #F3F4F6; font-weight: 700; font-size: 0.92rem; margin-bottom: 6px;">Already have a license key?</div>' +
+          '<p style="color: #94A3B8; font-size: 0.78rem; margin: 0 0 10px 0; line-height: 1.4;">Paste your APLUS- key from your receipt. You can exit anytime and keep using the free tier.</p>' +
+          '<input id="tma-license-key-input" type="text" spellcheck="false" autocomplete="off" autocapitalize="characters" aria-label="License key" placeholder="APLUS-..." style="width:100%; box-sizing:border-box; margin-bottom:8px; padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:rgba(15,23,42,0.85); color:#F8FAFC; font-size:0.9rem;" />' +
+          '<button type="button" id="tma-license-key-activate" class="btn btn-secondary" onclick="StarsBilling.activateLicenseKey()" style="width:100%; margin-bottom:8px; padding:10px 16px; border-radius:8px; border:1px solid rgba(212,175,55,0.45); background:transparent; color:#F5D061; font-weight:700; cursor:pointer;">Activate license key</button>' +
+          '<p id="tma-license-key-status" role="status" aria-live="polite" style="min-height:1.2em; margin:0; font-size:0.78rem; color:#94A3B8;"></p>' +
+        '</div>' +
         '<div style="text-align: center; margin-top: 16px;">' +
           '<button type="button" class="btn" onclick="StarsBilling.closeStarsUpgradeSheet()" style="background: transparent; border: 1px solid rgba(255,255,255,0.15); color: #94A3B8; padding: 10px 24px; border-radius: 8px;">Close</button>' +
         '</div>';
       document.body.appendChild(sheet);
+
+      try {
+        const licenseInput = document.getElementById('tma-license-key-input');
+        if (licenseInput) {
+          licenseInput.addEventListener('keydown', function (e) {
+            if (e && e.key === 'Enter') {
+              e.preventDefault();
+              activateLicenseFromSheet();
+            }
+          });
+        }
+      } catch (_) {}
     }
 
     renderProductCards();
@@ -505,6 +571,7 @@
     purchaseProductWithTon: purchaseProductWithTon,
     openStarsUpgradeSheet: openStarsUpgradeSheet,
     closeStarsUpgradeSheet: closeStarsUpgradeSheet,
+    activateLicenseKey: activateLicenseFromSheet,
     fetchServerEntitlement: fetchServerEntitlement
   };
 });

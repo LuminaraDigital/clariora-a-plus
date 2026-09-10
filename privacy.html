@@ -3,54 +3,438 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Privacy Policy - Clariora TMA</title>
-  <link rel="stylesheet" href="css/brand-black-gold.css">
-  <link rel="stylesheet" href="css/tma-overrides.css">
+  <title>Privacy Policy - Clariora A+</title>
+  <meta name="description" content="Privacy Policy for Clariora A+, including the Telegram Mini App, web app, and desktop builds. Explains what data we process, why, and how to exercise your rights.">
+  <link rel="canonical" href="https://clariora.com.au/privacy.html">
+  <meta name="robots" content="index,follow">
+  <meta name="theme-color" content="#D4AF37">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="favicon.png" sizes="64x64">
   <style>
-    body {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 24px 20px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      line-height: 1.6;
-      color: #F3F4F6;
-      background: #07090E;
+    :root {
+      color-scheme: dark;
+      --bg: #0B0B0F;
+      --card: rgba(255, 255, 255, 0.06);
+      --border: rgba(255, 255, 255, 0.12);
+      --gold: #D4AF37;
+      --text: #F5F5F7;
+      --muted: #B4BCCE;
+      --link: #7DD3FC;
+      --ok: #58A177;
+      --font: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
     }
-    h1, h2 { color: #D4AF37; }
-    a { color: #38BDF8; }
-    .card { background: #0D1017; border: 1px solid rgba(212,175,55,0.25); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0 auto;
+      max-width: 820px;
+      padding: 28px 20px 64px;
+      font-family: var(--font);
+      line-height: 1.65;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse 70% 45% at 80% 0%, rgba(212, 175, 55, 0.12), transparent 55%),
+        radial-gradient(ellipse 50% 40% at 10% 90%, rgba(56, 189, 248, 0.08), transparent 50%),
+        var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.75rem, 1.2rem + 2vw, 2.35rem);
+      letter-spacing: -0.02em;
+      color: var(--gold);
+      line-height: 1.15;
+    }
+    h2 {
+      margin: 0 0 12px;
+      font-size: 1.15rem;
+      color: var(--gold);
+      letter-spacing: -0.01em;
+    }
+    h3 {
+      margin: 18px 0 8px;
+      font-size: 1rem;
+      color: var(--text);
+    }
+    p, li { color: var(--muted); }
+    strong { color: var(--text); font-weight: 600; }
+    a { color: var(--link); }
+    .meta {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-bottom: 20px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 22px;
+      margin-bottom: 16px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .callout {
+      border-left: 3px solid var(--gold);
+      padding-left: 14px;
+      margin: 12px 0 0;
+    }
+    .toc ol {
+      margin: 0;
+      padding-left: 1.25rem;
+    }
+    .toc a { text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+      margin-top: 8px;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { color: var(--text); background: rgba(255, 255, 255, 0.04); }
+    ul { margin: 8px 0 0; padding-left: 1.2rem; }
+    li { margin: 6px 0; }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 28px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: var(--gold);
+      color: #0B0B0F;
+    }
+    .btn-secondary {
+      border: 1px solid var(--border);
+      color: var(--text);
+      background: transparent;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--ok);
+      border: 1px solid rgba(88, 161, 119, 0.35);
+      border-radius: 999px;
+      padding: 4px 10px;
+      margin-bottom: 12px;
+    }
+    @media (max-width: 600px) {
+      body { padding: 20px 16px 48px; }
+      .card { padding: 16px; }
+      table { font-size: 0.85rem; }
+      th, td { padding: 8px; }
+    }
   </style>
 </head>
 <body>
+  <p class="badge">Effective for web, PWA, desktop, and Telegram Mini App</p>
   <h1>Privacy Policy</h1>
-  <p><em>Last updated: September 2026</em></p>
+  <p class="meta">
+    <strong>Clariora A+</strong> (also called Clariora)<br>
+    Last updated: 10 September 2026<br>
+    Controller: Datacentre Academy / Luminara Digital<br>
+    Contact: <a href="mailto:support@datacentre.academy">support@datacentre.academy</a><br>
+    Product URLs: <a href="https://clariora.com.au/">https://clariora.com.au/</a>
+    · Telegram Mini App via <a href="https://t.me/ClarioraBot/app" rel="noopener">@ClarioraBot</a>
+  </p>
 
-  <div class="card">
-    <h2>1. Overview</h2>
-    <p>Clariora ("we", "our") is designed with an offline-first, privacy-respecting architecture. We do not sell personal information or track users across external platforms.</p>
+  <div class="card callout">
+    <p style="margin:0"><strong>Plain summary.</strong> Core study progress stays on your device by default. We do not sell personal information. Optional features (Telegram identity, Stars/TON purchases, Ghost Coach AI, optional cloud account sync) process additional data only when you use them. This policy describes those flows accurately so you can decide what to turn on.</p>
   </div>
 
-  <div class="card">
-    <h2>2. Data We Collect</h2>
+  <div class="card toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#who">Who we are</a></li>
+      <li><a href="#scope">Scope of this policy</a></li>
+      <li><a href="#telegram">Telegram Mini App specifics</a></li>
+      <li><a href="#collect">What we collect and why</a></li>
+      <li><a href="#local">On-device and Telegram CloudStorage data</a></li>
+      <li><a href="#server">Server-side processing (Cloudflare)</a></li>
+      <li><a href="#ai">Ghost Coach AI</a></li>
+      <li><a href="#payments">Payments (Telegram Stars and TON)</a></li>
+      <li><a href="#accounts">Optional accounts and cloud sync</a></li>
+      <li><a href="#telemetry">Telemetry and product analytics</a></li>
+      <li><a href="#third">Third parties</a></li>
+      <li><a href="#legal">Legal bases and Australian Privacy Principles</a></li>
+      <li><a href="#retention">Retention</a></li>
+      <li><a href="#rights">Your rights and choices</a></li>
+      <li><a href="#security">Security</a></li>
+      <li><a href="#children">Children</a></li>
+      <li><a href="#transfers">International transfers</a></li>
+      <li><a href="#nosell">No sale of personal information</a></li>
+      <li><a href="#changes">Changes</a></li>
+      <li><a href="#contact">Contact and complaints</a></li>
+    </ol>
+  </div>
+
+  <div class="card" id="who">
+    <h2>1. Who we are</h2>
+    <p>Clariora A+ is an educational CompTIA A+ exam simulator and study product operated by <strong>Datacentre Academy / Luminara Digital</strong> ("we", "us", "our"). CompTIA® and A+® are trademarks of CompTIA. Clariora is independent and is not affiliated with, endorsed by, or sponsored by CompTIA or Pearson VUE.</p>
+    <p>We are the organisation responsible for deciding how personal information is handled in connection with Clariora (the "controller" / APP entity for Australian Privacy Principles purposes, where those laws apply).</p>
+  </div>
+
+  <div class="card" id="scope">
+    <h2>2. Scope of this policy</h2>
+    <p>This Privacy Policy applies to:</p>
     <ul>
-      <li><strong>Telegram User Profile:</strong> When opened inside Telegram, we receive basic identifiers provided by Telegram (User ID, First Name, Username) to associate study streaks and entitlements.</li>
-      <li><strong>Local Study Progress:</strong> Quiz scores, flashcard mastery, and time logs are saved locally on your device or in Telegram CloudStorage.</li>
-      <li><strong>Blockchain Interactions:</strong> If you connect a TON wallet to mint an on-chain credential, public transaction data is broadcast to the decentralized TON network as requested by you.</li>
+      <li>the Clariora website and Progressive Web App hosted at clariora.com.au and related Cloudflare Workers URLs;</li>
+      <li>the Clariora <strong>Telegram Mini App</strong> opened through @ClarioraBot;</li>
+      <li>Windows and Linux desktop builds we publish;</li>
+      <li>related support email and webhook endpoints we operate for those products.</li>
+    </ul>
+    <p>It does <strong>not</strong> govern Telegram Messenger itself, CompTIA, Pearson VUE, payment networks, AI model hosts, or other third-party sites you may open from Clariora. Those services have their own policies.</p>
+    <p>By using Clariora you acknowledge this policy. If you do not agree, do not use the product. Where a feature requires consent under applicable law, we ask for that consent separately (for example optional telemetry upload).</p>
+  </div>
+
+  <div class="card" id="telegram">
+    <h2>3. Telegram Mini App specifics</h2>
+    <p>When you open Clariora as a Telegram Mini App, Telegram provides certain data to third-party Mini Apps under the <a href="https://telegram.org/tos/mini-apps" rel="noopener">Telegram Mini Apps Terms</a>. According to Telegram, that typically includes your IP address as seen by the Mini App host, and may include your Telegram user id, public name, username, profile picture, client language tag, Telegram Premium status, and theme colour parameters.</p>
+    <p>Clariora uses that platform data as follows:</p>
+    <ul>
+      <li><strong>initData verification.</strong> We cryptographically verify Telegram WebApp <code>initData</code> on our Cloudflare Worker before trusting a Telegram identity for entitlements, AI quotas, or payments.</li>
+      <li><strong>Profile fields we store server-side when you use paid / AI / sync features.</strong> Telegram user id, username, first name, and last name may be stored in our Cloudflare D1 database to associate entitlements, Stars/TON purchases, AI usage counters, and optional learner sync blobs.</li>
+      <li><strong>CloudStorage.</strong> Where supported, we may write study-related keys to Telegram <code>CloudStorage</code> so progress can persist inside Telegram. That storage is provided by Telegram on your account/device context; we do not treat it as a separate marketing database.</li>
+      <li><strong>We do not request your phone number</strong> as a condition of using the Mini App core simulator.</li>
+      <li><strong>We do not use Telegram contacts, location, accelerometer, or microphone APIs</strong> for Clariora's core study features.</li>
+    </ul>
+    <p>Clariora is a third-party service independent of Telegram. Telegram is not responsible for how we handle data once it is shared with us. Registering this policy URL in @BotFather makes it available from the Mini App Settings privacy button.</p>
+  </div>
+
+  <div class="card" id="collect">
+    <h2>4. What we collect and why</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Examples</th>
+          <th>Purpose</th>
+          <th>When</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Study progress (on device)</td>
+          <td>Exam history, missed questions, flashcard / curriculum progress, theme, tutor mode, local profiles, proof-of-mastery ledger</td>
+          <td>Operate the simulator, readiness scores, spaced practice</td>
+          <td>Always for core use (stays local by default)</td>
+        </tr>
+        <tr>
+          <td>Telegram identity</td>
+          <td>Telegram user id, username, first/last name; verified initData</td>
+          <td>Authenticate Mini App sessions; entitlements; abuse prevention</td>
+          <td>When you open the Mini App and when server features need identity</td>
+        </tr>
+        <tr>
+          <td>Purchase and entitlement records</td>
+          <td>Product id, Stars amount, Telegram payment charge id, TON tx hash / wallet address, tier and expiry</td>
+          <td>Fulfil digital goods; prevent double-spend; support refunds via Telegram rules</td>
+          <td>Only if you buy or restore a paid tier</td>
+        </tr>
+        <tr>
+          <td>AI coaching content</td>
+          <td>Question text, options, your chosen answer, official explanation snippets, provider choice</td>
+          <td>Generate Ghost Coach remediation; enforce free daily quotas</td>
+          <td>Only when you invoke Ghost Coach online</td>
+        </tr>
+        <tr>
+          <td>Optional account sync</td>
+          <td>Email / Google / Firebase uid; learner snapshot you choose to sync; Telegram Login Widget profile if used</td>
+          <td>Optional cross-device restore you explicitly enable</td>
+          <td>Only if you sign in / sync (off by default)</td>
+        </tr>
+        <tr>
+          <td>Technical logs</td>
+          <td>IP address and request metadata at our host; AI latency; error diagnostics</td>
+          <td>Security, rate limits, reliability</td>
+          <td>When your client talks to our Worker or CDN</td>
+        </tr>
+        <tr>
+          <td>Support communications</td>
+          <td>Email address and message content you send to support</td>
+          <td>Respond to requests and complaints</td>
+          <td>Only if you contact us</td>
+        </tr>
+        <tr>
+          <td>Optional anonymous telemetry</td>
+          <td>Install id (random), session events, feature counts (no question text, names, or email)</td>
+          <td>Improve product quality</td>
+          <td>Stored locally; uploaded only if we enable a remote endpoint <em>and</em> you consent in Settings</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>We do <strong>not</strong> collect government ID, biometric templates, precise geolocation, payment card PANs, or advertising identifiers for cross-app tracking.</p>
+  </div>
+
+  <div class="card" id="local">
+    <h2>5. On-device and Telegram CloudStorage data</h2>
+    <p>Clariora is <strong>local-first</strong>. Core simulator state is stored in browser <code>localStorage</code> (or equivalent desktop storage) on the device you use. Clearing site data, uninstalling, or switching devices without an export will lose that local progress.</p>
+    <p>You can export / import a learner backup or sync file from the app when that feature is available. Those files are under your control; if you share them, anyone with the file can read the study data inside.</p>
+    <p>Inside Telegram, we may also use Telegram CloudStorage for selected keys so progress survives Mini App reloads. Telegram's handling of CloudStorage is governed by Telegram's own terms and privacy policy.</p>
+  </div>
+
+  <div class="card" id="server">
+    <h2>6. Server-side processing (Cloudflare)</h2>
+    <p>Our public web app and API are hosted on <strong>Cloudflare</strong> (Workers, static assets, and D1 database). When your client calls our API (for example <code>/api/v1/coach</code>, Stars invoice creation, TON confirmation, optional learner sync, Telegram webhook), Cloudflare and our Worker process the request, including standard network metadata such as IP address.</p>
+    <p>Database tables may include Telegram user records, Stars/TON transaction records, AI usage counters/logs, and optional learner sync blobs keyed to a user id. We use this data to provide the feature you requested, prevent abuse, and keep purchase state consistent.</p>
+  </div>
+
+  <div class="card" id="ai">
+    <h2>7. Ghost Coach AI</h2>
+    <p>Ghost Coach is optional. Offline fallbacks can show local explanations without calling a model host. When you use online coaching:</p>
+    <ul>
+      <li>Your client sends coaching context (question content, your selection, explanations/distractor notes) plus Telegram initData to our Cloudflare Worker.</li>
+      <li>We verify identity, check free/pro entitlements, then route the prompt to the selected model provider (for example Groq on the free tier; NVIDIA NIM, private Ollama, or OpenRouter on pro tiers, subject to configuration).</li>
+      <li>Those providers process the prompt to return a coaching reply. Do not put secrets, passwords, employer confidential data, or unrelated personal data into coaching prompts.</li>
+      <li>We may log provider name, model, latency, Telegram id, and tier for quota and reliability. We do not use Ghost Coach content to train a public advertising profile about you.</li>
+    </ul>
+    <p>Model hosts are independent controllers/processors for the prompts they receive. Their retention and training policies are outside Clariora's control; review their documentation if that matters to you before using online coaching.</p>
+  </div>
+
+  <div class="card" id="payments">
+    <h2>8. Payments (Telegram Stars and TON)</h2>
+    <h3>Telegram Stars (XTR)</h3>
+    <p>In-app digital unlocks inside Telegram are fulfilled through Telegram Stars. Telegram and its payment partners process the Stars transaction. We receive payment confirmation metadata (for example product id, Stars amount, Telegram user id, payment charge id / invoice payload) so we can unlock features. We do <strong>not</strong> receive or store your card number.</p>
+    <h3>TON</h3>
+    <p>If you pay with TON, public blockchain data (transaction hash, amount, wallet address you used) is inherently public on the TON network. We store references needed to confirm payment and grant entitlements. Blockchain records cannot be deleted by us.</p>
+    <p>Refunds and chargebacks for Stars follow Telegram's rules and tools. Contact us at the email below if you need help matching a purchase to your entitlement.</p>
+  </div>
+
+  <div class="card" id="accounts">
+    <h2>9. Optional accounts and cloud sync</h2>
+    <p>You can use Clariora without creating an account. Optional sign-in (for example Firebase Authentication with email/password or Google, or Telegram Login) is available so you can sync learning state if you choose.</p>
+    <ul>
+      <li><strong>Firebase (Google).</strong> If you sign in, Google Firebase Auth (and Firestore when sync is active) processes your account credentials and the learner documents you sync. The shipped Firebase web config includes a Google Analytics <code>measurementId</code> for the Firebase project; Clariora does not currently initialize the Firebase Analytics SDK in the app shell. In-app "analytics" screens compute scores locally from your history and are not a third-party ad network.</li>
+      <li><strong>Supabase sync config.</strong> A separate Supabase cloud-sync path exists in code but is <strong>disabled by default</strong> unless we explicitly enable it with a project URL. If enabled in a future build, synced snapshots would be stored under your signed-in user with row-level security.</li>
+      <li><strong>Manual file sync.</strong> Saving or loading a sync file keeps data under your control on disk or cloud folders you choose.</li>
     </ul>
   </div>
 
-  <div class="card">
-    <h2>3. Telegram Stars & Payments</h2>
-    <p>All in-app purchases for digital features are conducted via Telegram Stars (XTR). We do not store or process credit card numbers or financial account information.</p>
+  <div class="card" id="telemetry">
+    <h2>10. Telemetry and product analytics</h2>
+    <p>Clariora can record anonymous product-usage events in a local buffer (random install id, session timing, feature events). By design it excludes names, emails, question text, answer text, and free-form input.</p>
+    <p><strong>Upload is off by default.</strong> Nothing is sent to a remote telemetry endpoint unless (1) we configure an HTTPS endpoint and enable upload in product configuration, and (2) you explicitly consent via the in-app "Share anonymous usage data" control. You can withdraw consent in the same place. Until both conditions are true, telemetry stays on device.</p>
   </div>
 
-  <div class="card">
-    <h2>4. Third-Party Disclaimers</h2>
-    <p>CompTIA® and A+® are registered trademarks of the Computing Technology Industry Association, Inc. This application is an independent training tool created by Datacentre Academy and is not endorsed or sponsored by CompTIA.</p>
+  <div class="card" id="third">
+    <h2>11. Third parties</h2>
+    <p>Depending on which features you use, personal information may be processed by:</p>
+    <ul>
+      <li><strong>Telegram Messenger Inc.</strong> and related Telegram entities (Mini App platform, Stars, CloudStorage, Bot API).</li>
+      <li><strong>Cloudflare, Inc.</strong> (hosting, Workers, D1, security).</li>
+      <li><strong>Google / Firebase</strong> (optional authentication and optional cloud documents).</li>
+      <li><strong>AI model providers</strong> you select through Ghost Coach (for example Groq, NVIDIA, OpenRouter, or a configured Ollama endpoint).</li>
+      <li><strong>TON network validators / public blockchain participants</strong> for on-chain payments.</li>
+      <li><strong>YouTube or other curriculum links</strong> you open yourself (their cookies and policies apply on their sites).</li>
+    </ul>
+    <p>We do not sell personal information to data brokers. We do not allow third parties to serve third-party behavioural advertising inside the core simulator based on your study content.</p>
   </div>
 
-  <p style="text-align: center; margin-top: 30px;">
-    <a href="index.html" class="btn btn-primary" style="display: inline-block; padding: 10px 24px; background: #D4AF37; color: #07090E; text-decoration: none; border-radius: 8px; font-weight: 700;">Return to App</a>
-  </p>
+  <div class="card" id="legal">
+    <h2>12. Legal bases and Australian Privacy Principles</h2>
+    <p>Where the Australian Privacy Act 1988 (Cth) and Australian Privacy Principles (APPs) apply, we handle personal information in ways intended to be consistent with those principles, including collection limited to what is reasonably necessary, use for related secondary purposes only where permitted, and reasonable security steps.</p>
+    <p>Where GDPR or UK GDPR applies to you, our processing is typically based on:</p>
+    <ul>
+      <li><strong>Contract / steps prior to contract</strong> - providing the simulator and fulfilling purchases you request;</li>
+      <li><strong>Legitimate interests</strong> - securing the service, preventing fraud/abuse, basic reliability logging (balanced against your rights);</li>
+      <li><strong>Consent</strong> - optional telemetry upload and other processing we mark as consent-based;</li>
+      <li><strong>Legal obligation</strong> - where we must keep records or respond to lawful requests.</li>
+    </ul>
+    <p>This section is informational and is not legal advice.</p>
+  </div>
+
+  <div class="card" id="retention">
+    <h2>13. Retention</h2>
+    <ul>
+      <li><strong>On-device data:</strong> until you clear it, uninstall, or overwrite it.</li>
+      <li><strong>Telegram CloudStorage keys:</strong> until you clear them / Telegram removes them / you stop using the Mini App in a way that drops that storage.</li>
+      <li><strong>Server entitlement and purchase records:</strong> kept while needed to provide access, prevent fraud, and meet accounting or dispute needs, then deleted or irreversibly aggregated when no longer required.</li>
+      <li><strong>AI usage logs:</strong> kept for quota enforcement and abuse detection for a limited operational period.</li>
+      <li><strong>Support emails:</strong> kept as long as needed to resolve your request and for reasonable follow-up.</li>
+      <li><strong>Public blockchain data:</strong> permanent by design; we cannot erase TON ledger history.</li>
+    </ul>
+  </div>
+
+  <div class="card" id="rights">
+    <h2>14. Your rights and choices</h2>
+    <p>Subject to applicable law, you may request to:</p>
+    <ul>
+      <li>access personal information we hold about you;</li>
+      <li>correct inaccurate information;</li>
+      <li>delete server-side account / entitlement data we control (noting blockchain and Telegram-held data limits);</li>
+      <li>withdraw consent for optional telemetry upload;</li>
+      <li>export on-device progress using in-app backup/export tools where available;</li>
+      <li>object to or restrict certain processing where the law provides that right.</li>
+    </ul>
+    <p>Email <a href="mailto:support@datacentre.academy">support@datacentre.academy</a> with the subject line "Clariora privacy request" and include your Telegram user id if the request relates to Mini App entitlements. We aim to respond within <strong>30 days</strong> (or sooner if local law requires).</p>
+    <p>You can also:</p>
+    <ul>
+      <li>stop using the Mini App and clear Telegram/web site data;</li>
+      <li>sign out of optional Firebase / cloud accounts;</li>
+      <li>avoid Ghost Coach, Stars, TON, and sync features if you do not want those data flows.</li>
+    </ul>
+  </div>
+
+  <div class="card" id="security">
+    <h2>15. Security</h2>
+    <p>We use HTTPS for our hosted app and API, verify Telegram initData signatures before trusting Mini App identity, and restrict server writes to feature-related tables. No method of transmission or storage is perfectly secure. You are responsible for securing devices you use and for not sharing exported backup files.</p>
+  </div>
+
+  <div class="card" id="children">
+    <h2>16. Children</h2>
+    <p>Clariora is aimed at career starters and adult learners preparing for professional certification. It is not directed at children under 13. If you are under the digital age of consent in your country, use Clariora only with permission of a parent or guardian where required. If you believe we have collected personal information from a child contrary to law, contact us and we will take appropriate steps to delete it from systems we control.</p>
+  </div>
+
+  <div class="card" id="transfers">
+    <h2>17. International transfers</h2>
+    <p>We operate with Australian-facing branding and support. Infrastructure providers (including Cloudflare and optional Google Firebase / AI hosts) may process data in the United States, European Economic Area, or other countries. Where required, we rely on appropriate safeguards offered by those providers (for example standard contractual clauses) and on your instructions when you choose features that necessarily call those regions.</p>
+  </div>
+
+  <div class="card" id="nosell">
+    <h2>18. No sale of personal information</h2>
+    <p>We do not sell personal information. We do not share personal information for cross-context behavioural advertising of the kind regulated as a "sale" or "share" under California CPRA-style laws. If that ever changes, we will update this policy before it happens and provide any required opt-out.</p>
+  </div>
+
+  <div class="card" id="changes">
+    <h2>19. Changes</h2>
+    <p>We may update this Privacy Policy to reflect product or legal changes. The "Last updated" date at the top will change when we do. Material changes will be posted at this URL. Continued use after the effective date means you accept the updated policy, except where consent is required by law for a specific new processing activity.</p>
+    <p>Canonical URL for BotFather and Mini App Settings:</p>
+    <p><a href="https://clariora.com.au/privacy.html">https://clariora.com.au/privacy.html</a></p>
+  </div>
+
+  <div class="card" id="contact">
+    <h2>20. Contact and complaints</h2>
+    <p>Privacy questions and requests:</p>
+    <p>
+      Datacentre Academy / Luminara Digital<br>
+      Email: <a href="mailto:support@datacentre.academy">support@datacentre.academy</a><br>
+      Product: Clariora A+ · <a href="https://clariora.com.au/">https://clariora.com.au/</a>
+    </p>
+    <p>If you are in Australia and unsatisfied with our response, you may contact the Office of the Australian Information Commissioner (OAIC) via <a href="https://www.oaic.gov.au/" rel="noopener">https://www.oaic.gov.au/</a>. If you are in the EEA/UK, you may lodge a complaint with your local supervisory authority.</p>
+    <p class="callout"><strong>Not legal advice.</strong> This policy describes Clariora's actual product behaviour as of the date above. It does not create warranties beyond those in our Terms, and it cannot eliminate all legal risk. For high-stakes commercial deployment, have a qualified lawyer in your jurisdiction review this text and your BotFather privacy settings.</p>
+  </div>
+
+  <div class="actions">
+    <a class="btn btn-primary" href="index.html">Return to app</a>
+    <a class="btn btn-secondary" href="terms.html">Terms of Service</a>
+    <a class="btn btn-secondary" href="landing/">Marketing site</a>
+  </div>
 </body>
 </html>

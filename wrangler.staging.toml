@@ -1,0 +1,54 @@
+# Clariora - Cloudflare STAGING edge deployment
+# Isolated from production. Never point this file at production D1, R2, or DNS routes.
+#
+# Deploy:
+#   npx wrangler deploy -c wrangler.staging.toml
+#   python tools/deploy_cloudflare.py --env staging
+#
+# Prerequisites (one-time in Cloudflare dashboard):
+#   1. Create Worker name clariora-a-plus-staging (or let wrangler create it)
+#   2. Create D1 database clariora_edge_db_staging and paste its id below
+#   3. Put staging secrets via: npx wrangler secret put <KEY> -c wrangler.staging.toml
+#   4. Do NOT attach production zone routes here
+
+name = "clariora-a-plus-staging"
+main = "workers/api_worker.js"
+compatibility_date = "2026-09-01"
+account_id = "2373013c66331e9660e47ffa3ae40f5c"
+workers_dev = true
+
+# No production zone routes. Staging is workers.dev (and optional staging hostname) only.
+
+[assets]
+directory = "./dist_web"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+html_handling = "auto-trailing-slash"
+run_worker_first = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "clariora_edge_db_staging"
+# Replace with the real staging D1 id after `wrangler d1 create clariora_edge_db_staging`
+database_id = "REPLACE_WITH_STAGING_D1_DATABASE_ID"
+
+[ai]
+binding = "AI"
+
+[[durable_objects.bindings]]
+name = "COACH_RATE_LIMITER"
+class_name = "CoachRateLimiter"
+
+[[migrations]]
+tag = "v1-coach-rate-limiter"
+new_sqlite_classes = ["CoachRateLimiter"]
+
+[vars]
+ENVIRONMENT = "staging"
+
+[build]
+command = "python tools/build_web_dist.py"
+
+# Staging secrets (set with wrangler secret put -c wrangler.staging.toml):
+# TELEGRAM_BOT_TOKEN, EDGE_WEBHOOK_SECRET, ADMIN_API_KEY, AI provider keys
+# Use sandbox / test bot tokens only. Never reuse production secrets.

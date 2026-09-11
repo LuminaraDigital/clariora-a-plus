@@ -1116,7 +1116,12 @@
     var rows = readHistory().slice(0, 5);
     var html = '<div class="card-title">Recent attempts</div>';
     if (!rows.length) {
-      html += '<p class="recent-empty">No attempts yet. Your first mock will show here.</p>';
+      html +=
+        '<div class="recent-empty-wrap">' +
+        '<p class="recent-empty">No attempts yet. Your first mock will show here.</p>' +
+        '<p class="recent-next-label">Next step</p>' +
+        '<button type="button" class="btn recent-next-cta" id="recentEmptyStartBtn">Start a practice set</button>' +
+        '</div>';
     } else {
       html += '<ul class="recent-list">';
       for (var i = 0; i < rows.length; i++) {
@@ -1135,6 +1140,29 @@
       html += '</ul>';
     }
     if (mount.innerHTML !== html) mount.innerHTML = html;
+    mount.removeAttribute('aria-busy');
+    var emptyCta = byId('recentEmptyStartBtn');
+    if (emptyCta && emptyCta.getAttribute('data-wired') !== '1') {
+      emptyCta.setAttribute('data-wired', '1');
+      emptyCta.addEventListener('click', function () {
+        try {
+          if (APlus.telemetry && typeof APlus.telemetry.track === 'function') {
+            APlus.telemetry.track('feature_opened', { feature: 'recent_empty_cta' });
+          }
+        } catch (_) {}
+        try {
+          if (APlus.onboarding && typeof APlus.onboarding.startToday === 'function') {
+            APlus.onboarding.startToday();
+            return;
+          }
+        } catch (_) {}
+        try {
+          if (typeof window.startExam === 'function') {
+            window.startExam('core1', 20, 25);
+          }
+        } catch (_) {}
+      });
+    }
   }
 
   /* ---------------------------------------------------------------
@@ -1185,3 +1213,4 @@
     init();
   }
 })(window);
+// a11y-hard-20260911

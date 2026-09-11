@@ -777,7 +777,7 @@
         const statusText = isCorrect ? 'Correct' : 'Incorrect';
 
         card.innerHTML = `
-          <div class="review-item-header" onclick="APlus.ui.toggleReviewBody(${idx})">
+          <button type="button" class="review-item-header" onclick="APlus.ui.toggleReviewBody(${idx})" aria-expanded="false">
             <div class="review-item-stem" style="font-size: 15px; display: flex; align-items: baseline; gap: 0.6rem;">
               <span class="${dotClass}" aria-hidden="true"></span>
               <span class="qnum tnum">Q${idx + 1}</span>
@@ -787,7 +787,7 @@
               ${isFlagged ? '<span class="label">Flagged</span>' : ''}
               <span class="label">${statusText}</span>
             </div>
-          </div>
+          </button>
           <div class="review-body" id="reviewBody_${idx}">
             <p class="review-stem-full" style="font-size: 15px; margin-bottom: 1rem;">${escapeHTML(q.question)}</p>
             ${q.exhibit ? `
@@ -1116,3 +1116,4 @@
   }
 
 })(typeof window !== 'undefined' ? window : this);
+// a11y-hard-20260911

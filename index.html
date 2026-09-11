@@ -21,1515 +21,7 @@
   <meta name="application-name" content="Clariora A+">
   <meta name="format-detection" content="telephone=no">
   <!-- APLUS_VERSION --><script>window.APLUS_VERSION = "3.1.0";</script><!-- /APLUS_VERSION -->
-  <style>
-    :root {
-      /* Black & Gold brand tokens (refined in css/brand-black-gold.css) */
-      --bg-primary: #07090E;
-      --bg-secondary: #0D1017;
-      --bg-card: #131722;
-      --bg-card-hover: #191E2C;
-      --bg-elevated: #1F2537;
-      
-      --border-color: rgba(212, 175, 55, 0.22);
-      --border-light: rgba(255, 255, 255, 0.07);
-      --border-gold: rgba(212, 175, 55, 0.5);
-      --border-focus: #D4AF37;
-      
-      --text-primary: #F3F4F6;
-      --text-secondary: #94A3B8;
-      --text-muted: #64748B;
-      
-      --gold-primary: #D4AF37;
-      --gold-light: #F5D061;
-      --gold-dark: #B8860B;
-      --gold-gradient: linear-gradient(135deg, #D4AF37 0%, #F5D061 50%, #B8860B 100%);
-      --gold-glow: rgba(212, 175, 55, 0.25);
-      
-      --accent-cyan: #38BDF8;
-      --accent-blue: #D4AF37;
-      --accent-green: #10B981;
-      --accent-red: #EF4444;
-      --accent-amber: #F59E0B;
-      --accent-purple: #C084FC;
-      
-      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", Helvetica, Arial, sans-serif;
-      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
-      --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(212, 175, 55, 0.15);
-      --shadow-gold: 0 6px 20px -2px rgba(212, 175, 55, 0.25);
-    }
-
-    [data-theme="light"] {
-      --bg-primary: #F8FAFC;
-      --bg-secondary: #FFFFFF;
-      --bg-card: #F1F5F9;
-      --bg-card-hover: #E2E8F0;
-      --bg-elevated: #FFFFFF;
-      --border-color: rgba(184, 134, 11, 0.3);
-      --border-light: #E2E8F0;
-      --border-gold: #D4AF37;
-      --border-focus: #B8860B;
-      --text-primary: #0F172A;
-      --text-secondary: #475569;
-      --text-muted: #94A3B8;
-      --gold-primary: #B8860B;
-      --gold-light: #D4AF37;
-      --gold-dark: #8B6508;
-      --gold-gradient: linear-gradient(135deg, #B8860B 0%, #D4AF37 50%, #8B6508 100%);
-      --gold-glow: rgba(184, 134, 11, 0.2);
-      --accent-cyan: #0284C7;
-      --accent-blue: #B8860B;
-      --accent-green: #059669;
-      --accent-red: #DC2626;
-      --accent-amber: #D97706;
-      --accent-purple: #7C3AED;
-    }
-
-    /* Print styling */
-    @media print {
-      header, footer, .nav-bar, .review-filter, #retakeCurrentExamBtn, #retakeMissedFromResultsBtn, .q-actions, .btn {
-        display: none !important;
-      }
-      body {
-        background: #fff !important;
-        color: #000 !important;
-      }
-      .container {
-        max-width: 100% !important;
-        padding: 0 !important;
-      }
-      .score-hero, .domain-report, .review-accordion {
-        border: 1px solid #ccc !important;
-        box-shadow: none !important;
-        background: #fff !important;
-        color: #000 !important;
-      }
-      .review-body {
-        display: block !important;
-      }
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      background-color: var(--bg-primary);
-      background-image: radial-gradient(
-        125% 125% at 50% 0%,
-        rgba(212, 175, 55, 0.22) 0%,
-        rgba(184, 134, 11, 0.12) 35%,
-        rgba(15, 19, 27, 0.50) 60%,
-        var(--bg-primary) 85%
-      );
-      background-attachment: fixed;
-      color: var(--text-primary);
-      font-family: var(--font-family);
-      line-height: 1.55;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
-    [data-theme="light"] body {
-      background-image: radial-gradient(
-        125% 125% at 50% 0%,
-        rgba(184, 144, 30, 0.16) 0%,
-        rgba(209, 167, 46, 0.08) 35%,
-        rgba(241, 243, 246, 0.50) 60%,
-        var(--bg-primary) 85%
-      );
-    }
-
-    header {
-      background-color: rgba(7, 9, 14, 0.78);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      border-bottom: 1px solid rgba(212, 175, 55, 0.22);
-      padding: 0.85rem 1.75rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
-    }
-
-    [data-theme="light"] header {
-      background-color: rgba(255, 255, 255, 0.88);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 0.85rem;
-    }
-
-    .brand-icon {
-      background: var(--gold-gradient);
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      color: #07090E;
-      font-size: 1.15rem;
-      box-shadow: 0 2px 10px rgba(212, 175, 55, 0.35);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-    }
-
-    .brand h1 {
-      font-size: 1.2rem;
-      font-weight: 800;
-      letter-spacing: -0.01em;
-      color: var(--text-primary);
-    }
-
-    .brand span {
-      color: var(--gold-light);
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 0.09em;
-      display: block;
-      font-weight: 700;
-      margin-top: 1px;
-    }
-
-    .timer-container {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      background-color: var(--bg-card);
-      border: 1px solid var(--border-color);
-      padding: 0.45rem 1rem;
-      border-radius: 8px;
-      font-family: "Courier New", Courier, monospace;
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--gold-light);
-      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
-    }
-
-    .timer-container.warning {
-      color: var(--accent-amber);
-      border-color: var(--accent-amber);
-      box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
-    }
-
-    .timer-container.critical {
-      color: var(--accent-red);
-      border-color: var(--accent-red);
-      animation: pulse 1s infinite alternate;
-      box-shadow: 0 0 16px rgba(239, 68, 68, 0.35);
-    }
-
-    @keyframes pulse {
-      from { transform: scale(1); }
-      to { transform: scale(1.04); }
-    }
-
-    /* Buttons */
-    .btn {
-      background: var(--gold-gradient);
-      color: #07090E;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      padding: 0.58rem 1.2rem;
-      border-radius: 7px;
-      font-size: 0.88rem;
-      font-weight: 700;
-      letter-spacing: 0.01em;
-      cursor: pointer;
-      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-      display: inline-flex;
-      align-items: center;
-      gap: 0.45rem;
-      box-shadow: 0 2px 8px rgba(212, 175, 55, 0.25);
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 18px rgba(212, 175, 55, 0.4);
-      filter: brightness(1.07);
-    }
-
-    .btn:active {
-      transform: translateY(0);
-      box-shadow: 0 2px 4px rgba(212, 175, 55, 0.2);
-    }
-
-    .btn-secondary {
-      background-color: var(--bg-card);
-      color: var(--text-primary);
-      border: 1px solid var(--border-color);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-    }
-
-    .btn-secondary:hover {
-      background-color: var(--bg-card-hover);
-      border-color: var(--gold-primary);
-      color: var(--gold-light);
-      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.15);
-    }
-
-    .btn-amber {
-      background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-      color: #07090E;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .btn-amber:hover {
-      box-shadow: 0 6px 16px rgba(245, 158, 11, 0.35);
-    }
-
-    .btn-green {
-      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-      color: #FFFFFF;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
-    }
-
-    .btn-green:hover {
-      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.4);
-    }
-
-    .btn-red {
-      background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
-      color: #FFFFFF;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
-    }
-
-    .btn-red:hover {
-      box-shadow: 0 6px 18px rgba(239, 68, 68, 0.4);
-    }
-
-    .container {
-      max-width: 1240px;
-      margin: 0 auto;
-      padding: 1.75rem;
-      flex: 1;
-      width: 100%;
-    }
-
-    /* Screen management */
-    .screen {
-      display: none;
-      animation: fadeIn 0.25s ease;
-    }
-
-    .screen.active {
-      display: block;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .hero-card {
-      background: rgba(15, 19, 27, 0.82);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(212, 175, 55, 0.16);
-      border-radius: 14px;
-      padding: 2.5rem;
-      margin-bottom: 2rem;
-      text-align: center;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(212, 175, 55, 0.18);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero-card::before {
-      content: "";
-      position: absolute;
-      top: -50px;
-      right: -50px;
-      width: 250px;
-      height: 250px;
-      background: radial-gradient(circle, rgba(212, 175, 55, 0.12), transparent 70%);
-      pointer-events: none;
-    }
-
-    .hero-card h2 {
-      font-size: 2.1rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      margin-bottom: 0.85rem;
-      color: var(--text-primary);
-    }
-
-    .hero-card p {
-      color: var(--text-secondary);
-      font-size: 1.05rem;
-      max-width: 780px;
-      margin: 0 auto 1.6rem auto;
-      line-height: 1.6;
-    }
-
-    .badge-bar {
-      display: flex;
-      justify-content: center;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-      margin-bottom: 1.5rem;
-    }
-
-    .badge {
-      padding: 0.4rem 0.9rem;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      background-color: rgba(212, 175, 55, 0.08);
-      border: 1px solid rgba(212, 175, 55, 0.28);
-      color: var(--gold-light);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-      transition: all 0.2s ease;
-    }
-
-    .badge:hover {
-      border-color: var(--gold-light);
-      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
-    }
-
-    .config-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-
-    .card {
-      background-color: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 1.6rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: var(--shadow-md);
-      position: relative;
-    }
-
-    .card:hover {
-      border-color: var(--border-gold);
-      box-shadow: var(--shadow-gold);
-      transform: translateY(-2px);
-    }
-
-    .card-title {
-      font-size: 1.25rem;
-      font-weight: 800;
-      margin-bottom: 0.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: var(--gold-light);
-    }
-
-    .card-meta {
-      color: var(--text-secondary);
-      font-size: 0.88rem;
-      margin-bottom: 1.25rem;
-      font-weight: 500;
-    }
-
-    .domain-list {
-      list-style: none;
-      font-size: 0.84rem;
-      color: var(--text-secondary);
-      margin-bottom: 1.25rem;
-    }
-
-    .domain-list li {
-      padding: 0.25rem 0;
-      display: flex;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--border-light);
-    }
-
-    .domain-list li:last-child {
-      border-bottom: none;
-    }
-
-    .history-card {
-      background-color: var(--bg-secondary);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 1.75rem;
-      margin-top: 2rem;
-      box-shadow: var(--shadow-md);
-    }
-
-    .history-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-      font-size: 0.9rem;
-    }
-
-    .history-table th, .history-table td {
-      padding: 0.85rem 1rem;
-      text-align: left;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .history-table th {
-      color: var(--gold-light);
-      font-weight: 700;
-      font-size: 0.82rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    /* EXAM RUNNER SCREEN */
-    .exam-layout {
-      display: grid;
-      grid-template-columns: 1fr 310px;
-      gap: 1.5rem;
-      align-items: start;
-    }
-
-    @media (max-width: 880px) {
-      .exam-layout {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .question-panel {
-      background-color: var(--bg-secondary);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 2.2rem;
-      box-shadow: var(--shadow-md);
-    }
-
-    .question-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid var(--border-color);
-      margin-bottom: 1.5rem;
-    }
-
-    .q-number {
-      font-size: 1.15rem;
-      font-weight: 800;
-      color: var(--gold-light);
-    }
-
-    .q-domain {
-      font-size: 0.84rem;
-      color: var(--text-secondary);
-      background: var(--bg-card);
-      padding: 0.3rem 0.8rem;
-      border-radius: 6px;
-      border: 1px solid var(--border-color);
-      font-weight: 600;
-    }
-
-    .q-actions {
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    .flag-btn {
-      padding: 0.4rem 0.85rem;
-      font-size: 0.82rem;
-      font-weight: 600;
-      border-radius: 6px;
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: all 0.18s ease;
-    }
-
-    .flag-btn:hover {
-      border-color: var(--accent-amber);
-      color: var(--accent-amber);
-    }
-
-    .flag-btn.flagged {
-      background-color: rgba(245, 158, 11, 0.18);
-      border-color: var(--accent-amber);
-      color: var(--accent-amber);
-      box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
-    }
-
-    .question-text {
-      font-size: 1.15rem;
-      font-weight: 500;
-      line-height: 1.65;
-      margin-bottom: 1.75rem;
-      color: var(--text-primary);
-    }
-
-    .options-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.9rem;
-      margin-bottom: 2rem;
-    }
-
-    .option-item {
-      background-color: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 1.1rem 1.35rem;
-      cursor: pointer;
-      display: flex;
-      align-items: flex-start;
-      gap: 1rem;
-      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-    }
-
-    .option-item:hover {
-      border-color: var(--gold-primary);
-      background-color: rgba(212, 175, 55, 0.05);
-      transform: translateX(3px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    }
-
-    .option-item.selected {
-      border-color: var(--gold-light);
-      background-color: rgba(212, 175, 55, 0.12);
-      box-shadow: 0 0 0 1px var(--gold-light), 0 4px 16px rgba(212, 175, 55, 0.2);
-    }
-
-    .option-item.eliminated {
-      opacity: 0.4;
-      text-decoration: line-through;
-    }
-
-    .option-letter {
-      background-color: var(--bg-secondary);
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 0.88rem;
-      flex-shrink: 0;
-      border: 1px solid var(--border-color);
-      color: var(--gold-light);
-      transition: all 0.18s ease;
-    }
-
-    .option-item.selected .option-letter {
-      background: var(--gold-gradient);
-      color: #07090E;
-      border-color: var(--gold-light);
-      box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
-    }
-
-    .option-content {
-      flex: 1;
-      font-size: 1.02rem;
-      line-height: 1.5;
-      color: var(--text-primary);
-    }
-
-    .strike-btn {
-      color: var(--text-secondary);
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      width: 40px;
-      height: 40px;
-      min-width: 40px;
-      flex: 0 0 40px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 8px;
-      opacity: 0.55;
-      transition: all 0.15s ease;
-    }
-
-    .strike-btn > s {
-      text-decoration: none;
-    }
-
-    /* Structure only. css/brand-black-gold.css owns the finish of these. */
-    .drawer-nav { margin: 0; }
-    .drawer-nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
-    .drawer-item {
-      display: flex;
-      align-items: center;
-      gap: 0.7rem;
-      width: 100%;
-      min-height: 44px;
-      padding: 0.55rem 0.7rem;
-      background: transparent;
-      border: none;
-      border-radius: 8px;
-      color: var(--text-primary);
-      font: inherit;
-      font-size: 0.92rem;
-      text-align: left;
-      cursor: pointer;
-    }
-    .drawer-item:hover { background: var(--bg-card); }
-    .drawer-icon { flex: 0 0 18px; opacity: 0.75; }
-    .drawer-item-text { flex: 1; min-width: 0; }
-    .drawer-item-meta { flex: 0 0 auto; font-size: 0.76rem; color: var(--text-secondary); }
-    .drawer-select { position: relative; display: block; }
-    .drawer-select select {
-      width: 100%;
-      min-height: 44px;
-      appearance: none;
-      -webkit-appearance: none;
-      padding: 0.55rem 2.2rem 0.55rem 0.7rem;
-      background: var(--bg-card);
-      color: var(--text-primary);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      font: inherit;
-      font-size: 0.92rem;
-    }
-    .drawer-select-chevron {
-      position: absolute;
-      right: 0.7rem;
-      top: 50%;
-      transform: translateY(-50%);
-      pointer-events: none;
-      opacity: 0.7;
-    }
-    .brand-name-short { display: none; }
-    @media (max-width: 420px) {
-      .brand-name { display: none; }
-      .brand-name-short { display: inline; }
-    }
-
-    .toolbar-note {
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-      align-self: center;
-      white-space: nowrap;
-    }
-
-    .strike-btn:hover {
-      opacity: 1;
-      background: rgba(239, 68, 68, 0.2);
-      color: var(--accent-red);
-    }
-
-    .nav-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-top: 1.6rem;
-      border-top: 1px solid var(--border-color);
-    }
-
-    /* Sidebar Navigator */
-    .sidebar-panel {
-      background-color: var(--bg-secondary);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 1.4rem;
-      box-shadow: var(--shadow-md);
-    }
-
-    .sidebar-title {
-      font-size: 0.98rem;
-      font-weight: 800;
-      margin-bottom: 0.85rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: var(--text-primary);
-    }
-
-    .legend {
-      display: flex;
-      gap: 0.65rem;
-      font-size: 0.75rem;
-      margin-bottom: 1rem;
-      color: var(--text-secondary);
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-    }
-
-    .legend-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 2px;
-    }
-
-    .matrix-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 0.45rem;
-      max-height: 400px;
-      overflow-y: auto;
-      padding-right: 4px;
-      scrollbar-width: thin;
-      scrollbar-color: #232838 #07090E;
-    }
-
-    .matrix-btn {
-      background-color: var(--bg-card);
-      border: 1px solid var(--border-color);
-      color: var(--text-secondary);
-      border-radius: 5px;
-      padding: 0.5rem 0;
-      font-size: 0.82rem;
-      font-weight: 700;
-      cursor: pointer;
-      position: relative;
-      transition: all 0.15s ease;
-    }
-
-    .matrix-btn:hover {
-      border-color: var(--gold-primary);
-      color: var(--gold-light);
-    }
-
-    .matrix-btn.active {
-      outline: 2px solid var(--gold-light);
-      border-color: var(--gold-light);
-    }
-
-    .matrix-btn.answered {
-      background-color: rgba(212, 175, 55, 0.2);
-      border-color: var(--gold-primary);
-      color: var(--gold-light);
-    }
-
-    .matrix-btn.flagged::after {
-      content: "";
-      position: absolute;
-      top: 3px;
-      right: 3px;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background-color: var(--accent-amber);
-      box-shadow: 0 0 4px var(--accent-amber);
-    }
-
-    /* SCORE REPORT SCREEN */
-    .score-hero {
-      border-radius: 14px;
-      padding: 2.75rem 2rem;
-      text-align: center;
-      margin-bottom: 2rem;
-      border: 1px solid var(--border-color);
-      box-shadow: var(--shadow-md);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .score-hero.passed {
-      background: linear-gradient(180deg, rgba(16, 185, 129, 0.12) 0%, #0D1017 100%);
-      border-color: var(--accent-green);
-      box-shadow: 0 10px 36px rgba(16, 185, 129, 0.2);
-    }
-
-    .score-hero.failed {
-      background: linear-gradient(180deg, rgba(239, 68, 68, 0.12) 0%, #0D1017 100%);
-      border-color: var(--accent-red);
-      box-shadow: 0 10px 36px rgba(239, 68, 68, 0.2);
-    }
-
-    .score-title {
-      font-size: 1.5rem;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 0.5rem;
-    }
-
-    .score-hero.passed .score-title { color: var(--accent-green); }
-    .score-hero.failed .score-title { color: var(--accent-red); }
-
-    .score-dial {
-      font-size: 4rem;
-      font-weight: 900;
-      line-height: 1;
-      margin: 1rem 0;
-      font-family: "Courier New", Courier, monospace;
-      color: var(--gold-light);
-    }
-
-    .score-subtitle {
-      color: var(--text-secondary);
-      font-size: 1.05rem;
-      font-weight: 500;
-    }
-
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1.25rem;
-      margin-top: 1.75rem;
-    }
-
-    .stat-box {
-      background-color: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 1.1rem;
-      text-align: center;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .stat-label {
-      font-size: 0.78rem;
-      color: var(--gold-light);
-      text-transform: uppercase;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-    }
-
-    .stat-val {
-      font-size: 1.5rem;
-      font-weight: 800;
-      margin-top: 0.3rem;
-      color: var(--text-primary);
-    }
-
-    .domain-report {
-      background-color: var(--bg-secondary);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 2rem;
-      margin-bottom: 2rem;
-      box-shadow: var(--shadow-md);
-    }
-
-    .domain-item {
-      margin-bottom: 1.35rem;
-    }
-
-    .domain-header {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.95rem;
-      font-weight: 700;
-      margin-bottom: 0.45rem;
-      color: var(--text-primary);
-    }
-
-    .progress-bar {
-      height: 10px;
-      background-color: var(--bg-card);
-      border-radius: 999px;
-      overflow: hidden;
-      border: 1px solid var(--border-light);
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: var(--gold-gradient);
-      border-radius: 999px;
-      transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .progress-fill.high { background: linear-gradient(90deg, #10B981, #059669); }
-    .progress-fill.medium { background: linear-gradient(90deg, #F59E0B, #D97706); }
-    .progress-fill.low { background: linear-gradient(90deg, #EF4444, #DC2626); }
-
-    .review-accordion {
-      background-color: var(--bg-secondary);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 2rem;
-      box-shadow: var(--shadow-md);
-    }
-
-    .review-filter {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .review-item {
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      margin-bottom: 1rem;
-      overflow: hidden;
-      background-color: var(--bg-card);
-    }
-
-    .review-item-header {
-      background-color: var(--bg-card);
-      padding: 1.1rem 1.35rem;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: 700;
-      color: var(--text-primary);
-      transition: background-color 0.15s ease;
-    }
-
-    .review-item-header:hover {
-      background-color: var(--bg-card-hover);
-    }
-
-    .review-body {
-      padding: 1.35rem;
-      background-color: var(--bg-secondary);
-      display: none;
-      border-top: 1px solid var(--border-color);
-    }
-
-    .review-body.open {
-      display: block;
-    }
-
-    .explanation-box {
-      background-color: rgba(212, 175, 55, 0.08);
-      border-left: 4px solid var(--gold-primary);
-      padding: 1.1rem 1.25rem;
-      border-radius: 0 8px 8px 0;
-      margin-top: 1rem;
-      font-size: 0.94rem;
-      line-height: 1.55;
-    }
-
-    .explanation-title {
-      font-weight: 800;
-      color: var(--gold-light);
-      margin-bottom: 0.4rem;
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    .ghost-coach-mission {
-      margin: 1rem 0 1.25rem;
-    }
-    .ghost-coach-card {
-      padding: 1.2rem 1.4rem;
-      border-radius: 12px;
-      border: 1px solid var(--border-gold);
-      background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(13, 16, 23, 0.95));
-      box-shadow: var(--shadow-sm);
-    }
-    .ghost-coach-kicker {
-      font-size: 0.75rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--gold-light);
-      font-weight: 800;
-      margin-bottom: 0.35rem;
-    }
-    .ghost-coach-title {
-      font-size: 1.2rem;
-      font-weight: 800;
-      margin: 0 0 0.4rem;
-      color: var(--text-primary);
-    }
-    .ghost-coach-summary {
-      color: var(--text-secondary);
-      font-size: 0.92rem;
-      margin: 0 0 0.85rem;
-      line-height: 1.5;
-    }
-    .ghost-coach-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.45rem;
-      margin-bottom: 0.75rem;
-    }
-    .ghost-coach-chip {
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 0.25rem 0.65rem;
-      border-radius: 999px;
-      border: 1px solid var(--border-color);
-      background: var(--bg-card);
-      color: var(--gold-light);
-    }
-    .ghost-coach-pins {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem 0.85rem;
-      font-size: 0.84rem;
-      margin-bottom: 0.75rem;
-      color: var(--text-secondary);
-    }
-    .ghost-coach-pin-link {
-      color: var(--gold-light);
-      text-decoration: none;
-      font-weight: 700;
-    }
-    .ghost-coach-pin-link:hover {
-      text-decoration: underline;
-    }
-    .ghost-coach-measure {
-      font-size: 0.84rem;
-      color: var(--accent-amber);
-      margin-bottom: 0.85rem;
-      font-weight: 600;
-    }
-    .ghost-coach-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-    .ghost-coach-live {
-      margin-top: 0.85rem;
-    }
-    .ghost-coach-explain {
-      border: 1px solid rgba(245, 158, 11, 0.4);
-      background: rgba(245, 158, 11, 0.08);
-      border-radius: 10px;
-      padding: 1rem 1.2rem;
-    }
-    .ghost-coach-explain-title {
-      font-size: 0.8rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--accent-amber);
-      margin-bottom: 0.35rem;
-    }
-    .ghost-coach-explain-bank {
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-      margin-top: 0.5rem;
-    }
-    .ghost-coach-explain-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      align-items: center;
-      margin-top: 0.75rem;
-    }
-    .ghost-coach-review-explain {
-      background: rgba(245, 158, 11, 0.08);
-      border-left: 4px solid var(--accent-amber);
-      padding: 1rem 1.2rem;
-      border-radius: 0 8px 8px 0;
-      margin-top: 0.85rem;
-      font-size: 0.92rem;
-      line-height: 1.5;
-    }
-
-    /* Modal for Review Matrix */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: rgba(4, 6, 10, 0.82);
-      backdrop-filter: blur(8px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 200;
-      animation: fadeIn 0.2s ease;
-    }
-
-    .modal-overlay.active {
-      display: flex;
-    }
-
-    .modal-card {
-      background-color: var(--bg-secondary);
-      border: 1px solid var(--border-gold);
-      border-radius: 14px;
-      max-width: 680px;
-      width: 90%;
-      padding: 2.2rem;
-      max-height: 85vh;
-      overflow-y: auto;
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 24px rgba(212, 175, 55, 0.15);
-      scrollbar-width: thin;
-      scrollbar-color: #232838 #07090E;
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 1rem;
-    }
-
-    footer {
-      border-top: 1px solid var(--border-color);
-      background-color: var(--bg-secondary);
-      padding: 1.25rem;
-      text-align: center;
-      color: var(--text-secondary);
-      font-size: 0.86rem;
-      margin-top: auto;
-    }
-
-    .wallet-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 999px;
-      padding: 0.42rem 0.85rem;
-      font-size: 0.8rem;
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-      transition: all 0.18s ease;
-      color: var(--text-primary);
-    }
-    .wallet-chip:hover {
-      border-color: var(--gold-light);
-      box-shadow: 0 4px 14px rgba(212, 175, 55, 0.25);
-      transform: translateY(-1px);
-    }
-    .wallet-chip strong { color: var(--gold-light); font-family: monospace; font-size: 0.85rem; }
-    #apxExamRewardBanner {
-      display: none;
-      margin: 1rem 0 0;
-      padding: 0.85rem 1rem;
-      border-radius: 8px;
-      border: 1px solid var(--gold-primary);
-      background: rgba(212, 175, 55, 0.08);
-      font-size: 0.9rem;
-      color: var(--gold-light);
-    }
-
-    /* Accessibility: visible focus + screen-reader only */
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-
-    :focus-visible {
-      outline: 2px solid var(--gold-light);
-      outline-offset: 2px;
-    }
-
-    .option-item:focus-visible,
-    .matrix-btn:focus-visible,
-    .flag-btn:focus-visible,
-    .btn:focus-visible,
-    .wallet-chip:focus-visible {
-      outline: 2px solid var(--gold-light);
-      outline-offset: 2px;
-      border-color: var(--gold-light);
-    }
-
-    .option-item:focus {
-      border-color: var(--gold-light);
-      box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.35);
-    }
-
-    kbd {
-      display: inline-block;
-      padding: 0.15rem 0.45rem;
-      border: 1px solid var(--border-color);
-      border-radius: 4px;
-      background: var(--bg-card);
-      font-size: 0.82rem;
-      font-family: ui-monospace, Consolas, monospace;
-      color: var(--gold-light);
-    }
-
-    .exam-shortcut-hint {
-      font-size: 0.78rem;
-      padding: 0.35rem 0.65rem;
-      color: var(--text-secondary);
-    }
-
-    .tutor-panel {
-      margin-top: 1rem;
-      padding: 1rem 1.2rem;
-      border-radius: 10px;
-      border: 1px solid var(--border-gold);
-      background: rgba(212, 175, 55, 0.06);
-    }
-
-    .tutor-panel-header {
-      font-weight: 800;
-      color: var(--gold-light);
-      margin-bottom: 0.45rem;
-      font-size: 0.94rem;
-    }
-
-    .tutor-why {
-      font-size: 0.9rem;
-      margin-bottom: 0.75rem;
-      line-height: 1.5;
-      color: var(--text-primary);
-    }
-
-    .tutor-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 0.45rem;
-    }
-
-    .tutor-action-btn {
-      justify-content: flex-start;
-      text-align: left;
-      font-size: 0.82rem;
-      padding: 0.55rem 0.75rem;
-      text-decoration: none;
-      min-height: 44px;
-    }
-
-    .tutor-muted {
-      color: var(--text-secondary);
-      font-size: 0.82rem;
-    }
-
-    .modal-close-btn {
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      font-size: 1.6rem;
-      cursor: pointer;
-      min-width: 44px;
-      min-height: 44px;
-      transition: color 0.15s ease;
-    }
-
-    .modal-close-btn:hover {
-      color: var(--gold-light);
-    }
-
-    .study-library-layout {
-      display: grid;
-      grid-template-columns: 1.1fr 1.4fr;
-      gap: 1rem;
-      min-height: 420px;
-    }
-
-    .study-doc-list,
-    .study-doc-viewer {
-      max-height: 480px;
-      overflow-y: auto;
-      scrollbar-width: thin;
-      scrollbar-color: #232838 #07090E;
-    }
-
-    .header-controls-wrap {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      max-width: 100%;
-    }
-
-    .learner-tools-bar {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    @media (max-width: 768px) {
-      header {
-        flex-wrap: wrap;
-        gap: 0.65rem;
-        padding: 0.65rem 0.85rem;
-      }
-
-      .brand h1 {
-        font-size: 0.95rem;
-      }
-
-      .header-controls-wrap {
-        width: 100%;
-        justify-content: flex-start;
-      }
-
-      .wallet-chip {
-        max-width: 100%;
-        flex-wrap: wrap;
-        row-gap: 0.25rem;
-        min-height: 44px;
-      }
-
-      .config-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-      }
-
-      .card {
-        padding: 1.1rem;
-      }
-
-      .card .btn,
-      .learner-tools-bar .btn,
-      .flag-btn,
-      .nav-bar .btn {
-        min-height: 44px;
-        padding: 0.65rem 0.9rem;
-      }
-
-      .option-item {
-        min-height: 48px;
-        padding: 0.9rem 1rem;
-      }
-
-      .study-library-layout {
-        grid-template-columns: 1fr;
-        min-height: 0;
-      }
-
-      .study-doc-list,
-      .study-doc-viewer {
-        max-height: 240px;
-      }
-
-      #ledgerModal .modal-card,
-      #studyLibraryModal .modal-card {
-        max-width: 100%;
-        margin: 0.5rem;
-        max-height: 92vh;
-        overflow-y: auto;
-      }
-
-      #ledgerBlockList {
-        max-height: 220px !important;
-      }
-
-      #ledgerAchievements {
-        grid-template-columns: 1fr !important;
-      }
-
-      #portMatcherContainer {
-        grid-template-columns: 1fr !important;
-      }
-
-      .question-panel {
-        padding: 1.1rem;
-      }
-
-      .matrix-btn {
-        min-width: 40px;
-        min-height: 40px;
-      }
-    }
-
-
-    .trust-panel {
-      margin: 1rem 0 1.25rem;
-      padding: 1rem 1.1rem;
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      background: var(--bg-secondary);
-    }
-    .trust-panel h3 {
-      font-size: 1.05rem;
-      margin-bottom: 0.65rem;
-    }
-    .trust-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      align-items: center;
-      margin-bottom: 0.65rem;
-    }
-    #readinessHomeBanner, #readinessLedgerBanner {
-      font-size: 0.88rem;
-      line-height: 1.45;
-    }
-    #profileSelect {
-      background: var(--bg-card);
-      color: var(--text-primary);
-      border: 1px solid var(--border-color);
-      padding: 0.4rem 0.65rem;
-      border-radius: 6px;
-      min-width: 160px;
-    }
-
-    /* Clean Home Tab Navigation */
-    .home-tab-nav {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 1.25rem;
-      padding: 4px;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(212, 175, 55, 0.2);
-      border-radius: 10px;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    .home-tab-btn {
-      flex: 1;
-      min-width: 120px;
-      min-height: 40px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 8px 16px;
-      border: 1px solid transparent;
-      border-radius: 8px;
-      background: transparent;
-      color: var(--text-secondary, #94A3B8);
-      font-family: inherit;
-      font-size: 0.88rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.18s ease;
-      white-space: nowrap;
-    }
-    .home-tab-btn:hover {
-      color: var(--text-primary, #F3F4F6);
-      background: rgba(255, 255, 255, 0.04);
-    }
-    .home-tab-btn.active, .home-tab-btn[aria-selected="true"] {
-      color: #07090E;
-      background: var(--gold-primary, #D4AF37);
-      border-color: var(--gold-primary, #D4AF37);
-      box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
-    }
-    .home-tab-btn:focus-visible {
-      outline: 2px solid var(--gold-primary, #D4AF37);
-      outline-offset: 2px;
-    }
-    .header-nav-link.active {
-      color: var(--gold-primary, #D4AF37) !important;
-      background: rgba(212, 175, 55, 0.12) !important;
-      border-color: rgba(212, 175, 55, 0.35) !important;
-      font-weight: 700 !important;
-    }
-    .home-view-pane[hidden] {
-      display: none !important;
-    }
-    .study-resource-card {
-      transition: transform 0.16s ease, border-color 0.16s ease;
-    }
-    .study-resource-card:hover {
-      transform: translateY(-2px);
-      border-color: rgba(212, 175, 55, 0.5) !important;
-    }
-  </style>
+  <link rel="stylesheet" href="css/app-inline.css">
   <link rel="stylesheet" href="css/brand-black-gold.css?v=4.3.4">
   <style id="bootIntroCritical">
     /* First paint: hold a black intro stage so the dashboard never flashes first. */
@@ -1560,6 +52,7 @@
   <script src="curriculum_outline.js"></script>
   <script src="js/database_memory_engine.js"></script>
   <script src="profiles.js"></script>
+  <script src="js/core.js"></script>
   <script src="ledger_engine.js"></script>
   <script src="ledger_ui.js"></script>
   <script src="learner_state.js"></script>
@@ -1571,7 +64,6 @@
   <script src="memory_srs.js"></script>
   <script src="memory_mode_ui.js"></script>
   <!-- Clariora Engine v3.0.0 Modular Runtime -->
-  <script src="js/core.js"></script>
   <script src="js/bank-integrity.js?v=4.3.6"></script>
   <script src="js/data.js"></script>
   <script src="js/engine-core.js"></script>
@@ -1584,6 +76,8 @@
   <script src="js/srs.js"></script>
   <script src="js/analytics.js"></script>
   <script src="js/studyhub.js"></script>
+  <script src="js/curriculum-model.js"></script>
+  <script src="js/curriculum-html.js"></script>
   <script src="js/curriculum.js"></script>
   <script src="js/assessment-packs.js"></script>
   <script src="js/share-loop.js"></script>
@@ -1600,11 +94,13 @@
   <script src="js/telemetry-config.js"></script>
   <script src="js/telemetry.js"></script>
   <script src="js/entitlements-config.js"></script>
+  <script src="js/entitlements-crypto.js"></script>
   <script src="js/entitlements.js"></script>
   <script src="js/sync-config.js"></script>
   <script src="js/sync.js"></script>
   <script src="js/readiness-ui.js"></script>
   <script src="js/home-widgets.js"></script>
+  <script src="js/readiness2.js"></script>
   <script src="js/onboarding.js?v=4.3.0"></script>
   <script src="js/pearson-mode.js"></script>
   <script src="js/mastery-heatmap.js"></script>
@@ -1628,64 +124,50 @@
   <!-- Clariora Level 4: The Datacenter Crucible -->
   <script src="js/crucible-engine.js"></script>
   <script src="js/crucible-ui.js"></script>
-  <script>
-    function bootAppGateAndSkeleton() {
-      var isTMA = false;
-      if (window.TMABridge) {
-        try {
-          var bridge = window.TMABridge.init();
-          if (bridge && ((bridge.state && bridge.state.isTMA) || bridge.isTMA) && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) {
-            isTMA = true;
-            var sub = document.getElementById('tmaSkeletonSubtext');
-            if (sub) sub.textContent = 'Telegram Mini App Initializing...';
-            if (typeof window.TMABridge.mountUserPill === 'function') {
-              window.TMABridge.mountUserPill('tmaUserPillMount');
-            }
-          }
-        } catch (bridgeErr) {
-          console.warn('[Init] TMABridge notice:', bridgeErr);
-        }
-      }
-      try {
-        if (window.ClarioraAuthUI) {
-          window.ClarioraAuthUI.init({ wall: !isTMA });
-        }
-      } catch (authUiErr) {
-        console.warn('[Init] AuthUI init notice:', authUiErr);
-      }
-      try {
-        if (window.ClarioraAuthGate) {
-          window.ClarioraAuthGate.init();
-        }
-      } catch (authGateErr) {
-        console.warn('[Init] AuthGate init notice:', authGateErr);
-      }
-      setTimeout(function () {
-        var sk = document.getElementById('tmaSkeletonScreen');
-        if (sk) sk.classList.add('is-loaded');
-      }, 250);
-    }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', bootAppGateAndSkeleton);
-    } else {
-      bootAppGateAndSkeleton();
-    }
-  </script>
+  <script src="js/boot-gate.js"></script>
 </head>
 <body>
+  <!-- a11y-hardening-deploy 20260911T163359Z -->
 
-  <!-- TMA Fast-Boot Skeleton Screen -->
-  <div id="tmaSkeletonScreen" class="tma-skeleton-screen" aria-hidden="true">
-    <div class="tma-skeleton-pulse"></div>
-    <div style="font-weight: 700; color: #D4AF37; font-size: 1.1rem; margin-bottom: 4px;">Clariora A+</div>
-    <div id="tmaSkeletonSubtext" style="color: #94A3B8; font-size: 0.8rem;">Preparing workspace...</div>
+  <!-- TMA Fast-Boot Skeleton Screen (geometry matches home; dismissed by boot-gate.js) -->
+  <div id="tmaSkeletonScreen" class="tma-skeleton-screen" aria-busy="true" aria-live="polite">
+    <div class="tma-skeleton-layout" aria-hidden="true">
+      <div class="tma-sk-header">
+        <span class="tma-sk-wordmark">Clariora A+</span>
+        <div class="sk sk-line tma-sk-nav"></div>
+      </div>
+      <div class="tma-sk-body">
+        <aside class="tma-sk-rail">
+          <div class="sk sk-card tma-sk-hero">
+            <div class="sk sk-line" style="width: 42%;"></div>
+            <div class="sk sk-block" style="width: 120px; height: 120px; border-radius: 50%; margin: 12px auto;"></div>
+            <div class="sk sk-line" style="width: 70%;"></div>
+          </div>
+          <div class="sk sk-card tma-sk-plan">
+            <div class="sk sk-line" style="width: 88%; height: 2.2em;"></div>
+            <div class="sk sk-line" style="width: 55%;"></div>
+            <div class="sk sk-line" style="width: 40%;"></div>
+          </div>
+        </aside>
+        <div class="tma-sk-main">
+          <div class="sk sk-line" style="width: 36%; margin-bottom: 12px;"></div>
+          <div class="tma-sk-mocks">
+            <div class="sk sk-card tma-sk-mock">
+              <div class="sk sk-line" style="width: 48%;"></div>
+              <div class="sk sk-line" style="width: 72%;"></div>
+              <div class="sk sk-block"></div>
+            </div>
+            <div class="sk sk-card tma-sk-mock">
+              <div class="sk sk-line" style="width: 48%;"></div>
+              <div class="sk sk-line" style="width: 72%;"></div>
+              <div class="sk sk-block"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <span id="tmaSkeletonSubtext" class="sr-only">Preparing workspace</span>
   </div>
-  <script>
-    setTimeout(function () {
-      var sk = document.getElementById('tmaSkeletonScreen');
-      if (sk && !sk.classList.contains('is-loaded')) sk.classList.add('is-loaded');
-    }, 1200);
-  </script>
 
   <!-- Cinematic boot: full-bleed brand, one enter path, then homepage. -->
   <div id="aplusBootIntro" class="boot-intro is-active" role="dialog" aria-modal="true" aria-labelledby="aplusBootIntroTitle">
@@ -1743,7 +225,7 @@
   <div class="container app-main">
 
     <!-- SCREEN 1: WELCOME & CONFIGURATION -->
-    <div id="startScreen" class="screen active home-dashboard">
+    <main id="startScreen" class="screen active home-dashboard" aria-label="Home dashboard">
 
       <!-- Home Tab Navigation -->
       <nav class="home-tab-nav" role="tablist" aria-label="Dashboard sections">
@@ -1769,7 +251,6 @@
             <section id="readinessHero" class="hero-card">
               <div class="shell-fallback" data-shell-fallback>
                 <h2>Take the 20-question diagnostic to get your readiness score.</h2>
-                <p>About 20 minutes. It sets your predicted score and picks what to study first.</p>
                 <button type="button" class="btn btn-secondary" onclick="window.APlus &amp;&amp; APlus.onboarding ? APlus.onboarding.start() : startExam('both',20,20)">Start diagnostic</button>
               </div>
             </section>
@@ -1872,7 +353,7 @@
                   <span class="quick-link-meta">Verify certificate</span>
                 </button>
               </nav>
-              <section id="recentAttemptsMount" class="card recent-attempts" aria-label="Recent attempts"></section>
+              <section id="recentAttemptsMount" class="card recent-attempts" aria-label="Recent attempts" aria-busy="true"></section>
             </section>
           </div>
         </div>
@@ -1884,8 +365,7 @@
           <div class="card study-resource-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 1.25rem;">
             <div>
               <div style="font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-primary); font-weight: 700; margin-bottom: 6px;">Text and notes</div>
-              <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0 0 8px;">CompTIA Study Library</h4>
-              <p style="font-size: 0.86rem; color: var(--text-secondary); line-height: 1.5; margin: 0 0 16px;">Comprehensive deep-dive study notes and searchable technical references for all Core 1 and Core 2 objectives.</p>
+              <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0 0 12px;">CompTIA Study Library</h4>
             </div>
             <button type="button" class="btn btn-secondary" onclick="openStudyLibraryModal()" style="width: 100%;">Open Study Library</button>
           </div>
@@ -1893,8 +373,7 @@
           <div class="card study-resource-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 1.25rem;">
             <div>
               <div style="font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-primary); font-weight: 700; margin-bottom: 6px;">Video training</div>
-              <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0 0 8px;">Professor Messer Courses</h4>
-              <p style="font-size: 0.86rem; color: var(--text-secondary); line-height: 1.5; margin: 0 0 16px;">Full indexed video courses for 220-1201 Core 1 and 220-1202 Core 2 with direct timestamp navigation.</p>
+              <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0 0 12px;">Professor Messer Courses</h4>
             </div>
             <button type="button" class="btn btn-secondary" onclick="openMesserModal()" style="width: 100%;">Watch Course Videos</button>
           </div>
@@ -1902,8 +381,7 @@
           <div class="card study-resource-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 1.25rem;">
             <div>
               <div style="font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-primary); font-weight: 700; margin-bottom: 6px;">Active recall</div>
-              <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0 0 8px;">Flashcards (SM-2 Spaced Repetition)</h4>
-              <p style="font-size: 0.86rem; color: var(--text-secondary); line-height: 1.5; margin: 0 0 16px;">Intelligent flashcard queue powered by the SuperMemo SM-2 algorithm. Reinforce missed questions automatically.</p>
+              <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0 0 12px;">Flashcards (SM-2 Spaced Repetition)</h4>
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
               <button type="button" class="btn btn-primary" onclick="startMemoryRaid()">Start cards</button>
@@ -1914,8 +392,7 @@
           <div class="card study-resource-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 1.25rem;">
             <div>
               <div style="font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-primary); font-weight: 700; margin-bottom: 6px;">Curriculum map</div>
-              <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0 0 8px;">Official CompTIA Objectives</h4>
-              <p style="font-size: 0.86rem; color: var(--text-secondary); line-height: 1.5; margin: 0 0 16px;">Interactive checklist of all 61 sub-objectives across both exams to track syllabus coverage.</p>
+              <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0 0 12px;">Official CompTIA Objectives</h4>
             </div>
             <button type="button" class="btn btn-secondary" onclick="openObjectivesModal()" style="width: 100%;">View objectives</button>
           </div>
@@ -1923,8 +400,7 @@
           <div class="card study-resource-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 1.25rem;">
             <div>
               <div style="font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-primary); font-weight: 700; margin-bottom: 6px;">Course material</div>
-              <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0 0 8px;">PowerPoint Slides and Labs</h4>
-              <p style="font-size: 0.86rem; color: var(--text-secondary); line-height: 1.5; margin: 0 0 16px;">Visual classroom presentations and guided terminal and hardware walkthroughs.</p>
+              <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0 0 12px;">PowerPoint Slides and Labs</h4>
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
               <button type="button" class="btn btn-secondary" onclick="openCurriculumModal('slides')">View slides</button>
@@ -1935,8 +411,7 @@
           <div class="card study-resource-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 1.25rem;">
             <div>
               <div style="font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-primary); font-weight: 700; margin-bottom: 6px;">Study schedule</div>
-              <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0 0 8px;">12-Week Guided Study Plan</h4>
-              <p style="font-size: 0.86rem; color: var(--text-secondary); line-height: 1.5; margin: 0 0 16px;">Structured milestone planner that balances Core 1 and Core 2 across daily 25-minute blocks.</p>
+              <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0 0 12px;">12-Week Guided Study Plan</h4>
             </div>
             <button type="button" class="btn btn-secondary" onclick="openStudyPlanModal()" style="width: 100%;">Configure plan</button>
           </div>
@@ -1959,24 +434,23 @@
           <section class="card" style="padding: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
             <div>
               <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 0 0 4px;">Readiness Pass Guarantee</h4>
-              <p style="font-size: 0.86rem; color: var(--text-secondary); margin: 0;">Generate a tamper-evident certificate when your predicted score clears the CompTIA pass mark.</p>
+              <p style="font-size: 0.86rem; color: var(--text-secondary); margin: 0;">Certificate issued when your predicted score clears the pass mark.</p>
             </div>
             <button type="button" class="btn btn-primary" onclick="APlus.passGuarantee.generateCertificate(prompt('Enter your full legal name for the readiness certificate:', 'Certified Technician') || 'Certified Technician', 'core1')">Verify certificate</button>
           </section>
 
           <section class="card" style="padding: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
             <div>
-              <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 0 0 4px;">Progress Record (APX Ledger)</h4>
-              <p style="font-size: 0.86rem; color: var(--text-secondary); margin: 0;">Locally signed proof of study with verifiable cryptographic hashes.</p>
+              <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 0;">Progress Record (APX Ledger)</h4>
             </div>
             <button type="button" class="btn btn-secondary" onclick="openLedgerModal()">Open progress record</button>
           </section>
         </div>
       </div>
-    </div>
+    </main>
 
     <!-- SCREEN 2: ACTIVE EXAM RUNNER -->
-    <div id="examScreen" class="screen" role="main" aria-label="Active exam">
+    <main id="examScreen" class="screen" aria-label="Active exam" aria-hidden="true">
 
       <div class="exam-toolbar" role="group" aria-label="Exam status and controls">
         <div class="exam-toolbar-info">
@@ -2033,10 +507,10 @@
           <button type="button" class="btn btn-green sidebar-submit" onclick="confirmFinishExam()">Submit exam</button>
         </div>
       </div>
-    </div>
+    </main>
 
     <!-- SCREEN 3: SCORE REPORT -->
-    <div id="resultsScreen" class="screen">
+    <div id="resultsScreen" class="screen" aria-hidden="true">
       <div id="scoreHero" class="score-hero passed">
         <div class="score-readout">
           <div class="score-gauge score-ring">
@@ -2525,8 +999,15 @@
 
     /* NAVIGATION */
     function showScreen(screenId) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(screenId).classList.add('active');
+      document.querySelectorAll('.screen').forEach(function (s) {
+        var active = s.id === screenId;
+        s.classList.toggle('active', active);
+        s.setAttribute('aria-hidden', active ? 'false' : 'true');
+        if ('inert' in s) {
+          if (active) s.removeAttribute('inert');
+          else s.inert = true;
+        }
+      });
 
       const headerControls = document.getElementById('examHeaderControls');
       if (screenId === 'examScreen') {
@@ -3201,7 +1682,7 @@
         const statusColor = isCorrect ? "var(--accent-green)" : "var(--accent-red)";
 
         card.innerHTML = `
-          <div class="review-item-header" onclick="toggleReviewBody(${idx})">
+          <button type="button" class="review-item-header" onclick="toggleReviewBody(${idx})" aria-expanded="false">
             <div>
               <span style="font-weight: 700; color: var(--accent-cyan);">Q${idx + 1}.</span> 
               <span>${escapeHTML(q.question.substring(0, 85))}...</span>
@@ -3209,9 +1690,9 @@
             <div style="display: flex; align-items: center; gap: 0.75rem;">
               ${isFlagged ? '<span style="color: var(--accent-amber); font-size: 0.8rem;">Flagged</span>' : ''}
               <span style="color: ${statusColor}; font-size: 0.85rem; font-weight: 700;">${statusIcon}</span>
-              <span>▼</span>
+              <span aria-hidden="true">▼</span>
             </div>
-          </div>
+          </button>
           <div class="review-body" id="reviewBody_${idx}">
             <p style="font-weight: 600; margin-bottom: 1rem;">${escapeHTML(q.question)}</p>
             <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;">
@@ -3425,8 +1906,14 @@
       }
     });
 
-    /* UTILITIES */
+    /* UTILITIES - prefer APlus.utils SSOT when present */
     function shuffleArray(arr) {
+      if (window.APlus && APlus.utils && typeof APlus.utils.shuffleArray === 'function') {
+        const copy = APlus.utils.shuffleArray(arr);
+        arr.length = 0;
+        for (let i = 0; i < copy.length; i++) arr.push(copy[i]);
+        return;
+      }
       for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [arr[i], arr[j]] = [arr[j], arr[i]];
@@ -3434,6 +1921,9 @@
     }
 
     function escapeHTML(str) {
+      if (window.APlus && APlus.utils && typeof APlus.utils.escapeHTML === 'function') {
+        return APlus.utils.escapeHTML(str);
+      }
       if (!str) return '';
       return String(str)
         .replace(/&/g, '&amp;')

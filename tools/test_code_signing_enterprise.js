@@ -57,10 +57,18 @@ const winPfxPath = path.join(CERTS_DIR, 'clariora_authenticode.pfx');
 const winLegacyPfxPath = path.join(CERTS_DIR, 'datacentre-academy-codesign.pfx');
 const winCerPath = path.join(CERTS_DIR, 'clariora_authenticode.cer');
 
-assert.ok(
-  fs.existsSync(winPfxPath) || fs.existsSync(winLegacyPfxPath),
-  'Windows Authenticode PFX must exist under build/certs/'
-);
+// Private signing material is never checked into git. Local/dev machines with
+// build/certs/ still run the full suite; CI without PFX skips cleanly.
+if (!fs.existsSync(winPfxPath) && !fs.existsSync(winLegacyPfxPath)) {
+  if (process.env.GITHUB_ACTIONS || process.env.CI) {
+    console.log('   [SKIP] Windows Authenticode PFX not present in CI (expected).');
+    console.log('================================================================');
+    console.log('[OK] CODE SIGNING CHECKS SKIPPED (no local certs in CI)');
+    console.log('================================================================');
+    process.exit(0);
+  }
+  assert.ok(false, 'Windows Authenticode PFX must exist under build/certs/');
+}
 
 const activeWinPfx = fs.existsSync(winPfxPath) ? winPfxPath : winLegacyPfxPath;
 const winPfxStat = fs.statSync(activeWinPfx);

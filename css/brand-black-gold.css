@@ -72,6 +72,19 @@
   --accent-amber: #D4AF37;
   --accent-purple: #A3ADC2;
 
+  /* ---- Semantic aliases (map to existing ramps) -------------- */
+  --color-primary: var(--gold-primary);
+  --color-success: var(--accent-green);
+  --color-warning: var(--accent-amber);
+  --color-danger: var(--accent-red);
+  --color-info: var(--accent-blue);
+  --foreground: var(--text-primary);
+  --muted-foreground: var(--text-muted);
+  --surface: var(--surface-0);
+  --muted: var(--surface-2);
+  --sk-base: var(--surface-2);
+  --sk-shine: #1E2533;
+
   /* ---- Fills that are not text ------------------------------- */
   --track-bg: rgba(255, 255, 255, 0.10);   /* progress + activity troughs */
   --scrim: rgba(0, 0, 0, 0.55);            /* page behind an overlay */
@@ -181,6 +194,19 @@
   --accent-red: #A23A2E;
   --accent-amber: #856611;
   --accent-purple: #4A546A;
+
+  /* ---- Semantic aliases (map to existing ramps) -------------- */
+  --color-primary: var(--gold-primary);
+  --color-success: var(--accent-green);
+  --color-warning: var(--accent-amber);
+  --color-danger: var(--accent-red);
+  --color-info: var(--accent-blue);
+  --foreground: var(--text-primary);
+  --muted-foreground: var(--text-muted);
+  --surface: var(--surface-0);
+  --muted: var(--surface-2);
+  --sk-base: var(--surface-2);
+  --sk-shine: #FFFFFF;
 
   --track-bg: #E1E5EB;
   --scrim: rgba(0, 0, 0, 0.55);
@@ -383,6 +409,58 @@ h1, h2, h3, h4, h5 {
 .btn:active {
   background: var(--gold-dark) !important;
   border-color: var(--gold-dark) !important;
+}
+
+.btn.is-busy,
+.btn[aria-busy="true"] {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.72;
+}
+
+.btn.is-busy::after,
+.btn[aria-busy="true"]::after {
+  content: "";
+  position: absolute;
+  right: 0.85rem;
+  top: 50%;
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-top: -0.425rem;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--on-gold) 30%, transparent);
+  border-top-color: var(--on-gold);
+  animation: aplusBtnSpin var(--dur-intro-long) var(--ease-out) infinite;
+}
+
+@keyframes aplusBtnSpin {
+  to { transform: rotate(360deg); }
+}
+
+.field-error,
+.adaptive-inline-error {
+  margin: 0.45rem 0 0;
+  font-size: 0.85rem;
+  color: #E8A0A0;
+}
+
+.recent-empty-wrap {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.recent-next-label {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.recent-next-cta {
+  justify-self: start;
+  min-height: 40px;
 }
 
 .btn-secondary,
@@ -1386,6 +1464,24 @@ footer {
   font-weight: 500;
   font-size: 0.9rem;
   min-height: 48px;
+}
+
+button.review-item-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 1.1rem 1.35rem;
+  border: none;
+  border-radius: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .review-item-header:hover {
@@ -6233,3 +6329,4 @@ header .brand {
   min-height: var(--hit);
   padding: 0 16px;
 }
+/* a11y-hard-20260911 */

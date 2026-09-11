@@ -282,6 +282,25 @@
   }
 
   /* ------------------------------------------------------------------ *
+   * Viewport reset
+   * ------------------------------------------------------------------ */
+
+  function scrollAppToTop() {
+    if (typeof window.scrollAppToTop === 'function' && window.scrollAppToTop !== scrollAppToTop) {
+      try { window.scrollAppToTop(); return; } catch (_) {}
+    }
+    try {
+      if (typeof window.scrollTo === 'function') window.scrollTo(0, 0);
+    } catch (_) {}
+    try {
+      if (document.documentElement) document.documentElement.scrollTop = 0;
+    } catch (_) {}
+    try {
+      if (document.body) document.body.scrollTop = 0;
+    } catch (_) {}
+  }
+
+  /* ------------------------------------------------------------------ *
    * UI controller
    * ------------------------------------------------------------------ */
 
@@ -298,11 +317,13 @@
         this.showScreen('examScreen');
         this.renderActiveQuestion();
         this.renderMatrix();
+        scrollAppToTop();
       });
 
       APlus.bus.on('exam:navigated', () => {
         this.renderActiveQuestion();
         this.highlightMatrixActive();
+        scrollAppToTop();
       });
 
       APlus.bus.on('exam:answered', () => {
@@ -347,9 +368,7 @@
         headerControls.style.display = (screenId === 'examScreen') ? 'flex' : 'none';
       }
 
-      if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
-        window.scrollTo(0, 0);
-      }
+      scrollAppToTop();
     }
 
     updateTimerDisplay(remainingSeconds) {

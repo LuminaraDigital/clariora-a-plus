@@ -1592,7 +1592,7 @@
   <script src="js/ghost-coach.js"></script>
   <script src="js/app.js"></script>
   <script src="js/boot-intro.js?v=4.3.4"></script>
-  <script src="js/shell-ux.js?v=4.3.4"></script>
+  <script src="js/shell-ux.js?v=4.3.5"></script>
   <script src="js/media-config.js"></script>
   <script src="js/media-resolver.js"></script>
   <script src="js/outcomes-evidence.js"></script>
@@ -2537,7 +2537,8 @@
           clearInterval(currentExamSession.timerInterval);
         }
       }
-      window.scrollTo(0, 0);
+      if (typeof window.scrollAppToTop === 'function') window.scrollAppToTop();
+      else window.scrollTo(0, 0);
     }
 
     /* EXAM GENERATION AND START */
@@ -2893,6 +2894,8 @@
       if (next >= 0 && next < currentExamSession.questions.length) {
         currentExamSession.currentIndex = next;
         renderQuestion();
+        if (typeof window.scrollAppToTop === 'function') window.scrollAppToTop();
+        else window.scrollTo(0, 0);
       } else if (next >= currentExamSession.questions.length) {
         openReviewModal();
       }
@@ -2902,6 +2905,8 @@
       currentExamSession.currentIndex = idx;
       renderQuestion();
       closeReviewModal();
+      if (typeof window.scrollAppToTop === 'function') window.scrollAppToTop();
+      else window.scrollTo(0, 0);
     }
 
     /* MATRIX GRID */

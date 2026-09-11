@@ -30,6 +30,71 @@
   }
 
   /* ---------------------------------------------------------------
+     Viewport reset on navigation
+     Instant jump to the top of the page (and known in-app scroll hosts)
+     whenever the learner changes screen, home tab, or exam question.
+     --------------------------------------------------------------- */
+
+  var SCROLL_HOST_IDS = [
+    'examScreen',
+    'startScreen',
+    'resultsScreen',
+    'curriculumViewer',
+    'studyDocViewer'
+  ];
+  var SCROLL_HOST_SELECTORS = [
+    '.container',
+    '.study-doc-viewer',
+    '.main-content',
+    '.home-main',
+    '#homeViewPractice',
+    '#homeViewStudy',
+    '#homeViewProgress'
+  ];
+
+  function resetScrollNode(el) {
+    if (!el) return;
+    try {
+      if (typeof el.scrollTop === 'number') el.scrollTop = 0;
+    } catch (_) {}
+    try {
+      if (typeof el.scrollLeft === 'number') el.scrollLeft = 0;
+    } catch (_) {}
+  }
+
+  function scrollAppToTop() {
+    var apply = function () {
+      try {
+        if (typeof window.scrollTo === 'function') window.scrollTo(0, 0);
+      } catch (_) {}
+      try {
+        if (document.documentElement) document.documentElement.scrollTop = 0;
+      } catch (_) {}
+      try {
+        if (document.body) document.body.scrollTop = 0;
+      } catch (_) {}
+      var i;
+      for (i = 0; i < SCROLL_HOST_IDS.length; i++) {
+        resetScrollNode(byId(SCROLL_HOST_IDS[i]));
+      }
+      for (i = 0; i < SCROLL_HOST_SELECTORS.length; i++) {
+        var nodes = document.querySelectorAll(SCROLL_HOST_SELECTORS[i]);
+        for (var j = 0; j < nodes.length; j++) resetScrollNode(nodes[j]);
+      }
+    };
+    apply();
+    if (typeof window.requestAnimationFrame === 'function') {
+      window.requestAnimationFrame(apply);
+    } else {
+      window.setTimeout(apply, 0);
+    }
+  }
+
+  window.scrollAppToTop = scrollAppToTop;
+  APlus.shell = APlus.shell || {};
+  APlus.shell.scrollToTop = scrollAppToTop;
+
+  /* ---------------------------------------------------------------
      First-run gate
      --------------------------------------------------------------- */
 
@@ -526,10 +591,7 @@
         try { APlus.masteryHeatmap.render(mount); } catch (_) {}
       }
     }
-    var startScreen = byId('startScreen');
-    if (startScreen && window.scrollY > 100) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    scrollAppToTop();
   }
 
   window.switchHomeTab = switchHomeTab;
@@ -835,6 +897,7 @@
         var result = orig.apply(this, arguments);
         closeMoreMenu();
         syncBodyScrollLock();
+        scrollAppToTop();
         window.setTimeout(function () {
           relabelDom();
           syncChromeLabels();

@@ -34,6 +34,31 @@
       "!*serviceAccount*.json",
       "!**/*.env*",
       "!admin/**"
-    ]
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "CompTIA_A_Plus_Setup_${version}.${ext}",
+      "legalTrademarks": "Datacentre Academy",
+      "verifyUpdateCodeSignature": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "allowElevation": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "Clariora A+ Simulator",
+      "uninstallDisplayName": "Clariora A+ Exam Simulator",
+      "deleteAppDataOnUninstall": false,
+      "runAfterFinish": true
+    },
+    "portable": {
+      "artifactName": "CompTIA_A_Plus_Portable_${version}.${ext}"
+    }
   }
 }

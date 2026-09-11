@@ -111,6 +111,124 @@ const GROQ_CHAT_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_ALLOWED_HOST = 'api.groq.com';
 
 /* ---------------------------------------------------------------------------
+ * Enterprise Policy Engine
+ * Centralized administrative fleet management:
+ * 1. %PROGRAMDATA%\Clariora\policy.json (machine-wide policy via GPO/Intune)
+ * 2. %APPDATA%\Clariora\policy.json (user-level policy)
+ * 3. CLI override switch: --policy=<path>
+ * ------------------------------------------------------------------------ */
+const DEFAULT_POLICY = {
+  offlineOnly: false,
+  disableExternalAi: false,
+  allowedAiProviders: ['groq', 'ollama', 'nvidia', 'openrouter'],
+  ollamaBaseUrl: 'http://localhost:11434',
+  disableTelemetry: false,
+  forceKioskMode: false,
+  allowWindowCloseDuringExam: false,
+  customDataDir: null
+};
+
+let activePolicy = Object.assign({}, DEFAULT_POLICY);
+let policyLoaded = false;
+
+function getPolicyFilePath() {
+  if (Array.isArray(process.argv)) {
+    for (const arg of process.argv) {
+      if (typeof arg === 'string' && arg.startsWith('--policy=')) {
+        return arg.split('=')[1].trim();
+      }
+    }
+  }
+
+  if (process.platform === 'win32' && process.env.ALLUSERSPROFILE) {
+    const machinePolicy = path.join(process.env.ALLUSERSPROFILE, 'Clariora', 'policy.json');
+    if (fs.existsSync(machinePolicy)) return machinePolicy;
+  }
+
+  try {
+    const userPolicy = path.join(app.getPath('userData'), 'policy.json');
+    if (fs.existsSync(userPolicy)) return userPolicy;
+  } catch (_) {}
+
+  return null;
+}
+
+function loadEnterprisePolicy(overridePath) {
+  if (policyLoaded && !overridePath) return activePolicy;
+  const policyFile = overridePath || getPolicyFilePath();
+  if (policyFile && fs.existsSync(policyFile)) {
+    try {
+      const raw = fs.readFileSync(policyFile, 'utf8');
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        activePolicy = Object.assign({}, DEFAULT_POLICY, parsed);
+        writeLog('info', `enterprise policy loaded from ${policyFile}: offlineOnly=${activePolicy.offlineOnly} kiosk=${activePolicy.forceKioskMode}`);
+      }
+    } catch (err) {
+      writeLog('warn', `failed to read enterprise policy at ${policyFile}: ${err && err.message}`);
+    }
+  }
+  policyLoaded = true;
+  return activePolicy;
+}
+
+/* ---------------------------------------------------------------------------
+ * Multi-Model Business AI Provider Registry
+ * Supports Groq Cloud, Private LAN/air-gapped Ollama, NVIDIA NIM, OpenRouter.
+ * ------------------------------------------------------------------------ */
+const AI_PROVIDERS = {
+  groq: {
+    id: 'groq',
+    name: 'Groq Cloud',
+    url: 'https://api.groq.com/openai/v1/chat/completions',
+    allowedHost: 'api.groq.com',
+    defaultModel: 'qwen/qwen3.8-27b',
+    isLocal: false,
+    requiresKey: true
+  },
+  ollama: {
+    id: 'ollama',
+    name: 'Private Ollama (LAN/Air-gapped)',
+    url: 'http://localhost:11434/v1/chat/completions',
+    allowedHost: null,
+    defaultModel: 'deepseek-r1:latest',
+    isLocal: true,
+    requiresKey: false
+  },
+  nvidia: {
+    id: 'nvidia',
+    name: 'NVIDIA NIM',
+    url: 'https://integrate.api.nvidia.com/v1/chat/completions',
+    allowedHost: 'integrate.api.nvidia.com',
+    defaultModel: 'meta/llama-3.3-70b-instruct',
+    isLocal: false,
+    requiresKey: true
+  },
+  openrouter: {
+    id: 'openrouter',
+    name: 'OpenRouter Multi-Model',
+    url: 'https://openrouter.ai/api/v1/chat/completions',
+    allowedHost: 'openrouter.ai',
+    defaultModel: 'anthropic/claude-3.5-sonnet',
+    isLocal: false,
+    requiresKey: true
+  }
+};
+
+function isLocalOrPrivateHost(hostname) {
+  if (!hostname) return false;
+  const h = hostname.toLowerCase();
+  if (h === 'localhost' || h === '127.0.0.1' || h === '::1') return true;
+  if (/^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(h)) return true;
+  if (/^192\.168\.\d{1,3}\.\d{1,3}$/.test(h)) return true;
+  if (/^172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}$/.test(h)) return true;
+  if (h.endsWith('.local') || h.endsWith('.internal') || h.endsWith('.corp')) return true;
+  return false;
+}
+
+let isExamSessionActive = false;
+
+/* ---------------------------------------------------------------------------
  * Rotating log file: userData/logs/main.log, 1 MB cap, 2 files kept.
  * No network telemetry is ever sent from the main process.
  * ------------------------------------------------------------------------ */
@@ -867,49 +985,100 @@ ipcMain.handle('storage:exportFile', async (_event, name, content) => {
   return { ok: true, path: result.filePath };
 });
 
-ipcMain.handle('groq:chat', async (_event, payload) => {
+async function handleAiChat(payload) {
   try {
     if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-      writeLog('warn', 'groq:chat rejected non-object payload');
+      writeLog('warn', 'ai:chat rejected non-object payload');
       return { ok: false, error: 'invalid_payload' };
     }
 
-    const apiKey = typeof payload.apiKey === 'string' ? payload.apiKey.trim() : '';
-    if (!apiKey) {
-      return { ok: false, error: 'missing_api_key' };
-    }
-    if (apiKey.length < 10 || apiKey.length > 512) {
-      writeLog('warn', 'groq:chat rejected API key with invalid bounds');
-      return { ok: false, error: 'invalid_api_key' };
+    const providerId = (typeof payload.provider === 'string' && payload.provider.trim().toLowerCase()) || 'groq';
+    const providerCfg = AI_PROVIDERS[providerId];
+    if (!providerCfg) {
+      writeLog('warn', `ai:chat rejected unknown provider: ${providerId}`);
+      return { ok: false, error: 'unknown_provider' };
     }
 
-    // Hard guard: this handler only ever talks to api.groq.com.
-    const target = new URL(GROQ_CHAT_URL);
-    if (target.protocol !== 'https:' || target.hostname !== GROQ_ALLOWED_HOST) {
-      writeLog('error', 'groq: blocked non-Groq endpoint');
-      return { ok: false, error: 'blocked_endpoint' };
+    const policy = loadEnterprisePolicy();
+
+    // Enterprise policy enforcement
+    if (policy.offlineOnly && !providerCfg.isLocal) {
+      writeLog('warn', `ai:chat blocked external provider ${providerId} due to offlineOnly policy`);
+      return {
+        ok: false,
+        error: 'policy_offline_only',
+        message: 'External AI access is disabled by organizational policy.'
+      };
+    }
+    if (policy.disableExternalAi && !providerCfg.isLocal) {
+      writeLog('warn', `ai:chat blocked external provider ${providerId} due to disableExternalAi policy`);
+      return {
+        ok: false,
+        error: 'policy_external_ai_disabled',
+        message: 'External cloud AI is disabled. Use local/air-gapped Ollama.'
+      };
+    }
+    if (Array.isArray(policy.allowedAiProviders) && !policy.allowedAiProviders.includes(providerId)) {
+      writeLog('warn', `ai:chat provider ${providerId} not permitted by allowedAiProviders policy`);
+      return {
+        ok: false,
+        error: 'provider_not_allowed_by_policy',
+        message: `Provider "${providerId}" is not allowed by organizational policy.`
+      };
+    }
+
+    const apiKey = typeof payload.apiKey === 'string' ? payload.apiKey.trim() : '';
+    if (providerCfg.requiresKey) {
+      if (!apiKey) {
+        return { ok: false, error: 'missing_api_key' };
+      }
+      if (apiKey.length < 10 || apiKey.length > 512) {
+        writeLog('warn', `ai:chat rejected API key with invalid bounds for ${providerId}`);
+        return { ok: false, error: 'invalid_api_key' };
+      }
+    }
+
+    // Determine endpoint URL
+    let endpointUrl = providerCfg.url;
+    if (providerId === 'ollama') {
+      const base = (policy.ollamaBaseUrl || payload.baseUrl || 'http://localhost:11434').replace(/\/+$/, '');
+      endpointUrl = base + '/v1/chat/completions';
+    }
+
+    // Endpoint security validation
+    const parsedEndpoint = new URL(endpointUrl);
+    if (providerCfg.allowedHost) {
+      if (parsedEndpoint.protocol !== 'https:' || parsedEndpoint.hostname !== providerCfg.allowedHost) {
+        writeLog('error', `ai:chat blocked non-allowlisted endpoint for ${providerId}: ${endpointUrl}`);
+        return { ok: false, error: 'blocked_endpoint' };
+      }
+    } else if (providerId === 'ollama') {
+      if (!isLocalOrPrivateHost(parsedEndpoint.hostname)) {
+        writeLog('error', `ai:chat blocked non-local host for ollama: ${parsedEndpoint.hostname}`);
+        return { ok: false, error: 'blocked_endpoint', message: 'Ollama host must be local or private LAN.' };
+      }
     }
 
     if (!Array.isArray(payload.messages) || payload.messages.length === 0 || payload.messages.length > 50) {
-      writeLog('warn', 'groq:chat rejected invalid messages list');
+      writeLog('warn', 'ai:chat rejected invalid messages list');
       return { ok: false, error: 'invalid_messages' };
     }
     for (const msg of payload.messages) {
       if (!msg || typeof msg !== 'object' || typeof msg.role !== 'string' || typeof msg.content !== 'string') {
-        writeLog('warn', 'groq:chat rejected malformed message item');
+        writeLog('warn', 'ai:chat rejected malformed message item');
         return { ok: false, error: 'malformed_message_entry' };
       }
       if (msg.content.length > 65536) {
-        writeLog('warn', 'groq:chat rejected message exceeding 64KB');
+        writeLog('warn', 'ai:chat rejected message exceeding 64KB');
         return { ok: false, error: 'message_too_large' };
       }
     }
 
     const model = typeof payload.model === 'string' && payload.model.trim()
       ? payload.model.trim()
-      : 'qwen/qwen3.8-27b';
-    if (model.length > 128 || !/^[a-zA-Z0-9_.\-\/]+$/.test(model)) {
-      writeLog('warn', 'groq:chat rejected invalid model identifier');
+      : providerCfg.defaultModel;
+    if (model.length > 128 || !/^[a-zA-Z0-9_.:\-\/]+$/.test(model)) {
+      writeLog('warn', 'ai:chat rejected invalid model identifier');
       return { ok: false, error: 'invalid_model' };
     }
 
@@ -927,22 +1096,33 @@ ipcMain.handle('groq:chat', async (_event, payload) => {
       max_tokens: max_tokens
     };
 
-    const res = await fetch(GROQ_CHAT_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + apiKey
-      },
-      body: JSON.stringify(body)
-    });
+    const headers = { 'Content-Type': 'application/json' };
+    if (apiKey) {
+      headers['Authorization'] = 'Bearer ' + apiKey;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 45000);
+
+    let res;
+    try {
+      res = await fetch(endpointUrl, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      // Never log the key: scrubSecrets also strips Bearer tokens defensively.
-      writeLog('warn', 'groq http ' + res.status + ' model=' + body.model);
+      writeLog('warn', `${providerId} http ${res.status} model=${body.model}`);
       return {
         ok: false,
-        error: (data && data.error && data.error.message) || ('http_' + res.status),
+        provider: providerId,
+        error: (data && data.error && (data.error.message || data.error)) || ('http_' + res.status),
         raw: data
       };
     }
@@ -951,11 +1131,214 @@ ipcMain.handle('groq:chat', async (_event, payload) => {
       ? String(data.choices[0].message.content || '').trim()
       : '';
 
-    return { ok: true, content: content, model: body.model, raw: data };
+    return {
+      ok: true,
+      provider: providerId,
+      content: content,
+      model: body.model,
+      raw: data
+    };
   } catch (err) {
-    writeLog('warn', 'groq request failed: ' + ((err && err.message) || 'groq_ipc_error'));
-    return { ok: false, error: (err && err.message) || 'groq_ipc_error' };
+    const isTimeout = err && (err.name === 'AbortError' || err.code === 'ETIMEDOUT');
+    const errMsg = isTimeout ? 'request_timeout' : ((err && err.message) || 'ai_ipc_error');
+    writeLog('warn', `ai:chat request failed: ${errMsg}`);
+    return { ok: false, error: errMsg };
   }
+}
+
+ipcMain.handle('ai:chat', async (_event, payload) => {
+  return handleAiChat(payload);
+});
+
+ipcMain.handle('ai:getProviders', async () => {
+  const policy = loadEnterprisePolicy();
+  const list = Object.values(AI_PROVIDERS).map(p => ({
+    id: p.id,
+    name: p.name,
+    defaultModel: p.defaultModel,
+    isLocal: p.isLocal,
+    requiresKey: p.requiresKey,
+    isAllowed: Array.isArray(policy.allowedAiProviders) ? policy.allowedAiProviders.includes(p.id) : true
+  }));
+  return { ok: true, providers: list, policy: policy };
+});
+
+// Legacy backward-compatible Groq IPC
+ipcMain.handle('groq:chat', async (_event, payload) => {
+  const p = Object.assign({}, payload, { provider: 'groq' });
+  return handleAiChat(p);
+});
+
+// Exam session active guard
+ipcMain.handle('exam:setSessionActive', async (_event, active) => {
+  isExamSessionActive = !!active;
+  writeLog('info', `exam session active set to: ${isExamSessionActive}`);
+  return { ok: true, active: isExamSessionActive };
+});
+
+ipcMain.handle('exam:isSessionActive', async () => {
+  return isExamSessionActive;
+});
+
+// Kiosk / Proctoring Mode
+ipcMain.handle('kiosk:enable', async () => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.setKiosk(true);
+    writeLog('info', 'kiosk mode enabled');
+    return true;
+  }
+  return false;
+});
+
+ipcMain.handle('kiosk:disable', async () => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.setKiosk(false);
+    writeLog('info', 'kiosk mode disabled');
+    return false;
+  }
+  return false;
+});
+
+ipcMain.handle('kiosk:toggle', async () => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    const curr = mainWindow.isKiosk();
+    mainWindow.setKiosk(!curr);
+    writeLog('info', `kiosk mode toggled to: ${!curr}`);
+    return !curr;
+  }
+  return false;
+});
+
+ipcMain.handle('kiosk:isActive', async () => {
+  return mainWindow && !mainWindow.isDestroyed() ? mainWindow.isKiosk() : false;
+});
+
+// Enterprise Policy IPC
+ipcMain.handle('policy:getPolicy', async () => {
+  return loadEnterprisePolicy();
+});
+
+// Diagnostic & Integrity Suite
+function runIntegrityCheck() {
+  const result = {
+    ok: true,
+    timestamp: new Date().toISOString(),
+    version: APP_VERSION,
+    packaged: typeof app !== 'undefined' && app ? app.isPackaged : false,
+    portable: isPortableInstall(),
+    checks: {}
+  };
+
+  const dirRoot = __dirname;
+
+  // 1. Check exam_data.json
+  try {
+    const bankFile = path.join(dirRoot, 'exam_data.json');
+    if (fs.existsSync(bankFile)) {
+      const bankData = JSON.parse(fs.readFileSync(bankFile, 'utf8'));
+      const qCount = Array.isArray(bankData.questions)
+        ? bankData.questions.length
+        : ((Array.isArray(bankData.core1) ? bankData.core1.length : 0) + (Array.isArray(bankData.core2) ? bankData.core2.length : 0));
+      result.checks.examBank = { ok: qCount >= 500, questionCount: qCount, version: bankData.version };
+      if (qCount < 500) result.ok = false;
+    } else {
+      result.checks.examBank = { ok: false, error: 'missing_exam_data_json' };
+      result.ok = false;
+    }
+  } catch (err) {
+    result.checks.examBank = { ok: false, error: String(err && err.message) };
+    result.ok = false;
+  }
+
+  // 2. Check study_library.json
+  try {
+    const studyFile = path.join(dirRoot, 'study_library.json');
+    if (fs.existsSync(studyFile)) {
+      const studyData = JSON.parse(fs.readFileSync(studyFile, 'utf8'));
+      const docCount = (studyData.documents && studyData.documents.length) || 0;
+      result.checks.studyLibrary = { ok: docCount > 0, docCount: docCount };
+    } else {
+      result.checks.studyLibrary = { ok: false, error: 'missing_study_library_json' };
+    }
+  } catch (err) {
+    result.checks.studyLibrary = { ok: false, error: String(err && err.message) };
+  }
+
+  // 3. Check database & storage health
+  try {
+    const dbPath = getDatabasePath();
+    const dbDir = path.dirname(dbPath);
+    fs.mkdirSync(dbDir, { recursive: true });
+    const testFile = path.join(dbDir, '.write_test');
+    fs.writeFileSync(testFile, 'ok', 'utf8');
+    fs.unlinkSync(testFile);
+
+    const dbExists = fs.existsSync(dbPath);
+    let recordCount = 0;
+    if (dbExists) {
+      const dbContent = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+      recordCount = Object.keys(dbContent || {}).length;
+    }
+    result.checks.databaseStorage = {
+      ok: true,
+      path: dbPath,
+      exists: dbExists,
+      records: recordCount,
+      writeable: true
+    };
+  } catch (err) {
+    result.checks.databaseStorage = { ok: false, error: String(err && err.message) };
+    result.ok = false;
+  }
+
+  // 4. Policy check
+  result.checks.policy = { ok: true, active: loadEnterprisePolicy() };
+
+  return result;
+}
+
+function exportDiagnostics() {
+  const integrity = runIntegrityCheck();
+  let logTail = [];
+  try {
+    const logFile = getLogFile();
+    if (fs.existsSync(logFile)) {
+      const lines = fs.readFileSync(logFile, 'utf8').split('\n').filter(Boolean);
+      logTail = lines.slice(-50).map(scrubSecrets);
+    }
+  } catch (_) {}
+
+  return {
+    reportGeneratedAt: new Date().toISOString(),
+    system: {
+      platform: process.platform,
+      arch: process.arch,
+      nodeVersion: process.versions.node,
+      electronVersion: process.versions.electron,
+      chromeVersion: process.versions.chrome
+    },
+    app: {
+      name: 'Clariora',
+      version: APP_VERSION,
+      isPackaged: typeof app !== 'undefined' && app ? app.isPackaged : false,
+      isPortable: isPortableInstall(),
+      appPath: typeof app !== 'undefined' && app && typeof app.getAppPath === 'function' ? app.getAppPath() : __dirname,
+      userDataPath: typeof app !== 'undefined' && app && typeof app.getPath === 'function' ? app.getPath('userData') : '',
+      databasePath: getDatabasePath(),
+      logFile: getLogFile()
+    },
+    integrity: integrity,
+    policy: loadEnterprisePolicy(),
+    recentLogs: logTail
+  };
+}
+
+ipcMain.handle('diagnostics:runIntegrityCheck', async () => {
+  return runIntegrityCheck();
+});
+
+ipcMain.handle('diagnostics:exportDiagnostics', async () => {
+  return exportDiagnostics();
 });
 
 /* ---------------------------------------------------------------------------
@@ -1281,6 +1664,8 @@ function applySecurityPolicy() {
 function createWindow() {
   const state = loadWindowState();
   const isMac = process.platform === 'darwin';
+  const policy = loadEnterprisePolicy();
+  const launchKiosk = (Array.isArray(process.argv) && process.argv.includes('--kiosk')) || !!policy.forceKioskMode;
 
   mainWindow = new BrowserWindow({
     width: state.width,
@@ -1290,6 +1675,7 @@ function createWindow() {
     minWidth: MIN_WIDTH,
     minHeight: MIN_HEIGHT,
     show: false,
+    kiosk: launchKiosk,
     autoHideMenuBar: !isMac,
     title: 'Clariora Exam Simulator',
     backgroundColor: '#07090E',
@@ -1302,7 +1688,7 @@ function createWindow() {
     }
   });
 
-  if (state.maximized) mainWindow.maximize();
+  if (state.maximized && !launchKiosk) mainWindow.maximize();
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
@@ -1316,7 +1702,34 @@ function createWindow() {
     }
   });
 
-  mainWindow.on('close', saveWindowState);
+  mainWindow.on('close', (event) => {
+    if (isExamSessionActive && !policy.allowWindowCloseDuringExam) {
+      const choice = dialog.showMessageBoxSync(mainWindow, {
+        type: 'warning',
+        buttons: ['Resume Exam', 'Exit Simulator'],
+        defaultId: 0,
+        cancelId: 0,
+        title: 'Active Exam Session',
+        message: 'An exam session is currently in progress.',
+        detail: 'Exiting now will forfeit your timed exam score and close the simulator.\n\nAre you sure you want to exit?'
+      });
+      if (choice === 0) {
+        event.preventDefault();
+        return;
+      }
+    }
+    isExamSessionActive = false;
+    saveWindowState();
+  });
+
+  mainWindow.on('blur', () => {
+    if (isExamSessionActive) {
+      writeLog('info', 'proctoring: exam window lost focus');
+      if (mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents) {
+        mainWindow.webContents.send('exam:focus-lost', { timestamp: Date.now() });
+      }
+    }
+  });
   mainWindow.on('resize', saveWindowState);
   mainWindow.on('move', saveWindowState);
   mainWindow.on('closed', () => { mainWindow = null; });
@@ -1565,19 +1978,55 @@ process.on('uncaughtException', (err) => {
   writeLog('error', 'uncaughtException: ' + ((err && err.stack) || err));
 });
 
-process.on('unhandledRejection', (reason) => {
-  writeLog('error', 'unhandledRejection: ' + ((reason && reason.stack) || reason));
-});
+function handleHeadlessCliSwitches() {
+  if (!Array.isArray(process.argv)) return false;
+
+  if (process.argv.includes('--verify-integrity')) {
+    const integrity = runIntegrityCheck();
+    process.stdout.write(JSON.stringify(integrity, null, 2) + '\n');
+    app.exit(integrity.ok ? 0 : 1);
+    return true;
+  }
+
+  if (process.argv.includes('--export-diagnostics')) {
+    const report = exportDiagnostics();
+    let outPath = 'diagnostics.json';
+    for (const arg of process.argv) {
+      if (typeof arg === 'string' && arg.startsWith('--out=')) {
+        outPath = arg.split('=')[1].trim();
+      }
+    }
+    try {
+      fs.writeFileSync(outPath, JSON.stringify(report, null, 2), 'utf8');
+      process.stdout.write(`Diagnostics successfully exported to ${path.resolve(outPath)}\n`);
+      app.exit(0);
+    } catch (err) {
+      process.stderr.write(`Failed to export diagnostics: ${err && err.message}\n`);
+      app.exit(1);
+    }
+    return true;
+  }
+
+  return false;
+}
 
 app.whenReady().then(() => {
   ensureStorageLayout();
+  loadEnterprisePolicy();
   writeLog('info', 'app ready v' + APP_VERSION + ' packaged=' + app.isPackaged + ' portable=' + isPortableInstall());
+
+  if (handleHeadlessCliSwitches()) return;
+
   applySecurityPolicy();
   loadProgress();
   createWindow();
 
-  // The updater must never delay the first paint.
-  setTimeout(initAutoUpdater, 4000);
+  // The updater must never delay the first paint, and is disabled in offlineOnly policy mode.
+  if (!activePolicy.offlineOnly) {
+    setTimeout(initAutoUpdater, 4000);
+  } else {
+    writeLog('info', 'updater: skipped, offlineOnly policy is active');
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -1607,6 +2056,15 @@ if (typeof module !== 'undefined' && module.exports) {
     validateStorageValue,
     validateDatabasePayload,
     MAX_IPC_KEY_LENGTH,
-    MAX_STORAGE_VALUE_BYTES
+    MAX_STORAGE_VALUE_BYTES,
+    // Enterprise Desktop Exports
+    AI_PROVIDERS,
+    DEFAULT_POLICY,
+    loadEnterprisePolicy,
+    handleAiChat,
+    runIntegrityCheck,
+    exportDiagnostics,
+    isLocalOrPrivateHost,
+    scrubSecrets
   };
 }

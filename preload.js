@@ -66,5 +66,33 @@ contextBridge.exposeInMainWorld('electronAPI', {
   log: (level, message) => ipcRenderer.invoke('log:write', String(level || 'info'), String(message == null ? '' : message)),
   groq: {
     chat: (payload) => ipcRenderer.invoke('groq:chat', payload)
+  },
+  ai: {
+    chat: (payload) => ipcRenderer.invoke('ai:chat', payload),
+    getProviders: () => ipcRenderer.invoke('ai:getProviders')
+  },
+  kiosk: {
+    enable: () => ipcRenderer.invoke('kiosk:enable'),
+    disable: () => ipcRenderer.invoke('kiosk:disable'),
+    toggle: () => ipcRenderer.invoke('kiosk:toggle'),
+    isActive: () => ipcRenderer.invoke('kiosk:isActive'),
+    onFocusLost: (cb) => {
+      if (typeof cb !== 'function') return () => {};
+      const listener = (_event, payload) => cb(payload);
+      ipcRenderer.on('exam:focus-lost', listener);
+      return () => ipcRenderer.removeListener('exam:focus-lost', listener);
+    }
+  },
+  exam: {
+    setSessionActive: (active) => ipcRenderer.invoke('exam:setSessionActive', active),
+    isSessionActive: () => ipcRenderer.invoke('exam:isSessionActive')
+  },
+  policy: {
+    getPolicy: () => ipcRenderer.invoke('policy:getPolicy')
+  },
+  diagnostics: {
+    runIntegrityCheck: () => ipcRenderer.invoke('diagnostics:runIntegrityCheck'),
+    exportDiagnostics: () => ipcRenderer.invoke('diagnostics:exportDiagnostics')
   }
 });
+

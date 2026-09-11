@@ -29,9 +29,27 @@ ROOT = Path(__file__).resolve().parents[1]
 APP_DIR = ROOT / "CompTIA_A_Plus_Desktop_App" / "resources" / "app"
 OUT_DIR = ROOT / "release"
 CERT_DIR = ROOT / "build" / "certs"
-PFX_PATH = CERT_DIR / "datacentre-academy-codesign.pfx"
+
+
+def _load_dotenv() -> None:
+    env_file = ROOT / ".env"
+    if env_file.is_file():
+        for line in env_file.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, v = line.split("=", 1)
+                k = k.strip()
+                v = v.strip()
+                if k and k not in os.environ:
+                    os.environ[k] = v
+
+
+_load_dotenv()
+
+AUTH_PFX = CERT_DIR / "clariora_authenticode.pfx"
+PFX_PATH = AUTH_PFX if AUTH_PFX.is_file() else (CERT_DIR / "datacentre-academy-codesign.pfx")
 # Set CSC_KEY_PASSWORD in the environment (see docs/WINDOWS_RELEASE.md). Never commit it.
-PFX_PASSWORD = os.environ.get("CSC_KEY_PASSWORD", "")
+PFX_PASSWORD = os.environ.get("CSC_KEY_PASSWORD") or os.environ.get("WIN_CSC_KEY_PASSWORD", "")
 
 # release.config.json at the repository root is the single source of release truth.
 RELEASE_CONFIG = ROOT / "release.config.json"
@@ -370,8 +388,15 @@ def main() -> int:
         env["CSC_IDENTITY_AUTO_DISCOVERY"] = "false"
         print("Signing: DISABLED (--unsigned)")
     elif env.get("WIN_CSC_LINK") or env.get("CSC_LINK"):
+        link = env.get("WIN_CSC_LINK") or env.get("CSC_LINK")
+        env["CSC_LINK"] = link
+        env["WIN_CSC_LINK"] = link
+        pw = env.get("CSC_KEY_PASSWORD") or env.get("WIN_CSC_KEY_PASSWORD") or PFX_PASSWORD
+        if pw:
+            env["CSC_KEY_PASSWORD"] = pw
+            env["WIN_CSC_KEY_PASSWORD"] = pw
         env.pop("CSC_IDENTITY_AUTO_DISCOVERY", None)
-        print("Signing: using WIN_CSC_LINK / CSC_LINK from environment")
+        print(f"Signing: using WIN_CSC_LINK / CSC_LINK ({link})")
     else:
         try:
             pfx = ensure_local_codesign_pfx()

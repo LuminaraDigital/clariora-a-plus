@@ -43,7 +43,8 @@
       "icon": "build/icon.ico",
       "artifactName": "CompTIA_A_Plus_Setup_${version}.${ext}",
       "legalTrademarks": "Datacentre Academy",
-      "verifyUpdateCodeSignature": false
+      "verifyUpdateCodeSignature": false,
+      "rfc3161TimeStampServer": "http://timestamp.digicert.com"
     },
     "nsis": {
       "oneClick": false,
@@ -59,6 +60,35 @@
     },
     "portable": {
       "artifactName": "CompTIA_A_Plus_Portable_${version}.${ext}"
+    },
+    "mac": {
+      "category": "public.app-category.education",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "build/icon.icns",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.inherit.plist",
+      "artifactName": "CompTIA_A_Plus_Mac_${version}_${arch}.${ext}"
+    },
+    "dmg": {
+      "title": "${productName} ${version}",
+      "artifactName": "CompTIA_A_Plus_Mac_${version}_${arch}.${ext}",
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
     }
   }
 }

@@ -72,7 +72,7 @@
       const b = this.getBenchmark(q);
       if (!b) return '';
 
-      const rateColor = b.correctRate >= 75 ? '#10b981' : b.correctRate >= 60 ? '#f59e0b' : '#ef4444';
+      const rateColor = b.correctRate >= 75 ? 'var(--color-success)' : b.correctRate >= 60 ? 'var(--color-warning)' : 'var(--color-danger)';
 
       return `
         <div class="community-benchmark-badge" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px; padding: 0.35rem 0.65rem; font-size: 0.78rem; margin-top: 0.5rem;">

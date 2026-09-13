@@ -217,7 +217,8 @@ CREATE TABLE IF NOT EXISTS auth_events (
 CREATE INDEX IF NOT EXISTS idx_auth_events_uid ON auth_events(uid);
 CREATE INDEX IF NOT EXISTS idx_auth_events_created ON auth_events(created_at);
 
--- 11. Learner Memories (Agent SRS / SRS Cognitive Trace Engine)
+-- 11. Learner Memories (Ghost Coach promote + coach extract/store)
+-- kinds: preference | weak_objective | miss_pattern | confusion_pair | exam_goal | session_note | agent_trace
 CREATE TABLE IF NOT EXISTS learner_memories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id TEXT NOT NULL,

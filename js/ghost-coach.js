@@ -464,6 +464,43 @@
     };
   }
 
+  /**
+   * Compact payload for D1 promote (/api/v1/memory/promote) and coach enrichment.
+   * Only pairs with count >= 2 (same gate as rankConfusionPairs).
+   */
+  function buildMemoryPromotionPayload(state, now, limits) {
+    const n = now || Date.now();
+    const pairLimit = (limits && limits.pairs) || 8;
+    const weakLimit = (limits && limits.weak) || 8;
+    const pairs = rankConfusionPairs(state, n, pairLimit).map((p) => {
+      const parts = String(p.key || '').split('|');
+      const objEntries = Object.entries(p.objectives || {}).sort((a, b) => b[1] - a[1]);
+      return {
+        key: p.key,
+        a: parts[0] || '',
+        b: parts[1] || '',
+        count: p.count,
+        score: Number(p.score) || 0,
+        lastSeen: p.lastSeen || 0,
+        objective: objEntries.length ? objEntries[0][0] : null,
+        sample: (p.samples && p.samples[0]) || null
+      };
+    });
+    const weakObjectives = rankWeakObjectives(state, n, weakLimit).map((w) => ({
+      objective: w.objective,
+      domain: w.domain || '',
+      attempts: w.attempts,
+      wrong: w.wrong,
+      accuracy: w.accuracy,
+      weakness: w.weakness
+    }));
+    return {
+      version: 1,
+      confusionPairs: pairs,
+      weakObjectives: weakObjectives
+    };
+  }
+
   const core = {
     STORAGE_KEY,
     MISSION_SIZE_DEFAULT,
@@ -477,6 +514,7 @@
     buildMissionPool,
     measureMissionOutcome,
     composeExplainOnMiss,
+    buildMemoryPromotionPayload,
     tokenizeLabel,
     pairKey
   };
@@ -500,6 +538,88 @@
 
     function saveState(state) {
       if (APlus.storage) APlus.storage.set(STORAGE_KEY, state);
+    }
+
+    let memoryPromoteTimer = null;
+    let memoryPromoteInFlight = false;
+
+    async function resolveAuthForMemory() {
+      let idToken = null;
+      let initData = '';
+      try {
+        const svc = windowObj.ClarioraFirebaseService;
+        const user = svc && svc.getCurrentUser && svc.getCurrentUser();
+        if (user && user.getIdToken) idToken = await user.getIdToken();
+      } catch (_) {}
+      try {
+        initData = (windowObj.Telegram && windowObj.Telegram.WebApp && windowObj.Telegram.WebApp.initData) || '';
+      } catch (_) {}
+      return { idToken, initData };
+    }
+
+    function memoryApiBase() {
+      try {
+        const host = windowObj.location && windowObj.location.hostname;
+        if (host && (host.endsWith('clariora.com.au') || host.endsWith('pages.dev') || host === 'localhost' || host === '127.0.0.1')) {
+          return '';
+        }
+      } catch (_) {}
+      return 'https://clariora.com.au';
+    }
+
+    /**
+     * Best-effort promote of confusion pairs / weak objectives to D1.
+     * Silent when signed out or offline (local Ghost Coach still works).
+     */
+    async function syncMemoryPromotion(force) {
+      const state = loadState();
+      const payload = buildMemoryPromotionPayload(state);
+      if (!payload.confusionPairs.length && !payload.weakObjectives.length) {
+        return { skipped: true, reason: 'empty' };
+      }
+      if (memoryPromoteInFlight && !force) return { skipped: true, reason: 'in_flight' };
+      memoryPromoteInFlight = true;
+      try {
+        const auth = await resolveAuthForMemory();
+        if (!auth.idToken && !auth.initData) {
+          return { skipped: true, reason: 'auth' };
+        }
+        const endpoint = memoryApiBase() + '/api/v1/memory/promote';
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Telegram-Init-Data': auth.initData || ''
+          },
+          body: JSON.stringify({
+            confusionPairs: payload.confusionPairs,
+            weakObjectives: payload.weakObjectives,
+            idToken: auth.idToken || undefined,
+            initData: auth.initData || undefined
+          })
+        });
+        if (!res.ok) {
+          return { skipped: true, reason: 'http_' + res.status };
+        }
+        const data = await res.json().catch(() => ({}));
+        APlus.bus && APlus.bus.emit('coach:memory:promoted', data);
+        return data;
+      } catch (_) {
+        return { skipped: true, reason: 'network' };
+      } finally {
+        memoryPromoteInFlight = false;
+      }
+    }
+
+    function scheduleMemoryPromotion() {
+      if (memoryPromoteTimer) {
+        windowObj.clearTimeout(memoryPromoteTimer);
+      }
+      memoryPromoteTimer = windowObj.setTimeout(() => {
+        memoryPromoteTimer = null;
+        syncMemoryPromotion(false).catch(() => {});
+      }, 2200);
     }
 
     function videoFinder(objective, examType) {
@@ -528,6 +648,7 @@
       saveState(state);
       renderMissionUi(mission, state);
       APlus.bus.emit('coach:mission:ready', mission);
+      scheduleMemoryPromotion();
 
       // Background Groq polish (non-blocking). Falls back silently if offline/disabled.
       enhanceMissionWithGroq(mission).then((enhanced) => {
@@ -955,7 +1076,41 @@
       startCurrentMission: startCurrentMission,
       getCurrentMission: getCurrentMission,
       loadState: loadState,
-      composeExplainOnMiss: composeExplainOnMiss
+      composeExplainOnMiss: composeExplainOnMiss,
+      buildMemoryPromotionPayload: function () {
+        return buildMemoryPromotionPayload(loadState());
+      },
+      syncMemoryPromotion: syncMemoryPromotion,
+      getCoachEnrichment: function () {
+        const state = loadState();
+        const payload = buildMemoryPromotionPayload(state);
+        const mission = state.currentMission || null;
+        return {
+          missHistory: (payload.weakObjectives || []).map((w) => ({
+            objective: w.objective,
+            count: w.wrong || 1,
+            lastMissAt: null
+          })),
+          weakDomains: (payload.weakObjectives || [])
+            .map((w) => w.domain)
+            .filter(Boolean)
+            .slice(0, 6),
+          confusionPairs: payload.confusionPairs || [],
+          weakObjectives: payload.weakObjectives || [],
+          ghostCoachPromote: payload,
+          currentMission: mission
+            ? {
+                id: mission.id || null,
+                title: mission.title || '',
+                summary: mission.summary || '',
+                primaryObjective: mission.primaryObjective || null,
+                primaryDomain: mission.primaryDomain || null,
+                kind: mission.kind || null,
+                examType: mission.examType || null
+              }
+            : null
+        };
+      }
     };
 
     if (document.readyState === 'loading') {

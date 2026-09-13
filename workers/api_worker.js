@@ -15,6 +15,7 @@
  * 7. /api/v1/coach                - Gated multi-provider AI gateway (budgets, triage, tools)
  * 7b. /api/v1/coach/stream        - SSE streaming coach (paid tiers)
  * 7c. /api/v1/coach/jobs          - Pro async exam review packs + DLQ
+ * 7d. /api/v1/memory/promote      - Promote Ghost Coach confusion pairs / weak objectives to D1
  * 8. /api/v1/billing/stars/invoice- Telegram Stars (XTR) Invoice generation
  * 9. /api/v1/billing/entitlement - Resolve paid tier from verified identity
  * 10. /api/v1/telegram/webhook    - Telegram Bot Webhook (Commands, Pre-checkout, Successful payment)
@@ -39,6 +40,7 @@ import {
   ensureJobTables
 } from './coach_jobs.js';
 import { handleCoachRequest } from './coach_handler.js';
+import { promoteGhostCoachTelemetry } from './agent_memory.js';
 
 import {
   withAppBase,
@@ -848,6 +850,49 @@ export default {
           });
         }
         return new Response(JSON.stringify({ success: true, job }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // Promote local Ghost Coach telemetry (confusion pairs + weak objectives) into D1
+      if (path === '/api/v1/memory/promote' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok) {
+          return new Response(JSON.stringify({
+            error: 'AUTH_REQUIRED',
+            message: 'Sign in before syncing Ghost Coach memory.'
+          }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        if (!env.DB) {
+          return new Response(JSON.stringify({
+            success: false,
+            error: 'DB_UNAVAILABLE',
+            message: 'Memory store is temporarily unavailable.'
+          }), {
+            status: 503,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        const result = await promoteGhostCoachTelemetry(env.DB, {
+          telegramId: auth.telegramId,
+          firebaseUid: auth.firebaseUid
+        }, {
+          confusionPairs: body.confusionPairs || [],
+          weakObjectives: body.weakObjectives || []
+        });
+        return new Response(JSON.stringify({
+          success: Boolean(result && result.ok),
+          stored: result ? result.stored : 0,
+          updated: result ? result.updated : 0,
+          pairs: result ? result.pairs : 0,
+          weaks: result ? result.weaks : 0
+        }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }

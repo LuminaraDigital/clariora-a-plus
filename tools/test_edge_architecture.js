@@ -127,6 +127,7 @@ assert.ok(workerSrc.includes('/api/v1/sync'), 'Worker must handle delta sync');
 assert.ok(workerSrc.includes('/api/v1/items/report'), 'Worker must handle defect reporting');
 assert.ok(workerSrc.includes('/api/v1/items/stats'), 'Worker must handle community stats');
 assert.ok(workerSrc.includes('/api/v1/coach'), 'Worker must handle AI Ghost Coach');
+assert.ok(workerSrc.includes('/api/v1/memory/promote'), 'Worker must promote Ghost Coach memory to D1');
 assert.ok(workerSrc.includes('/api/v1/billing/stars/invoice'), 'Worker must handle Stars invoice creation');
 assert.ok(workerSrc.includes('/api/v1/telegram/webhook'), 'Worker must handle Telegram bot webhook');
 console.log('  ✔ Cloudflare Worker Router endpoints verified.');

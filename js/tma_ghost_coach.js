@@ -61,13 +61,17 @@ Rules:
     const stream = opts.stream === true;
     if (TMABridge) TMABridge.haptic('medium');
 
+    const correctAnswerText = (questionData.options && typeof questionData.answer === 'number')
+      ? (questionData.options[questionData.answer] || String(questionData.answer))
+      : questionData.answer;
+
     const prompt = `CompTIA Objective: ${questionData.objective || 'General'}
 Question: ${questionData.question}
 Options:
 ${questionData.options ? questionData.options.map((o, idx) => `${String.fromCharCode(65 + idx)}. ${o}`).join('\n') : ''}
 
 Student selected: ${userChoice || 'None'}
-Correct answer: ${questionData.answer}
+Correct answer: ${correctAnswerText}
 Official Explanation: ${questionData.explanation || 'N/A'}
 Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
 
@@ -96,7 +100,7 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
         prompt: prompt,
         question: questionData.question,
         chosenAnswer: userChoice,
-        correctAnswer: questionData.answer,
+        correctAnswer: correctAnswerText,
         distractorAnalysis: questionData.distractor_analysis || {},
         provider: provider,
         useProPreview: useProPreview,
@@ -104,6 +108,32 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
         initData: initData,
         idToken: idToken
       };
+
+      // Attach local Ghost Coach telemetry so edge extract/promote stays seamless.
+      try {
+        const gc = (typeof window !== 'undefined' && window.APlus && window.APlus.ghostCoach) || null;
+        if (gc && typeof gc.getCoachEnrichment === 'function') {
+          const enrich = gc.getCoachEnrichment() || {};
+          if (!payload.missHistory.length && Array.isArray(enrich.missHistory)) {
+            payload.missHistory = enrich.missHistory;
+          }
+          if (!payload.weakDomains.length && Array.isArray(enrich.weakDomains)) {
+            payload.weakDomains = enrich.weakDomains;
+          }
+          if (Array.isArray(enrich.confusionPairs) && enrich.confusionPairs.length) {
+            payload.confusionPairs = enrich.confusionPairs;
+          }
+          if (Array.isArray(enrich.weakObjectives) && enrich.weakObjectives.length) {
+            payload.weakObjectives = enrich.weakObjectives;
+          }
+          if (enrich.ghostCoachPromote) {
+            payload.ghostCoachPromote = enrich.ghostCoachPromote;
+          }
+          if (enrich.currentMission) {
+            payload.currentMission = enrich.currentMission;
+          }
+        }
+      } catch (_) {}
 
       if (stream) {
         const streamed = await fetchCoachStream(endpoint, payload, initData);

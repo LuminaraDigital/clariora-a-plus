@@ -123,7 +123,8 @@ export async function handleCoachRequest({
     requestedModel
   );
 
-  const budgetGate = await assertWithinBudget(env.DB, telegramId, effectiveTier);
+  const userRef = telegramId || firebaseUid;
+  const budgetGate = await assertWithinBudget(env.DB, userRef, effectiveTier);
   if (!budgetGate.ok) {
     return json({
       error: budgetGate.error,
@@ -143,8 +144,8 @@ export async function handleCoachRequest({
     }, 402, corsHeaders);
   }
 
-  // Legacy free counter keep-in-sync for existing clients/tests
-  if (!isPaid && !isProPreviewSession && provider === 'groq' && telegramId) {
+  // Free counter keep-in-sync for any provider
+  if (!isPaid && !isProPreviewSession && telegramId) {
     const todayStr = new Date().toISOString().slice(0, 10);
     if (typeof providerExecutors.incrementFreeAiUsage === 'function') {
       await providerExecutors.incrementFreeAiUsage(
@@ -154,7 +155,7 @@ export async function handleCoachRequest({
         env.DB
       );
     }
-  } else if (!isPaid && !isProPreviewSession && provider === 'groq' && firebaseUid) {
+  } else if (!isPaid && !isProPreviewSession && firebaseUid) {
     const todayStr = new Date().toISOString().slice(0, 10);
     if (typeof providerExecutors.incrementFirebaseFreeAiUsage === 'function') {
       await providerExecutors.incrementFirebaseFreeAiUsage(
@@ -271,7 +272,7 @@ export async function handleCoachRequest({
         };
         const latencyMs = Date.now() - startTime;
         const tokensUsed = Number(aiResult.tokens_used) || 0;
-        const budget = await consumeBudget(env.DB, telegramId, tokensUsed, effectiveTier);
+        const budget = await consumeBudget(env.DB, userRef, tokensUsed, effectiveTier);
         await logUsage(env, telegramId, effectiveTier, aiResult, latencyMs, tokensUsed);
 
         await writeEvent('done', {
@@ -328,7 +329,7 @@ export async function handleCoachRequest({
 
   const latencyMs = Date.now() - startTime;
   const tokensUsed = Number(aiResult.tokens_used) || 0;
-  const budget = await consumeBudget(env.DB, telegramId, tokensUsed, effectiveTier);
+  const budget = await consumeBudget(env.DB, userRef, tokensUsed, effectiveTier);
   await logUsage(env, telegramId, effectiveTier, aiResult, latencyMs, tokensUsed);
 
   try {

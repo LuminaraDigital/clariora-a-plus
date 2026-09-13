@@ -117,7 +117,12 @@ console.log('  ✔ Cloudflare D1 Edge SQL Schema valid.');
 // 4. Test Cloudflare Worker API Source
 console.log('Testing Cloudflare Worker API Router...');
 const workerSrc = fs.readFileSync(path.join(ROOT, 'workers', 'api_worker.js'), 'utf8');
-assert.ok(workerSrc.includes('/api/v1/auth/magic'), 'Worker must handle magic link auth');
+assert.ok(workerSrc.includes("status: 410") && workerSrc.includes('/api/v1/auth/magic'),
+  'Worker must retire custom magic-link auth with HTTP 410');
+assert.ok(workerSrc.includes('resolveRequestAuth'), 'Worker must use centralized session/Telegram/Firebase auth resolver');
+assert.ok(workerSrc.includes('/api/v1/auth/me'), 'Worker must expose session introspection');
+assert.ok(workerSrc.includes('/api/v1/auth/logout'), 'Worker must expose session teardown');
+assert.ok(workerSrc.includes('Access-Control-Allow-Credentials'), 'Worker must allow credentialed CORS for cookies');
 assert.ok(workerSrc.includes('/api/v1/sync'), 'Worker must handle delta sync');
 assert.ok(workerSrc.includes('/api/v1/items/report'), 'Worker must handle defect reporting');
 assert.ok(workerSrc.includes('/api/v1/items/stats'), 'Worker must handle community stats');
@@ -126,6 +131,10 @@ assert.ok(workerSrc.includes('/api/v1/billing/stars/invoice'), 'Worker must hand
 assert.ok(workerSrc.includes('/api/v1/telegram/webhook'), 'Worker must handle Telegram bot webhook');
 console.log('  ✔ Cloudflare Worker Router endpoints verified.');
 
+const sessionSrc = fs.readFileSync(path.join(ROOT, 'workers', 'api_session.js'), 'utf8');
+assert.ok(sessionSrc.includes('HttpOnly'), 'Session cookies must be HttpOnly');
+assert.ok(sessionSrc.includes('SameSite=Lax'), 'Session cookies must be SameSite=Lax');
+console.log('  ✔ Session cookie BFF helpers present.');
 console.log('\n=============================================');
 console.log('✅ ALL ARCHITECTURE ENHANCEMENT TESTS PASSED!');
 console.log('=============================================');

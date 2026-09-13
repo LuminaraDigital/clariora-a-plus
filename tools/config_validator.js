@@ -399,12 +399,14 @@ function main() {
   let envFile = null;
   let jsonOutput = false;
   let strict = true;
+  let expectedAppEnv = null;
 
   for (const arg of args) {
     if (arg === '--json') jsonOutput = true;
     else if (arg === '--allow-missing' || arg === '--partial') strict = false;
     else if (arg === '--strict') strict = true;
     else if (arg.startsWith('--env-file=')) envFile = arg.split('=')[1];
+    else if (arg.startsWith('--app-env=')) expectedAppEnv = arg.split('=')[1].trim().toLowerCase();
     else if (arg === '--help' || arg === '-h') {
       console.log(`
 Clariora A+ Configuration & Secret Validator
@@ -414,6 +416,7 @@ Usage:
 
 Options:
   --env-file=<path>   Path to .env file to load (default: .env if present in root)
+  --app-env=<name>    Require APP_ENV to match (local|staging|production)
   --strict            Enforce presence and validity of all required keys (default)
   --allow-missing     Validate only keys that are present, skipping unset variables
   --json              Output results as JSON
@@ -434,6 +437,31 @@ Options:
   const env = loadEnv(envFile);
   const report = validateConfig(env, { strict });
 
+  if (expectedAppEnv) {
+    const actual = String(env.APP_ENV || '').trim().toLowerCase();
+    if (!actual) {
+      report.valid = false;
+      report.errors.push({
+        key: 'APP_ENV',
+        message: `Missing APP_ENV; expected "${expectedAppEnv}"`,
+      });
+    } else if (actual !== expectedAppEnv) {
+      report.valid = false;
+      report.errors.push({
+        key: 'APP_ENV',
+        message: `APP_ENV is "${actual}" but --app-env=${expectedAppEnv} was required`,
+      });
+    } else if (expectedAppEnv === 'staging') {
+      const web = String(env.WEB_APP_URL || '');
+      if (/clariora\.com\.au/i.test(web) && !/staging/i.test(web)) {
+        report.valid = false;
+        report.errors.push({
+          key: 'WEB_APP_URL',
+          message: 'Staging env must not point WEB_APP_URL at production clariora.com.au',
+        });
+      }
+    }
+  }
   if (jsonOutput) {
     console.log(JSON.stringify(report, null, 2));
     process.exit(report.valid ? 0 : 1);

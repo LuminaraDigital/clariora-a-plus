@@ -2,6 +2,9 @@
  * tma_ghost_coach.js
  * Multi-Model Business AI Socratic Tutor for Clariora Telegram Mini App.
  *
+ * BOUNDARY: Chat / streaming coach UI for Telegram Mini App. Does not own
+ * offline mission planning; that lives in js/ghost-coach.js (GhostCoachCore).
+ *
  * Tiers & Provider Routing:
  * - Free Tier: Groq Cloud (Llama 3.1 8B Instant) with 5 daily sessions limit.
  * - Pro Tier: NVIDIA NIM (Llama 3.1/3.3 70B), Private Ollama (DeepSeek-R1), OpenRouter (Claude 3.5 Sonnet).
@@ -109,6 +112,7 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
 
       const res = await fetch(endpoint, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'X-Telegram-Init-Data': initData
@@ -194,6 +198,7 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
     try {
       const res = await fetch(endpoint, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'X-Telegram-Init-Data': initData,

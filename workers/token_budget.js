@@ -17,6 +17,17 @@ export async function ensureBudgetColumns(db) {
   for (const sql of alters) {
     try { await db.prepare(sql).run(); } catch (_) {}
   }
+  const authAlters = [
+    'ALTER TABLE auth_accounts ADD COLUMN ai_tokens_used_today INTEGER NOT NULL DEFAULT 0',
+    'ALTER TABLE auth_accounts ADD COLUMN ai_tokens_last_date TEXT',
+    'ALTER TABLE auth_accounts ADD COLUMN ai_tokens_used_month INTEGER NOT NULL DEFAULT 0',
+    'ALTER TABLE auth_accounts ADD COLUMN ai_tokens_month TEXT',
+    'ALTER TABLE auth_accounts ADD COLUMN ai_calls_used_today INTEGER NOT NULL DEFAULT 0',
+    'ALTER TABLE auth_accounts ADD COLUMN ai_calls_last_date TEXT'
+  ];
+  for (const sql of authAlters) {
+    try { await db.prepare(sql).run(); } catch (_) {}
+  }
 }
 
 export function estimateTokensFromText(systemPrompt, userMessage, completionText) {
@@ -37,38 +48,41 @@ export function extractUsageTokens(providerPayload, fallbackEstimate) {
   return fallbackEstimate;
 }
 
-export async function readBudgetState(db, telegramId) {
+export async function readBudgetState(db, userRef) {
   await ensureBudgetColumns(db);
   const today = new Date().toISOString().slice(0, 10);
   const month = today.slice(0, 7);
-  if (!db || !telegramId) {
-    return {
-      tokensToday: 0,
-      tokensMonth: 0,
-      callsToday: 0,
-      today,
-      month
-    };
-  }
+  const defaultState = { tokensToday: 0, tokensMonth: 0, callsToday: 0, today, month };
+  if (!db || !userRef) return defaultState;
+
+  const telegramId = (typeof userRef === 'object' ? userRef.telegramId : (typeof userRef === 'number' || /^\d+$/.test(String(userRef))) ? Number(userRef) : null);
+  const firebaseUid = (typeof userRef === 'object' ? userRef.firebaseUid : (typeof userRef === 'string' && !/^\d+$/.test(userRef)) ? userRef : null);
+
   try {
-    const user = await db.prepare(
-      'SELECT ai_tokens_used_today, ai_tokens_last_date, ai_tokens_used_month, ai_tokens_month, ai_calls_used_today, ai_calls_last_date FROM telegram_users WHERE telegram_id = ?'
-    ).bind(telegramId).first();
-    if (!user) {
-      return { tokensToday: 0, tokensMonth: 0, callsToday: 0, today, month };
+    let user = null;
+    if (telegramId) {
+      user = await db.prepare(
+        'SELECT ai_tokens_used_today, ai_tokens_last_date, ai_tokens_used_month, ai_tokens_month, ai_calls_used_today, ai_calls_last_date FROM telegram_users WHERE telegram_id = ?'
+      ).bind(telegramId).first();
+    } else if (firebaseUid) {
+      user = await db.prepare(
+        'SELECT ai_tokens_used_today, ai_tokens_last_date, ai_tokens_used_month, ai_tokens_month, ai_calls_used_today, ai_calls_last_date FROM auth_accounts WHERE uid = ?'
+      ).bind(firebaseUid).first();
     }
+    if (!user) return defaultState;
+
     const tokensToday = user.ai_tokens_last_date === today ? (user.ai_tokens_used_today || 0) : 0;
     const tokensMonth = user.ai_tokens_month === month ? (user.ai_tokens_used_month || 0) : 0;
     const callsToday = user.ai_calls_last_date === today ? (user.ai_calls_used_today || 0) : 0;
     return { tokensToday, tokensMonth, callsToday, today, month };
   } catch (_) {
-    return { tokensToday: 0, tokensMonth: 0, callsToday: 0, today, month };
+    return defaultState;
   }
 }
 
-export async function assertWithinBudget(db, telegramId, tier) {
+export async function assertWithinBudget(db, userRef, tier) {
   const policy = getTierPolicy(tier);
-  const state = await readBudgetState(db, telegramId);
+  const state = await readBudgetState(db, userRef);
   if (state.callsToday >= policy.freeCoachCallsPerDay) {
     return {
       ok: false,
@@ -99,58 +113,91 @@ export async function assertWithinBudget(db, telegramId, tier) {
   return { ok: true, state, policy };
 }
 
-export async function consumeBudget(db, telegramId, tokensUsed, tier) {
+export async function consumeBudget(db, userRef, tokensUsed, tier) {
   await ensureBudgetColumns(db);
-  if (!db || !telegramId) return null;
+  if (!db || !userRef) return null;
   const policy = getTierPolicy(tier);
-  const state = await readBudgetState(db, telegramId);
+  const state = await readBudgetState(db, userRef);
   const nextTokensToday = state.tokensToday + Math.max(0, Number(tokensUsed) || 0);
   const nextTokensMonth = state.tokensMonth + Math.max(0, Number(tokensUsed) || 0);
   const nextCalls = state.callsToday + 1;
 
-  try {
-    const updated = await db.prepare(`
-      UPDATE telegram_users SET
-        ai_tokens_used_today = ?,
-        ai_tokens_last_date = ?,
-        ai_tokens_used_month = ?,
-        ai_tokens_month = ?,
-        ai_calls_used_today = ?,
-        ai_calls_last_date = ?,
-        updated_at = CURRENT_TIMESTAMP
-      WHERE telegram_id = ?
-    `).bind(
-      nextTokensToday,
-      state.today,
-      nextTokensMonth,
-      state.month,
-      nextCalls,
-      state.today,
-      telegramId
-    ).run();
+  const telegramId = (typeof userRef === 'object' ? userRef.telegramId : (typeof userRef === 'number' || /^\d+$/.test(String(userRef))) ? Number(userRef) : null);
+  const firebaseUid = (typeof userRef === 'object' ? userRef.firebaseUid : (typeof userRef === 'string' && !/^\d+$/.test(userRef)) ? userRef : null);
 
-    const changes = updated && updated.meta && typeof updated.meta.changes === 'number'
-      ? updated.meta.changes
-      : 1;
-    if (!changes) {
-      await db.prepare(`
-        INSERT INTO telegram_users (
-          telegram_id, ai_tokens_used_today, ai_tokens_last_date,
-          ai_tokens_used_month, ai_tokens_month,
-          ai_calls_used_today, ai_calls_last_date, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+  try {
+    if (telegramId) {
+      const updated = await db.prepare(`
+        UPDATE telegram_users SET
+          ai_tokens_used_today = ?,
+          ai_tokens_last_date = ?,
+          ai_tokens_used_month = ?,
+          ai_tokens_month = ?,
+          ai_calls_used_today = ?,
+          ai_calls_last_date = ?,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE telegram_id = ?
       `).bind(
-        telegramId,
         nextTokensToday,
         state.today,
         nextTokensMonth,
         state.month,
         nextCalls,
-        state.today
+        state.today,
+        telegramId
+      ).run();
+
+      const changes = updated && updated.meta && typeof updated.meta.changes === 'number'
+        ? updated.meta.changes
+        : 1;
+      if (!changes) {
+        await db.prepare(`
+          INSERT INTO telegram_users (
+            telegram_id, ai_tokens_used_today, ai_tokens_last_date,
+            ai_tokens_used_month, ai_tokens_month,
+            ai_calls_used_today, ai_calls_last_date, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+          ON CONFLICT(telegram_id) DO UPDATE SET
+            ai_tokens_used_today = excluded.ai_tokens_used_today,
+            ai_tokens_last_date = excluded.ai_tokens_last_date,
+            ai_tokens_used_month = excluded.ai_tokens_used_month,
+            ai_tokens_month = excluded.ai_tokens_month,
+            ai_calls_used_today = excluded.ai_calls_used_today,
+            ai_calls_last_date = excluded.ai_calls_last_date,
+            updated_at = CURRENT_TIMESTAMP
+        `).bind(
+          telegramId,
+          nextTokensToday,
+          state.today,
+          nextTokensMonth,
+          state.month,
+          nextCalls,
+          state.today
+        ).run();
+      }
+    } else if (firebaseUid) {
+      await db.prepare(`
+        UPDATE auth_accounts SET
+          ai_tokens_used_today = ?,
+          ai_tokens_last_date = ?,
+          ai_tokens_used_month = ?,
+          ai_tokens_month = ?,
+          ai_calls_used_today = ?,
+          ai_calls_last_date = ?,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE uid = ?
+      `).bind(
+        nextTokensToday,
+        state.today,
+        nextTokensMonth,
+        state.month,
+        nextCalls,
+        state.today,
+        firebaseUid
       ).run();
     }
   } catch (e) {
-    console.debug('budget consume skipped:', e.message);
+    console.debug('Failed to commit token budget usage:', e);
   }
 
   return {

@@ -13,87 +13,33 @@
  * paint it). Exits 1 if the app never publishes a debugging target.
  */
 
-const { spawn } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const {
+  ROOT,
+  defaultExePath,
+  sleep,
+  launchExe,
+  waitForTarget,
+  connect,
+  killTree
+} = require('./electron_cdp_harness');
 
-const ROOT = path.resolve(__dirname, '..');
-const DEFAULT_EXE = process.platform === 'win32'
-  ? path.join(ROOT, 'release', 'portable', 'CompTIA_A_Plus_Simulator.exe')
-  : process.platform === 'darwin'
-    ? path.join(ROOT, 'release', 'mac', 'Clariora.app', 'Contents', 'MacOS', 'Clariora')
-    : path.join(ROOT, 'release', 'linux', 'linux-unpacked', 'comptia-a-plus-master');
 const OUT_DIR = path.join(ROOT, 'docs', 'screenshots');
 const PORT = Number(process.env.APLUS_SHOT_PORT) || 9566;
 const WIDTH = 1440;
 const HEIGHT = 900;
 
-const EXE = path.resolve(process.argv[2] || DEFAULT_EXE);
+const EXE = path.resolve(process.argv[2] || defaultExePath());
 const USER_DATA = fs.mkdtempSync(path.join(os.tmpdir(), 'aplus-shots-'));
 
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
 function launch() {
-  return spawn(EXE, [
-    '--remote-debugging-port=' + PORT,
-    '--user-data-dir=' + USER_DATA,
-    '--force-device-scale-factor=1'
-  ], { stdio: 'ignore', windowsHide: false });
-}
-
-async function waitForTarget(timeoutMs) {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    try {
-      const res = await fetch('http://127.0.0.1:' + PORT + '/json/list');
-      const list = await res.json();
-      const page = list.find((t) => t.type === 'page' && t.webSocketDebuggerUrl);
-      if (page) return page;
-    } catch (_) {}
-    await sleep(250);
-  }
-  return null;
-}
-
-async function connect(target) {
-  const ws = new WebSocket(target.webSocketDebuggerUrl);
-  await new Promise((resolve, reject) => {
-    ws.onopen = resolve;
-    ws.onerror = () => reject(new Error('cdp socket error'));
+  return launchExe(EXE, PORT, USER_DATA, ['--force-device-scale-factor=1'], {
+    stdio: 'ignore',
+    windowsHide: false,
+    noSandbox: false
   });
-  let id = 0;
-  const pending = new Map();
-  ws.onmessage = (ev) => {
-    let msg;
-    try { msg = JSON.parse(ev.data); } catch (_) { return; }
-    if (msg.id && pending.has(msg.id)) {
-      pending.get(msg.id)(msg);
-      pending.delete(msg.id);
-    }
-  };
-  const send = (method, params) => new Promise((resolve) => {
-    const m = ++id;
-    pending.set(m, resolve);
-    ws.send(JSON.stringify({ id: m, method, params: params || {} }));
-  });
-  const evalJs = async (expression) => {
-    const r = await send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true });
-    if (r && r.result && r.result.exceptionDetails) {
-      const d = r.result.exceptionDetails;
-      throw new Error(String((d.exception && d.exception.description) || d.text).split('\n')[0]);
-    }
-    return r && r.result && r.result.result ? r.result.result.value : undefined;
-  };
-  return { ws, send, evalJs };
-}
-
-function killTree(child) {
-  if (!child || child.killed) return;
-  try {
-    if (process.platform === 'win32') spawn('taskkill', ['/pid', String(child.pid), '/T', '/F'], { stdio: 'ignore' });
-    else child.kill('SIGKILL');
-  } catch (_) {}
 }
 
 async function shoot(cdp, name) {
@@ -149,7 +95,7 @@ async function main() {
     process.exit(1);
   }
   fs.mkdirSync(OUT_DIR, { recursive: true });
-  if (await waitForTarget(500)) {
+  if (await waitForTarget(PORT, 500)) {
     console.error('Port ' + PORT + ' already has a debug target. Close the other app instance or set APLUS_SHOT_PORT.');
     process.exit(1);
   }
@@ -159,7 +105,7 @@ async function main() {
      a returning learner's data without a relaunch (a forced kill would drop
      anything not yet flushed to disk). */
   const child = launch();
-  let target = await waitForTarget(30000);
+  let target = await waitForTarget(PORT, 30000);
   if (!target) {
     killTree(child);
     console.error('No CDP target. Electron needs a desktop session.');
@@ -175,7 +121,7 @@ async function main() {
   await cdp.evalJs("location.reload(); 'reloading'");
   cdp.ws.close();
   await sleep(1500);
-  target = await waitForTarget(30000);
+  target = await waitForTarget(PORT, 30000);
   if (!target) {
     killTree(child);
     console.error('No CDP target after reload.');

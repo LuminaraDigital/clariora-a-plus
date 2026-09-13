@@ -2,6 +2,10 @@
  * Clariora Exam Simulator v3.0.0
  * ghost-coach.js - Invisible study nervous system (no chat UI)
  *
+ * BOUNDARY: This module owns offline mission planning from exam telemetry
+ * (weak objectives, confusion pairs, sampler pins). Chat / TMA streaming AI
+ * lives in js/tma_ghost_coach.js and talks to workers/api_worker.js.
+ *
  * Observe exam telemetry -> decide weak objectives / confusion pairs ->
  * mutate next mission (sampler + pin note/video) -> measure improvement.
  *

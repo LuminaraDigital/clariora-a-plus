@@ -50,8 +50,11 @@ function lacks(hay, needle, msg) {
 
 var win = { APlus: {}, localStorage: null };
 win.window = win;
-var src = fs.readFileSync(path.join(__dirname, '..', 'js', 'curriculum.js'), 'utf8');
-vm.runInNewContext(src, { window: win, document: undefined, navigator: {}, setTimeout: setTimeout, clearTimeout: clearTimeout, console: console });
+var ctx = { window: win, document: undefined, navigator: {}, setTimeout: setTimeout, clearTimeout: clearTimeout, console: console };
+['curriculum-model.js', 'curriculum-html.js', 'curriculum.js'].forEach(function (name) {
+  var src = fs.readFileSync(path.join(__dirname, '..', 'js', name), 'utf8');
+  vm.runInNewContext(src, ctx);
+});
 var C = win.APlus.curriculum;
 var model = C.model;
 var html = C.html;

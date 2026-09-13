@@ -133,15 +133,14 @@
   async function fetchServerEntitlement() {
     const tg = getTelegramWebApp();
     const initData = (tg && tg.initData) || '';
-    if (!initData) return null;
     try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (initData) headers['X-Telegram-Init-Data'] = initData;
       const res = await fetch(invoiceEndpoint('/api/v1/billing/entitlement'), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Telegram-Init-Data': initData
-        },
-        body: JSON.stringify({ initData: initData })
+        credentials: 'include',
+        headers: headers,
+        body: JSON.stringify(initData ? { initData: initData } : {})
       });
       if (!res.ok) return null;
       const data = await res.json().catch(function () { return null; });
@@ -360,6 +359,7 @@
 
       const res = await fetch('/api/v1/billing/ton/verify', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           productId: product.id,

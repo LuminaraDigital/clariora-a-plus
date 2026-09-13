@@ -45,9 +45,16 @@ Questions must be original. Do not copy questions from commercial practice tests
 
 ## Code changes
 
-1. Branch from `main`.
+1. Branch from `staging` (preferred) or `main` only if `staging` does not exist yet.
+   Use `feature/<short-name>`.
 2. Make the change. Add or update a test in `tools/test_*.js` when you touch engine logic.
-3. Run the full check before you push:
+3. Run the pre-push smoke gate:
+
+```bash
+npm run smoke:prepush
+```
+
+   Or the long form:
 
 ```bash
 npm run check
@@ -55,7 +62,14 @@ npm test
 python tools/validate_bank.py --bank exam_data.json
 ```
 
-4. Open a pull request using the template. Describe what changed and why. Link the issue if there is one.
+4. Open a pull request into **`staging`** first. After staging validation, open a PR from `staging` into `main`.
+5. Never push straight to `main` or deploy production without a staging pass. See [docs/RELEASE_PIPELINE.md](docs/RELEASE_PIPELINE.md).
+
+## Environments
+
+- `.env.local` / `.env.staging` / `.env.production` are separate. Copy from the matching `*.example` files.
+- Staging uses `wrangler.staging.toml` and must not bind `clariora.com.au`.
+- Production uses `wrangler.toml`.
 
 ## Commit messages
 

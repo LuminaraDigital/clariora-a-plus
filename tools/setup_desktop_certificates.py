@@ -30,7 +30,8 @@ CERT_DIR = ROOT / "build" / "certs"
 ENV_FILE = ROOT / ".env"
 ENV_EXAMPLE = ROOT / ".env.example"
 
-DEFAULT_SIGN_PASSWORD = os.environ.get("CSC_KEY_PASSWORD") or "ClarioraCodeSign2026!Enterprise"
+import secrets
+DEFAULT_SIGN_PASSWORD = os.environ.get("CSC_KEY_PASSWORD") or secrets.token_urlsafe(24)
 APPLE_OID_DEVELOPER_ID = "1.2.840.113635.100.6.1.13"
 
 

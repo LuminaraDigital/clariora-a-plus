@@ -25,7 +25,10 @@ const webcrypto = nodeCrypto.webcrypto || globalThis.crypto;
 const issuer = require('./issue_license.js');
 
 const ROOT = path.resolve(__dirname, '..');
-const ENTITLEMENTS_SRC = fs.readFileSync(path.join(ROOT, 'js', 'entitlements.js'), 'utf8');
+const ENTITLEMENTS_SRC =
+  fs.readFileSync(path.join(ROOT, 'js', 'entitlements-crypto.js'), 'utf8') +
+  '\n' +
+  fs.readFileSync(path.join(ROOT, 'js', 'entitlements.js'), 'utf8');
 
 /* ------------------------------------------------------------------------- */
 /* Tiny assertion harness                                                      */

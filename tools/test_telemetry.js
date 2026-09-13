@@ -463,6 +463,27 @@ function loadTelemetry(sandbox) {
 })();
 
 // -----------------------------------------------------------------------
+// Test: onboarding completion, TTFV mean, funnel abandons
+// -----------------------------------------------------------------------
+
+(function testRetentionMetrics() {
+  var sandbox = makeSandbox();
+  var telemetry = loadTelemetry(sandbox);
+
+  telemetry.track('onboarding_shown', { exam: 'core1' });
+  telemetry.track('onboarding_shown', { exam: 'core2' });
+  telemetry.track('onboarding_completed', { exam: 'core1', readiness: 55 });
+  telemetry.track('time_to_first_value', { action: 'diagnostic_started', seconds: 40 });
+  telemetry.track('time_to_first_value', { action: 'today_session_started', seconds: 60 });
+  telemetry.track('funnel_abandon', { funnel: 'onboarding', exam: 'core2' });
+
+  var m = telemetry.metrics();
+  approx(m.onboardingCompletionRate, 0.5, 1e-9, 'onboarding completion rate should be 1/2 = 0.5');
+  approx(m.meanTimeToFirstValueSec, 50, 1e-9, 'mean TTFV should be (40+60)/2 = 50');
+  assert(m.funnelAbandons === 1, 'funnelAbandons should count abandon events');
+})();
+
+// -----------------------------------------------------------------------
 // Summary
 // -----------------------------------------------------------------------
 

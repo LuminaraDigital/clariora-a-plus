@@ -20,7 +20,6 @@
   'use strict';
 
   var STORAGE_TG = 'clariora_telegram_auth';
-  var STORAGE_TG_LOGIN = 'clariora_telegram_login_payload';
   var STORAGE_SESSION = 'clariora_auth_session_v1';
   var GATE_ID = 'clarioraLoginWall';
 
@@ -33,6 +32,31 @@
     lastReportKey: ''
   };
 
+  /** Profile-only cache. Never store idToken, initData, hashes, or login payloads. */
+  function sanitizeSessionForStorage(session) {
+    if (!session) return null;
+    return {
+      provider: session.provider || 'unknown',
+      uid: session.uid || '',
+      telegramId: session.telegramId != null ? session.telegramId : null,
+      displayName: session.displayName || '',
+      username: session.username || '',
+      photoURL: session.photoURL || '',
+      email: session.email || ''
+    };
+  }
+
+  function sanitizeTelegramProfile(user) {
+    if (!user || !user.id) return null;
+    return {
+      id: user.id,
+      first_name: user.first_name || '',
+      last_name: user.last_name || '',
+      username: user.username || '',
+      photo_url: user.photo_url || ''
+    };
+  }
+
   function isTelegramMiniApp() {
     try {
       var tg = window.Telegram && window.Telegram.WebApp;
@@ -43,21 +67,12 @@
   }
 
   function readTelegramLoginPayload() {
-    try {
-      var raw = localStorage.getItem(STORAGE_TG_LOGIN);
-      if (!raw) return null;
-      var data = JSON.parse(raw);
-      if (!data || !data.id || !data.hash || !data.auth_date) return null;
-      return data;
-    } catch (_) {
-      return null;
-    }
+    return null;
   }
 
-  function writeTelegramLoginPayload(data) {
+  function writeTelegramLoginPayload() {
     try {
-      if (data && data.hash) localStorage.setItem(STORAGE_TG_LOGIN, JSON.stringify(data));
-      else localStorage.removeItem(STORAGE_TG_LOGIN);
+      localStorage.removeItem('clariora_telegram_login_payload');
     } catch (_) {}
   }
 
@@ -85,16 +100,17 @@
     try {
       var raw = localStorage.getItem(STORAGE_SESSION);
       if (!raw) return null;
-      return JSON.parse(raw);
+      return sanitizeSessionForStorage(JSON.parse(raw));
     } catch (_) {
       return null;
     }
   }
 
   function writeCachedSession(session) {
-    state.session = session;
+    var safe = sanitizeSessionForStorage(session);
+    state.session = safe;
     try {
-      if (session) localStorage.setItem(STORAGE_SESSION, JSON.stringify(session));
+      if (safe) localStorage.setItem(STORAGE_SESSION, JSON.stringify(safe));
       else localStorage.removeItem(STORAGE_SESSION);
     } catch (_) {}
   }
@@ -102,7 +118,7 @@
   function clearTelegramLocalAuth() {
     try {
       localStorage.removeItem(STORAGE_TG);
-      localStorage.removeItem(STORAGE_TG_LOGIN);
+      localStorage.removeItem('clariora_telegram_login_payload');
     } catch (_) {}
   }
 
@@ -179,6 +195,7 @@
     state.lastReportKey = '';
     writeCachedSession(null);
     clearTelegramLocalAuth();
+    logoutServerSession();
     hideWall();
     try {
       window.dispatchEvent(new CustomEvent('clariora:auth-locked'));
@@ -205,6 +222,7 @@
       };
       var res = await fetch('/api/v1/auth/session', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
@@ -218,6 +236,40 @@
       state.lastReportKey = '';
       return { ok: false, error: err };
     }
+  }
+
+  async function fetchServerSession() {
+    try {
+      var res = await fetch('/api/v1/auth/me', {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Accept': 'application/json' }
+      });
+      if (!res.ok) return null;
+      var data = await res.json();
+      if (!data || !data.authenticated || !data.uid) return null;
+      return sanitizeSessionForStorage({
+        provider: data.provider,
+        uid: data.uid,
+        telegramId: data.telegramId,
+        displayName: data.displayName,
+        photoURL: data.photoURL,
+        email: data.email
+      });
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async function logoutServerSession() {
+    try {
+      await fetch('/api/v1/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{}'
+      });
+    } catch (_) {}
   }
 
   async function bindAccountMemory(session) {
@@ -282,17 +334,13 @@
     }
     var session = sessionFromFirebaseUser(user);
     if (session.isNewUser) session.event = 'signup';
+    // Fetch ID token only for the one-time session exchange; never persist it.
     try {
       if (user.getIdToken) session.idToken = await user.getIdToken();
     } catch (_) {}
     var reported = await reportSession(session, session.event || 'signin');
+    delete session.idToken;
     if (!reported.ok) {
-      if (session.idToken) {
-        setGateError('Account sync is delayed. You can study; AI coach needs a healthy connection.');
-        await bindAccountMemory(session);
-        unlockInternal(session);
-        return;
-      }
       setGateError('Sign-in could not be verified. Check your connection and try again.');
       showWall();
       return;
@@ -320,9 +368,10 @@
       initData: tg.initData || ''
     };
     try {
-      localStorage.setItem(STORAGE_TG, JSON.stringify(u));
+      localStorage.setItem(STORAGE_TG, JSON.stringify(sanitizeTelegramProfile(u)));
     } catch (_) {}
     var reported = await reportSession(session, 'signin');
+    delete session.initData;
     if (!reported.ok) {
       console.warn('[AuthGate] Telegram session reporting notice; continuing with local TMA session.');
     }
@@ -336,6 +385,7 @@
     try {
       var res = await fetch('/api/v1/auth/telegram', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
@@ -354,18 +404,35 @@
   }
 
   async function resumeTelegramWidgetSession() {
-    var payload = readTelegramLoginPayload();
-    if (!payload) {
-      clearTelegramLocalAuth();
-      return false;
+    // Prefer HttpOnly cookie session; do not resume from stored login hashes.
+    var serverSession = await fetchServerSession();
+    if (serverSession && (serverSession.provider === 'telegram' || serverSession.provider === 'telegram_tma')) {
+      try {
+        if (serverSession.telegramId) {
+          localStorage.setItem(STORAGE_TG, JSON.stringify({
+            id: serverSession.telegramId,
+            first_name: (serverSession.displayName || '').split(' ')[0] || '',
+            last_name: (serverSession.displayName || '').split(' ').slice(1).join(' ') || '',
+            username: (serverSession.email && serverSession.email.charAt(0) === '@')
+              ? serverSession.email.slice(1) : '',
+            photo_url: serverSession.photoURL || ''
+          }));
+        }
+      } catch (_) {}
+      await bindAccountMemory(serverSession);
+      unlockInternal(serverSession);
+      return true;
     }
-    var user = await verifyTelegramWidgetPayload(payload);
-    if (!user) {
-      clearTelegramLocalAuth();
-      return false;
-    }
+    clearTelegramLocalAuth();
+    writeTelegramLoginPayload();
+    return false;
+  }
+
+  function onTelegramWebLogin(user, rawLogin) {
+    if (!user || !user.id) return;
+    writeTelegramLoginPayload();
     try {
-      localStorage.setItem(STORAGE_TG, JSON.stringify(user));
+      localStorage.setItem(STORAGE_TG, JSON.stringify(sanitizeTelegramProfile(user)));
     } catch (_) {}
     var session = {
       provider: 'telegram',
@@ -375,32 +442,10 @@
       username: user.username || '',
       photoURL: user.photo_url || '',
       email: user.username ? '@' + user.username : '',
-      telegramLogin: payload
-    };
-    var reported = await reportSession(session, 'signin');
-    if (!reported.ok) {
-      clearTelegramLocalAuth();
-      return false;
-    }
-    await bindAccountMemory(session);
-    unlockInternal(session);
-    return true;
-  }
-
-  function onTelegramWebLogin(user, rawLogin) {
-    if (!user || !user.id) return;
-    if (rawLogin && rawLogin.hash) writeTelegramLoginPayload(rawLogin);
-    var session = {
-      provider: 'telegram',
-      uid: 'tg_' + user.id,
-      telegramId: user.id,
-      displayName: (user.first_name || '') + (user.last_name ? ' ' + user.last_name : ''),
-      username: user.username || '',
-      photoURL: user.photo_url || '',
-      email: user.username ? '@' + user.username : '',
-      telegramLogin: rawLogin || readTelegramLoginPayload()
+      telegramLogin: rawLogin || null
     };
     reportSession(session, 'signin').then(function (reported) {
+      delete session.telegramLogin;
       if (!reported.ok) {
         showWall();
         return null;
@@ -481,6 +526,8 @@
     getSession: function () { return state.session || readCachedSession(); },
     lock: lock,
     onTelegramWebLogin: onTelegramWebLogin,
-    storeTelegramLoginPayload: writeTelegramLoginPayload
+    storeTelegramLoginPayload: writeTelegramLoginPayload,
+    logoutServerSession: logoutServerSession,
+    fetchServerSession: fetchServerSession
   };
 });

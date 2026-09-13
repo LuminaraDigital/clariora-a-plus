@@ -191,6 +191,19 @@ CREATE TABLE IF NOT EXISTS auth_accounts (
 CREATE INDEX IF NOT EXISTS idx_auth_accounts_signin ON auth_accounts(last_signin_at);
 CREATE INDEX IF NOT EXISTS idx_auth_accounts_provider ON auth_accounts(provider);
 
+CREATE TABLE IF NOT EXISTS ton_orders (
+    order_id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    telegram_id INTEGER DEFAULT 0,
+    product_id TEXT NOT NULL,
+    amount_nanotons TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fulfilled_at TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_ton_orders_user ON ton_orders(user_id, status);
+
 CREATE TABLE IF NOT EXISTS auth_events (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     uid TEXT NOT NULL,
@@ -203,4 +216,19 @@ CREATE TABLE IF NOT EXISTS auth_events (
 
 CREATE INDEX IF NOT EXISTS idx_auth_events_uid ON auth_events(uid);
 CREATE INDEX IF NOT EXISTS idx_auth_events_created ON auth_events(created_at);
+
+-- 11. Learner Memories (Agent SRS / SRS Cognitive Trace Engine)
+CREATE TABLE IF NOT EXISTS learner_memories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    content TEXT NOT NULL,
+    objective TEXT,
+    score REAL,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_learner_memories_user ON learner_memories(user_id, updated_at DESC);
+
 

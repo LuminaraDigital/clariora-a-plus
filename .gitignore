@@ -7,6 +7,9 @@
 # Secrets and credentials
 .env*
 !.env.example
+!.env.local.example
+!.env.staging.example
+!.env.production.example
 !.env.*.template
 .groq_key
 **/groq-secrets.local.js

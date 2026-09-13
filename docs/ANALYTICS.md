@@ -36,8 +36,15 @@ and does not contain any personal or hardware-identifying information.
 | `session_end` | `seconds` (active seconds since last resume) | `pagehide`, or `visibilitychange` to hidden |
 | `exam_started` | `examType`, `count` (question count), `minutes`, `mode` | bus `exam:started` |
 | `exam_finished` | `examType`, `total`, `rawCorrect`, `scaledScore`, `passed`, `seconds`, `flagged` | bus `exam:finished` |
+| `onboarding_shown` | `exam`, `restored` | onboarding step-1 render |
+| `onboarding_completed` | `exam`, `readiness` | diagnostic finished and profile saved |
+| `onboarding_skipped` | `exam` | user skips onboarding |
+| `onboarding_draft_restored` | `exam` | draft recovered after navigation away |
 | `diagnostic_started` | (module-defined flat props only) | bus `onboarding:diagnostic_started`, or direct `APlus.telemetry.track('diagnostic_started', {...})` |
 | `diagnostic_completed` | (module-defined flat props only) | bus `onboarding:diagnostic_completed`, or direct `APlus.telemetry.track(...)` |
+| `time_to_first_value` | `action`, `seconds` | first core action (diagnostic start/complete, today session) |
+| `funnel_abandon` | `funnel`, `exam` | leave onboarding before complete/skip |
+| `form_validation_error` | `form`, `field` | inline validation failure |
 | `today_session_started` | (module-defined flat props only) | direct `APlus.telemetry.track('today_session_started', {...})`, or bus `today:session:started` if emitted |
 | `feature_opened` | `feature` | bus `feature:opened` |
 | `error` | `message` (truncated to 160 chars), `source` (basename only, no path), `line` | `window.onerror`, `unhandledrejection` |
@@ -132,7 +139,8 @@ buffer, via `APlus.telemetry.metrics()`:
 ```js
 const m = APlus.telemetry.metrics();
 // {
-//   sessionsTotal, diagnosticCompletionRate,
+//   sessionsTotal, diagnosticCompletionRate, onboardingCompletionRate,
+//   meanTimeToFirstValueSec, funnelAbandons,
 //   day7Return: { returned, rollingWeeksFraction },
 //   examsFinished, meanScaledScoreLast5, errorsLast7Days
 // }

@@ -29,8 +29,8 @@ run_worker_first = true
 [[d1_databases]]
 binding = "DB"
 database_name = "clariora_edge_db_staging"
-# Replace with the real staging D1 id after `wrangler d1 create clariora_edge_db_staging`
-database_id = "REPLACE_WITH_STAGING_D1_DATABASE_ID"
+database_id = "2c0055a1-9fcb-4902-9396-f33470ef2149"
+migrations_dir = "migrations"
 
 [ai]
 binding = "AI"

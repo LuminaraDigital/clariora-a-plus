@@ -427,9 +427,13 @@ def main() -> int:
             return r.returncode
 
     release_dir = APP_DIR / "release"
-    if release_dir.exists():
-        print("Cleaning previous APP_DIR/release/ ...")
-        shutil.rmtree(release_dir, ignore_errors=True)
+    dist_dir = APP_DIR / "dist"
+    # Always wipe prior builder output before packaging. Leaving dist/ in place causes
+    # electron-builder (files: **/*) to nest the previous installer inside app.asar.
+    for nest in (release_dir, dist_dir):
+        if nest.exists():
+            print(f"Cleaning previous {nest.name}/ ...")
+            shutil.rmtree(nest, ignore_errors=True)
 
     print("Building Windows NSIS installer...")
     r = subprocess.run([npm, "run", "dist:win"], cwd=str(APP_DIR), env=env, check=False)

@@ -440,6 +440,18 @@
     bus.on('assessment:finished', function (payload) {
       track('assessment_finished', sanitizeProps(payload || {}));
     });
+
+    bus.on('funnel:abandon', function (payload) {
+      track('funnel_abandon', sanitizeProps(payload || {}));
+    });
+
+    bus.on('form:validation_error', function (payload) {
+      track('form_validation_error', sanitizeProps(payload || {}));
+    });
+
+    bus.on('value:first', function (payload) {
+      track('time_to_first_value', sanitizeProps(payload || {}));
+    });
   }
 
   function wireErrorHandlers() {
@@ -501,6 +513,25 @@
       ? diagCompleted.length / diagStarted.length
       : 0;
 
+    var onboardingShown = eventsByName('onboarding_shown');
+    var onboardingCompleted = eventsByName('onboarding_completed');
+    var onboardingCompletionRate = onboardingShown.length > 0
+      ? onboardingCompleted.length / onboardingShown.length
+      : 0;
+
+    var ttfvEvents = eventsByName('time_to_first_value');
+    var meanTimeToFirstValueSec = null;
+    if (ttfvEvents.length > 0) {
+      var secs = ttfvEvents.map(function (e) {
+        return e.p && typeof e.p.seconds === 'number' ? e.p.seconds : null;
+      }).filter(function (n) { return n !== null; });
+      if (secs.length > 0) {
+        meanTimeToFirstValueSec = secs.reduce(function (a, b) { return a + b; }, 0) / secs.length;
+      }
+    }
+
+    var funnelAbandons = eventsByName('funnel_abandon').length;
+
     // Day-7 return: true if any session_start happened 6-8 days after the
     // very first recorded session_start.
     var day7Return = false;
@@ -552,6 +583,9 @@
     return {
       sessionsTotal: sessionsTotal,
       diagnosticCompletionRate: diagnosticCompletionRate,
+      onboardingCompletionRate: onboardingCompletionRate,
+      meanTimeToFirstValueSec: meanTimeToFirstValueSec,
+      funnelAbandons: funnelAbandons,
       day7Return: {
         returned: day7Return,
         rollingWeeksFraction: rollingWeeksFraction

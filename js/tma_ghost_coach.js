@@ -2,6 +2,9 @@
  * tma_ghost_coach.js
  * Multi-Model Business AI Socratic Tutor for Clariora Telegram Mini App.
  *
+ * BOUNDARY: Chat / streaming coach UI for Telegram Mini App. Does not own
+ * offline mission planning; that lives in js/ghost-coach.js (GhostCoachCore).
+ *
  * Tiers & Provider Routing:
  * - Free Tier: Groq Cloud (Llama 3.1 8B Instant) with 5 daily sessions limit.
  * - Pro Tier: NVIDIA NIM (Llama 3.1/3.3 70B), Private Ollama (DeepSeek-R1), OpenRouter (Claude 3.5 Sonnet).
@@ -58,13 +61,17 @@ Rules:
     const stream = opts.stream === true;
     if (TMABridge) TMABridge.haptic('medium');
 
+    const correctAnswerText = (questionData.options && typeof questionData.answer === 'number')
+      ? (questionData.options[questionData.answer] || String(questionData.answer))
+      : questionData.answer;
+
     const prompt = `CompTIA Objective: ${questionData.objective || 'General'}
 Question: ${questionData.question}
 Options:
 ${questionData.options ? questionData.options.map((o, idx) => `${String.fromCharCode(65 + idx)}. ${o}`).join('\n') : ''}
 
 Student selected: ${userChoice || 'None'}
-Correct answer: ${questionData.answer}
+Correct answer: ${correctAnswerText}
 Official Explanation: ${questionData.explanation || 'N/A'}
 Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
 
@@ -93,7 +100,7 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
         prompt: prompt,
         question: questionData.question,
         chosenAnswer: userChoice,
-        correctAnswer: questionData.answer,
+        correctAnswer: correctAnswerText,
         distractorAnalysis: questionData.distractor_analysis || {},
         provider: provider,
         useProPreview: useProPreview,
@@ -102,6 +109,32 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
         idToken: idToken
       };
 
+      // Attach local Ghost Coach telemetry so edge extract/promote stays seamless.
+      try {
+        const gc = (typeof window !== 'undefined' && window.APlus && window.APlus.ghostCoach) || null;
+        if (gc && typeof gc.getCoachEnrichment === 'function') {
+          const enrich = gc.getCoachEnrichment() || {};
+          if (!payload.missHistory.length && Array.isArray(enrich.missHistory)) {
+            payload.missHistory = enrich.missHistory;
+          }
+          if (!payload.weakDomains.length && Array.isArray(enrich.weakDomains)) {
+            payload.weakDomains = enrich.weakDomains;
+          }
+          if (Array.isArray(enrich.confusionPairs) && enrich.confusionPairs.length) {
+            payload.confusionPairs = enrich.confusionPairs;
+          }
+          if (Array.isArray(enrich.weakObjectives) && enrich.weakObjectives.length) {
+            payload.weakObjectives = enrich.weakObjectives;
+          }
+          if (enrich.ghostCoachPromote) {
+            payload.ghostCoachPromote = enrich.ghostCoachPromote;
+          }
+          if (enrich.currentMission) {
+            payload.currentMission = enrich.currentMission;
+          }
+        }
+      } catch (_) {}
+
       if (stream) {
         const streamed = await fetchCoachStream(endpoint, payload, initData);
         if (streamed) return streamed;
@@ -109,6 +142,7 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
 
       const res = await fetch(endpoint, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'X-Telegram-Init-Data': initData
@@ -194,6 +228,7 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
     try {
       const res = await fetch(endpoint, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'X-Telegram-Init-Data': initData,
@@ -415,6 +450,28 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
 
     let html = formatMarkdown(res.text || '');
 
+    if (activeQuestion) {
+      const objText = activeQuestion.objective ? `Objective ${escapeHtml(activeQuestion.objective)}` : 'This Topic';
+      html += `
+        <div class="tma-coach-action-card" style="margin-top: 16px; padding: 12px; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px;">
+          <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #38BDF8; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+            Coach Next Actions
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <button type="button" class="btn" onclick="TMAGhostCoach.launchTargetedDrill()" style="width: 100%; padding: 8px 12px; font-size: 0.82rem; font-weight: 700; background: #38BDF8; color: #07090E; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Launch 10-Question Drill on ${objText}
+            </button>
+            <button type="button" class="btn" onclick="TMAGhostCoach.addToFlashcards()" id="tmaCoachAddFlashcardBtn" style="width: 100%; padding: 8px 12px; font-size: 0.82rem; font-weight: 600; background: rgba(255, 255, 255, 0.06); color: #F3F4F6; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+              Add Concept to Spaced Repetition (SRS)
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
     if (res.upsellMessage) {
       const safeUpsell = escapeHtml(res.upsellMessage);
       html += `
@@ -543,12 +600,85 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
       .replace(/\n/g, '<br/>');
   }
 
+  function launchTargetedDrill() {
+    if (!activeQuestion) return;
+    const targetObj = String(activeQuestion.objective || '').trim();
+    const targetDomain = String(activeQuestion.domain || '').trim();
+    const exam = activeQuestion.exam || 'both';
+
+    closeCoachSheet();
+
+    if (typeof window !== 'undefined' && window.APlus) {
+      const aplus = window.APlus;
+      let pool = [];
+      if (aplus.data && typeof aplus.data.getQuestions === 'function') {
+        const all = aplus.data.getQuestions(exam) || [];
+        if (targetObj) {
+          pool = all.filter(q => String(q.objective || '').toLowerCase().trim() === targetObj.toLowerCase());
+        }
+        if (pool.length < 5 && targetDomain) {
+          pool = all.filter(q => String(q.domain || '').toLowerCase().trim() === targetDomain.toLowerCase());
+        }
+        if (!pool.length) pool = all;
+      }
+      if (pool.length > 0 && aplus.engine && typeof aplus.engine.start === 'function') {
+        const sample = (aplus.engineCore && aplus.engineCore.shuffle) ? aplus.engineCore.shuffle(pool).slice(0, 10) : pool.slice(0, 10);
+        aplus.engine.start({
+          type: 'drill',
+          customPool: sample,
+          questionCount: sample.length,
+          timeMinutes: Math.max(10, Math.ceil(sample.length * 1.2)),
+          domainKey: targetObj ? `Objective ${targetObj}` : (targetDomain || 'Targeted Drill')
+        });
+        return;
+      }
+    }
+    console.warn('[TMAGhostCoach] Could not launch drill: engine or pool unavailable');
+  }
+
+  function addToFlashcards() {
+    if (!activeQuestion) return;
+    const qId = activeQuestion.id;
+    if (typeof window !== 'undefined') {
+      if (window.CompTIAMemorySRS && typeof window.CompTIAMemorySRS.enqueueMissed === 'function') {
+        window.CompTIAMemorySRS.enqueueMissed([qId], () => ({
+          domain: activeQuestion.domain || '',
+          exam: activeQuestion.exam || 'core1'
+        }));
+      }
+      if (window.APlus && window.APlus.storage) {
+        const deck = window.APlus.storage.get('srs_deck', {}) || {};
+        if (!deck[qId]) {
+          deck[qId] = {
+            id: qId,
+            objective: activeQuestion.objective,
+            domain: activeQuestion.domain,
+            repetitions: 0,
+            interval: 1,
+            easeFactor: 2.5,
+            nextReviewDate: Date.now()
+          };
+          window.APlus.storage.set('srs_deck', deck);
+        }
+      }
+    }
+    const btn = document.getElementById('tmaCoachAddFlashcardBtn');
+    if (btn) {
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Added to Spaced Repetition!';
+      btn.style.borderColor = '#22C55E';
+      btn.style.color = '#22C55E';
+      btn.disabled = true;
+    }
+  }
+
   return {
     COACH_CONFIG,
     explainQuestion,
     openCoachSheet,
     closeCoachSheet,
     selectProvider,
-    usePreviewQuery
+    usePreviewQuery,
+    launchTargetedDrill,
+    addToFlashcards
   };
 });

@@ -14,7 +14,10 @@
     "package-mac": "python3 tools/build_macos_app.py",
     "icons:mac": "python tools/make_macos_icon.py",
     "test": "node tools/run_tests.js",
+    "smoke:prepush": "node tools/pre_push_smoke.js",
     "validate:bank": "python tools/validate_bank.py --bank exam_data.json",
+    "deploy:staging": "python tools/deploy_cloudflare.py --env staging",
+    "deploy:production": "python tools/deploy_cloudflare.py --env production",
     "package-linux": "python3 tools/build_linux_app.py"
   },
   "keywords": [

@@ -133,15 +133,14 @@
   async function fetchServerEntitlement() {
     const tg = getTelegramWebApp();
     const initData = (tg && tg.initData) || '';
-    if (!initData) return null;
     try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (initData) headers['X-Telegram-Init-Data'] = initData;
       const res = await fetch(invoiceEndpoint('/api/v1/billing/entitlement'), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Telegram-Init-Data': initData
-        },
-        body: JSON.stringify({ initData: initData })
+        credentials: 'include',
+        headers: headers,
+        body: JSON.stringify(initData ? { initData: initData } : {})
       });
       if (!res.ok) return null;
       const data = await res.json().catch(function () { return null; });
@@ -360,6 +359,7 @@
 
       const res = await fetch('/api/v1/billing/ton/verify', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           productId: product.id,
@@ -433,7 +433,7 @@
       '<div class="stars-card" style="display: flex; justify-content: space-between; align-items: center; background: #131722; border: 1px solid rgba(212, 175, 55, 0.25); border-radius: 12px; padding: 14px; margin-bottom: 10px;">' +
         '<div style="flex: 1; padding-right: 12px;">' +
           '<div style="font-weight: 700; color: #F3F4F6; font-size: 0.95rem; margin-bottom: 3px;">' + p.title + '</div>' +
-          '<div style="font-size: 0.78rem; color: #94A3B8; line-height: 1.4;">' + p.description + '</div>' +
+          '<div style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4;">' + p.description + '</div>' +
           tonBtn +
         '</div>' +
         '<button type="button" class="btn btn-primary" onclick="StarsBilling.purchaseProduct(\'' + p.id + '\')" style="padding: 10px 16px; min-height: 42px; font-weight: 700; background: linear-gradient(135deg, #D4AF37 0%, #F5D061 100%); color: #07090E; border: none; border-radius: 8px; cursor: pointer; white-space: nowrap; font-size: 0.9rem;">' +

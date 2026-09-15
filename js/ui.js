@@ -359,9 +359,15 @@
     }
 
     showScreen(screenId) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      const target = document.getElementById(screenId);
-      if (target) target.classList.add('active');
+      document.querySelectorAll('.screen').forEach(s => {
+        const active = s.id === screenId;
+        s.classList.toggle('active', active);
+        s.setAttribute('aria-hidden', active ? 'false' : 'true');
+        if ('inert' in s) {
+          if (active) s.removeAttribute('inert');
+          else s.inert = true;
+        }
+      });
 
       const headerControls = document.getElementById('examHeaderControls');
       if (headerControls) {
@@ -638,6 +644,110 @@
           ledgerHash: (payload.ledgerEntry && payload.ledgerEntry.entryHash) || 'APX_' + Date.now().toString(16)
         });
       }
+
+      this.renderGhostCoachAutopsy(payload);
+    }
+
+    renderGhostCoachAutopsy(payload) {
+      if (!hasDoc) return;
+      const mount = document.getElementById('coachAutopsyMount');
+      if (!mount) return;
+
+      const perQuestion = payload.perQuestion || [];
+      const missed = perQuestion.filter(p => !p.correct);
+
+      if (missed.length === 0) {
+        mount.innerHTML = `
+          <div class="card" style="margin: 1.5rem 0; padding: 1.25rem; background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="16 10 11 15 8 12"/></svg>
+              <div>
+                <h4 style="margin: 0; color: #22C55E; font-size: 1rem;">Ghost Coach Mastery Clearance</h4>
+                <p style="margin: 4px 0 0; color: var(--text-secondary, #A39E93); font-size: 0.85rem;">Flawless performance: Zero missed questions on this session. Spaced repetition memory scores reinforced.</p>
+              </div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // Find weakest domain among misses
+      const domainMissCounts = {};
+      missed.forEach(m => {
+        const d = m.domain || 'General';
+        domainMissCounts[d] = (domainMissCounts[d] || 0) + 1;
+      });
+      let weakestDomain = Object.keys(domainMissCounts).sort((a, b) => domainMissCounts[b] - domainMissCounts[a])[0] || 'Technical Objectives';
+      const topMissObj = missed[0];
+
+      mount.innerHTML = `
+        <div class="card" style="margin: 1.5rem 0; padding: 1.35rem; background: var(--bg-card, #121212); border: 1px solid var(--border-gold, #C9A227); border-radius: 12px; position: relative; overflow: hidden;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold-primary, #C9A227)" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9 10h.01M15 10h.01"/><path d="M9.5 15a3.5 3.5 0 0 0 5 0"/></svg>
+              <h4 style="margin: 0; color: var(--gold-primary, #C9A227); font-size: 1.05rem;">Ghost Coach Autopsy &amp; Recovery</h4>
+            </div>
+            <span style="font-size: 0.75rem; font-weight: 700; color: #EF4444; background: rgba(239, 68, 68, 0.12); padding: 3px 8px; border-radius: 99px; border: 1px solid rgba(239, 68, 68, 0.3);">
+              ${missed.length} Misses Detected
+            </span>
+          </div>
+          <p style="margin: 0 0 1rem; color: var(--text-secondary, #A39E93); font-size: 0.88rem; line-height: 1.5;">
+            Autopsy identified concentrated failure points in <strong>${escapeHTML(weakestDomain)}</strong> (${domainMissCounts[weakestDomain]} misses). All missed concepts have been queued into your Spaced Repetition deck.
+          </p>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button type="button" class="btn btn-primary" id="btnLaunchRecoveryDrill" style="padding: 10px 18px; font-weight: 700; font-size: 0.88rem; border-radius: 8px; background: var(--gold-primary, #C9A227); color: #07090E; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Launch Exam Recovery Drill (${missed.length} Questions)
+            </button>
+            <button type="button" class="btn btn-secondary" id="btnConsultGhostCoach" style="padding: 10px 18px; font-weight: 600; font-size: 0.88rem; border-radius: 8px; background: rgba(255,255,255,0.06); color: var(--text-primary, #F5F2EA); border: 1px solid var(--border-light, rgba(255,255,255,0.15)); cursor: pointer; display: flex; align-items: center; gap: 6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              Consult Coach on Top Miss
+            </button>
+          </div>
+        </div>
+      `;
+
+      const drillBtn = document.getElementById('btnLaunchRecoveryDrill');
+      if (drillBtn) {
+        drillBtn.onclick = () => {
+          if (!(window.APlus && window.APlus.engine && typeof window.APlus.engine.start === 'function')) {
+            console.warn('[UI] Recovery drill unavailable: exam engine not ready');
+            return;
+          }
+          const pool = missed.map(m => {
+            if (window.APlus.data && typeof window.APlus.data.getQuestionById === 'function') {
+              return window.APlus.data.getQuestionById(m.id);
+            }
+            return null;
+          }).filter(Boolean);
+          if (!pool.length) {
+            console.warn('[UI] Recovery drill unavailable: missed questions not found in bank');
+            return;
+          }
+          window.APlus.engine.start({
+            type: 'missed',
+            customPool: pool,
+            questionCount: pool.length,
+            timeMinutes: Math.max(10, Math.ceil(pool.length * 1.5)),
+            domainKey: 'Exam Recovery Drill'
+          });
+        };
+      }
+
+      const consultBtn = document.getElementById('btnConsultGhostCoach');
+      if (consultBtn && topMissObj) {
+        consultBtn.onclick = () => {
+          if (!(window.TMAGhostCoach && typeof window.TMAGhostCoach.openCoachSheet === 'function')) {
+            console.warn('[UI] Ghost Coach unavailable');
+            return;
+          }
+          let fullQ = topMissObj;
+          if (window.APlus && window.APlus.data && typeof window.APlus.data.getQuestionById === 'function') {
+            fullQ = window.APlus.data.getQuestionById(topMissObj.id) || topMissObj;
+          }
+          window.TMAGhostCoach.openCoachSheet(fullQ, topMissObj.userAnswerText || 'Incorrect');
+        };
+      }
     }
 
     /**
@@ -777,7 +887,7 @@
         const statusText = isCorrect ? 'Correct' : 'Incorrect';
 
         card.innerHTML = `
-          <div class="review-item-header" onclick="APlus.ui.toggleReviewBody(${idx})">
+          <button type="button" class="review-item-header" onclick="APlus.ui.toggleReviewBody(${idx})" aria-expanded="false">
             <div class="review-item-stem" style="font-size: 15px; display: flex; align-items: baseline; gap: 0.6rem;">
               <span class="${dotClass}" aria-hidden="true"></span>
               <span class="qnum tnum">Q${idx + 1}</span>
@@ -787,7 +897,7 @@
               ${isFlagged ? '<span class="label">Flagged</span>' : ''}
               <span class="label">${statusText}</span>
             </div>
-          </div>
+          </button>
           <div class="review-body" id="reviewBody_${idx}">
             <p class="review-stem-full" style="font-size: 15px; margin-bottom: 1rem;">${escapeHTML(q.question)}</p>
             ${q.exhibit ? `
@@ -1116,3 +1226,4 @@
   }
 
 })(typeof window !== 'undefined' ? window : this);
+// a11y-hard-20260911

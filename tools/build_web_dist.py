@@ -73,6 +73,7 @@ ROOT_EXTRA_FILES = [
     "tonconnect-manifest.json",
     "privacy.html",
     "terms.html",
+    "exam_data_free.js",
 ]
 
 # Whole directories copied in full (minus excluded extensions/paths).
@@ -440,6 +441,14 @@ def main():
             copied_rel_paths.append(name)
         elif not src.exists():
             missing.append(name)
+
+    # 8b. Admin accounts console (cookie-gated; robots noindex in page)
+    admin_src = ROOT / "admin" / "users.html"
+    if admin_src.exists():
+        admin_rel = "admin/users.html"
+        copy_file(admin_src, DIST / "admin" / "users.html")
+        if admin_rel not in copied_rel_paths:
+            copied_rel_paths.append(admin_rel)
 
     if missing:
         print("[build_web_dist] ERROR: required generated files missing (build them first):")

@@ -162,6 +162,37 @@
   }
 
   /* ------------------------------------------------------------------ *
+   * Loading skeletons (reserve height before first successful paint)
+   * ------------------------------------------------------------------ */
+
+  function injectHeroSkeleton() {
+    var el = document.getElementById('readinessHero');
+    if (!el) return;
+    if (el.querySelector('.hero-head, [data-sk-hero]')) return;
+    var empty = !el.children.length || el.querySelector('[data-shell-fallback]');
+    if (!empty) return;
+    el.innerHTML =
+      '<div class="sk sk-card" data-sk-hero style="min-height:180px;" aria-hidden="true">' +
+      '<div class="sk sk-line" style="width:40%;"></div>' +
+      '<div class="sk sk-block" style="width:96px;height:96px;border-radius:50%;margin:12px auto;"></div>' +
+      '<div class="sk sk-line" style="width:68%;"></div>' +
+      '</div>';
+  }
+
+  function injectPlanSkeleton() {
+    var el = document.getElementById('todayPlanCard');
+    if (!el) return;
+    if (el.querySelector('#todayPlanStartBtn, [data-sk-plan]')) return;
+    var empty = !el.children.length || el.querySelector('[data-shell-fallback]');
+    if (!empty) return;
+    el.innerHTML =
+      '<div class="sk sk-card" data-sk-plan style="min-height:120px;" aria-hidden="true">' +
+      '<div class="sk sk-line" style="width:88%;height:2em;"></div>' +
+      '<div class="sk sk-line" style="width:50%;"></div>' +
+      '</div>';
+  }
+
+  /* ------------------------------------------------------------------ *
    * Hero
    * ------------------------------------------------------------------ */
 
@@ -340,6 +371,8 @@
     try {
       if (!document || !document.body) return;
       injectStyles();
+      injectHeroSkeleton();
+      injectPlanSkeleton();
 
       hw = widgets();
       if (!hw) return;
@@ -435,3 +468,4 @@
   }
 
 })(typeof window !== 'undefined' ? window : this);
+// a11y-hard-20260911

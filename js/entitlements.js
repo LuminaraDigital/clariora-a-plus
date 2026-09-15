@@ -164,259 +164,29 @@
   /* Base32 (RFC 4648, no padding)                                            */
   /* ----------------------------------------------------------------------- */
 
-  var B32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-
-  function base32Encode(bytes) {
-    var out = '';
-    var bits = 0;
-    var value = 0;
-    var i;
-    for (i = 0; i < bytes.length; i++) {
-      value = (value << 8) | bytes[i];
-      bits += 8;
-      while (bits >= 5) {
-        out += B32_ALPHABET.charAt((value >>> (bits - 5)) & 31);
-        bits -= 5;
-      }
-    }
-    if (bits > 0) {
-      out += B32_ALPHABET.charAt((value << (5 - bits)) & 31);
-    }
-    return out;
+  var _crypto = (APlus._entitlementsCrypto) || {};
+  var base32Encode = _crypto.base32Encode;
+  var base32Decode = _crypto.base32Decode;
+  var utf8Encode = _crypto.utf8Encode;
+  var utf8Decode = _crypto.utf8Decode;
+  var normaliseKey = _crypto.normaliseKey;
+  var splitKey = _crypto.splitKey;
+  var isRevoked = _crypto.isRevoked;
+  var isExpired = _crypto.isExpired;
+  var daysRemaining = _crypto.daysRemaining;
+  var verifyKey = _crypto.verifyKey;
+  var bufferOf = _crypto.bufferOf;
+  var KEY_PREFIX = _crypto.KEY_PREFIX || 'APLUS-';
+  if (typeof verifyKey !== 'function') {
+    console.warn('[APlus.entitlements] entitlements-crypto.js missing; license verify disabled');
+    verifyKey = function () { return Promise.resolve({ ok: false, error: 'crypto module missing' }); };
+    isExpired = function () { return false; };
+    daysRemaining = function () { return null; };
+    base32Encode = base32Encode || function () { return ''; };
+    base32Decode = base32Decode || function () { return new Uint8Array(0); };
+    utf8Encode = utf8Encode || function () { return new Uint8Array(0); };
+    utf8Decode = utf8Decode || function () { return ''; };
   }
-
-  function base32Decode(str) {
-    var clean = String(str || '').toUpperCase().replace(/=+$/, '').replace(/[^A-Z2-7]/g, '');
-    var bits = 0;
-    var value = 0;
-    var out = [];
-    var i;
-    for (i = 0; i < clean.length; i++) {
-      var idx = B32_ALPHABET.indexOf(clean.charAt(i));
-      if (idx < 0) return null;
-      value = (value << 5) | idx;
-      bits += 5;
-      if (bits >= 8) {
-        out.push((value >>> (bits - 8)) & 255);
-        bits -= 8;
-      }
-    }
-    return new Uint8Array(out);
-  }
-
-  function utf8Encode(str) {
-    var s = String(str);
-    if (typeof window.TextEncoder === 'function') {
-      try { return new window.TextEncoder().encode(s); } catch (_) {}
-    }
-    var bytes = [];
-    var i;
-    for (i = 0; i < s.length; i++) {
-      var c = s.charCodeAt(i);
-      if (c < 128) {
-        bytes.push(c);
-      } else if (c < 2048) {
-        bytes.push(192 | (c >> 6), 128 | (c & 63));
-      } else {
-        bytes.push(224 | (c >> 12), 128 | ((c >> 6) & 63), 128 | (c & 63));
-      }
-    }
-    return new Uint8Array(bytes);
-  }
-
-  function utf8Decode(bytes) {
-    if (typeof window.TextDecoder === 'function') {
-      try { return new window.TextDecoder('utf-8').decode(bytes); } catch (_) {}
-    }
-    var out = '';
-    var i = 0;
-    while (i < bytes.length) {
-      var c = bytes[i++];
-      if (c < 128) {
-        out += String.fromCharCode(c);
-      } else if (c > 191 && c < 224) {
-        out += String.fromCharCode(((c & 31) << 6) | (bytes[i++] & 63));
-      } else {
-        out += String.fromCharCode(((c & 15) << 12) | ((bytes[i++] & 63) << 6) | (bytes[i++] & 63));
-      }
-    }
-    return out;
-  }
-
-  /* ----------------------------------------------------------------------- */
-  /* License verification                                                     */
-  /* ----------------------------------------------------------------------- */
-
-  var KEY_PREFIX = 'APLUS-';
-
-  function subtle() {
-    try {
-      var c = window.crypto || window.msCrypto;
-      if (c && c.subtle && typeof c.subtle.importKey === 'function') return c.subtle;
-    } catch (_) {}
-    return null;
-  }
-
-  function normaliseKey(key) {
-    return String(key || '').trim().toUpperCase().replace(/\s+/g, '');
-  }
-
-  function splitKey(key) {
-    var k = normaliseKey(key);
-    if (k.indexOf(KEY_PREFIX) !== 0) return null;
-    var rest = k.slice(KEY_PREFIX.length);
-    var dash = rest.lastIndexOf('-');
-    if (dash <= 0 || dash >= rest.length - 1) return null;
-    return { payloadB32: rest.slice(0, dash), signatureB32: rest.slice(dash + 1) };
-  }
-
-  function isRevoked(key, payload) {
-    var cfg = config();
-    var list = Array.isArray(cfg.revoked) ? cfg.revoked : [];
-    var k = normaliseKey(key);
-    var hash = payload && payload.email_hash ? String(payload.email_hash).toLowerCase() : '';
-    var i;
-    for (i = 0; i < list.length; i++) {
-      var entry = String(list[i] || '').trim();
-      if (!entry) continue;
-      if (normaliseKey(entry) === k) return true;
-      if (hash && entry.toLowerCase() === hash) return true;
-    }
-    return false;
-  }
-
-  function isExpired(payload) {
-    if (!payload || !payload.expires) return false;
-    try {
-      var expStr = String(payload.expires).trim();
-      var expTime = 0;
-      if (/^\d{4}-\d{2}-\d{2}$/.test(expStr)) {
-        var parts = expStr.split('-');
-        var expDate = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]), 23, 59, 59, 999);
-        expTime = expDate.getTime();
-      } else {
-        expTime = new Date(expStr).getTime();
-      }
-      return !isNaN(expTime) && expTime < Date.now();
-    } catch (_) {
-      return false;
-    }
-  }
-
-  function daysRemaining(payload) {
-    if (!payload || !payload.expires) return Infinity;
-    try {
-      var expStr = String(payload.expires).trim();
-      var parts = expStr.split('-');
-      var expDate = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]), 23, 59, 59, 999);
-      var diffMs = expDate.getTime() - Date.now();
-      if (diffMs <= 0) return 0;
-      return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-    } catch (_) {
-      return Infinity;
-    }
-  }
-
-  /**
-   * Verifies a license key offline.
-   * Resolves { ok, payload, error, unverifiable }.
-   * unverifiable is true only when WebCrypto is not available; in that case ok is
-   * false and nothing is ever unlocked.
-   */
-  function verifyKey(key) {
-    var parts = splitKey(key);
-    if (!parts) {
-      return Promise.resolve({ ok: false, error: 'That does not look like a license key. It should start with APLUS-.' });
-    }
-
-    var payloadBytes = base32Decode(parts.payloadB32);
-    var sigBytes = base32Decode(parts.signatureB32);
-    if (!payloadBytes || !payloadBytes.length || !sigBytes || !sigBytes.length) {
-      return Promise.resolve({ ok: false, error: 'This license key is not readable. Please copy it again in full.' });
-    }
-
-    var payload;
-    try {
-      payload = JSON.parse(utf8Decode(payloadBytes));
-    } catch (_) {
-      return Promise.resolve({ ok: false, error: 'This license key is not readable. Please copy it again in full.' });
-    }
-    if (!payload || typeof payload !== 'object' || payload.v !== 1 || payload.sku !== 'aplus_pro') {
-      return Promise.resolve({ ok: false, error: 'This license key is not for this product.' });
-    }
-    if (isRevoked(key, payload)) {
-      return Promise.resolve({ ok: false, payload: payload, error: 'This license key has been refunded and is no longer active.' });
-    }
-    if (isExpired(payload)) {
-      var expMsg = 'This license key expired on ' + payload.expires + '. Please renew your study pass.';
-      return Promise.resolve({ ok: false, payload: payload, error: expMsg });
-    }
-
-    var s = subtle();
-    var cfg = config();
-    var jwk = cfg.publicKeyJwk;
-    var placeholder = !jwk || !jwk.x || !jwk.y ||
-      String(jwk.x).indexOf('REPLACE_WITH') === 0 || String(jwk.y).indexOf('REPLACE_WITH') === 0;
-
-    if (placeholder) {
-      return Promise.resolve({
-        ok: false,
-        unverifiable: true,
-        payload: payload,
-        error: 'This build has no license public key yet, so keys cannot be checked. Please contact support.'
-      });
-    }
-    if (!s) {
-      return Promise.resolve({
-        ok: false,
-        unverifiable: true,
-        payload: payload,
-        error: 'This browser cannot check license signatures here. Open the app from the desktop shortcut or a local server and try again.'
-      });
-    }
-
-    var publicJwk = {
-      kty: jwk.kty || 'EC',
-      crv: jwk.crv || 'P-256',
-      x: jwk.x,
-      y: jwk.y,
-      ext: true
-    };
-
-    return Promise.resolve()
-      .then(function () {
-        return s.importKey('jwk', publicJwk, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify']);
-      })
-      .then(function (cryptoKey) {
-        return s.verify(
-          { name: 'ECDSA', hash: { name: 'SHA-256' } },
-          cryptoKey,
-          bufferOf(sigBytes),
-          bufferOf(payloadBytes)
-        );
-      })
-      .then(function (valid) {
-        if (!valid) {
-          return { ok: false, payload: payload, error: 'This license key did not pass verification. Please check it for typos.' };
-        }
-        return { ok: true, payload: payload };
-      })
-      .catch(function (err) {
-        try { console.warn(LOG, 'verification error', err); } catch (_) {}
-        return { ok: false, payload: payload, error: 'This license key did not pass verification. Please check it for typos.' };
-      });
-  }
-
-  function bufferOf(u8) {
-    // Return a fresh ArrayBuffer slice so WebCrypto never sees a shared view.
-    var copy = new Uint8Array(u8.length);
-    copy.set(u8);
-    return copy.buffer;
-  }
-
-  /* ----------------------------------------------------------------------- */
-  /* License state                                                            */
-  /* ----------------------------------------------------------------------- */
 
   var state = {
     pro: false,
@@ -483,6 +253,86 @@
   /* ----------------------------------------------------------------------- */
 
   var UNLIMITED = Infinity;
+
+  var _currentServerEntitlement = { tier: 'free' };
+  var _bankFetchPending = false;
+
+  function fetchFullQuestionBank() {
+    try {
+      var headers = { 'Content-Type': 'application/json' };
+      if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) {
+        headers['X-Telegram-Init-Data'] = window.Telegram.WebApp.initData;
+      }
+      return fetch('/api/v1/bank/full', {
+        method: 'GET',
+        headers: headers,
+        credentials: 'same-origin'
+      }).then(function (res) {
+        if (!res.ok) {
+          if (res.status === 403 || res.status === 401) {
+            // Server rejected pro entitlement: reset tampered client state
+            _currentServerEntitlement = Object.freeze ? Object.freeze({ tier: 'free' }) : { tier: 'free' };
+            renderChip();
+          }
+          return null;
+        }
+        return res.json();
+      }).then(function (bank) {
+        if (bank && (bank.core1 || bank.core2)) {
+          window.COMPTIA_EXAM_DATA = bank;
+          if (typeof window.examData !== 'undefined') {
+            window.examData = bank;
+          }
+          try {
+            window.dispatchEvent(new CustomEvent('clariora:bank-unlocked', { detail: bank }));
+          } catch (_) {}
+          try { console.info(LOG, 'Full 1,130+ question bank loaded from edge.'); } catch (_) {}
+        }
+      }).catch(function (err) {
+        try { console.warn(LOG, 'Full bank fetch notice:', err && err.message ? err.message : err); } catch (_) {}
+      });
+    } catch (_) {
+      return Promise.resolve();
+    }
+  }
+
+  function setServerEntitlement(val) {
+    if (!val || typeof val !== 'object') {
+      _currentServerEntitlement = Object.freeze ? Object.freeze({ tier: 'free' }) : { tier: 'free' };
+      return;
+    }
+    var copy = Object.assign({}, val);
+    if (Object.freeze) {
+      try { Object.freeze(copy); } catch (_) {}
+    }
+    _currentServerEntitlement = copy;
+
+    // If verified Pro tier from server, trigger full question bank retrieval
+    if (starsTierIsPro(copy) && !_bankFetchPending && typeof fetch === 'function') {
+      _bankFetchPending = true;
+      var fetchPromise = fetchFullQuestionBank();
+      if (fetchPromise && typeof fetchPromise.finally === 'function') {
+        fetchPromise.finally(function () { _bankFetchPending = false; });
+      } else if (fetchPromise && typeof fetchPromise.then === 'function') {
+        fetchPromise.then(function () { _bankFetchPending = false; }, function () { _bankFetchPending = false; });
+      }
+    }
+  }
+
+  try {
+    Object.defineProperty(window, '__CLARIORA_SERVER_ENTITLEMENT__', {
+      get: function () {
+        return _currentServerEntitlement;
+      },
+      set: function (newVal) {
+        setServerEntitlement(newVal);
+      },
+      configurable: true,
+      enumerable: true
+    });
+  } catch (_) {
+    window.__CLARIORA_SERVER_ENTITLEMENT__ = _currentServerEntitlement;
+  }
 
   function starsTierIsPro(ent) {
     if (!ent || !ent.tier || ent.tier === 'free') return false;

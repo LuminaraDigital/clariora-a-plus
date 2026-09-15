@@ -12,25 +12,26 @@
  * appears and no CDP target is published: the script says so and exits 1.
  */
 
-const { spawn } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const {
+  ROOT,
+  defaultExePath,
+  sleep,
+  launchExe,
+  waitForTarget,
+  connect,
+  killTree: harnessKillTree
+} = require('./electron_cdp_harness');
 
-const ROOT = path.resolve(__dirname, '..');
-const DEFAULT_EXE = process.platform === 'win32'
-  ? path.join(ROOT, 'release', 'portable', 'CompTIA_A_Plus_Simulator.exe')
-  : process.platform === 'darwin'
-    ? path.join(ROOT, 'release', 'mac', 'Clariora.app', 'Contents', 'MacOS', 'Clariora')
-    : path.join(ROOT, 'release', 'linux', 'linux-unpacked', 'comptia-a-plus-master');
+const DEFAULT_EXE = defaultExePath();
 const SCRATCH = process.env.APLUS_SMOKE_DIR || path.join(os.tmpdir(), 'aplus-smoke');
 const PORT = 9555;
 const SHOT_PATH = path.join(SCRATCH, 'desktop_home.png');
 
 const EXE = path.resolve(process.argv[2] || DEFAULT_EXE);
 const USER_DATA = path.join(SCRATCH, 'userdata');
-
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const results = [];
 function record(name, pass, detail) {
@@ -43,75 +44,15 @@ const LOAD_TIMEOUT_MS = process.platform === 'win32' ? 8000 : 20000;
 let lastStderr = '';
 
 function launch(extraArgs) {
-  const args = [
-    '--remote-debugging-port=' + PORT,
-    '--user-data-dir=' + USER_DATA
-  ];
-  // An unpacked Linux build has no SUID sandbox helper, so Chromium refuses to
-  // start without this flag. Packaged AppImage and deb installs do not need it.
-  if (process.platform === 'linux') args.push('--no-sandbox');
-  const child = spawn(EXE, args.concat(extraArgs || []), { stdio: ['ignore', 'ignore', 'pipe'], windowsHide: false });
+  const child = launchExe(EXE, PORT, USER_DATA, extraArgs, {
+    stdio: ['ignore', 'ignore', 'pipe'],
+    windowsHide: false
+  });
   lastStderr = '';
   if (child.stderr) {
     child.stderr.on('data', (d) => { lastStderr = (lastStderr + d.toString()).slice(-4000); });
   }
   return child;
-}
-
-async function waitForTarget(timeoutMs) {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    try {
-      const res = await fetch('http://127.0.0.1:' + PORT + '/json/list');
-      const list = await res.json();
-      const page = list.find((t) => t.type === 'page' && t.webSocketDebuggerUrl);
-      if (page) return page;
-    } catch (_) {}
-    await sleep(250);
-  }
-  return null;
-}
-
-/** Minimal CDP client over the Node 22 global WebSocket. */
-async function connect(target) {
-  const ws = new WebSocket(target.webSocketDebuggerUrl);
-  await new Promise((resolve, reject) => {
-    ws.onopen = resolve;
-    ws.onerror = () => reject(new Error('cdp socket error'));
-  });
-  let id = 0;
-  const pending = new Map();
-  const consoleErrors = [];
-  const exceptions = [];
-  ws.onmessage = (ev) => {
-    let msg;
-    try { msg = JSON.parse(ev.data); } catch (_) { return; }
-    if (msg.id && pending.has(msg.id)) {
-      pending.get(msg.id)(msg);
-      pending.delete(msg.id);
-    }
-    if (msg.method === 'Runtime.exceptionThrown') {
-      const d = msg.params.exceptionDetails || {};
-      exceptions.push(String((d.exception && d.exception.description) || d.text || 'exception').split('\n')[0]);
-    }
-    if (msg.method === 'Runtime.consoleAPICalled' && msg.params.type === 'error') {
-      consoleErrors.push(msg.params.args.map((a) => a.value || a.description || '').join(' ').slice(0, 200));
-    }
-  };
-  const send = (method, params) => new Promise((resolve) => {
-    const m = ++id;
-    pending.set(m, resolve);
-    ws.send(JSON.stringify({ id: m, method: method, params: params || {} }));
-  });
-  const evalJs = async (expression) => {
-    const r = await send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true });
-    if (r && r.result && r.result.exceptionDetails) {
-      const d = r.result.exceptionDetails;
-      throw new Error(String((d.exception && d.exception.description) || d.text).split('\n')[0]);
-    }
-    return r && r.result && r.result.result ? r.result.result.value : undefined;
-  };
-  return { ws, send, evalJs, consoleErrors, exceptions };
 }
 
 /**
@@ -149,22 +90,15 @@ function findDatabaseFile() {
 }
 
 function killTree(child) {
-  if (!child || child.killed) return;
-  try {
-    if (process.platform === 'win32') {
-      spawn('taskkill', ['/PID', String(child.pid), '/T', '/F'], { stdio: 'ignore' }).on('error', () => {});
-    } else {
-      child.kill('SIGKILL');
-    }
-  } catch (_) {}
-  try { child.kill(); } catch (_) {}
+  harnessKillTree(child);
+  try { if (child) child.kill(); } catch (_) {}
 }
 
 async function firstRun() {
   const child = launch();
   let cdp = null;
   try {
-    const target = await waitForTarget(LOAD_TIMEOUT_MS);
+    const target = await waitForTarget(PORT, LOAD_TIMEOUT_MS);
     if (!target) {
       record('window loads index within ' + (LOAD_TIMEOUT_MS / 1000) + ' s', false, 'no CDP target published');
       console.log('\nElectron published no debugging target within ' + (LOAD_TIMEOUT_MS / 1000) + ' seconds.');
@@ -175,7 +109,7 @@ async function firstRun() {
     }
     record('window loads index within ' + (LOAD_TIMEOUT_MS / 1000) + ' s', true, target.url.split('/').pop());
 
-    cdp = await connect(target);
+    cdp = await connect(target, { trackConsole: true });
     await cdp.send('Page.enable');
     await cdp.send('Runtime.enable');
 
@@ -284,7 +218,7 @@ async function secondRun() {
   const child = launch();
   let cdp = null;
   try {
-    const target = await waitForTarget(LOAD_TIMEOUT_MS);
+    const target = await waitForTarget(PORT, LOAD_TIMEOUT_MS);
     if (!target) {
       record('relaunch: boot intro does not replay', false, 'no CDP target on relaunch');
       return;

@@ -20,10 +20,8 @@ import {
   extractUsageTokens
 } from './token_budget.js';
 import {
-  searchMemories,
-  formatMemoriesForPrompt,
-  rememberMiss,
-  addMemory
+  extractAndStoreCoachTurn,
+  assembleCoachBootContext
 } from './agent_memory.js';
 
 export async function handleCoachRequest({
@@ -123,7 +121,8 @@ export async function handleCoachRequest({
     requestedModel
   );
 
-  const budgetGate = await assertWithinBudget(env.DB, telegramId, effectiveTier);
+  const userRef = telegramId || firebaseUid;
+  const budgetGate = await assertWithinBudget(env.DB, userRef, effectiveTier);
   if (!budgetGate.ok) {
     return json({
       error: budgetGate.error,
@@ -143,8 +142,8 @@ export async function handleCoachRequest({
     }, 402, corsHeaders);
   }
 
-  // Legacy free counter keep-in-sync for existing clients/tests
-  if (!isPaid && !isProPreviewSession && provider === 'groq' && telegramId) {
+  // Free counter keep-in-sync for any provider
+  if (!isPaid && !isProPreviewSession && telegramId) {
     const todayStr = new Date().toISOString().slice(0, 10);
     if (typeof providerExecutors.incrementFreeAiUsage === 'function') {
       await providerExecutors.incrementFreeAiUsage(
@@ -154,7 +153,7 @@ export async function handleCoachRequest({
         env.DB
       );
     }
-  } else if (!isPaid && !isProPreviewSession && provider === 'groq' && firebaseUid) {
+  } else if (!isPaid && !isProPreviewSession && firebaseUid) {
     const todayStr = new Date().toISOString().slice(0, 10);
     if (typeof providerExecutors.incrementFirebaseFreeAiUsage === 'function') {
       await providerExecutors.incrementFirebaseFreeAiUsage(
@@ -187,19 +186,26 @@ export async function handleCoachRequest({
 
   let memoryHits = [];
   let memoryBlock = '';
+  let bootMeta = null;
   try {
-    memoryHits = await searchMemories(env.DB, auth, {
-      query: [body.objective, body.domain, body.topic, body.prompt].filter(Boolean).join(' ').slice(0, 200),
-      topK: 5
-    });
-    memoryBlock = formatMemoriesForPrompt(memoryHits);
+    const boot = await assembleCoachBootContext(env.DB, auth, body);
+    memoryHits = boot.memoryHits || [];
+    memoryBlock = boot.memoryBlock || '';
+    bootMeta = boot.pack
+      ? {
+          chars: boot.pack.chars,
+          capped: boot.pack.capped,
+          included: boot.pack.included
+        }
+      : null;
     if (memoryBlock) {
       body = Object.assign({}, body, {
-        _memoryBlock: memoryBlock
+        _memoryBlock: memoryBlock,
+        _bootPack: bootMeta
       });
     }
   } catch (memReadErr) {
-    console.warn('agent_memory search skipped:', memReadErr && memReadErr.message);
+    console.warn('agent_memory boot pack skipped:', memReadErr && memReadErr.message);
   }
 
   const startTime = Date.now();
@@ -271,8 +277,19 @@ export async function handleCoachRequest({
         };
         const latencyMs = Date.now() - startTime;
         const tokensUsed = Number(aiResult.tokens_used) || 0;
-        const budget = await consumeBudget(env.DB, telegramId, tokensUsed, effectiveTier);
+        const budget = await consumeBudget(env.DB, userRef, tokensUsed, effectiveTier);
         await logUsage(env, telegramId, effectiveTier, aiResult, latencyMs, tokensUsed);
+
+        let memoryWrite = null;
+        try {
+          memoryWrite = await extractAndStoreCoachTurn(env.DB, auth, {
+            body,
+            triage,
+            replyText: aiResult.text
+          });
+        } catch (memErr) {
+          console.warn('agent_memory extract (stream) skipped:', memErr && memErr.message);
+        }
 
         await writeEvent('done', {
           text: aiResult.text,
@@ -283,6 +300,11 @@ export async function handleCoachRequest({
           turnsUsed: ran.turnsUsed,
           toolResults: ran.toolResults,
           triage: { intent: triage.intent, specialist: triage.specialist },
+          memoriesUsed: memoryHits.length,
+          bootPack: bootMeta,
+          memoryWrite: memoryWrite
+            ? { stored: memoryWrite.stored, updated: memoryWrite.updated, facts: memoryWrite.facts }
+            : null,
           tokensUsed,
           budget,
           features: featuresForTier(effectiveTier),
@@ -328,21 +350,18 @@ export async function handleCoachRequest({
 
   const latencyMs = Date.now() - startTime;
   const tokensUsed = Number(aiResult.tokens_used) || 0;
-  const budget = await consumeBudget(env.DB, telegramId, tokensUsed, effectiveTier);
+  const budget = await consumeBudget(env.DB, userRef, tokensUsed, effectiveTier);
   await logUsage(env, telegramId, effectiveTier, aiResult, latencyMs, tokensUsed);
 
+  let memoryWrite = null;
   try {
-    await rememberMiss(env.DB, auth, body);
-    if (aiResult && aiResult.text && triage && triage.specialist) {
-      await addMemory(env.DB, auth, {
-        kind: 'session_note',
-        content: ('Coach ' + triage.intent + '/' + triage.specialist + ': ' + String(aiResult.text).slice(0, 280)),
-        objective: body.objective || body.domain || null,
-        score: 0.8
-      });
-    }
+    memoryWrite = await extractAndStoreCoachTurn(env.DB, auth, {
+      body,
+      triage,
+      replyText: aiResult.text
+    });
   } catch (memErr) {
-    console.warn('agent_memory write skipped:', memErr && memErr.message);
+    console.warn('agent_memory extract skipped:', memErr && memErr.message);
   }
 
   const freeRemaining = budget
@@ -359,6 +378,10 @@ export async function handleCoachRequest({
     toolResults: ran.toolResults,
     triage: { intent: triage.intent, specialist: triage.specialist, maxTurns: triage.maxTurns },
     memoriesUsed: memoryHits.length,
+    bootPack: bootMeta,
+    memoryWrite: memoryWrite
+      ? { stored: memoryWrite.stored, updated: memoryWrite.updated, facts: memoryWrite.facts }
+      : null,
     tokensUsed,
     budget,
     features: featuresForTier(effectiveTier),

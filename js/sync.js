@@ -3,6 +3,11 @@
  * sync.js - Optional cross-device cloud sync (Supabase Auth + Postgres)
  * File: js/sync.js
  *
+ * IDENTITY NOTE
+ *  - Product identity is Firebase Auth + Telegram via the Cloudflare Worker
+ *    HttpOnly session cookie. Supabase Auth in this file is sync-only and
+ *    stays disabled unless js/sync-config.js sets enabled:true.
+ *
  * PRODUCT RULES
  *  - Local-first stays the default. Accounts are entirely OPTIONAL and exist
  *    only to sync progress between devices.

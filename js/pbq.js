@@ -12,13 +12,30 @@
 
   const escapeHTML = (window.APlus.utils && window.APlus.utils.escapeHTML) || ((s) => String(s || ''));
 
+  /**
+   * Prefer pbq-engine catalog (SSOT) for shared labs; keep local definitions as fallback
+   * for file:// load-order edge cases and Node tests that only require pbq.js.
+   */
+  function catalogLab(key) {
+    try {
+      if (APlus.pbqEngine && APlus.pbqEngine.catalog && APlus.pbqEngine.catalog[key]) {
+        return APlus.pbqEngine.catalog[key];
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  const _portFromCatalog = catalogLab('portMatcher');
+  const _printerFromCatalog = catalogLab('printerOrder');
+  const _cliFromCatalog = catalogLab('cliTerminal');
+
   const PBQ_LABS = {
     portMatcher: {
-      id: 'pbq-port-matcher',
+      id: (_portFromCatalog && _portFromCatalog.id) || 'pbq-port-matcher',
       title: 'Lab 1: Ticket DC-4471, port assignments for the new rack switch',
-      objective: '2.1',
-      domain: '2.0 Networking',
-      pairs: [
+      objective: (_portFromCatalog && _portFromCatalog.objective) || '2.1',
+      domain: (_portFromCatalog && _portFromCatalog.domain) || '2.0 Networking',
+      pairs: (_portFromCatalog && _portFromCatalog.pairs) || [
         { name: 'SSH (Secure Shell)', port: '22' },
         { name: 'DNS (Domain Name System)', port: '53' },
         { name: 'DHCP Server', port: '67' },
@@ -31,11 +48,11 @@
     },
 
     printerOrder: {
-      id: 'pbq-laser-printer',
+      id: (_printerFromCatalog && _printerFromCatalog.id) || 'pbq-laser-printer',
       title: 'Lab 2: Ticket DC-4488, laser printer in Building B print room',
-      objective: '3.4',
-      domain: '3.0 Hardware',
-      steps: [
+      objective: (_printerFromCatalog && _printerFromCatalog.objective) || '3.4',
+      domain: (_printerFromCatalog && _printerFromCatalog.domain) || '3.0 Hardware',
+      steps: (_printerFromCatalog && _printerFromCatalog.steps) || [
         '1. Processing / Raster Image Generation',
         '2. Charging (-600V Primary Corona / Conditioning Roller)',
         '3. Exposing (Laser Discharging Latent Electrostatic Image)',
@@ -47,11 +64,11 @@
     },
 
     cliTerminal: {
-      id: 'pbq-cli-terminal',
+      id: (_cliFromCatalog && _cliFromCatalog.id) || 'pbq-cli-terminal',
       title: 'Lab 3: Ticket DC-4502, console session on DC-NODE-01 in rack A14',
-      objective: '3.1',
-      domain: '3.0 Software Troubleshooting',
-      commands: {
+      objective: (_cliFromCatalog && _cliFromCatalog.objective) || '3.1',
+      domain: (_cliFromCatalog && _cliFromCatalog.domain) || '3.0 Software Troubleshooting',
+      commands: (_cliFromCatalog && _cliFromCatalog.commands) || {
         'sfc /scannow': 'Beginning system scan. This process will take some time.\nVerification 100% complete.\nWindows Resource Protection found corrupt files and successfully repaired them.',
         'dism /online /cleanup-image /restorehealth': 'Deployment Image Servicing and Management tool\n[==========================100.0%==========================]\nThe restore operation completed successfully. The component store corruption was repaired.',
         'ipconfig /all': 'Windows IP Configuration\n   Host Name . . . . . . . . . . . . : DC-NODE-01\n   Primary Dns Suffix  . . . . . . . : corp.datacenter.local\n\nEthernet adapter Ethernet 1:\n   IPv4 Address. . . . . . . . . . . : 192.168.10.45(Preferred)\n   Subnet Mask . . . . . . . . . . . : 255.255.255.0\n   Default Gateway . . . . . . . . . : 192.168.10.1\n   DHCP Server . . . . . . . . . . . : 192.168.10.2\n   DNS Servers . . . . . . . . . . . : 192.168.10.2, 1.1.1.1',

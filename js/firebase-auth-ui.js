@@ -24,6 +24,16 @@
     authListeners: []
   };
 
+  function escapeHtml(str) {
+    if (str == null) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   /**
    * Initializes the Auth UI layer
    */
@@ -47,11 +57,23 @@
       starsChip.style.display = authState.isTMA ? 'inline-flex' : 'none';
     }
 
-    // Restore Telegram web session if logged in previously
+    // Restore Telegram web profile chip only; session authority is HttpOnly cookie + /auth/me.
+    try { localStorage.removeItem('clariora_telegram_login_payload'); } catch (_) {}
     var savedTg = localStorage.getItem('clariora_telegram_auth');
     if (savedTg) {
       try {
         var tgUser = JSON.parse(savedTg);
+        if (tgUser && tgUser.hash) {
+          // Strip legacy sensitive fields from prior builds.
+          tgUser = {
+            id: tgUser.id,
+            first_name: tgUser.first_name || '',
+            last_name: tgUser.last_name || '',
+            username: tgUser.username || '',
+            photo_url: tgUser.photo_url || ''
+          };
+          localStorage.setItem('clariora_telegram_auth', JSON.stringify(tgUser));
+        }
         var tgName = tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : '');
         renderHeaderPill({
           displayName: tgName,
@@ -59,7 +81,7 @@
           email: tgUser.username ? '@' + tgUser.username : null,
           isTelegram: true
         });
-        notifyAuthenticated({ isTelegram: true, user: tgUser, event: 'signin' });
+        // Do not notifyAuthenticated from cache alone; AuthGate resumes via cookie.
       } catch (e) {}
     }
 
@@ -166,8 +188,8 @@
       '  width: 7px;',
       '  height: 7px;',
       '  border-radius: 50%;',
-      '  background: #58A177;',
-      '  box-shadow: 0 0 6px rgba(88, 161, 119, 0.7);',
+      '  background: var(--color-success);',
+      '  box-shadow: 0 0 6px color-mix(in srgb, var(--color-success) 70%, transparent);',
       '}',
       '/* Auth Modal */',
       '.auth-modal-overlay {',
@@ -220,18 +242,18 @@
       '  border: 0;',
       '  border-radius: 6px;',
       '  background: transparent;',
-      '  color: #A3ADC2;',
+      '  color: var(--text-secondary);',
       '  font: inherit;',
       '  font-size: 13px;',
       '  font-weight: 700;',
       '  cursor: pointer;',
       '}',
       '.auth-mode-tab[aria-selected="true"] {',
-      '  background: #D4AF37;',
-      '  color: #07090E;',
+      '  background: var(--gold-primary);',
+      '  color: var(--on-gold);',
       '}',
       '.auth-mode-tab:hover:not([aria-selected="true"]) {',
-      '  color: #F3F4F6;',
+      '  color: var(--text-primary);',
       '  background: rgba(255,255,255,0.06);',
       '}',
       '.auth-modal-header {',
@@ -253,10 +275,10 @@
       '  margin: 6px 0 0;',
       '  font-size: 11px;',
       '  line-height: 1.4;',
-      '  color: #8B95A8;',
+      '  color: var(--text-muted);',
       '}',
       '.auth-input.is-invalid {',
-      '  border-color: #CB6E63;',
+      '  border-color: var(--color-danger);',
       '}',
       '.btn-google:focus-visible,',
       '.btn-telegram:focus-visible,',
@@ -264,7 +286,7 @@
       '.auth-mode-tab:focus-visible,',
       '.auth-link:focus-visible,',
       '.auth-close-btn:focus-visible {',
-      '  outline: 2px solid #D4AF37;',
+      '  outline: 2px solid var(--gold-primary);',
       '  outline-offset: 2px;',
       '}',
       '.btn-auth-submit[disabled] {',
@@ -273,9 +295,9 @@
       '}',
       '.auth-error-banner[hidden] { display: none !important; }',
       '.auth-error-banner.is-info {',
-      '  background: rgba(88, 161, 119, 0.14);',
-      '  border-color: rgba(88, 161, 119, 0.4);',
-      '  color: #86EFAC;',
+      '  background: color-mix(in srgb, var(--color-success) 14%, transparent);',
+      '  border-color: color-mix(in srgb, var(--color-success) 40%, transparent);',
+      '  color: var(--color-success);',
       '}',
       '.btn-google {',
       '  width: 100%;',
@@ -364,8 +386,8 @@
       '.btn-auth-submit {',
       '  width: 100%;',
       '  padding: 11px;',
-      '  background: var(--gold-primary, #D4AF37);',
-      '  color: #07090E;',
+      '  background: var(--gold-primary);',
+      '  color: var(--on-gold);',
       '  font-weight: 700;',
       '  font-size: 14px;',
       '  border: none;',
@@ -393,9 +415,9 @@
       '  text-decoration: underline;',
       '}',
       '.auth-error-banner {',
-      '  background: rgba(203, 110, 99, 0.15);',
-      '  border: 1px solid rgba(203, 110, 99, 0.4);',
-      '  color: #FCA5A5;',
+      '  background: color-mix(in srgb, var(--color-danger) 15%, transparent);',
+      '  border: 1px solid color-mix(in srgb, var(--color-danger) 40%, transparent);',
+      '  color: var(--color-danger);',
       '  padding: 10px 12px;',
       '  border-radius: 8px;',
       '  font-size: 13px;',
@@ -485,7 +507,7 @@
       '  </form>',
       '  <div class="auth-footer-links">',
       '    <button type="button" class="auth-link" id="authForgotBtn" onclick="ClarioraAuthUI.handleForgotPassword()">Forgot password?</button>',
-      '    <p style="margin: 14px 0 0; font-size: 11px; line-height: 1.45; color: #8B95A8; text-align: center;">Local-first privacy: Practice history is saved on this device. Sign in to sync across devices.</p>',
+      '    <p style="margin: 14px 0 0; font-size: 11px; line-height: 1.45; color: var(--text-muted); text-align: center;">Local-first privacy: Practice history is saved on this device. Sign in to sync across devices.</p>',
       '  </div>',
       '</div>'
     ].join('\n');
@@ -525,18 +547,19 @@
       if (dm) dm.textContent = 'Cloud Sync';
     } else {
       var name = user.displayName || (user.email ? user.email.split('@')[0] : 'Learner');
+      var safeName = escapeHtml(name);
       var avatarHtml = '';
       if (user.photoURL) {
-        avatarHtml = '<img src="' + user.photoURL + '" alt="' + name + '" class="user-chip-avatar" crossorigin="anonymous">';
+        avatarHtml = '<img src="' + escapeHtml(user.photoURL) + '" alt="' + safeName + '" class="user-chip-avatar" crossorigin="anonymous">';
       } else {
-        var initial = (name.charAt(0) || 'U').toUpperCase();
+        var initial = escapeHtml((name.charAt(0) || 'U').toUpperCase());
         avatarHtml = '<span class="user-chip-initials">' + initial + '</span>';
       }
 
       mount.innerHTML = [
         '<button type="button" class="streak-chip clariora-user-chip" onclick="ClarioraAuthUI.openAccountMenu()" title="Account settings and cloud sync" aria-label="Account">',
         avatarHtml,
-        '<span class="user-chip-name">' + name + '</span>',
+        '<span class="user-chip-name">' + safeName + '</span>',
         '<span class="sync-dot" title="Cloud Synced" aria-hidden="true"></span>',
         '</button>'
       ].join('');
@@ -829,6 +852,7 @@
         }
         fetch('/api/v1/auth/telegram', {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         })
@@ -836,11 +860,17 @@
         .then(function (result) {
           if (result.success && result.user) {
             try {
-              localStorage.setItem('clariora_telegram_auth', JSON.stringify(result.user));
-              localStorage.setItem('clariora_telegram_login_payload', JSON.stringify(data));
+              localStorage.setItem('clariora_telegram_auth', JSON.stringify({
+                id: result.user.id,
+                first_name: result.user.first_name || '',
+                last_name: result.user.last_name || '',
+                username: result.user.username || '',
+                photo_url: result.user.photo_url || ''
+              }));
+              localStorage.removeItem('clariora_telegram_login_payload');
             } catch (_) {}
             if (window.ClarioraAuthGate && window.ClarioraAuthGate.storeTelegramLoginPayload) {
-              window.ClarioraAuthGate.storeTelegramLoginPayload(data);
+              window.ClarioraAuthGate.storeTelegramLoginPayload(null);
             }
             if (result.entitlement) {
               try {
@@ -897,20 +927,24 @@
       emailOrHandle = tgUser.username ? '@' + tgUser.username : 'Telegram Account';
       providerLabel = 'Telegram';
       if (tgUser.photo_url) {
-        avatarHtml = '<img src="' + tgUser.photo_url + '" class="user-chip-avatar" style="width:42px;height:42px;" alt="' + displayName + '">';
+        avatarHtml = '<img src="' + escapeHtml(tgUser.photo_url) + '" class="user-chip-avatar" style="width:42px;height:42px;" alt="' + escapeHtml(displayName) + '">';
       } else {
-        avatarHtml = '<span class="user-chip-initials" style="width:42px;height:42px;font-size:16px;">' + (displayName.charAt(0) || 'T').toUpperCase() + '</span>';
+        avatarHtml = '<span class="user-chip-initials" style="width:42px;height:42px;font-size:16px;">' + escapeHtml((displayName.charAt(0) || 'T').toUpperCase()) + '</span>';
       }
     } else {
       displayName = user.displayName || (user.email ? user.email.split('@')[0] : 'Learner');
       emailOrHandle = user.email || 'Cloud Account';
       providerLabel = (user.providerData && user.providerData[0] && user.providerData[0].providerId === 'google.com') ? 'Google' : 'Email';
       if (user.photoURL) {
-        avatarHtml = '<img src="' + user.photoURL + '" class="user-chip-avatar" style="width:42px;height:42px;" alt="' + displayName + '">';
+        avatarHtml = '<img src="' + escapeHtml(user.photoURL) + '" class="user-chip-avatar" style="width:42px;height:42px;" alt="' + escapeHtml(displayName) + '">';
       } else {
-        avatarHtml = '<span class="user-chip-initials" style="width:42px;height:42px;font-size:16px;">' + (displayName.charAt(0) || 'L').toUpperCase() + '</span>';
+        avatarHtml = '<span class="user-chip-initials" style="width:42px;height:42px;font-size:16px;">' + escapeHtml((displayName.charAt(0) || 'L').toUpperCase()) + '</span>';
       }
     }
+
+    var safeDisplayName = escapeHtml(displayName);
+    var safeEmailOrHandle = escapeHtml(emailOrHandle);
+    var safeProviderLabel = escapeHtml(providerLabel);
 
     var overlayId = 'clarioraAccountSheetOverlay';
     var existing = document.getElementById(overlayId);
@@ -930,23 +964,23 @@
       '  <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 18px;">',
       '    ' + avatarHtml,
       '    <div style="overflow: hidden;">',
-      '      <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #F3F4F6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' + displayName + '</h3>',
-      '      <p style="margin: 2px 0 0; font-size: 0.84rem; color: #94A3B8;">' + emailOrHandle + '</p>',
+      '      <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' + safeDisplayName + '</h3>',
+      '      <p style="margin: 2px 0 0; font-size: 0.84rem; color: var(--text-muted);">' + safeEmailOrHandle + '</p>',
       '    </div>',
       '  </div>',
       '  <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(212,175,55,0.2); border-radius: 8px; padding: 12px 14px; margin-bottom: 18px;">',
       '    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">',
-      '      <span style="color: #94A3B8;">Sign-in method</span>',
-      '      <strong style="color: #D4AF37;">' + providerLabel + '</strong>',
+      '      <span style="color: var(--text-muted);">Sign-in method</span>',
+      '      <strong style="color: var(--gold-primary);">' + safeProviderLabel + '</strong>',
       '    </div>',
       '    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px;">',
-      '      <span style="color: #94A3B8;">Cloud backup</span>',
-      '      <span style="color: #86EFAC; display: flex; align-items: center; gap: 6px;"><span class="sync-dot"></span> Synced</span>',
+      '      <span style="color: var(--text-muted);">Cloud backup</span>',
+      '      <span style="color: var(--color-success); display: flex; align-items: center; gap: 6px;"><span class="sync-dot"></span> Synced</span>',
       '    </div>',
       '  </div>',
       '  <div style="display: grid; gap: 10px;">',
-      '    <button type="button" class="btn" id="clarioraAccountSyncNowBtn" style="width: 100%; padding: 10px; background: rgba(212,175,55,0.14); border: 1px solid rgba(212,175,55,0.4); color: #F5D061; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">Sync Now</button>',
-      '    <button type="button" class="btn" id="clarioraAccountSignOutBtn" style="width: 100%; padding: 10px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #FCA5A5; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">Sign out</button>',
+      '    <button type="button" class="btn" id="clarioraAccountSyncNowBtn" style="width: 100%; padding: 10px; background: color-mix(in srgb, var(--gold-primary) 14%, transparent); border: 1px solid color-mix(in srgb, var(--gold-primary) 40%, transparent); color: var(--gold-light); border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">Sync Now</button>',
+      '    <button type="button" class="btn" id="clarioraAccountSignOutBtn" style="width: 100%; padding: 10px; background: color-mix(in srgb, var(--color-danger) 10%, transparent); border: 1px solid color-mix(in srgb, var(--color-danger) 30%, transparent); color: var(--color-danger); border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">Sign out</button>',
       '  </div>',
       '</div>'
     ].join('\n');

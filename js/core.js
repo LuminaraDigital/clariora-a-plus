@@ -171,7 +171,7 @@
   APlus.storage = StorageAdapter;
 
   /**
-   * Utilities
+   * Utilities (single source of truth for shared helpers)
    */
   APlus.utils = {
     escapeHTML(str) {
@@ -185,10 +185,12 @@
     },
 
     shuffleArray(arr) {
-      const copy = [...arr];
+      const copy = Array.isArray(arr) ? arr.slice() : [];
       for (let i = copy.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [copy[i], copy[j]] = [copy[j], copy[i]];
+        const t = copy[i];
+        copy[i] = copy[j];
+        copy[j] = t;
       }
       return copy;
     },
@@ -196,6 +198,33 @@
     clone(obj) {
       if (obj === null || typeof obj !== 'object') return obj;
       return JSON.parse(JSON.stringify(obj));
+    },
+
+    parseJSON(str, fallback) {
+      if (str === null || str === undefined || str === '') {
+        return arguments.length > 1 ? fallback : null;
+      }
+      try {
+        return JSON.parse(str);
+      } catch (_) {
+        return arguments.length > 1 ? fallback : null;
+      }
+    },
+
+    byId(id) {
+      if (typeof document === 'undefined' || !id) return null;
+      return document.getElementById(id);
+    },
+
+    todayKey(date) {
+      const d = date instanceof Date ? date : new Date();
+      return d.toISOString().slice(0, 10);
+    },
+
+    addDays(isoDay, days) {
+      const d = new Date(String(isoDay) + 'T12:00:00Z');
+      d.setUTCDate(d.getUTCDate() + Number(days || 0));
+      return d.toISOString().slice(0, 10);
     },
 
     formatSeconds(seconds) {
@@ -212,16 +241,54 @@
 
     clamp(val, min, max) {
       return Math.min(Math.max(val, min), max);
+    },
+
+    /**
+     * Profile-scoped localStorage get/set used by ledger, SRS, readiness, study plan.
+     * Prefers CompTIAProfiles when present; otherwise raw localStorage.
+     */
+    scopedGet(key) {
+      if (window.CompTIAProfiles && typeof CompTIAProfiles.scopedGet === 'function') {
+        return CompTIAProfiles.scopedGet(key);
+      }
+      try {
+        return localStorage.getItem(key);
+      } catch (_) {
+        return null;
+      }
+    },
+
+    scopedSet(key, value) {
+      if (window.CompTIAProfiles && typeof CompTIAProfiles.scopedSet === 'function') {
+        CompTIAProfiles.scopedSet(key, value);
+        return true;
+      }
+      try {
+        localStorage.setItem(key, value);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    },
+
+    scopedRemove(key) {
+      if (window.CompTIAProfiles && typeof CompTIAProfiles.scopedRemove === 'function') {
+        CompTIAProfiles.scopedRemove(key);
+        return true;
+      }
+      try {
+        localStorage.removeItem(key);
+        return true;
+      } catch (_) {
+        return false;
+      }
     }
   };
 
   // Expose global convenience aliases if not already defined
   window.escapeHTML = window.escapeHTML || APlus.utils.escapeHTML;
-  window.shuffleArray = window.shuffleArray || ((arr) => {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-  });
+  window.shuffleArray = window.shuffleArray || function (arr) {
+    return APlus.utils.shuffleArray(arr);
+  };
 
 })(typeof window !== 'undefined' ? window : this);

@@ -385,6 +385,17 @@ def main() -> int:
     env = os.environ.copy()
 
     if args.unsigned:
+        # electron-builder still honors leftover WIN_CSC_LINK / CSC_LINK from the
+        # parent shell or a prior signed attempt. Clear them so --unsigned is real.
+        for key in (
+            "WIN_CSC_LINK",
+            "CSC_LINK",
+            "CSC_KEY_PASSWORD",
+            "WIN_CSC_KEY_PASSWORD",
+            "CSC_NAME",
+            "WIN_CSC_KEY_PASSWORD",
+        ):
+            env.pop(key, None)
         env["CSC_IDENTITY_AUTO_DISCOVERY"] = "false"
         print("Signing: DISABLED (--unsigned)")
     elif env.get("WIN_CSC_LINK") or env.get("CSC_LINK"):
@@ -426,9 +437,17 @@ def main() -> int:
         print("ERROR: electron-builder failed")
         return r.returncode
 
-    setups = sorted(release_dir.glob("CompTIA_A_Plus_Setup_*.exe")) if release_dir.is_dir() else []
+    # Prefer directories.output=release; fall back to legacy dist/ if a local config still uses it.
+    artifact_dir = release_dir if release_dir.is_dir() else (APP_DIR / "dist")
+    setups = sorted(artifact_dir.glob("CompTIA_A_Plus_Setup_*.exe")) if artifact_dir.is_dir() else []
     if not setups:
-        print(f"ERROR: no installer found under {release_dir}")
+        # Prefer release/, but accept leftover dist/ from a prior builder default.
+        dist_dir = APP_DIR / "dist"
+        if dist_dir.is_dir():
+            artifact_dir = dist_dir
+            setups = sorted(artifact_dir.glob("CompTIA_A_Plus_Setup_*.exe"))
+    if not setups:
+        print(f"ERROR: no installer found under {release_dir} or {APP_DIR / 'dist'}")
         return 1
 
     latest = setups[-1]
@@ -447,18 +466,18 @@ def main() -> int:
 
     # Auto-update metadata for the generic provider (upload alongside the installer).
     for meta in ("latest.yml", "latest.yaml"):
-        src_meta = release_dir / meta
+        src_meta = artifact_dir / meta
         if src_meta.is_file():
             shutil.copy2(src_meta, OUT_DIR / meta)
             print(f"Update metadata: {OUT_DIR / meta}")
 
     # Single-file portable exe produced by the "portable" target.
-    for portable_exe in release_dir.glob("CompTIA_A_Plus_Portable_*.exe"):
+    for portable_exe in artifact_dir.glob("CompTIA_A_Plus_Portable_*.exe"):
         shutil.copy2(portable_exe, OUT_DIR / portable_exe.name)
         print(f"Portable exe: {OUT_DIR / portable_exe.name}")
 
     if args.portable:
-        unpacked = release_dir / "win-unpacked"
+        unpacked = artifact_dir / "win-unpacked"
         portable = OUT_DIR / "portable"
         if portable.exists():
             shutil.rmtree(portable, ignore_errors=True)
@@ -468,11 +487,13 @@ def main() -> int:
 
     # Prune builder nest from APP_DIR so resources/app stays editable source, not a dist dump
     # Keep win-unpacked only under ROOT/release if requested; always remove APP_DIR/release after copy
-    try:
-        shutil.rmtree(release_dir, ignore_errors=True)
-        print("Pruned APP_DIR/release/ (canonical artifacts live under ROOT/release/)")
-    except OSError as exc:
-        print(f"WARN: could not prune APP_DIR/release: {exc}")
+    for nest in (release_dir, APP_DIR / "dist"):
+        try:
+            if nest.exists():
+                shutil.rmtree(nest, ignore_errors=True)
+                print(f"Pruned {nest.relative_to(ROOT)} (canonical artifacts live under ROOT/release/)")
+        except OSError as exc:
+            print(f"WARN: could not prune {nest}: {exc}")
 
     # Remove obsolete morning zip if present (replaced by NSIS)
     old_zip = ROOT / "CompTIA_A_Plus_Desktop_App_Windows_x64.zip"

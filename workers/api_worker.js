@@ -792,14 +792,16 @@ export default {
         const auth = await resolveRequestAuth(
           request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
         );
-        if (!auth.ok || !auth.telegramId) {
+        if (!auth.ok || (!auth.telegramId && !auth.firebaseUid)) {
           return new Response(JSON.stringify({ error: 'AUTH_REQUIRED' }), {
             status: 401,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           });
         }
-        const tgUserId = auth.telegramId;
-        const entitlement = await resolveUserEntitlement(tgUserId, env.DB);
+        const userId = auth.firebaseUid ? ('fb:' + auth.firebaseUid) : ('tg:' + auth.telegramId);
+        const entitlement = auth.firebaseUid
+          ? await resolveFirebaseEntitlement(auth.firebaseUid, env.DB)
+          : await resolveUserEntitlement(auth.telegramId, env.DB);
         const policy = getTierPolicy(entitlement.tier);
         if (!policy.asyncJobs) {
           return new Response(JSON.stringify({
@@ -814,7 +816,8 @@ export default {
         }
         await ensureJobTables(env.DB);
         const job = await enqueueCoachJob(env.DB, {
-          telegramId: tgUserId,
+          userId: userId,
+          telegramId: auth.telegramId != null ? auth.telegramId : null,
           tier: normalizeTier(entitlement.tier),
           jobType: body.jobType || 'exam_review_pack',
           payload: {
@@ -822,7 +825,7 @@ export default {
             exam: body.exam || 'core1'
           }
         });
-        const processed = await processNextCoachJob(env.DB, tgUserId, async (jobType, payload) => {
+        const processed = await processNextCoachJob(env.DB, userId, async (jobType, payload) => {
           if (jobType === 'exam_review_pack') return buildExamReviewPack(payload);
           throw new Error('unknown_job_type');
         });
@@ -836,13 +839,14 @@ export default {
         const auth = await resolveRequestAuth(
           request, env, {}, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
         );
-        if (!auth.ok || !auth.telegramId) {
+        if (!auth.ok || (!auth.telegramId && !auth.firebaseUid)) {
           return new Response(JSON.stringify({ error: 'AUTH_REQUIRED' }), {
             status: 401,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           });
         }
-        const job = await getCoachJob(env.DB, jobId, auth.telegramId);
+        const userRef = auth.firebaseUid ? ('fb:' + auth.firebaseUid) : ('tg:' + auth.telegramId);
+        const job = await getCoachJob(env.DB, jobId, userRef);
         if (!job) {
           return new Response(JSON.stringify({ error: 'NOT_FOUND' }), {
             status: 404,

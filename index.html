@@ -212,7 +212,7 @@
         <strong id="apxStreakBadge">0</strong>
         <span class="streak-label">day streak</span>
       </button>
-      <button type="button" class="streak-chip tma-stars-chip" id="tmaStarsChip" onclick="StarsBilling.openStarsUpgradeSheet()" title="Upgrade Store (Stars & TON)" aria-label="Upgrade Store (Stars & TON)" style="display: none; border-color: rgba(245, 208, 97, 0.4); background: rgba(245, 208, 97, 0.1); cursor: pointer;">
+      <button type="button" class="streak-chip tma-stars-chip" id="tmaStarsChip" onclick="if(window.StarsBilling)StarsBilling.openStarsUpgradeSheet()" title="Upgrade Store (Stars & TON)" aria-label="Upgrade Store (Stars & TON)" style="display: none; border-color: rgba(245, 208, 97, 0.4); background: rgba(245, 208, 97, 0.1); cursor: pointer;">
         <span style="color: #F5D061; display: inline-flex; align-items: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
         <strong style="color: #F5D061; margin-left: 2px;">Upgrade</strong>
       </button>
@@ -563,6 +563,7 @@
       <!-- Feature Mount Points for Analytics and SRS -->
       <div id="analyticsPanels"></div>
       <div id="srsPanels"></div>
+      <div id="coachAutopsyMount"></div>
 
       <!-- Action Buttons -->
       <div class="results-actions" style="display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap;">

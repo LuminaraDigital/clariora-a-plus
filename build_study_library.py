@@ -16,15 +16,16 @@ from pathlib import Path
 ROOT = Path(".")
 
 SOURCE_FOLDERS = [
-    "CompTIA_A_Plus_Mastery",
-    "CompTIA A+",
-    "CompTIA-A-Core-1-220-1201-Certification-Training-Exam-Prep",
-    "CompTIA-A-Certification-220-1001-The-Total-Course",
-    "TOTAL-CompTIA-A-Core-1-220-1201-v15-Course",
-    "CompTIA-A-Certification-Core-1---220-1101",
+    "notes",
 ]
 
 PDF_MAX_CHARS = 100000
+
+
+def clean_typography(s: str) -> str:
+    if not s:
+        return s
+    return s.replace("—", "--").replace("–", "-")
 
 
 def extract_pdf_text(path: Path, max_chars: int = PDF_MAX_CHARS) -> tuple[str, str]:
@@ -54,7 +55,7 @@ def extract_pdf_text(path: Path, max_chars: int = PDF_MAX_CHARS) -> tuple[str, s
                     "open the original PDF for the full document.]"
                 )
                 note = "truncated"
-            return text, f"pypdf{('-' + note) if note else ''}"
+            return clean_typography(text), f"pypdf{('-' + note) if note else ''}"
         errors.append("pypdf: empty text (possibly scanned/image PDF)")
     except Exception as exc:
         errors.append(f"pypdf: {exc}")
@@ -77,7 +78,7 @@ def extract_pdf_text(path: Path, max_chars: int = PDF_MAX_CHARS) -> tuple[str, s
                     f"\n\n[Truncated for Study Library size at {max_chars} characters; "
                     "open the original PDF for the full document.]"
                 )
-            return text, "PyPDF2"
+            return clean_typography(text), "PyPDF2"
         errors.append("PyPDF2: empty text")
     except Exception as exc:
         errors.append(f"PyPDF2: {exc}")
@@ -93,7 +94,7 @@ def extract_pdf_text(path: Path, max_chars: int = PDF_MAX_CHARS) -> tuple[str, s
                     f"\n\n[Truncated for Study Library size at {max_chars} characters; "
                     "open the original PDF for the full document.]"
                 )
-            return text, "pdfminer.six"
+            return clean_typography(text), "pdfminer.six"
         errors.append("pdfminer.six: empty text")
     except Exception as exc:
         errors.append(f"pdfminer.six: {exc}")
@@ -171,10 +172,10 @@ def first_heading(md_text: str, fallback: str) -> str:
 
 def ingest_mastery_markdown() -> list[dict]:
     items = []
-    mastery = ROOT / "CompTIA_A_Plus_Mastery"
-    if not mastery.exists():
+    notes_dir = ROOT / "notes"
+    if not notes_dir.exists():
         return items
-    for path in sorted(mastery.rglob("*.md")):
+    for path in sorted(notes_dir.rglob("*.md")):
         rel = path.as_posix()
         text = path.read_text(encoding="utf-8", errors="replace")
         title = first_heading(text, title_from_name(path.name))
@@ -182,7 +183,7 @@ def ingest_mastery_markdown() -> list[dict]:
             "id": f"md-{len(items)+1:03d}",
             "title": title,
             "category": "Mastery Notes",
-            "folder": "CompTIA_A_Plus_Mastery",
+            "folder": "notes",
             "exam": classify_exam(rel, title),
             "domain": classify_domain(rel, title),
             "format": "markdown",

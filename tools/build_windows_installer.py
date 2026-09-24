@@ -124,7 +124,6 @@ CANONICAL_DIRS = [
     "fonts",
     "notes",
     "shards",
-    "CompTIA_A_Plus_Mastery",
 ]
 
 # Never copied into the packaged app.

@@ -244,41 +244,64 @@
      ============================================================ */
 
   /**
-   * Upsert per-account profile doc so each learner has durable identity + timestamps.
-   * Path: users/{uid}
+   * Upsert per-account profile doc ensuring zero-trust identity and PII isolation.
+   * Path 1: users/{uid}/public_profile/current (Safe, public metadata)
+   * Path 2: users/{uid}/private_data/current (Sensitive PII)
+   * Path 3: users/{uid} (Anchor document)
    */
   async function ensureUserProfile(sessionOrUser) {
     await init();
     if (!state.db || !state.modules || !state.firestoreAvailable) return false;
-    var uid = sessionOrUser && (sessionOrUser.uid || sessionOrUser.id);
-    if (!uid) return false;
+    
+    // ZERO-TRUST CLIENT IDENTITY: Never trust caller-supplied UID; enforce verified session UID
+    var currentUser = getCurrentUser();
+    if (!currentUser || !currentUser.uid) return false;
+    var uid = currentUser.uid;
 
     var fsMod = state.modules.firestore;
-    var docRef = fsMod.doc(state.db, 'users', uid);
     var now = new Date().toISOString();
-    var existing = null;
-    try {
-      var snap = await fsMod.getDoc(docRef);
-      if (snap.exists()) existing = snap.data();
-    } catch (_) {}
+    // updatedAt must be the server clock: security rules pin it to request.time so a
+    // backdated client timestamp cannot defeat the per-document write throttle.
+    var stamp = fsMod.serverTimestamp();
 
-    var payload = {
-      uid: uid,
-      email: (sessionOrUser && sessionOrUser.email) || (existing && existing.email) || '',
-      displayName: (sessionOrUser && sessionOrUser.displayName) || (existing && existing.displayName) || '',
-      photoURL: (sessionOrUser && sessionOrUser.photoURL) || (existing && existing.photoURL) || '',
-      provider: (sessionOrUser && sessionOrUser.provider) || (existing && existing.provider) || 'unknown',
-      lastSignInAt: now,
-      updatedAt: now
-    };
-    if (!existing || !existing.createdAt) payload.createdAt = now;
-    if (!existing) payload.signupAt = now;
+    var displayName = (currentUser.displayName || (sessionOrUser && sessionOrUser.displayName) || 'Technician').slice(0, 100);
+    var photoURL = (currentUser.photoURL || (sessionOrUser && sessionOrUser.photoURL) || '').slice(0, 500);
+    var email = (currentUser.email || (sessionOrUser && sessionOrUser.email) || '').slice(0, 120);
+    var provider = (currentUser.providerData && currentUser.providerData[0] && currentUser.providerData[0].providerId) ||
+      (sessionOrUser && sessionOrUser.provider) || 'password';
 
     try {
-      await fsMod.setDoc(docRef, payload, { merge: true });
+      // 1. Write Public Profile
+      var publicDocRef = fsMod.doc(state.db, 'users', uid, 'public_profile', 'current');
+      await fsMod.setDoc(publicDocRef, {
+        displayName: displayName,
+        photoURL: photoURL,
+        updatedAt: stamp
+      }, { merge: true });
+
+      // 2. Write Private PII (Separated from public data)
+      if (email) {
+        var privateDocRef = fsMod.doc(state.db, 'users', uid, 'private_data', 'current');
+        await fsMod.setDoc(privateDocRef, {
+          email: email,
+          updatedAt: stamp
+        }, { merge: true });
+      }
+
+      // 3. Update Anchor User Document with strictly whitelisted keys
+      var anchorDocRef = fsMod.doc(state.db, 'users', uid);
+      await fsMod.setDoc(anchorDocRef, {
+        uid: uid,
+        displayName: displayName,
+        photoURL: photoURL,
+        provider: provider,
+        lastSignInAt: now,
+        updatedAt: stamp
+      }, { merge: true });
+
       return true;
     } catch (err) {
-      console.warn('[Firebase] profile save notice:', err.message);
+      console.warn('[Firebase] Secure profile save notice:', err.message);
       return false;
     }
   }
@@ -288,6 +311,9 @@
    */
   function setupRealtimeLearningSync(uid) {
     if (!state.db || !state.modules || !state.firestoreAvailable) return;
+    var currentUser = getCurrentUser();
+    // Verify listener is bound to authenticated user only
+    if (!currentUser || currentUser.uid !== uid) return;
     var fsMod = state.modules.firestore;
 
     try {
@@ -313,11 +339,16 @@
   }
 
   var syncDebounceTimer = null;
+  var lastSyncAttempt = 0;
   function scheduleSyncToFirestore() {
     if (syncDebounceTimer) clearTimeout(syncDebounceTimer);
+    var now = Date.now();
+    // Obey the 5-second time differential rate limit
+    var delay = Math.max(5000 - (now - lastSyncAttempt), 1500);
     syncDebounceTimer = setTimeout(function () {
+      lastSyncAttempt = Date.now();
       syncLocalToFirestore();
-    }, 1500);
+    }, delay);
   }
 
   /**
@@ -372,22 +403,28 @@
   }
 
   /**
-   * Save learner progress to Firestore
+   * Save learner progress to Firestore with strict schema whitelisting
    */
   async function saveLearnerProgress(progressData) {
     var user = getCurrentUser();
     if (!user || !state.db || !state.modules || !state.firestoreAvailable) return false;
 
     var fsMod = state.modules.firestore;
+    var now = new Date().toISOString();
     try {
       var docRef = fsMod.doc(state.db, 'users', user.uid, 'learning', 'state');
-      var payload = Object.assign({}, progressData, {
-        lastSyncedAt: new Date().toISOString(),
-        email: user.email || '',
-        displayName: user.displayName || ''
-      });
+      
+      // MASS ASSIGNMENT DEFENSE: Explicit field whitelisting (never spread arbitrary objects).
+      // No identity or PII keys belong on the learning doc: displayName lives in
+      // public_profile and email in private_data, so a progress sync cannot leak either.
+      var safePayload = {
+        data: (progressData && typeof progressData.data === 'object' && progressData.data !== null) ? progressData.data : {},
+        syncedAt: (progressData && progressData.syncedAt) || now,
+        lastSyncedAt: now,
+        updatedAt: fsMod.serverTimestamp()
+      };
 
-      await fsMod.setDoc(docRef, payload, { merge: true });
+      await fsMod.setDoc(docRef, safePayload, { merge: true });
       return true;
     } catch (err) {
       console.warn('[Firebase] Firestore save notice:', err.message);

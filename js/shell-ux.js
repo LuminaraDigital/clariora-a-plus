@@ -98,25 +98,6 @@
      First-run gate
      --------------------------------------------------------------- */
 
-  function ensureBootGate() {
-    if (byId('aplusBootGate')) return;
-    var gate = document.createElement('div');
-    gate.id = 'aplusBootGate';
-    gate.setAttribute('role', 'dialog');
-    gate.setAttribute('aria-modal', 'true');
-    gate.setAttribute('aria-labelledby', 'aplusBootTitle');
-    gate.innerHTML =
-      '<div class="boot-panel">' +
-      '<div class="mark" aria-hidden="true">A+</div>' +
-      '<h2 id="aplusBootTitle">Clariora</h2>' +
-      '<p>Local-first privacy: Progress is saved on this device. Sign in anytime to sync across devices.</p>' +
-      '<div class="boot-progress" aria-hidden="true"><span id="aplusBootBar"></span></div>' +
-      '<button type="button" class="btn" id="aplusBootStartBtn">Continue</button>' +
-      '<div class="boot-meta" id="aplusBootMeta">Setting up</div>' +
-      '</div>';
-    document.body.appendChild(gate);
-  }
-
   function setBootProgress(pct, label) {
     var bar = byId('aplusBootBar');
     var meta = byId('aplusBootMeta');
@@ -162,18 +143,6 @@
     if (APlus.bus && typeof APlus.bus.emit === 'function') {
       APlus.bus.emit('shell:ready', { version: '4.0.0' });
     }
-  }
-
-  function hideBootGate() {
-    var gate = byId('aplusBootGate');
-    if (gate) gate.hidden = true;
-    try {
-      localStorage.setItem(BOOT_KEY, '1');
-      if (APlus.storage) APlus.storage.set('boot_complete', true);
-    } catch (err) {
-      /* storage blocked, gate simply shows again next launch */
-    }
-    emitShellReady();
   }
 
   function hasSeenIntro() {
@@ -1116,7 +1085,12 @@
     var rows = readHistory().slice(0, 5);
     var html = '<div class="card-title">Recent attempts</div>';
     if (!rows.length) {
-      html += '<p class="recent-empty">No attempts yet. Your first mock will show here.</p>';
+      html +=
+        '<div class="recent-empty-wrap">' +
+        '<p class="recent-empty">No attempts yet. Your first mock will show here.</p>' +
+        '<p class="recent-next-label">Next step</p>' +
+        '<button type="button" class="btn recent-next-cta" id="recentEmptyStartBtn">Start a practice set</button>' +
+        '</div>';
     } else {
       html += '<ul class="recent-list">';
       for (var i = 0; i < rows.length; i++) {
@@ -1135,6 +1109,29 @@
       html += '</ul>';
     }
     if (mount.innerHTML !== html) mount.innerHTML = html;
+    mount.removeAttribute('aria-busy');
+    var emptyCta = byId('recentEmptyStartBtn');
+    if (emptyCta && emptyCta.getAttribute('data-wired') !== '1') {
+      emptyCta.setAttribute('data-wired', '1');
+      emptyCta.addEventListener('click', function () {
+        try {
+          if (APlus.telemetry && typeof APlus.telemetry.track === 'function') {
+            APlus.telemetry.track('feature_opened', { feature: 'recent_empty_cta' });
+          }
+        } catch (_) {}
+        try {
+          if (APlus.onboarding && typeof APlus.onboarding.startToday === 'function') {
+            APlus.onboarding.startToday();
+            return;
+          }
+        } catch (_) {}
+        try {
+          if (typeof window.startExam === 'function') {
+            window.startExam('core1', 20, 25);
+          }
+        } catch (_) {}
+      });
+    }
   }
 
   /* ---------------------------------------------------------------
@@ -1185,3 +1182,4 @@
     init();
   }
 })(window);
+// a11y-hard-20260911

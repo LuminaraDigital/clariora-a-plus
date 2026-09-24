@@ -1,0 +1,31 @@
+# Clariora public crawl rules.
+# Marketing and legal pages are indexable. The signed-in app shell is not.
+
+User-agent: *
+Allow: /landing/
+Allow: /privacy
+Allow: /privacy.html
+Allow: /terms
+Allow: /terms.html
+Allow: /robots.txt
+Allow: /sitemap.xml
+Allow: /favicon.ico
+Allow: /favicon.png
+Allow: /icons/
+Allow: /fonts/
+Allow: /css/
+Allow: /landing/img/
+
+Disallow: /app
+Disallow: /app/
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api/
+Disallow: /shards/
+Disallow: /exam_data.js
+Disallow: /exam_data_free.js
+Disallow: /precache-manifest.json
+Disallow: /sw.js
+Disallow: /index.html
+
+Sitemap: https://clariora.com.au/sitemap.xml

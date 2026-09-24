@@ -7,6 +7,9 @@
 # Secrets and credentials
 .env*
 !.env.example
+!.env.local.example
+!.env.staging.example
+!.env.production.example
 !.env.*.template
 .groq_key
 **/groq-secrets.local.js
@@ -40,6 +43,7 @@ curriculum_data.js
 curriculum_data.json
 
 # Third-party course media (not redistributable; kept local only)
+vendor_sources/
 Videos For A+/
 PowerPoint for A+/
 Labs for A+/

@@ -18,6 +18,18 @@
 (function (window) {
   'use strict';
 
+  /**
+   * Tier 1 request guard (js/request-guard.js). Telemetry is fire-and-forget and must never compete with real traffic:
+   * a single attempt, and the flush loop already applies its own backoff.
+   * Degrades to plain fetch when the guard has not loaded.
+   */
+  function guardedFetch(url, init, guardOpts) {
+    var g = (typeof window !== 'undefined' && window.APlus && window.APlus.guard) || null;
+    if (g) return g.fetch(url, init, guardOpts);
+    return fetch(url, init);
+  }
+
+
   if (!window) return;
 
   var APlus = window.APlus = window.APlus || {};
@@ -209,7 +221,17 @@
   function sendBatch(batch, cfg, onDone) {
     var body;
     try {
-      body = JSON.stringify({ installId: installId, events: batch });
+      // Never upload installId to the public item-stats ingest. Session id in
+      // buffered events is also stripped before the wire format is built.
+      var wireEvents = (batch || []).map(function (evt) {
+        if (!evt || typeof evt !== 'object') return evt;
+        return {
+          n: evt.n,
+          t: evt.t,
+          p: evt.p
+        };
+      });
+      body = JSON.stringify({ events: wireEvents });
     } catch (err) {
       onDone(false);
       return;
@@ -239,12 +261,12 @@
 
     try {
       if (typeof fetch === 'function') {
-        fetch(cfg.endpoint, {
+        guardedFetch(cfg.endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: body,
           keepalive: true
-        }).then(function (res) {
+        }, { maxAttempts: 1 }).then(function (res) {
           onDone(Boolean(res && res.ok));
         }).catch(function () {
           onDone(false);
@@ -427,6 +449,7 @@
         objective: payload.objective,
         domain: payload.domain,
         correct: payload.correct,
+        selectedOption: typeof payload.selectedOption === 'number' ? payload.selectedOption : null,
         seconds: payload.seconds,
         examType: payload.examType,
         assessmentKind: payload.assessmentKind
@@ -439,6 +462,18 @@
 
     bus.on('assessment:finished', function (payload) {
       track('assessment_finished', sanitizeProps(payload || {}));
+    });
+
+    bus.on('funnel:abandon', function (payload) {
+      track('funnel_abandon', sanitizeProps(payload || {}));
+    });
+
+    bus.on('form:validation_error', function (payload) {
+      track('form_validation_error', sanitizeProps(payload || {}));
+    });
+
+    bus.on('value:first', function (payload) {
+      track('time_to_first_value', sanitizeProps(payload || {}));
     });
   }
 
@@ -501,6 +536,25 @@
       ? diagCompleted.length / diagStarted.length
       : 0;
 
+    var onboardingShown = eventsByName('onboarding_shown');
+    var onboardingCompleted = eventsByName('onboarding_completed');
+    var onboardingCompletionRate = onboardingShown.length > 0
+      ? onboardingCompleted.length / onboardingShown.length
+      : 0;
+
+    var ttfvEvents = eventsByName('time_to_first_value');
+    var meanTimeToFirstValueSec = null;
+    if (ttfvEvents.length > 0) {
+      var secs = ttfvEvents.map(function (e) {
+        return e.p && typeof e.p.seconds === 'number' ? e.p.seconds : null;
+      }).filter(function (n) { return n !== null; });
+      if (secs.length > 0) {
+        meanTimeToFirstValueSec = secs.reduce(function (a, b) { return a + b; }, 0) / secs.length;
+      }
+    }
+
+    var funnelAbandons = eventsByName('funnel_abandon').length;
+
     // Day-7 return: true if any session_start happened 6-8 days after the
     // very first recorded session_start.
     var day7Return = false;
@@ -552,6 +606,9 @@
     return {
       sessionsTotal: sessionsTotal,
       diagnosticCompletionRate: diagnosticCompletionRate,
+      onboardingCompletionRate: onboardingCompletionRate,
+      meanTimeToFirstValueSec: meanTimeToFirstValueSec,
+      funnelAbandons: funnelAbandons,
       day7Return: {
         returned: day7Return,
         rollingWeeksFraction: rollingWeeksFraction

@@ -9,7 +9,13 @@
   const STORAGE_KEY = "comptia_memory_srs_v1";
   const RAID_META_KEY = "comptia_memory_raid_meta_v1";
 
+  function utils() {
+    return (global.APlus && global.APlus.utils) || null;
+  }
+
   function storageGet(key) {
+    const u = utils();
+    if (u && typeof u.scopedGet === "function") return u.scopedGet(key);
     if (global.CompTIAProfiles && CompTIAProfiles.scopedGet) {
       return CompTIAProfiles.scopedGet(key);
     }
@@ -17,6 +23,11 @@
   }
 
   function storageSet(key, value) {
+    const u = utils();
+    if (u && typeof u.scopedSet === "function") {
+      u.scopedSet(key, value);
+      return;
+    }
     if (global.CompTIAProfiles && CompTIAProfiles.scopedSet) {
       CompTIAProfiles.scopedSet(key, value);
       return;
@@ -25,10 +36,14 @@
   }
 
   function todayKey() {
+    const u = utils();
+    if (u && typeof u.todayKey === "function") return u.todayKey();
     return new Date().toISOString().slice(0, 10);
   }
 
   function addDays(isoDay, days) {
+    const u = utils();
+    if (u && typeof u.addDays === "function") return u.addDays(isoDay, days);
     const d = new Date(isoDay + "T12:00:00Z");
     d.setUTCDate(d.getUTCDate() + days);
     return d.toISOString().slice(0, 10);

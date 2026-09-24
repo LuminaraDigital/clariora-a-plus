@@ -1,0 +1,673 @@
+[
+  {
+    "id": "AZ-101",
+    "exam": "az900",
+    "domain": "2.0 Describe Azure architecture and services",
+    "objective": "2.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "What is the primary benefit of deploying virtual machine instances across Azure Availability Zones within a single region?",
+    "options": [
+      "Protection against a complete catastrophic failure of the entire geopolitical region",
+      "Protection from datacenter-level hardware, power, and cooling failures with low-latency network interconnects",
+      "Automatic synchronization with an international paired region across continents",
+      "Zero compute billing when the primary virtual machine goes offline"
+    ],
+    "answer": 1,
+    "explanation": "Availability Zones are physically separate datacenters within an Azure region, each equipped with independent power, cooling, and networking. Deploying across zones protects workloads against datacenter-level outages while maintaining single-digit millisecond latency.",
+    "distractor_analysis": {
+      "0": "Cross-region disaster recovery (region pairs) protects against regional-scale catastrophes, not single-region availability zones.",
+      "2": "Region pairs handle cross-region replication, not availability zones within one region.",
+      "3": "Virtual machine allocation incurs standard compute billing based on provisioning and reservation."
+    },
+    "tags": [
+      "availability-zones",
+      "high-availability",
+      "datacenter-resilience"
+    ]
+  },
+  {
+    "id": "AZ-102",
+    "exam": "az900",
+    "domain": "2.0 Describe Azure architecture and services",
+    "objective": "2.2",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Which Azure Storage redundancy option replicates your data synchronously three times within a single datacenter in the primary region?",
+    "options": [
+      "Locally Redundant Storage (LRS)",
+      "Zone-Redundant Storage (ZRS)",
+      "Geo-Redundant Storage (GRS)",
+      "Geo-Zone-Redundant Storage (GZRS)"
+    ],
+    "answer": 0,
+    "explanation": "Locally Redundant Storage (LRS) replicates data synchronously three times within a single physical datacenter in the primary region. It provides 11 nines (99.999999999%) of durability against local disk or rack failures.",
+    "distractor_analysis": {
+      "1": "ZRS replicates synchronously across three availability zones in the region.",
+      "2": "GRS copies data to a secondary paired region hundreds of miles away.",
+      "3": "GZRS combines cross-zone replication in the primary region with secondary region replication."
+    },
+    "tags": [
+      "storage-redundancy",
+      "lrs",
+      "zrs",
+      "grs"
+    ]
+  },
+  {
+    "id": "AZ-103",
+    "exam": "az900",
+    "domain": "2.0 Describe Azure architecture and services",
+    "objective": "2.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A legal firm requires compliance data stored in Azure Blob Storage to remain accessible for auditing but expects retrieval only once every few years. Which access tier provides the lowest storage cost?",
+    "options": [
+      "Archive tier",
+      "Cold tier",
+      "Cool tier",
+      "Hot tier"
+    ],
+    "answer": 0,
+    "explanation": "The Archive tier offers the lowest storage pricing per gigabyte, but incurs the highest data access and retrieval costs and requires several hours for rehydration back to Cool or Hot before reading.",
+    "distractor_analysis": {
+      "1": "Cold tier is intended for data accessed infrequently (stored at least 90 days), but costs more to store than Archive.",
+      "2": "Cool tier is for data stored at least 30 days with moderate access.",
+      "3": "Hot tier has highest storage costs and lowest access fees, ideal for active day-to-day data."
+    },
+    "tags": [
+      "blob-storage",
+      "archive-tier",
+      "cost-optimization"
+    ]
+  },
+  {
+    "id": "AZ-104",
+    "exam": "az900",
+    "domain": "2.0 Describe Azure architecture and services",
+    "objective": "2.3",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Which dedicated high-speed network service provides private, encrypted connectivity between an enterprise on-premises datacenter and Azure without traversing the public internet?",
+    "options": [
+      "Azure ExpressRoute",
+      "Azure Virtual Network NAT Gateway",
+      "Azure Point-to-Site VPN",
+      "Azure Front Door"
+    ],
+    "answer": 0,
+    "explanation": "Azure ExpressRoute creates direct, private physical connections between an enterprise on-premises network and Microsoft Cloud services through a connectivity provider, bypassing the public internet completely for high reliability and lower latency.",
+    "distractor_analysis": {
+      "1": "NAT Gateway provides outbound-only internet connectivity for private subnets.",
+      "2": "Point-to-Site VPN establishes an encrypted tunnel over the public internet from an individual client computer.",
+      "3": "Azure Front Door is a global web application accelerator and layer 7 load balancer."
+    },
+    "tags": [
+      "networking",
+      "expressroute",
+      "hybrid-connectivity"
+    ]
+  },
+  {
+    "id": "AZ-105",
+    "exam": "az900",
+    "domain": "2.0 Describe Azure architecture and services",
+    "objective": "2.1",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "What is the top-level container in the Azure resource hierarchy used to manage access, policies, and compliance across multiple Azure Subscriptions?",
+    "options": [
+      "Management Groups",
+      "Resource Groups",
+      "Azure Subscriptions",
+      "Virtual Networks"
+    ],
+    "answer": 0,
+    "explanation": "Management Groups are containers that help you manage access, policy, and compliance across multiple subscriptions. The hierarchy is: Management Groups -> Subscriptions -> Resource Groups -> Resources.",
+    "distractor_analysis": {
+      "1": "Resource Groups are containers for individual Azure resources within a single subscription.",
+      "2": "Azure Subscriptions are billing and access boundaries grouped under Management Groups.",
+      "3": "Virtual Networks are networking primitives located inside a Resource Group."
+    },
+    "tags": [
+      "management-groups",
+      "resource-hierarchy",
+      "azure-governance"
+    ]
+  },
+  {
+    "id": "AZ-106",
+    "exam": "az900",
+    "domain": "2.0 Describe Azure architecture and services",
+    "objective": "2.1",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "What is an Azure Region?",
+    "options": [
+      "A geographical area containing one or more physical datacenters networked together through a dedicated low-latency perimeter",
+      "A single computer server rack running in an office building",
+      "An entire sovereign continent governed by a single tax authority",
+      "A software firewall installed on a client workstation"
+    ],
+    "answer": 0,
+    "explanation": "An Azure Region is a geographical perimeter containing at least one, but often multiple, physical datacenters that are linked by an exclusive, low-latency fiber network.",
+    "distractor_analysis": {
+      "1": "A single server rack is not a region.",
+      "2": "Continents contain multiple distinct Azure regions (e.g., North Europe and West Europe).",
+      "3": "A firewall is a security service, not geographic infrastructure."
+    },
+    "tags": [
+      "regions",
+      "azure-infrastructure"
+    ]
+  },
+  {
+    "id": "AZ-107",
+    "exam": "az900",
+    "domain": "2.0 Describe Azure architecture and services",
+    "objective": "2.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Why are Azure Region Pairs separated by at least 300 miles (approx. 480 km)?",
+    "options": [
+      "To reduce the likelihood that a natural disaster, regional civil unrest, or widespread power grid outage affects both regions simultaneously",
+      "To comply with international postal union regulations",
+      "To prevent light from traveling between datacenters too fast",
+      "To force customers to pay international roaming charges"
+    ],
+    "answer": 0,
+    "explanation": "Region Pairs are spaced at least 300 miles apart to minimize the probability that severe weather, earthquakes, power grid failures, or regional catastrophes knock out both paired locations at the same time.",
+    "distractor_analysis": {
+      "1": "Postal union rules do not dictate datacenter distances.",
+      "2": "Low latency is desirable, not something to artificially slow down.",
+      "3": "Azure does not charge cellular roaming fees."
+    },
+    "tags": [
+      "region-pairs",
+      "disaster-recovery"
+    ]
+  },
+  {
+    "id": "AZ-108",
+    "exam": "az900",
+    "domain": "2.0 Describe Azure architecture and services",
+    "objective": "2.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Which specialized sovereign Azure cloud instances are physically isolated and operated under strict national compliance for US government agencies and their cleared contractors?",
+    "options": [
+      "Azure Government",
+      "Azure Public Commercial",
+      "Azure Global Dev/Test",
+      "Azure Consumer Preview"
+    ],
+    "answer": 0,
+    "explanation": "Azure Government is a mission-critical cloud dedicated to US federal, state, and local governments and their partners, physically isolated with screened US personnel.",
+    "distractor_analysis": {
+      "1": "Azure Public Commercial is the standard multi-tenant global cloud.",
+      "2": "Dev/Test is a subscription pricing discount model, not a physical sovereign cloud.",
+      "3": "Consumer Preview is not a sovereign government cloud."
+    },
+    "tags": [
+      "sovereign-cloud",
+      "azure-government"
+    ]
+  },
+  {
+    "id": "AZ-109",
+    "exam": "az900",
+    "domain": "2.0 Describe Azure architecture and services",
+    "objective": "2.2",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Which Azure compute service allows you to deploy and manage identical groups of load-balanced virtual machines that automatically scale based on CPU demand or schedules?",
+    "options": [
+      "Azure Virtual Machine Scale Sets (VMSS)",
+      "Azure Functions",
+      "Azure Logic Apps",
+      "Azure Container Instances"
+    ],
+    "answer": 0,
+    "explanation": "Azure Virtual Machine Scale Sets (VMSS) allow you to create and manage a group of load-balanced VMs. The number of VM instances can automatically increase or decrease in response to demand or a defined schedule.",
+    "distractor_analysis": {
+      "1": "Azure Functions is a serverless code compute service.",
+      "2": "Azure Logic Apps is an automated workflow integration orchestrator.",
+      "3": "Azure Container Instances run individual containers without managing VMs."
+    },
+    "tags": [
+      "vmss",
+      "compute",
+      "autoscaling"
+    ]
+  },
+  {
+    "id": "AZ-110",
+    "exam": "az900",
+    "domain": "2.0 Describe Azure architecture and services",
+    "objective": "2.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Which Azure service provides a comprehensive cloud-hosted desktop and app virtualization experience accessible from any web browser or mobile client?",
+    "options": [
+      "Azure Virtual Desktop (AVD)",
+      "Azure DevTest Labs",
+      "Azure Front Door",
+      "Azure Arc"
+    ],
+    "answer": 0,
+    "explanation": "Azure Virtual Desktop (AVD) is a desktop and app virtualization service that runs on the cloud, delivering multi-session Windows 10/11 environments to remote employees securely.",
+    "distractor_analysis": {
+      "1": "DevTest Labs creates fast development VM sandboxes.",
+      "2": "Front Door is a global CDN and layer-7 load balancer.",
+      "3": "Azure Arc manages hybrid servers and Kubernetes clusters."
+    },
+    "tags": [
+      "azure-virtual-desktop",
+      "vdi",
+      "compute"
+    ]
+  },
+  {
+    "id": "AZ-111",
+    "exam": "az900",
+    "domain": "2.0 Describe Azure architecture and services",
+    "objective": "2.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "What is the primary architectural difference between Docker containers and standard Virtual Machines?",
+    "options": [
+      "Containers share the host operating system kernel and are much lighter, whereas VMs run a complete guest OS with their own dedicated virtual hardware.",
+      "Containers require physical tape storage; VMs run on solid state drives.",
+      "Containers cannot run web servers; VMs can only run databases.",
+      "Containers do not support network communication."
+    ],
+    "answer": 0,
+    "explanation": "Containers virtualize at the operating system level, sharing the host OS kernel and spinning up in seconds with minimal overhead. Virtual machines virtualize hardware, requiring a separate guest operating system for each instance.",
+    "distractor_analysis": {
+      "1": "Storage media is completely independent of containerization.",
+      "2": "Containers frequently host web applications, microservices, and APIs.",
+      "3": "Containers have sophisticated virtual networking interfaces."
+    },
+    "tags": [
+      "containers",
+      "virtual-machines",
+      "docker"
+    ]
+  },
+  {
+    "id": "AZ-112",
+    "exam": "az900",
+    "domain": "2.0 Describe Azure architecture and services",
+    "objective": "2.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Which managed Azure service provides enterprise-grade container orchestration for automated deployment, scaling, and management of containerized clusters?",
+    "options": [
+      "Azure Kubernetes Service (AKS)",
+      "Azure Container Registry",
+      "Azure Batch",
+      "Azure Service Bus"
+    ],
+    "answer": 0,
+    "explanation": "Azure Kubernetes Service (AKS) simplifies deploying a managed Kubernetes cluster in Azure, offloading operational overhead like health monitoring and master node maintenance to Microsoft.",
+    "distractor_analysis": {
+      "1": "Azure Container Registry stores and manages private container images.",
+      "2": "Azure Batch runs large-scale parallel and high-performance computing batch jobs.",
+      "3": "Azure Service Bus is an enterprise cloud message broker."
+    },
+    "tags": [
+      "kubernetes",
+      "aks",
+      "containers"
+    ]
+  },
+  {
+    "id": "AZ-113",
+    "exam": "az900",
+    "domain": "2.0 Describe Azure architecture and services",
+    "objective": "2.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Which globally distributed, multi-model NoSQL database service provides single-digit millisecond response times and guaranteed 99.999% high availability worldwide?",
+    "options": [
+      "Azure Cosmos DB",
+      "Azure SQL Database",
+      "Azure Database for MySQL",
+      "Azure Synapse Analytics"
+    ],
+    "answer": 0,
+    "explanation": "Azure Cosmos DB is Microsoft's globally distributed, multi-model NoSQL database service designed for mission-critical web and mobile applications with turnkey global replication.",
+    "distractor_analysis": {
+      "1": "Azure SQL Database is a relational SQL engine.",
+      "2": "Azure Database for MySQL is a managed relational MySQL service.",
+      "3": "Azure Synapse Analytics is an enterprise data warehouse and big data analytics system."
+    },
+    "tags": [
+      "cosmos-db",
+      "nosql",
+      "databases"
+    ]
+  },
+  {
+    "id": "AZ-114",
+    "exam": "az900",
+    "domain": "2.0 Describe Azure architecture and services",
+    "objective": "2.2",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Which Azure Storage service enables legacy on-premises servers to mount cloud file shares using standard SMB and NFS networking protocols?",
+    "options": [
+      "Azure Files",
+      "Azure Blob Storage",
+      "Azure Data Lake",
+      "Azure Queue Storage"
+    ],
+    "answer": 0,
+    "explanation": "Azure Files offers fully managed cloud file shares that are accessible via industry-standard Server Message Block (SMB) or Network File System (NFS) protocols.",
+    "distractor_analysis": {
+      "1": "Azure Blob Storage is an object store accessed over HTTP/REST APIs.",
+      "2": "Azure Data Lake is optimized for big data analytics processing.",
+      "3": "Azure Queue Storage stores messages for asynchronous microservice communication."
+    },
+    "tags": [
+      "azure-files",
+      "smb",
+      "nfs",
+      "storage"
+    ]
+  },
+  {
+    "id": "AZ-115",
+    "exam": "az900",
+    "domain": "2.0 Describe Azure architecture and services",
+    "objective": "2.3",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "What is the primary function of Virtual Network (VNet) Peering in Azure?",
+    "options": [
+      "Connecting two separate Azure Virtual Networks seamlessly so resources communicate directly using private IP addresses over the Microsoft backbone",
+      "Exposing virtual machines directly to the public internet without a firewall",
+      "Translating IPv4 addresses to MAC addresses on local laptops",
+      "Purchasing internet domain names through Azure DNS"
+    ],
+    "answer": 0,
+    "explanation": "VNet Peering enables you to seamlessly connect two or more Virtual Networks in Azure. The virtual networks appear as one for connectivity purposes, with traffic routed through the private Microsoft backbone network.",
+    "distractor_analysis": {
+      "1": "Peering keeps traffic private within Azure rather than exposing it publicly.",
+      "2": "ARP handles IP-to-MAC resolution on local Ethernet segments.",
+      "3": "Azure DNS hosts DNS zones, but peering is a network routing mechanism."
+    },
+    "tags": [
+      "vnet-peering",
+      "networking",
+      "virtual-networks"
+    ]
+  },
+  {
+    "id": "AZ-116",
+    "exam": "az900",
+    "domain": "2.0 Describe Azure architecture and services",
+    "objective": "2.1",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Which Azure deployment and management service provides a consistent management layer that handles all incoming requests from the Azure Portal, CLI, PowerShell, and REST APIs?",
+    "options": [
+      "Azure Resource Manager (ARM)",
+      "Azure Monitor",
+      "Azure Traffic Manager",
+      "Azure Arc"
+    ],
+    "answer": 0,
+    "explanation": "Azure Resource Manager (ARM) is the deployment and management service for Azure. It provides a management layer that enables you to create, update, and delete resources in your Azure account.",
+    "distractor_analysis": {
+      "1": "Azure Monitor collects telemetry and performance logs.",
+      "2": "Traffic Manager is a DNS-based traffic load balancer.",
+      "3": "Azure Arc extends ARM management to external clouds and on-prem hardware."
+    },
+    "tags": [
+      "arm",
+      "resource-manager",
+      "infrastructure"
+    ]
+  },
+  {
+    "id": "AZ-117",
+    "exam": "az900",
+    "domain": "2.0 Describe Azure architecture and services",
+    "objective": "2.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "What language syntax is natively used by modern Azure Bicep files to deploy cloud infrastructure as code (IaC)?",
+    "options": [
+      "Declarative domain-specific syntax that compiles into standard ARM JSON templates",
+      "Imperative Python scripting with procedural loop counters",
+      "Binary machine code compiled directly for x86 microprocessors",
+      "Raw HTML markup with embedded JavaScript tags"
+    ],
+    "answer": 0,
+    "explanation": "Azure Bicep is a domain-specific language (DSL) that uses declarative syntax to deploy Azure resources, offering cleaner syntax and modularity while compiling into native ARM JSON templates.",
+    "distractor_analysis": {
+      "1": "Bicep is declarative (stating the desired state), not imperative procedural scripting.",
+      "2": "Bicep is human-readable text, not binary machine code.",
+      "3": "Bicep has nothing to do with web frontend HTML/JS markup."
+    },
+    "tags": [
+      "bicep",
+      "arm-templates",
+      "iac"
+    ]
+  },
+  {
+    "id": "AZ-118",
+    "exam": "az900",
+    "domain": "2.0 Describe Azure architecture and services",
+    "objective": "2.3",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Which Azure networking feature filters inbound and outbound network traffic to Azure resources based on 5-tuple security rules (Source IP, Source Port, Destination IP, Destination Port, Protocol)?",
+    "options": [
+      "Network Security Group (NSG)",
+      "Azure Route Table",
+      "Azure DNS Zone",
+      "Virtual Network Gateway"
+    ],
+    "answer": 0,
+    "explanation": "A Network Security Group (NSG) contains security rules that allow or deny inbound and outbound network traffic to several types of Azure resources based on 5-tuple rules.",
+    "distractor_analysis": {
+      "1": "Route Tables dictate packet routing next-hop paths.",
+      "2": "Azure DNS provides domain name resolution.",
+      "3": "Virtual Network Gateway establishes cross-premises site-to-site VPN tunnels."
+    },
+    "tags": [
+      "nsg",
+      "security-rules",
+      "networking"
+    ]
+  },
+  {
+    "id": "AZ-M-01",
+    "exam": "az900",
+    "domain": "2.0 Describe Azure architecture and services",
+    "objective": "2.2",
+    "type": "match",
+    "difficulty": "medium",
+    "question": "Match each compute architectural requirement or business scenario to its optimal Azure service solution.",
+    "explanation": "Azure Functions executes code in response to events (serverless). Azure App Service deploys managed web apps and REST APIs without OS configuration. Azure Container Instances (ACI) runs simple isolated containers without VM provisioning. Azure Kubernetes Service (AKS) orchestrates complex microservices clusters. Azure VMs provide full OS control for custom software stacks.",
+    "tags": [
+      "compute",
+      "scenarios",
+      "match"
+    ],
+    "pairs": [
+      {
+        "left": "Run serverless code solely in response to events with zero idle billing",
+        "right": "Azure Functions"
+      },
+      {
+        "left": "Deploy a managed Python web application with built-in auto scaling",
+        "right": "Azure App Service"
+      },
+      {
+        "left": "Quickly deploy a single container in seconds without VM management",
+        "right": "Azure Container Instances (ACI)"
+      },
+      {
+        "left": "Orchestrate a complex multi-container microservices architecture",
+        "right": "Azure Kubernetes Service (AKS)"
+      },
+      {
+        "left": "Workload requires customized OS kernel and legacy software installation",
+        "right": "Azure Virtual Machines"
+      }
+    ]
+  },
+  {
+    "id": "AZ-M-02",
+    "exam": "az900",
+    "domain": "2.0 Describe Azure architecture and services",
+    "objective": "2.2",
+    "type": "match",
+    "difficulty": "medium",
+    "question": "Match each data storage scenario to the appropriate Azure Storage service.",
+    "explanation": "Azure Disks provide block storage attached to VMs. Azure File Sync synchronizes on-premises Windows file shares with cloud shares. Azure Data Lake Storage Gen2 stores and processes big data analytics. Premium Storage Accounts deliver sub-millisecond SSD latency. Archive Blob Storage provides lowest-cost storage for rarely accessed long-term data.",
+    "tags": [
+      "storage",
+      "scenarios",
+      "match"
+    ],
+    "pairs": [
+      {
+        "left": "Persistent block storage attached to virtual machine operating system disks",
+        "right": "Azure Disks"
+      },
+      {
+        "left": "Synchronize on-premises enterprise file shares with Azure SMB shares",
+        "right": "Azure File Sync"
+      },
+      {
+        "left": "Petabyte-scale hierarchical data storage optimized for big data analytics",
+        "right": "Azure Data Lake Storage Gen2"
+      },
+      {
+        "left": "Very rarely accessed data stored for years with lowest per-GB storage cost",
+        "right": "Archive Blob Storage"
+      },
+      {
+        "left": "High-performance storage requiring highest IOPS and lowest latency SSDs",
+        "right": "Premium Storage Account"
+      }
+    ]
+  },
+  {
+    "id": "AZ-M-03",
+    "exam": "az900",
+    "domain": "2.0 Describe Azure architecture and services",
+    "objective": "2.2",
+    "type": "match",
+    "difficulty": "medium",
+    "question": "Match each database scenario to the recommended Azure Database service.",
+    "explanation": "Azure Cosmos DB offers schemaless global distribution with single-digit millisecond latency. Azure SQL Database provides fully managed relational OLTP. Azure Cache for Redis provides in-memory microsecond caching. Azure Synapse Analytics provides petabyte-scale columnar OLAP data warehousing.",
+    "tags": [
+      "databases",
+      "scenarios",
+      "match"
+    ],
+    "pairs": [
+      {
+        "left": "Fast-moving startup needing schemaless JSON document model with global replication",
+        "right": "Azure Cosmos DB"
+      },
+      {
+        "left": "Traditional enterprise banking application processing thousands of relational OLTP transactions",
+        "right": "Azure SQL Database"
+      },
+      {
+        "left": "Web application requires sub-millisecond response caching in front of database",
+        "right": "Azure Cache for Redis"
+      },
+      {
+        "left": "Business intelligence system running complex SQL analytics across petabytes of historical data",
+        "right": "Azure Synapse Analytics"
+      }
+    ]
+  },
+  {
+    "id": "AZ-M-04",
+    "exam": "az900",
+    "domain": "2.0 Describe Azure architecture and services",
+    "objective": "2.3",
+    "type": "match",
+    "difficulty": "medium",
+    "question": "Match each Azure network security requirement to the correct networking service or feature.",
+    "explanation": "Virtual Network provides isolated private cloud perimeter. VNet Peering links VNets privately across Azure. Azure Firewall is stateful managed perimeter firewall. Network Security Groups filter traffic at the subnet/NIC level with 5-tuple rules. Azure Private Link provides private access to PaaS services.",
+    "tags": [
+      "networking",
+      "security",
+      "match"
+    ],
+    "pairs": [
+      {
+        "left": "Create an isolated private network for cloud resources",
+        "right": "Azure Virtual Network (VNet)"
+      },
+      {
+        "left": "Connect resources in different VNets across regions over Microsoft backbone",
+        "right": "Virtual Network Peering"
+      },
+      {
+        "left": "Stateful managed network firewall controlling ingress/egress across subscriptions",
+        "right": "Azure Firewall"
+      },
+      {
+        "left": "Internal subnet packet filtering based on 5-tuple IP/port rules",
+        "right": "Network Security Group (NSG)"
+      },
+      {
+        "left": "Access Azure PaaS services privately over dedicated IP within your VNet",
+        "right": "Azure Private Link & Endpoint"
+      }
+    ]
+  },
+  {
+    "id": "AZ-O-01",
+    "exam": "az900",
+    "domain": "2.0 Describe Azure architecture and services",
+    "objective": "2.1",
+    "type": "order",
+    "difficulty": "medium",
+    "question": "Order the containers in the official Azure Resource Hierarchy from the highest organizational level (top) to the individual resource level (bottom).",
+    "explanation": "The official Azure Resource Hierarchy flows from Management Groups at the top, down to Subscriptions, then Resource Groups, and finally individual Azure Resources.",
+    "tags": [
+      "hierarchy",
+      "governance",
+      "order"
+    ],
+    "sequence": [
+      "Management Groups (govern multiple subscriptions and policy inheritance)",
+      "Subscriptions (billing and quota boundaries)",
+      "Resource Groups (logical lifecycle containers for related services)",
+      "Resources (individual instances of VMs, databases, and storage accounts)"
+    ]
+  },
+  {
+    "id": "AZ-O-02",
+    "exam": "az900",
+    "domain": "2.0 Describe Azure architecture and services",
+    "objective": "2.2",
+    "type": "order",
+    "difficulty": "medium",
+    "question": "Order the lifecycle steps required to access and read an archived blob in Azure Blob Storage.",
+    "explanation": "Archive tier data is offline and cannot be read directly. First initiate a rehydration request to change the tier to Hot or Cool, wait for the background rehydration to complete (taking up to several hours), and then perform standard HTTP/REST read operations.",
+    "tags": [
+      "storage",
+      "archive-tier",
+      "order"
+    ],
+    "sequence": [
+      "Locate the archived blob in the storage container (currently in offline Archive tier)",
+      "Initiate a Rehydrate request to change the access tier to Hot or Cool",
+      "Wait for the rehydration process to complete (can take several hours depending on priority)",
+      "Verify blob status has changed to active Hot/Cool and begin reading data via API/download"
+    ]
+  }
+]

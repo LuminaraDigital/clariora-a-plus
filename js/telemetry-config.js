@@ -13,9 +13,9 @@
   'use strict';
 
   window.APLUS_TELEMETRY_CONFIG = window.APLUS_TELEMETRY_CONFIG || {
-    // https URL of your collection endpoint (see docs/telemetry-worker.js for a
-    // sample Cloudflare Worker). Leave blank to keep telemetry fully local.
-    endpoint: '',
+    // Anonymous item outcomes (and other consented events) land on the edge ingest.
+    // Upload stays OFF until enabled is true AND APlus.telemetry.setConsent(true).
+    endpoint: 'https://clariora.com.au/api/v1/items/telemetry',
 
     // Master switch. Even when true, nothing is sent until the user consents.
     enabled: false,

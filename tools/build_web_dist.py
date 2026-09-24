@@ -73,6 +73,13 @@ ROOT_EXTRA_FILES = [
     "tonconnect-manifest.json",
     "privacy.html",
     "terms.html",
+    "exam_data_free.js",
+    # Google Search Console domain ownership verification.
+    "googlea4923385090ac2c5.html",
+    "googleb853b3d8cec0b0ad.html",
+    # Crawl map: must be real files (SPA not_found_handling otherwise serves index.html).
+    "robots.txt",
+    "sitemap.xml",
 ]
 
 # Whole directories copied in full (minus excluded extensions/paths).
@@ -309,6 +316,13 @@ def main():
     app_index = app_dir / "index.html"
     if src_index.is_file():
         html = src_index.read_text(encoding="utf-8")
+        version = load_version()
+        html = re.sub(
+            r'<!-- APLUS_VERSION --><script>window\.APLUS_VERSION\s*=\s*["\'][^"\']+["\'];</script><!-- /APLUS_VERSION -->',
+            f'<!-- APLUS_VERSION --><script>window.APLUS_VERSION = "{version}";</script><!-- /APLUS_VERSION -->',
+            html
+        )
+        src_index.write_text(html, encoding="utf-8")
         if "<base " not in html.lower():
             html = html.replace("<head>", '<head>\n  <base href="/">', 1)
             if "<base " not in html.lower():
@@ -440,6 +454,14 @@ def main():
             copied_rel_paths.append(name)
         elif not src.exists():
             missing.append(name)
+
+    # 8b. Admin accounts console (cookie-gated; robots noindex in page)
+    admin_src = ROOT / "admin" / "users.html"
+    if admin_src.exists():
+        admin_rel = "admin/users.html"
+        copy_file(admin_src, DIST / "admin" / "users.html")
+        if admin_rel not in copied_rel_paths:
+            copied_rel_paths.append(admin_rel)
 
     if missing:
         print("[build_web_dist] ERROR: required generated files missing (build them first):")

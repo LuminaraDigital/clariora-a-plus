@@ -3,6 +3,11 @@
  * sync.js - Optional cross-device cloud sync (Supabase Auth + Postgres)
  * File: js/sync.js
  *
+ * IDENTITY NOTE
+ *  - Product identity is Firebase Auth + Telegram via the Cloudflare Worker
+ *    HttpOnly session cookie. Supabase Auth in this file is sync-only and
+ *    stays disabled unless js/sync-config.js sets enabled:true.
+ *
  * PRODUCT RULES
  *  - Local-first stays the default. Accounts are entirely OPTIONAL and exist
  *    only to sync progress between devices.
@@ -398,13 +403,23 @@
     } catch (_) {}
 
     try {
-      global.setInterval(function () {
-        try {
-          if (global.CompTIADatabase && typeof global.CompTIADatabase.getAll === 'function') {
-            diffAndStamp(global.CompTIADatabase.getAll());
-          }
-        } catch (_) {}
-      }, Math.max(1000, debounceMs || 4000));
+      // This loop can stamp changes that later push to the network. Run it
+      // through the Tier 1 guard so a backgrounded tab stops generating work:
+      // a pinned tab left open overnight was previously diffing every 4s for
+      // hours with nobody looking at the result.
+      var pollFn = function () {
+        if (global.CompTIADatabase && typeof global.CompTIADatabase.getAll === 'function') {
+          diffAndStamp(global.CompTIADatabase.getAll());
+        }
+      };
+      var guard = (global.APlus && global.APlus.guard) || null;
+      if (guard && typeof guard.interval === 'function') {
+        guard.interval(pollFn, Math.max(1000, debounceMs || 4000), { label: 'sync:diff' });
+      } else {
+        global.setInterval(function () {
+          try { pollFn(); } catch (_) {}
+        }, Math.max(1000, debounceMs || 4000));
+      }
     } catch (_) {}
   }
 

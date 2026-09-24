@@ -47,7 +47,13 @@
    * Pure helpers
    * ------------------------------------------------------------------ */
 
-  function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+  function clamp(v, lo, hi) {
+    var ap = (typeof window !== 'undefined' && window.APlus) ? window.APlus : null;
+    if (ap && ap.utils && typeof ap.utils.clamp === 'function') {
+      return ap.utils.clamp(v, lo, hi);
+    }
+    return Math.min(hi, Math.max(lo, v));
+  }
 
   function num(v) {
     if (v === null || v === undefined || v === '' || typeof v === 'boolean') return null;
@@ -60,6 +66,9 @@
   }
 
   function esc(s) {
+    if (typeof window !== 'undefined' && typeof window.escapeHTML === 'function') {
+      return window.escapeHTML(s);
+    }
     return String(s === null || s === undefined ? '' : s)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
@@ -576,6 +585,29 @@
     return counts;
   }
 
+  /**
+   * Reserve height in #recentAttemptsMount while history/shell has not painted yet.
+   */
+  function ensureRecentAttemptsSkeleton() {
+    var w = W();
+    if (!w || !w.document) return;
+    var mount = w.document.getElementById('recentAttemptsMount');
+    if (!mount) return;
+    if (mount.querySelector('.recent-list, .recent-empty-wrap, .card-title, [data-sk-recent]')) return;
+    if (mount.innerHTML.trim() !== '') return;
+    var html = '<div class="card-title sk sk-line" data-sk-recent style="width:42%;height:0.9em;margin-bottom:10px;" aria-hidden="true"></div>';
+    html += '<ul class="recent-list" aria-hidden="true" style="list-style:none;margin:0;padding:0;">';
+    for (var i = 0; i < 3; i++) {
+      html += '<li class="sk-row"><span class="sk sk-block" style="width:10px;min-height:10px;border-radius:50%;margin:0;"></span>' +
+        '<span class="sk sk-line" style="width:22%;"></span>' +
+        '<span class="sk sk-line" style="width:28%;"></span>' +
+        '<span class="sk sk-line" style="width:16%;"></span></li>';
+    }
+    html += '</ul>';
+    mount.innerHTML = html;
+    mount.setAttribute('aria-busy', 'true');
+  }
+
   /* ------------------------------------------------------------------ *
    * Animation helper shared with readiness-ui
    * ------------------------------------------------------------------ */
@@ -618,6 +650,7 @@
     try {
       var w = W();
       if (!w || !w.document || !w.document.body) return;
+      ensureRecentAttemptsSkeleton();
       renderCards();
       renderCounts(false);
       animateIn();
@@ -707,3 +740,4 @@
 
   return api;
 });
+// a11y-hard-20260911

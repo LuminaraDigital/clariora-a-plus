@@ -39,3 +39,30 @@ Out of scope:
 - Licence keys are verified with an ECDSA P-256 public key that ships in `js/entitlements-config.js`. The private key never leaves the build machine and is gitignored under `build/certs/`.
 - The AI tutor key is supplied by the user at runtime and held in local storage. It is never written to the repository or sent anywhere except the configured Groq endpoint.
 - Learner progress is stored locally. Cloud sync is opt-in and off by default.
+
+## Production secrets hygiene (ops checklist)
+
+Rotate and store these outside git (Cloudflare `wrangler secret put`, never commit values):
+
+| Secret | Purpose |
+| --- | --- |
+| `TELEGRAM_BOT_TOKEN` | initData HMAC and Bot API |
+| `TELEGRAM_WEBHOOK_SECRET` / `EDGE_WEBHOOK_SECRET` | Telegram webhook auth |
+| `AUTH_SESSION_SECRET` | Signed session cookies (required in production; do not reuse `ADMIN_API_KEY`) |
+| `ADMIN_API_KEY` | Admin routes only |
+| `GROQ_API_KEY` / `NVIDIA_API_KEY` / `OPENROUTER_API_KEY` | Coach providers |
+| Firebase / Supabase service credentials | Sync and Functions |
+
+After any suspected leak: rotate the bot token and webhook secret first, then session and AI keys, then redeploy the Worker. Confirm `AUTH_SESSION_SECRET` is set in production before relying on cookie sessions.
+
+## Hardening verification
+
+Run locally before production deploy:
+
+```text
+node tools/verify_security_architecture.js
+node tools/test_payment_binding.js
+node tools/test_stars_binding.js
+node tools/test_tma_ai_paywall.js
+node tools/test_auth_session.js
+```

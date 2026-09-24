@@ -1,0 +1,169 @@
+/* ==========================================================================
+   Made, not generated: additive anti-slop polish
+   --------------------------------------------------------------------------
+   Loaded LAST. Does not restructure layout, copy, nav, or component HTML.
+   Softens Hallmark-named tells already present in the stack:
+   - multi-hue aurora / floating orbs (cool + teal + violet + emerald)
+   - purple wash on dark surfaces
+   - cyan accent washes competing with gold
+   - soft coloured shadow-glow stacks
+   Adds: gold-only atmosphere + subtle film grain + quieter elevation.
+   ========================================================================== */
+
+:root {
+  /* Cool washes collapse to transparent; gold stays the only chromatic wash. */
+  --wash-cool: transparent;
+  --wash-teal: transparent;
+  --wash-violet: transparent;
+  --wash-emerald: transparent;
+
+  /* App shell: drop cyan accent glow token */
+  --bg-glow-accent: none;
+
+  /* Quieter gold atmosphere (landing tokens, when present) */
+  --glow: radial-gradient(
+    ellipse 78% 52% at 50% -6%,
+    rgba(212, 175, 55, 0.09),
+    transparent 70%
+  );
+  --final-card-glow: var(--glass-bg-strong, var(--surface-1, #0F131B));
+  --shadow-card:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 12px 28px rgba(0, 0, 0, 0.28);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --wash-cool: transparent;
+    --wash-teal: transparent;
+    --wash-violet: transparent;
+    --wash-emerald: transparent;
+    --bg-glow-accent: none;
+    --glow: radial-gradient(
+      ellipse 75% 50% at 50% -10%,
+      rgba(184, 144, 30, 0.07),
+      transparent 70%
+    );
+    --final-card-glow: var(--glass-bg-strong, #ffffff);
+    --shadow-card:
+      0 1px 0 rgba(255, 255, 255, 0.85) inset,
+      0 10px 24px rgba(15, 23, 42, 0.06);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Landing: mute multi-hue orbs; keep gold orb as a quiet lamp only
+   -------------------------------------------------------------------------- */
+
+.ambient__orb--teal,
+.ambient__orb--violet {
+  opacity: 0 !important;
+  visibility: hidden;
+  animation: none !important;
+}
+
+.ambient__orb--gold {
+  opacity: 0.28;
+  filter: blur(72px);
+}
+
+.ambient__mesh {
+  /* Gold-only mesh. Same DOM, quieter picture. */
+  background-image:
+    var(--glow),
+    radial-gradient(ellipse 42% 36% at 78% 14%, var(--wash-gold), transparent 58%),
+    radial-gradient(ellipse 50% 40% at 18% 88%, var(--wash-gold), transparent 62%);
+  opacity: 0.85;
+}
+
+@media (max-width: 699px) {
+  .ambient__mesh {
+    background-image:
+      var(--glow),
+      radial-gradient(ellipse 55% 40% at 82% 12%, var(--wash-gold), transparent 58%);
+  }
+
+  .ambient__orb--teal,
+  .ambient__orb--violet {
+    display: none;
+  }
+
+  .ambient__orb--gold {
+    opacity: 0.22;
+  }
+}
+
+body.ambient-calm .ambient__mesh {
+  opacity: 0.7;
+}
+
+body.ambient-calm .ambient__orb--gold {
+  opacity: 0.2;
+}
+
+/* --------------------------------------------------------------------------
+   App shell: single-accent ground (gold wash only)
+   -------------------------------------------------------------------------- */
+
+body {
+  background-image: var(--bg-glow-gold, none);
+  background-size: 100% 100%;
+  background-position: center top;
+  background-repeat: no-repeat;
+}
+
+/* Boot intro wash: drop cyan layer that fought the gold brand */
+.boot-intro-gold-wash {
+  background:
+    radial-gradient(ellipse 40% 55% at 50% 78%, rgba(212, 175, 55, 0.26), transparent 62%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, transparent 28%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+/* --------------------------------------------------------------------------
+   Film grain: paper texture instead of aurora blobs
+   -------------------------------------------------------------------------- */
+
+html::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 180px 180px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html::after {
+    opacity: 0.02;
+  }
+
+  .ambient__mesh,
+  .ambient__orb--gold {
+    animation: none !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  html::after {
+    display: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Elevation: prefer surface lightness over coloured halos
+   -------------------------------------------------------------------------- */
+
+.card,
+.plan,
+.step,
+.shot,
+.quote,
+.share-card,
+.faq details,
+.table-wrap {
+  box-shadow: var(--shadow-card);
+}

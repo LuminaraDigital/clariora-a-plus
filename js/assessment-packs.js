@@ -15,6 +15,10 @@
   }
 
   function shuffle(arr) {
+    var ap = (typeof window !== 'undefined' && window.APlus) ? window.APlus : null;
+    if (ap && ap.utils && typeof ap.utils.shuffleArray === 'function') {
+      return ap.utils.shuffleArray(arr);
+    }
     var a = arr.slice();
     for (var i = a.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));

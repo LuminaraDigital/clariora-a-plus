@@ -25,7 +25,10 @@ const webcrypto = nodeCrypto.webcrypto || globalThis.crypto;
 const issuer = require('./issue_license.js');
 
 const ROOT = path.resolve(__dirname, '..');
-const ENTITLEMENTS_SRC = fs.readFileSync(path.join(ROOT, 'js', 'entitlements.js'), 'utf8');
+const ENTITLEMENTS_SRC =
+  fs.readFileSync(path.join(ROOT, 'js', 'entitlements-crypto.js'), 'utf8') +
+  '\n' +
+  fs.readFileSync(path.join(ROOT, 'js', 'entitlements.js'), 'utf8');
 
 /* ------------------------------------------------------------------------- */
 /* Tiny assertion harness                                                      */
@@ -531,6 +534,34 @@ async function run() {
       threw = err;
     }
     check('module never throws at load without a DOM', threw === null, threw && threw.message);
+  }
+
+  section('AI Burst charges from the profile-scoped ledger');
+  {
+    const env = loadEntitlements({ publicKeyJwk: keys.publicJwk });
+    const scopedKey = 'comptia_p_p1__comptia_pom_ledger_v1';
+    const ledger = { chain: [{ type: 'SPEND_UNLOCK', payload: { unlockId: 'AI_BURST', charges: 5 } }] };
+    env.storage.setItem(scopedKey, JSON.stringify(ledger));
+    env.win.CompTIAProfiles = { scopedGet: (k) => env.storage.getItem('comptia_p_p1__' + k) };
+    const consumed = [];
+    env.win.CompTIALedger = {
+      consumeUnlock(id, amount) {
+        consumed.push(amount);
+        ledger.chain.push({ type: 'CONSUME_UNLOCK', payload: { unlockId: id, amount } });
+        env.storage.setItem(scopedKey, JSON.stringify(ledger));
+        return Promise.resolve({ ok: true });
+      }
+    };
+
+    check('purchased charges add to the free coach allowance', env.ent.remainingToday('coach') === 10,
+      'remaining=' + env.ent.remainingToday('coach'));
+    env.ent.consume('coach', 5);
+    check('prompts inside the free allowance spend no charges', consumed.length === 0);
+    check('charges remain after the free allowance is used', env.ent.remainingToday('coach') === 5);
+    env.ent.consume('coach', 1);
+    check('an over-limit prompt spends exactly one charge', consumed.join(',') === '1', consumed.join(','));
+    check('an over-limit prompt reduces remaining by one, not two', env.ent.remainingToday('coach') === 4,
+      'remaining=' + env.ent.remainingToday('coach'));
   }
 
   /* ----------------------------------------------------------------------- */

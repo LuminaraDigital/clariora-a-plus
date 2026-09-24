@@ -26,6 +26,8 @@
   let inMemoryCache = {};
   let isEngineReady = false;
   let saveDebounceTimer = null;
+  let flushPendingSince = 0;
+  const MAX_FLUSH_WAIT_MS = 2000;
   let isSaving = false;
 
   /**
@@ -312,17 +314,24 @@
     return out;
   }
 
-  function snapshotByteLength(obj) {
-    try { return JSON.stringify(obj).length; } catch (_) { return 0; }
-  }
-
   /**
    * Debounced background persistence flush to all storage layers
    */
   function scheduleFlush() {
-    if (saveDebounceTimer) clearTimeout(saveDebounceTimer);
+    const now = Date.now();
+    if (!flushPendingSince) flushPendingSince = now;
+    if (saveDebounceTimer) {
+      // A steady stream of writes must not postpone persistence forever.
+      if (now - flushPendingSince >= MAX_FLUSH_WAIT_MS) return;
+      clearTimeout(saveDebounceTimer);
+    }
     saveDebounceTimer = setTimeout(async () => {
-      if (isSaving) return;
+      saveDebounceTimer = null;
+      flushPendingSince = 0;
+      if (isSaving) {
+        scheduleFlush();
+        return;
+      }
       isSaving = true;
       try {
         if (inMemoryCache._meta) {

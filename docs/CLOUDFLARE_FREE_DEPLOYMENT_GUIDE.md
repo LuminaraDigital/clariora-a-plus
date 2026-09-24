@@ -150,7 +150,7 @@ The desktop build uses `electron-updater` with the **generic** provider.
 To publish a new desktop release alongside the web app:
 
 1. Build the Windows installer (see `Package_Desktop_App.bat` /
-   `create_desktop_dist.py`).
+   `tools/build_windows_installer.py`).
 2. Create a `/releases/` folder at the root of this repo (it is
    excluded from `dist_web` by `tools/build_web_dist.py`, so it never
    ships to the web bundle) and put the generated `latest.yml` and the

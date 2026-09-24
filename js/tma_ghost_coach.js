@@ -2,6 +2,9 @@
  * tma_ghost_coach.js
  * Multi-Model Business AI Socratic Tutor for Clariora Telegram Mini App.
  *
+ * BOUNDARY: Chat / streaming coach UI for Telegram Mini App. Does not own
+ * offline mission planning; that lives in js/ghost-coach.js (GhostCoachCore).
+ *
  * Tiers & Provider Routing:
  * - Free Tier: Groq Cloud (Llama 3.1 8B Instant) with 5 daily sessions limit.
  * - Pro Tier: NVIDIA NIM (Llama 3.1/3.3 70B), Private Ollama (DeepSeek-R1), OpenRouter (Claude 3.5 Sonnet).
@@ -35,6 +38,50 @@
   let activeQuestion = null;
   let activeChoice = null;
   let freeQuotaRemaining = 5;
+  let visibleProviders = COACH_CONFIG.providers.slice();
+  let providerConfigLoaded = false;
+
+  /**
+   * Tier 1 request guard (js/request-guard.js). The coach is the single most
+   * expensive endpoint in the product: every dispatch is a billed LLM
+   * inference against a hard daily token budget. Nothing here is ever
+   * auto-retried, and concurrent explains for the same question collapse into
+   * one request.
+   */
+  function guard() {
+    return (typeof window !== 'undefined' && window.APlus && window.APlus.guard) || null;
+  }
+
+  function coachFetch(url, init, guardOpts) {
+    const g = guard();
+    if (g) return g.fetch(url, init, Object.assign({ maxAttempts: 1 }, guardOpts || {}));
+    return fetch(url, init);
+  }
+
+  /**
+   * Fetch /api/v1/ready and hide Ollama unless aiConfigured.ollama is true.
+   * Fail closed: on fetch error, Ollama stays hidden. Result is cached.
+   */
+  async function refreshProviderAvailability() {
+    if (providerConfigLoaded) return;
+    let ollamaOk = false;
+    try {
+      const res = await coachFetch('/api/v1/ready', { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json().catch(function () { return {}; });
+        ollamaOk = !!(data && data.aiConfigured && data.aiConfigured.ollama === true);
+      }
+    } catch (_) {
+      ollamaOk = false;
+    }
+    visibleProviders = COACH_CONFIG.providers.filter(function (p) {
+      return p.id !== 'ollama' || ollamaOk;
+    });
+    providerConfigLoaded = true;
+    if (!visibleProviders.some(function (p) { return p.id === currentProvider; })) {
+      currentProvider = 'groq';
+    }
+  }
 
   /**
    * System Prompt for Mobile CompTIA IT Support & Datacentre Coach
@@ -58,13 +105,17 @@ Rules:
     const stream = opts.stream === true;
     if (TMABridge) TMABridge.haptic('medium');
 
+    const correctAnswerText = (questionData.options && typeof questionData.answer === 'number')
+      ? (questionData.options[questionData.answer] || String(questionData.answer))
+      : questionData.answer;
+
     const prompt = `CompTIA Objective: ${questionData.objective || 'General'}
 Question: ${questionData.question}
 Options:
 ${questionData.options ? questionData.options.map((o, idx) => `${String.fromCharCode(65 + idx)}. ${o}`).join('\n') : ''}
 
 Student selected: ${userChoice || 'None'}
-Correct answer: ${questionData.answer}
+Correct answer: ${correctAnswerText}
 Official Explanation: ${questionData.explanation || 'N/A'}
 Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
 
@@ -93,7 +144,7 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
         prompt: prompt,
         question: questionData.question,
         chosenAnswer: userChoice,
-        correctAnswer: questionData.answer,
+        correctAnswer: correctAnswerText,
         distractorAnalysis: questionData.distractor_analysis || {},
         provider: provider,
         useProPreview: useProPreview,
@@ -102,19 +153,51 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
         idToken: idToken
       };
 
+      // Attach local Ghost Coach telemetry so edge extract/promote stays seamless.
+      try {
+        const gc = (typeof window !== 'undefined' && window.APlus && window.APlus.ghostCoach) || null;
+        if (gc && typeof gc.getCoachEnrichment === 'function') {
+          const enrich = gc.getCoachEnrichment() || {};
+          if (!payload.missHistory.length && Array.isArray(enrich.missHistory)) {
+            payload.missHistory = enrich.missHistory;
+          }
+          if (!payload.weakDomains.length && Array.isArray(enrich.weakDomains)) {
+            payload.weakDomains = enrich.weakDomains;
+          }
+          if (Array.isArray(enrich.confusionPairs) && enrich.confusionPairs.length) {
+            payload.confusionPairs = enrich.confusionPairs;
+          }
+          if (Array.isArray(enrich.weakObjectives) && enrich.weakObjectives.length) {
+            payload.weakObjectives = enrich.weakObjectives;
+          }
+          if (enrich.ghostCoachPromote) {
+            payload.ghostCoachPromote = enrich.ghostCoachPromote;
+          }
+          if (enrich.currentMission) {
+            payload.currentMission = enrich.currentMission;
+          }
+        }
+      } catch (_) {}
+
       if (stream) {
         const streamed = await fetchCoachStream(endpoint, payload, initData);
         if (streamed) return streamed;
+        // fetchCoachStream returns null only when the stream never reached a
+        // billable turn (transport failure, or a response we could not read as
+        // SSE). Anything the server actually answered is returned above.
+        // Falling through on a server-answered stream would dispatch a second
+        // inference for one user action.
       }
 
-      const res = await fetch(endpoint, {
+      const res = await coachFetch(endpoint, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'X-Telegram-Init-Data': initData
         },
         body: JSON.stringify(payload)
-      });
+      }, { maxAttempts: 1 });
 
       const data = await res.json().catch(function () { return {}; });
 
@@ -191,16 +274,22 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
   }
 
   async function fetchCoachStream(endpoint, payload, initData) {
+    // Tracks whether the request ever reached the origin. Once it has, the
+    // inference is already being paid for and this function must never hand
+    // the caller a null that triggers a second dispatch.
+    let serverAnswered = false;
     try {
-      const res = await fetch(endpoint, {
+      const res = await coachFetch(endpoint, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'X-Telegram-Init-Data': initData,
           'Accept': 'text/event-stream'
         },
         body: JSON.stringify(payload)
-      });
+      }, { stream: true });
+      serverAnswered = true;
       if (res.status === 402 || res.status === 401 || res.status === 429) {
         const data = await res.json().catch(function () { return { error: 'PAYWALL_REQUIRED' }; });
         return {
@@ -212,7 +301,21 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
           provider: payload.provider
         };
       }
-      if (!res.ok || !res.body || !res.body.getReader) return null;
+      // The server answered. Whatever it said is final: returning null here
+      // would send the caller back around for a second billed inference.
+      if (!res.ok) {
+        return {
+          paywallRequired: false,
+          text: 'Ghost Coach is temporarily unavailable (' + res.status + '). Try again shortly.',
+          provider: 'stream_error',
+          serverAnswered: true
+        };
+      }
+      if (!res.body || !res.body.getReader) {
+        // No readable stream in this runtime. One non-streaming retry is the
+        // intended fallback path, so let the caller re-dispatch.
+        return null;
+      }
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -269,8 +372,36 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
       if (assembled) {
         return { paywallRequired: false, text: assembled, provider: payload.provider, streamed: true };
       }
-      return null;
-    } catch (_) {
+      // Stream completed with no payload. The turn was still metered upstream,
+      // so surface the failure instead of buying a second one.
+      return {
+        paywallRequired: false,
+        text: 'Ghost Coach returned an empty response. Try again in a moment.',
+        provider: 'stream_empty',
+        serverAnswered: true
+      };
+    } catch (err) {
+      if (err && err.rateLimited) {
+        return {
+          paywallRequired: false,
+          rateLimited: true,
+          errorType: 'RATE_LIMITED',
+          message: 'Too many coach requests. Slow down and retry.',
+          retryAfterMs: err.retryAfterMs || 0,
+          provider: payload.provider
+        };
+      }
+      if (serverAnswered) {
+        // Mid-stream read failure. The inference is already paid for.
+        return {
+          paywallRequired: false,
+          text: 'The coach stream was interrupted. Try again in a moment.',
+          provider: 'stream_error',
+          serverAnswered: true
+        };
+      }
+      // Never reached the origin: the caller's non-streaming attempt is the
+      // second and final attempt for this user action.
       return null;
     }
   }
@@ -289,6 +420,7 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
    * Select a provider (Free Groq or Pro NVIDIA / Ollama / OpenRouter)
    */
   async function selectProvider(providerId) {
+    if (!visibleProviders.some(function (p) { return p.id === providerId; })) return;
     currentProvider = providerId;
     if (TMABridge) TMABridge.haptic('selection');
 
@@ -312,7 +444,7 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
     // Trigger immediate re-query if an active question is loaded
     if (activeQuestion) {
       renderLoading();
-      const res = await explainQuestion(activeQuestion, activeChoice, currentProvider);
+      const res = await explainQuestionGuarded(activeQuestion, activeChoice, currentProvider);
       renderResponse(res);
     }
   }
@@ -323,6 +455,8 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
   async function openCoachSheet(questionData, userChoice) {
     activeQuestion = questionData;
     activeChoice = userChoice;
+
+    await refreshProviderAvailability();
 
     let sheet = document.getElementById('tma-coach-sheet');
     let backdrop = document.getElementById('tma-coach-backdrop');
@@ -353,8 +487,8 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
 
         <!-- Multi-Model AI Engine Selector -->
         <div id="tmaCoachModelBar" style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; scrollbar-width: none;">
-          ${COACH_CONFIG.providers.map(p => `
-            <button type="button" class="tma-provider-pill ${p.id === currentProvider ? 'is-active' : ''}" onclick="TMAGhostCoach.selectProvider('${p.id}')" style="
+          ${visibleProviders.map(p => `
+            <button type="button" class="tma-provider-pill ${p.id === currentProvider ? 'is-active' : ''}" data-provider-id="${p.id}" onclick="TMAGhostCoach.selectProvider('${p.id}')" style="
               display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; cursor: pointer;
               background: ${p.id === currentProvider ? 'rgba(212, 175, 55, 0.25)' : 'rgba(255, 255, 255, 0.05)'};
               border: 1px solid ${p.id === currentProvider ? '#D4AF37' : 'rgba(255, 255, 255, 0.1)'};
@@ -390,7 +524,7 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
     sheet.classList.add('is-open');
 
     // Fetch initial remediation
-    const res = await explainQuestion(questionData, userChoice, currentProvider);
+    const res = await explainQuestionGuarded(questionData, userChoice, currentProvider);
     renderResponse(res);
   }
 
@@ -414,6 +548,28 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
     }
 
     let html = formatMarkdown(res.text || '');
+
+    if (activeQuestion) {
+      const objText = activeQuestion.objective ? `Objective ${escapeHtml(activeQuestion.objective)}` : 'This Topic';
+      html += `
+        <div class="tma-coach-action-card" style="margin-top: 16px; padding: 12px; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px;">
+          <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #38BDF8; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+            Coach Next Actions
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <button type="button" class="btn" onclick="TMAGhostCoach.launchTargetedDrill()" style="width: 100%; padding: 8px 12px; font-size: 0.82rem; font-weight: 700; background: #38BDF8; color: #07090E; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Launch 10-Question Drill on ${objText}
+            </button>
+            <button type="button" class="btn" onclick="TMAGhostCoach.addToFlashcards()" id="tmaCoachAddFlashcardBtn" style="width: 100%; padding: 8px 12px; font-size: 0.82rem; font-weight: 600; background: rgba(255, 255, 255, 0.06); color: #F3F4F6; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+              Add Concept to Spaced Repetition (SRS)
+            </button>
+          </div>
+        </div>
+      `;
+    }
 
     if (res.upsellMessage) {
       const safeUpsell = escapeHtml(res.upsellMessage);
@@ -481,19 +637,21 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
   async function usePreviewQuery() {
     if (!activeQuestion) return;
     renderLoading();
-    const res = await explainQuestion(activeQuestion, activeChoice, currentProvider, true);
+    const res = await explainQuestionGuarded(activeQuestion, activeChoice, currentProvider, true);
     renderResponse(res);
   }
 
   function updateProviderButtons() {
     const pills = document.querySelectorAll('.tma-provider-pill');
-    pills.forEach((pill, idx) => {
-      const p = COACH_CONFIG.providers[idx];
+    pills.forEach(function (pill) {
+      const id = pill.getAttribute('data-provider-id');
+      const p = visibleProviders.find(function (item) { return item.id === id; });
       if (p) {
         const active = p.id === currentProvider;
         pill.style.background = active ? 'rgba(212, 175, 55, 0.25)' : 'rgba(255, 255, 255, 0.05)';
         pill.style.borderColor = active ? '#D4AF37' : 'rgba(255, 255, 255, 0.1)';
         pill.style.color = active ? '#F5D061' : '#94A3B8';
+        pill.classList.toggle('is-active', active);
       }
     });
   }
@@ -543,12 +701,101 @@ Distractor Notes: ${JSON.stringify(questionData.distractor_analysis || {})}`;
       .replace(/\n/g, '<br/>');
   }
 
+  function launchTargetedDrill() {
+    if (!activeQuestion) return;
+    const targetObj = String(activeQuestion.objective || '').trim();
+    const targetDomain = String(activeQuestion.domain || '').trim();
+    const exam = activeQuestion.exam || 'both';
+
+    closeCoachSheet();
+
+    if (typeof window !== 'undefined' && window.APlus) {
+      const aplus = window.APlus;
+      let pool = [];
+      if (aplus.data && typeof aplus.data.getQuestions === 'function') {
+        const all = aplus.data.getQuestions(exam) || [];
+        if (targetObj) {
+          pool = all.filter(q => String(q.objective || '').toLowerCase().trim() === targetObj.toLowerCase());
+        }
+        if (pool.length < 5 && targetDomain) {
+          pool = all.filter(q => String(q.domain || '').toLowerCase().trim() === targetDomain.toLowerCase());
+        }
+        if (!pool.length) pool = all;
+      }
+      if (pool.length > 0 && aplus.engine && typeof aplus.engine.start === 'function') {
+        const sample = (aplus.engineCore && aplus.engineCore.shuffle) ? aplus.engineCore.shuffle(pool).slice(0, 10) : pool.slice(0, 10);
+        aplus.engine.start({
+          type: 'drill',
+          customPool: sample,
+          questionCount: sample.length,
+          timeMinutes: Math.max(10, Math.ceil(sample.length * 1.2)),
+          domainKey: targetObj ? `Objective ${targetObj}` : (targetDomain || 'Targeted Drill')
+        });
+        return;
+      }
+    }
+    console.warn('[TMAGhostCoach] Could not launch drill: engine or pool unavailable');
+  }
+
+  function addToFlashcards() {
+    if (!activeQuestion) return;
+    const qId = activeQuestion.id;
+    if (typeof window !== 'undefined') {
+      if (window.CompTIAMemorySRS && typeof window.CompTIAMemorySRS.enqueueMissed === 'function') {
+        window.CompTIAMemorySRS.enqueueMissed([qId], () => ({
+          domain: activeQuestion.domain || '',
+          exam: activeQuestion.exam || 'core1'
+        }));
+      }
+      if (window.APlus && window.APlus.storage) {
+        const deck = window.APlus.storage.get('srs_deck', {}) || {};
+        if (!deck[qId]) {
+          deck[qId] = {
+            id: qId,
+            objective: activeQuestion.objective,
+            domain: activeQuestion.domain,
+            repetitions: 0,
+            interval: 1,
+            easeFactor: 2.5,
+            nextReviewDate: Date.now()
+          };
+          window.APlus.storage.set('srs_deck', deck);
+        }
+      }
+    }
+    const btn = document.getElementById('tmaCoachAddFlashcardBtn');
+    if (btn) {
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Added to Spaced Repetition!';
+      btn.style.borderColor = '#22C55E';
+      btn.style.color = '#22C55E';
+      btn.disabled = true;
+    }
+  }
+
+  /**
+   * Single-flight wrapper around the billed coach call. Keyed per question so
+   * a second "Explain" tap while the first inference is still running is
+   * dropped rather than doubling the user's token spend. A short cooldown
+   * covers the "tap, see error, tap again immediately" loop.
+   */
+  function explainQuestionGuarded(questionData, userChoice, providerOverride, useProPreview, options) {
+    const g = guard();
+    if (!g) return explainQuestion(questionData, userChoice, providerOverride, useProPreview, options);
+
+    const qid = (questionData && (questionData.id || questionData.question_id)) || 'active';
+    return g.button(g.currentTarget(), function () {
+      return explainQuestion(questionData, userChoice, providerOverride, useProPreview, options);
+    }, { key: 'coach:explain:' + qid, cooldownMs: 750 });
+  }
+
   return {
     COACH_CONFIG,
-    explainQuestion,
+    explainQuestion: explainQuestionGuarded,
     openCoachSheet,
     closeCoachSheet,
     selectProvider,
-    usePreviewQuery
+    usePreviewQuery,
+    launchTargetedDrill,
+    addToFlashcards
   };
 });

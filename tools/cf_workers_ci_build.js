@@ -31,3 +31,5 @@ function run(cmd, args) {
 
 run(py, ['tools/build_web_dist.py']);
 run('node', ['tools/test_web_dist.js']);
+run('node', ['tools/run_tests.js']);
+

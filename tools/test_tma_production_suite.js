@@ -111,6 +111,8 @@ async function loadWorker() {
 }
 
 // In-Memory D1 Mock Database
+const { applyBudgetSql } = require(path.join(__dirname, 'mock_d1_budget.js'));
+
 class MockD1 {
   constructor() {
     this.users = new Map();
@@ -137,6 +139,13 @@ class MockD1 {
             return null;
           },
           async run() {
+            // AI token budget statements (workers/token_budget.js) are
+            // conditional and report their outcome through meta.changes.
+            const budget = applyBudgetSql(self.users, sql, params);
+            if (budget.handled) {
+              assert.ok(!budget.unrecognised, `MockD1 does not model this budget statement: ${sql.trim().slice(0, 80)}`);
+              return { success: true, meta: { changes: budget.changes } };
+            }
             if (sql.includes('INSERT INTO telegram_users') || sql.includes('UPDATE telegram_users')) {
               const id = params[0];
               const existing = self.users.get(id) || {};

@@ -15,6 +15,12 @@ const { spawn } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const {
+  sleep,
+  waitForTarget,
+  connect,
+  killTree
+} = require('./electron_cdp_harness');
 
 const EXE = process.argv[2];
 if (!EXE || !fs.existsSync(EXE)) {
@@ -25,50 +31,6 @@ const PORT = 9333;
 const USER_DATA = path.join(os.tmpdir(), 'aplus-update-feed-check');
 fs.rmSync(USER_DATA, { recursive: true, force: true });
 
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-async function waitForTarget(timeoutMs) {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    try {
-      const list = await (await fetch('http://127.0.0.1:' + PORT + '/json/list')).json();
-      const page = list.find((t) => t.type === 'page' && t.webSocketDebuggerUrl);
-      if (page) return page;
-    } catch (_) {}
-    await sleep(250);
-  }
-  return null;
-}
-
-async function connect(target) {
-  const ws = new WebSocket(target.webSocketDebuggerUrl);
-  await new Promise((resolve, reject) => {
-    ws.onopen = resolve;
-    ws.onerror = () => reject(new Error('cdp socket error'));
-  });
-  let id = 0;
-  const pending = new Map();
-  ws.onmessage = (ev) => {
-    let msg;
-    try { msg = JSON.parse(ev.data); } catch (_) { return; }
-    if (msg.id && pending.has(msg.id)) { pending.get(msg.id)(msg); pending.delete(msg.id); }
-  };
-  const send = (method, params) => new Promise((resolve) => {
-    const m = ++id;
-    pending.set(m, resolve);
-    ws.send(JSON.stringify({ id: m, method, params: params || {} }));
-  });
-  const evalJs = async (expression) => {
-    const r = await send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true });
-    if (r && r.result && r.result.exceptionDetails) {
-      const d = r.result.exceptionDetails;
-      throw new Error(String((d.exception && d.exception.description) || d.text).split('\n')[0]);
-    }
-    return r && r.result && r.result.result ? r.result.result.value : undefined;
-  };
-  return { ws, evalJs };
-}
-
 (async () => {
   const child = spawn(EXE, ['--remote-debugging-port=' + PORT, '--user-data-dir=' + USER_DATA], {
     stdio: 'ignore',
@@ -76,7 +38,7 @@ async function connect(target) {
   });
   let exit = 1;
   try {
-    const target = await waitForTarget(60000);
+    const target = await waitForTarget(PORT, 60000);
     if (!target) throw new Error('no CDP target after 60 s');
     const cdp = await connect(target);
     await sleep(2500);
@@ -104,9 +66,8 @@ async function connect(target) {
   } catch (err) {
     console.log('FAIL:', err.message);
   } finally {
-    try { child.kill(); } catch (_) {}
+    killTree(child);
     await sleep(500);
-    try { spawn('taskkill', ['/F', '/T', '/PID', String(child.pid)], { stdio: 'ignore' }); } catch (_) {}
   }
   process.exit(exit);
 })();

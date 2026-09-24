@@ -15,9 +15,24 @@
 })(typeof self !== 'undefined' ? self : this, function (TMABridge) {
   'use strict';
 
+  /**
+   * Tier 1 request guard (js/request-guard.js). Creates a payment order bound to the caller. A retried order is a second
+   * order, so this is single-attempt.
+   * Degrades to plain fetch when the guard has not loaded.
+   */
+  function guardedFetch(url, init, guardOpts) {
+    var g = (typeof window !== 'undefined' && window.APlus && window.APlus.guard) || null;
+    if (g) return g.fetch(url, init, guardOpts);
+    return fetch(url, init);
+  }
+
+
   const CONFIG = {
     manifestUrl: 'https://clariora.com.au/tonconnect-manifest.json',
-    registryContractAddress: 'EQBvW8Z5huBkMJYdn3GuLD5Co_V7bB0N12_RegistryMockTON',
+    // Merchant wallet is resolved from /api/v1/billing/ton/order (server secret).
+    // This address is only a last-resort fallback for local demos.
+    merchantWalletAddress: null,
+    registryContractAddress: null,
     network: 'mainnet',
     allowSimulatedMint: false
   };
@@ -103,13 +118,17 @@
 
     // 1. If TON Connect UI is active and wallet is connected
     if (tonConnectUI && currentWallet) {
+      const registry = CONFIG.registryContractAddress || CONFIG.merchantWalletAddress;
+      if (!registry) {
+        throw new Error('TON credential registry is not configured. Open the Mini App or refresh and try again.');
+      }
       try {
         // Construct TON transaction to the registry contract with memo
         const transaction = {
           validUntil: Math.floor(Date.now() / 1000) + 600, // 10 minutes
           messages: [
             {
-              address: CONFIG.registryContractAddress,
+              address: registry,
               amount: '50000000', // 0.05 TON for network gas and storage
               payload: btoa(payload.memo) // Base64 encoded payload
             }
@@ -123,7 +142,7 @@
           ...payload.fullRecord,
           walletAddress: getWalletAddress(),
           boc: result.boc,
-          explorerUrl: `https://${CONFIG.network === 'testnet' ? 'testnet.' : ''}tonscan.org/address/${CONFIG.registryContractAddress}`
+          explorerUrl: `https://${CONFIG.network === 'testnet' ? 'testnet.' : ''}tonscan.org/address/${registry}`
         };
 
         saveVerifiedCredential(record);
@@ -141,12 +160,13 @@
     if (!CONFIG.allowSimulatedMint && !(options && options.simulate) && isRealBrowser) {
       throw new Error('Connect a TON wallet to mint an on-chain mastery credential.');
     }
-    console.log('[TON] Simulating on-chain ledger registration...');
+    console.log('[TON] Simulating on-chain ledger registration (non-production only)...');
     const simulatedRecord = {
       ...payload.fullRecord,
       walletAddress: 'EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N',
       txHash: 'a7b8c9d0e1f234567890abcdef1234567890abcdef1234567890abcdef123456',
-      explorerUrl: `https://${CONFIG.network === 'testnet' ? 'testnet.' : ''}tonscan.org/address/EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N`
+      explorerUrl: `https://${CONFIG.network === 'testnet' ? 'testnet.' : ''}tonscan.org/tx/simulated`,
+      simulated: true
     };
 
     saveVerifiedCredential(simulatedRecord);
@@ -155,6 +175,7 @@
 
   /**
    * 1-Click TON payment for subscription tier upgrades (https://docs.ton.org/)
+   * Creates a server order first so memo + merchant wallet are authoritative.
    */
   async function sendTonPayment(productId, options = {}) {
     const TON_PRICES = {
@@ -164,15 +185,52 @@
     };
 
     const item = TON_PRICES[productId] || TON_PRICES.daily_unlimited;
-    const recipient = options.recipient || CONFIG.merchantWalletAddress || CONFIG.registryContractAddress;
     const userId = options.userId || safeGet('clariora_sync_user_id') || 'technician';
+
+    // Resolve merchant wallet + order memo from the edge (never trust client mock addresses).
+    let order = null;
+    try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (options.idToken) headers['Authorization'] = 'Bearer ' + options.idToken;
+      const tg = (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp) || null;
+      if (tg && tg.initData) headers['X-Telegram-Init-Data'] = tg.initData;
+      const orderRes = await guardedFetch('/api/v1/billing/ton/order', {
+        method: 'POST',
+        credentials: 'include',
+        headers: headers,
+        body: JSON.stringify({
+          productId: productId,
+          idToken: options.idToken || null,
+          initData: tg && tg.initData ? tg.initData : null
+        })
+      });
+      order = await orderRes.json().catch(function () { return null; });
+      if (!orderRes.ok || !order || !order.merchantWallet) {
+        throw new Error((order && (order.message || order.error)) || 'Could not create TON payment order');
+      }
+      CONFIG.merchantWalletAddress = order.merchantWallet;
+    } catch (orderErr) {
+      if (!(CONFIG.allowSimulatedMint || (options && options.simulate))) {
+        throw orderErr;
+      }
+    }
+
+    const recipient = options.recipient || (order && order.merchantWallet) || CONFIG.merchantWalletAddress;
+    const nanotons = String((order && order.nanotons) || item.nanotons);
+    const amountTon = (order && order.amountTon) || item.amountTon;
+    const memo = (order && (order.memo || order.orderId)) || ('APX:SUB:' + productId + ':' + userId);
+
+    if (!recipient) {
+      throw new Error('TON merchant wallet is not configured.');
+    }
 
     if (!tonConnectUI || !currentWallet) {
       if (CONFIG.allowSimulatedMint || (options && options.simulate) || typeof window === 'undefined') {
         return {
           success: true,
           txHash: 'ton_sim_' + Date.now().toString(16),
-          amountTon: item.amountTon,
+          amountTon: amountTon,
+          orderId: order && order.orderId,
           walletAddress: 'EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N',
           simulated: true
         };
@@ -180,13 +238,12 @@
       throw new Error('Please connect your TON wallet first using the button above.');
     }
 
-    const memo = `APX:SUB:${productId}:${userId}`;
     const transaction = {
       validUntil: Math.floor(Date.now() / 1000) + 600,
       messages: [
         {
           address: recipient,
-          amount: item.nanotons,
+          amount: nanotons,
           payload: btoa(memo)
         }
       ]
@@ -198,9 +255,10 @@
     if (TMABridge) TMABridge.haptic('success');
     return {
       success: true,
-      txHash,
+      txHash: txHash,
       boc: result ? result.boc : null,
-      amountTon: item.amountTon,
+      amountTon: amountTon,
+      orderId: order && order.orderId,
       walletAddress: getWalletAddress()
     };
   }

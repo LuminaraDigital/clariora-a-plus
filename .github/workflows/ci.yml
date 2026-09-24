@@ -2,9 +2,10 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, staging]
     tags: ["v*"]
   pull_request:
+    branches: [main, staging]
   workflow_dispatch:
 
 permissions:
@@ -28,6 +29,9 @@ jobs:
       - name: Syntax check Electron entry points
         run: npm run check
 
+      - name: Install Python test deps
+        run: pip install --quiet Pillow
+
       - name: Build web distribution
         run: python tools/build_web_dist.py
 
@@ -40,11 +44,22 @@ jobs:
       - name: Guard against secrets and third-party media
         run: |
           set -e
-          if git ls-files | grep -Ei '\.(pfx|p12|jwk|pem|key|mp4|pptx|docx)$|(^|/)\.env$'; then
+          if git ls-files | grep -Ei '\.(pfx|p12|jwk|pem|key|mp4|pptx|docx)$|(^|/)\.env$|(^|/)\.env\.(local|staging|production)$'; then
             echo "Forbidden file type is tracked."; exit 1; fi
           if git ls-files | grep -Ei 'OceanofPDF'; then
             echo "Non-redistributable content is tracked."; exit 1; fi
           echo "Tree is clean."
+
+      - name: Guard production wrangler routes stay production-only
+        run: |
+          set -e
+          if grep -n 'clariora.com.au' wrangler.staging.toml; then
+            echo "Staging wrangler must not bind production hostnames."; exit 1; fi
+          if ! grep -q 'ENVIRONMENT = "staging"' wrangler.staging.toml; then
+            echo "wrangler.staging.toml must set ENVIRONMENT=staging"; exit 1; fi
+          if ! grep -q 'ENVIRONMENT = "production"' wrangler.toml; then
+            echo "wrangler.toml must set ENVIRONMENT=production"; exit 1; fi
+          echo "Environment isolation markers OK."
 
   linux-build:
     name: Linux packages (AppImage, deb)
@@ -91,13 +106,56 @@ jobs:
         run: |
           gh release upload "${GITHUB_REF_NAME}" release/linux/CompTIA_A_Plus_Linux_*.AppImage release/linux/CompTIA_A_Plus_Linux_*.deb release/linux/latest-linux.yml --clobber
 
+  deploy-staging:
+    name: Deploy staging web to Cloudflare
+    if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
+    needs: test
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check for the deploy token
+        id: token
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "$CF_TOKEN" ]; then
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "CLOUDFLARE_API_TOKEN secret is not set; skipping staging deploy."
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build web distribution
+        if: steps.token.outputs.present == 'true'
+        run: python tools/build_web_dist.py
+
+      - name: Test web distribution
+        if: steps.token.outputs.present == 'true'
+        run: node tools/test_web_dist.js
+
+      - name: Deploy staging with wrangler
+        if: steps.token.outputs.present == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npx -y wrangler@4 deploy -c wrangler.staging.toml
+
   deploy-web:
-    name: Deploy web edition to Cloudflare
-    # Runs on every push to main once the CLOUDFLARE_API_TOKEN repository secret
-    # exists. The token needs Workers Scripts: Edit on the account.
+    name: Deploy production web to Cloudflare
+    # Production only from main, after tests. Prefer merging staging -> main.
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: test
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - uses: actions/checkout@v4
 
@@ -128,6 +186,13 @@ jobs:
       - name: Test web distribution
         if: steps.token.outputs.present == 'true'
         run: node tools/test_web_dist.js
+
+      - name: Reject accidental staging config on production deploy
+        if: steps.token.outputs.present == 'true'
+        run: |
+          set -e
+          if grep -q 'ENVIRONMENT = "staging"' wrangler.toml; then
+            echo "wrangler.toml must remain ENVIRONMENT=production"; exit 1; fi
 
       - name: Deploy with wrangler
         if: steps.token.outputs.present == 'true'

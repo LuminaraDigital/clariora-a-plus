@@ -14,7 +14,7 @@ const ROOT = path.resolve(__dirname, '..');
 const GOLDEN = [
   {
     id: 'fiber-connector',
-    tier: 'free',
+    tier: 'daily_pass',
     body: {
       intent: 'explain',
       question: 'Which connector is used for 10GBASE-SR fiber?',

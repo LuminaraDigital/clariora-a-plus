@@ -1,55 +1,65 @@
-# Telegram Bot Companion & WebApp Configuration
+# Clariora Telegram Bot and Mini App
 
-This directory contains the companion Telegram bot and Stars payment processing server for Clariora Telegram Mini App (TMA).
+Production companion for [@ClarioraBot](https://t.me/ClarioraBot). Stars (XTR) checkout and webhook grants are handled by the Cloudflare Worker at `https://clariora.com.au`. This Node process is optional for local debugging; production traffic uses the Worker webhook.
 
----
+## Production URLs
 
-## 1. Registering the Bot with @BotFather
+| Item | URL |
+| --- | --- |
+| Mini App | https://t.me/ClarioraBot/app |
+| App shell | https://clariora.com.au/app |
+| Webhook | https://clariora.com.au/api/v1/telegram/webhook |
+| Health | https://clariora.com.au/api/v1/health |
+| Terms | https://clariora.com.au/terms.html |
+| Support | /paysupport in the bot, or support@datacentre.academy |
 
-1. Open Telegram and message [@BotFather](https://t.me/botfather).
-2. Send `/newbot` and follow prompts to name your bot:
-   - Name: `Clariora`
-   - Username: `ComptiaMasterBot` (or your preferred available handle).
-3. Copy the HTTP API **Bot Token**.
+## One-time BotFather setup
 
----
+1. Confirm the bot username is `ClarioraBot`.
+2. `/newapp` (or edit the existing Mini App) with Web App URL: `https://clariora.com.au/app`
+3. Enable Telegram Stars under Bot Settings > Payments.
+4. From the repo root (token never committed):
 
-## 2. Setting Up the Telegram Mini App (Web App)
+```bash
+set TELEGRAM_BOT_TOKEN=...   # PowerShell: $env:TELEGRAM_BOT_TOKEN="..."
+set TELEGRAM_WEBHOOK_SECRET=...
+node tools/setup_telegram_bot.js
+```
 
-1. In `@BotFather`, send `/newapp`.
-2. Select your bot.
-3. Provide Title: `Clariora Exam Prep`.
-4. Provide Short Description: `Pass CompTIA A+ Core 1 & Core 2 with daily diagnostic drills, flashcards, and AI coach.`
-5. Upload an App Icon (640x360 px image).
-6. Provide the Web App URL:
-   `https://<your-cloudflare-or-vercel-domain>/index.html`
-7. Choose a short name (e.g. `app`). Your deep link will be:
-   `t.me/ComptiaMasterBot/app`
+That registers the webhook, menu button, and commands (`/start`, `/app`, `/pro`, `/terms`, `/paysupport`, `/help`).
 
----
+Worker secrets already expected in production (via `wrangler secret put`):
 
-## 3. Configuring the Bot Menu Button
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_WEBHOOK_SECRET` (or `EDGE_WEBHOOK_SECRET`)
+- `TON_MERCHANT_WALLET_ADDRESS`
+- `TONCENTER_API_KEY`
 
-To make the app accessible from any chat with your bot:
-1. In `@BotFather`, send `/setmenubutton`.
-2. Select your bot.
-3. Send the Web App URL (`https://<your-domain>/index.html`).
-4. Set Button Text: `🚀 Open Exam Prep`.
-
----
-
-## 4. Setting Up Telegram Stars Payments
-
-1. In `@BotFather`, send `/mybots` -> select your bot -> **Bot Settings** -> **Payments**.
-2. Select **Telegram Stars**.
-3. Enable Stars for your bot.
-
----
-
-## 5. Running the Bot Server
+## Local companion server (optional)
 
 ```bash
 cd bot
 npm install
-TELEGRAM_BOT_TOKEN="your-token" WEB_APP_URL="https://your-domain.com" npm start
+set TELEGRAM_BOT_TOKEN=...
+set WEB_APP_URL=https://clariora.com.au/app
+set EDGE_WEBHOOK_URL=https://clariora.com.au/api/v1/telegram/webhook
+set TELEGRAM_WEBHOOK_SECRET=...
+npm start
+```
+
+Health: `GET http://localhost:3000/health`
+
+Prefer pointing BotFather at the Cloudflare webhook in production. Do not run a second live webhook unless you intentionally move traffic.
+
+## Stars compliance
+
+- Digital goods inside the Mini App use **XTR only**.
+- `/terms` and `/paysupport` are required and registered.
+- Authoritative entitlement grants happen on successful payment webhook delivery to the Worker + D1.
+
+## Verify
+
+```bash
+node tools/test_tma_production_suite.js
+node tools/verify_tma_live_production.js
 ```

@@ -20,6 +20,9 @@
   const STORAGE_KEY = "comptia_objectives_progress_v1";
 
   function escapeHTML(str) {
+    if (typeof window !== "undefined" && typeof window.escapeHTML === "function") {
+      return window.escapeHTML(str);
+    }
     return String(str == null ? "" : str)
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")

@@ -6,7 +6,7 @@ name = "clariora-a-plus"
 main = "workers/api_worker.js"
 compatibility_date = "2026-09-01"
 account_id = "2373013c66331e9660e47ffa3ae40f5c"
-workers_dev = true
+workers_dev = false
 
 routes = [
   { pattern = "clariora.com.au/*", zone_name = "clariora.com.au" },
@@ -24,6 +24,7 @@ run_worker_first = true
 binding = "DB"
 database_name = "clariora_edge_db"
 database_id = "f1a42288-4259-4640-99dd-780845e9431f"
+migrations_dir = "migrations"
 
 # R2 is not enabled on this account yet (dashboard: enable R2, then create clariora-media).
 # [[r2_buckets]]
@@ -52,8 +53,10 @@ command = "python tools/build_web_dist.py"
 # - TELEGRAM_BOT_TOKEN: From @BotFather (for initData HMAC & Stars invoices)
 # - TELEGRAM_WEBHOOK_SECRET: Secret token for validating incoming Telegram webhooks (X-Telegram-Bot-Api-Secret-Token)
 # - EDGE_WEBHOOK_SECRET: Alias for TELEGRAM_WEBHOOK_SECRET
-# - ADMIN_API_KEY: Shared secret for GET /api/v1/auth/accounts and /admin/users.html
-# - FIREBASE_WEB_API_KEY: Optional override for Firebase ID token verification
+# - ADMIN_API_KEY: Bootstrap secret for POST /api/v1/auth/admin/session (HttpOnly admin cookie)
+# - AUTH_SESSION_SECRET: HMAC secret for user/admin session cookies (preferred; falls back to ADMIN_API_KEY)
+# - FIREBASE_PROJECT_ID: Firebase project id for JWKS aud/iss (default clariora)
+# - FIREBASE_WEB_API_KEY: Optional Identity Toolkit lookup fallback
 # - TON_MERCHANT_WALLET_ADDRESS: Production TON merchant wallet address
 # - TONCENTER_API_KEY: Mainnet TonCenter API Key for on-chain transaction verification
 # - GROQ_API_KEY: Free tier fast inference (Llama 3.1 8B)

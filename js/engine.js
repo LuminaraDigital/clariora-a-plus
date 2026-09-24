@@ -21,6 +21,8 @@
   const MODE_BY_TYPE = {
     core1: 'mock',
     core2: 'mock',
+    az900: 'mock',
+    ms_az900: 'mock',
     both: 'mock',
     mixed: 'mock',
     mock: 'mock',
@@ -33,7 +35,8 @@
     coach: 'practice',
     memory: 'practice',
     raid: 'practice',
-    assessment: 'practice'
+    assessment: 'practice',
+    notes: 'practice'
   };
 
   /** Resolve the session mode from a session type plus an optional override. */
@@ -140,7 +143,7 @@
       }
 
       let sampled = [];
-      if (type === 'domain' || type === 'missed' || type === 'coach' || type === 'assessment') {
+      if (type === 'domain' || type === 'missed' || type === 'coach' || type === 'assessment' || type === 'drill') {
         sampled = APlus.engineCore.shuffle(pool).slice(0, Math.min(questionCount, pool.length));
       } else {
         sampled = APlus.engineCore.sampleStratified(pool, questionCount, type);
@@ -344,14 +347,25 @@
         domainStats[domain].total++;
         if (isCorrect) domainStats[domain].correct++;
 
+        let userAnswerText = 'None';
+        if (userAns !== undefined && userAns !== null) {
+          if (Array.isArray(q.options) && typeof userAns === 'number' && q.options[userAns] != null) {
+            userAnswerText = String(q.options[userAns]);
+          } else {
+            userAnswerText = String(userAns);
+          }
+        }
+
         perQuestion.push({
           id: q.id,
           objective: q.objective,
           domain: domain,
+          exam: q.exam || null,
           type: q.type || 'single',
           correct: isCorrect,
           flagged: this.flaggedQuestions.has(idx),
           answer: userAns,
+          userAnswerText: userAnswerText,
           correctAnswer: typeof q.answer === 'number' ? q.answer : null,
           secondsOnQuestion: this.questionSeconds[idx] || 0
         });
@@ -360,6 +374,7 @@
       const scaledScore = APlus.engineCore.calcScaledScore(rawCorrect, total);
       const passed = scaledScore >= this.passingScore;
       const secondsSpent = this.totalSeconds - this.remainingSeconds;
+      const examTypeForMeta = this.type;
 
       // Update storage
       if (APlus.storage) {
@@ -395,6 +410,21 @@
         APlus.storage.set('history', history);
       }
 
+      const missedQuestionIds = perQuestion.filter(r => !r.correct && r.id).map(r => r.id);
+      if (missedQuestionIds.length && typeof window !== 'undefined' && window.CompTIAMemorySRS && typeof window.CompTIAMemorySRS.enqueueMissed === 'function') {
+        try {
+          window.CompTIAMemorySRS.enqueueMissed(missedQuestionIds, function (id) {
+            const q = perQuestion.find(x => x.id === id);
+            return q ? { domain: q.domain, exam: q.exam || examTypeForMeta } : { exam: examTypeForMeta };
+          });
+          if (window.CompTIAMemoryMode && typeof window.CompTIAMemoryMode.refreshMemoryHome === 'function') {
+            window.CompTIAMemoryMode.refreshMemoryHome();
+          }
+        } catch (srsErr) {
+          console.warn('[Engine] SRS auto-enqueue notice:', srsErr);
+        }
+      }
+
       const resultsPayload = {
         examType: this.type,
         totalQuestions: total,
@@ -404,6 +434,7 @@
         passed: passed,
         domainStats: domainStats,
         perQuestion: perQuestion,
+        missedIds: missedQuestionIds,
         secondsSpent: secondsSpent,
         flaggedCount: this.flaggedQuestions.size,
         domainKey: this.domainKey,
@@ -423,6 +454,7 @@
             objective: row.objective || null,
             domain: row.domain || null,
             correct: row.correct,
+            selectedOption: typeof row.answer === 'number' ? row.answer : null,
             seconds: row.secondsOnQuestion || 0,
             examType: resultsPayload.examType,
             assessmentKind: resultsPayload.assessmentKind || null

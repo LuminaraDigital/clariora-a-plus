@@ -59,14 +59,13 @@ static host:
 
 ```json
 "publish": [
-  { "provider": "generic", "url": "https://aplus.datacentre.academy/releases/" }
+  { "provider": "generic", "url": "https://comptia-a-plus-master.pages.dev/releases/" }
 ]
 ```
 
-- TODO: that URL is a placeholder. Point it at the real Cloudflare Pages or R2
-  release directory before the first public build.
 - Upload `CompTIA_A_Plus_Setup_<version>.exe` and `latest.yml` together. The
-  updater reads `latest.yml` to decide whether a newer build exists.
+  updater reads `latest.yml` to decide whether a newer build exists. Keep this
+  URL aligned with `release.config.json` `updateBaseUrl`.
 - The host must serve the files over HTTPS as plain static content. A redirect
   to an HTML page breaks the check silently.
 - The updater downloads in the background, installs on quit, and never shows a

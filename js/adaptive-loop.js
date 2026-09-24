@@ -285,12 +285,12 @@
         window.startMissedDrill();
         return true;
       }
-      alert('No study plan yet. Finish a practice exam first.');
+      showRaidFeedback('No study plan yet. Finish a practice exam first, then come back.');
       return false;
     }
 
     if (!APlus.engine || typeof APlus.engine.start !== 'function') {
-      alert('Exam engine is not ready.');
+      showRaidFeedback('The exam engine is still loading. Wait a moment, then try again.');
       return false;
     }
 
@@ -301,7 +301,7 @@
         window.startMissedDrill();
         return true;
       }
-      alert('Could not build a weak-area practice set from the last exam. Try a domain drill from the menu.');
+      showRaidFeedback('Could not build a weak-area practice set from the last exam. Try a domain drill from the menu.');
       return false;
     }
 
@@ -319,6 +319,35 @@
     });
     return true;
   };
+
+  function showRaidFeedback(message) {
+    const text = String(message || '').trim();
+    if (!text) return;
+    try {
+      if (APlus.telemetry && typeof APlus.telemetry.track === 'function') {
+        APlus.telemetry.track('form_validation_error', { form: 'adaptive_raid', field: 'start' });
+      }
+    } catch (_) {}
+    const panel = ensurePanelMount();
+    if (panel) {
+      let note = panel.querySelector('.adaptive-inline-error');
+      if (!note) {
+        note = document.createElement('p');
+        note.className = 'adaptive-inline-error';
+        note.setAttribute('role', 'alert');
+        panel.insertBefore(note, panel.firstChild);
+      }
+      note.textContent = text;
+      return;
+    }
+    try {
+      if (APlus.ui && typeof APlus.ui.toast === 'function') {
+        APlus.ui.toast(text);
+        return;
+      }
+    } catch (_) {}
+    console.warn('[adaptive-loop]', text);
+  }
 
   function ensurePanelMount() {
     let panel = document.getElementById('adaptiveNextPanel');

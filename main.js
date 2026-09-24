@@ -173,130 +173,28 @@ function loadEnterprisePolicy(overridePath) {
 }
 
 /* ---------------------------------------------------------------------------
- * Multi-Model Business AI Provider Registry
- * Supports Groq Cloud, Private LAN/air-gapped Ollama, NVIDIA NIM, OpenRouter.
- * ------------------------------------------------------------------------ */
-const AI_PROVIDERS = {
-  groq: {
-    id: 'groq',
-    name: 'Groq Cloud',
-    url: 'https://api.groq.com/openai/v1/chat/completions',
-    allowedHost: 'api.groq.com',
-    defaultModel: 'qwen/qwen3.8-27b',
-    isLocal: false,
-    requiresKey: true
-  },
-  ollama: {
-    id: 'ollama',
-    name: 'Private Ollama (LAN/Air-gapped)',
-    url: 'http://localhost:11434/v1/chat/completions',
-    allowedHost: null,
-    defaultModel: 'deepseek-r1:latest',
-    isLocal: true,
-    requiresKey: false
-  },
-  nvidia: {
-    id: 'nvidia',
-    name: 'NVIDIA NIM',
-    url: 'https://integrate.api.nvidia.com/v1/chat/completions',
-    allowedHost: 'integrate.api.nvidia.com',
-    defaultModel: 'meta/llama-3.3-70b-instruct',
-    isLocal: false,
-    requiresKey: true
-  },
-  openrouter: {
-    id: 'openrouter',
-    name: 'OpenRouter Multi-Model',
-    url: 'https://openrouter.ai/api/v1/chat/completions',
-    allowedHost: 'openrouter.ai',
-    defaultModel: 'anthropic/claude-3.5-sonnet',
-    isLocal: false,
-    requiresKey: true
-  }
-};
-
-function isLocalOrPrivateHost(hostname) {
-  if (!hostname) return false;
-  const h = hostname.toLowerCase();
-  if (h === 'localhost' || h === '127.0.0.1' || h === '::1') return true;
-  if (/^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(h)) return true;
-  if (/^192\.168\.\d{1,3}\.\d{1,3}$/.test(h)) return true;
-  if (/^172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}$/.test(h)) return true;
-  if (h.endsWith('.local') || h.endsWith('.internal') || h.endsWith('.corp')) return true;
-  return false;
-}
-
-let isExamSessionActive = false;
-
-/* ---------------------------------------------------------------------------
  * Rotating log file: userData/logs/main.log, 1 MB cap, 2 files kept.
  * No network telemetry is ever sent from the main process.
  * ------------------------------------------------------------------------ */
 
-const LOG_MAX_BYTES = 1024 * 1024;
-const LOG_KEEP_FILES = 2;
-let logDir = null;
-let logFile = null;
+const { getLogDir, getLogFile, rotateLogIfNeeded, scrubSecrets, writeLog } = require('./electron/logging');
 
-function getLogDir() {
-  if (!logDir) {
-    logDir = path.join(app.getPath('userData'), 'logs');
-  }
-  return logDir;
-}
+/* ---------------------------------------------------------------------------
+ * Multi-Model Business AI Provider Registry
+ * Supports Groq Cloud, Private LAN/air-gapped Ollama, NVIDIA NIM, OpenRouter.
+ * ------------------------------------------------------------------------ */
+const { createAiGateway } = require('./electron/ai_gateway');
+const _aiGateway = createAiGateway({
+  writeLog,
+  loadEnterprisePolicy,
+  GROQ_CHAT_URL,
+  GROQ_ALLOWED_HOST
+});
+const AI_PROVIDERS = _aiGateway.AI_PROVIDERS;
+const isLocalOrPrivateHost = _aiGateway.isLocalOrPrivateHost;
+const handleAiChat = _aiGateway.handleAiChat;
 
-function getLogFile() {
-  if (!logFile) {
-    logFile = path.join(getLogDir(), 'main.log');
-  }
-  return logFile;
-}
-
-function rotateLogIfNeeded() {
-  const file = getLogFile();
-  let size = 0;
-  try {
-    size = fs.statSync(file).size;
-  } catch (_) {
-    return;
-  }
-  if (size < LOG_MAX_BYTES) return;
-  try {
-    // Keep main.log plus (LOG_KEEP_FILES - 1) rolled generations.
-    for (let i = LOG_KEEP_FILES - 1; i >= 1; i--) {
-      const older = file + '.' + i;
-      const newer = i === 1 ? file : file + '.' + (i - 1);
-      if (fs.existsSync(newer)) {
-        try { fs.rmSync(older, { force: true }); } catch (_) {}
-        fs.renameSync(newer, older);
-      }
-    }
-  } catch (_) {}
-}
-
-function scrubSecrets(text) {
-  return String(text)
-    .replace(/(Bearer\s+)[A-Za-z0-9._\-]+/gi, '$1[redacted]')
-    .replace(/(gsk_)[A-Za-z0-9._\-]+/gi, '$1[redacted]')
-    .replace(/("?\bapi[_-]?key"?\s*[:=]\s*"?)[^",\s}]+/gi, '$1[redacted]');
-}
-
-function writeLog(level, message) {
-  const lvl = String(level || 'info').toLowerCase();
-  const line = '[' + new Date().toISOString() + '] [' + lvl + '] ' + scrubSecrets(message) + '\n';
-  try {
-    fs.mkdirSync(getLogDir(), { recursive: true });
-    rotateLogIfNeeded();
-    fs.appendFileSync(getLogFile(), line, 'utf8');
-  } catch (_) {
-    // Logging must never take the app down.
-  }
-  if (lvl === 'error' || lvl === 'warn') {
-    console.warn(line.trim());
-  }
-}
-
-/* ------------------------------------------------------------------------ */
+let isExamSessionActive = false;
 
 function getProgressPath() {
   if (!progressPath) {
@@ -985,167 +883,6 @@ ipcMain.handle('storage:exportFile', async (_event, name, content) => {
   return { ok: true, path: result.filePath };
 });
 
-async function handleAiChat(payload) {
-  try {
-    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-      writeLog('warn', 'ai:chat rejected non-object payload');
-      return { ok: false, error: 'invalid_payload' };
-    }
-
-    const providerId = (typeof payload.provider === 'string' && payload.provider.trim().toLowerCase()) || 'groq';
-    const providerCfg = AI_PROVIDERS[providerId];
-    if (!providerCfg) {
-      writeLog('warn', `ai:chat rejected unknown provider: ${providerId}`);
-      return { ok: false, error: 'unknown_provider' };
-    }
-
-    const policy = loadEnterprisePolicy();
-
-    // Enterprise policy enforcement
-    if (policy.offlineOnly && !providerCfg.isLocal) {
-      writeLog('warn', `ai:chat blocked external provider ${providerId} due to offlineOnly policy`);
-      return {
-        ok: false,
-        error: 'policy_offline_only',
-        message: 'External AI access is disabled by organizational policy.'
-      };
-    }
-    if (policy.disableExternalAi && !providerCfg.isLocal) {
-      writeLog('warn', `ai:chat blocked external provider ${providerId} due to disableExternalAi policy`);
-      return {
-        ok: false,
-        error: 'policy_external_ai_disabled',
-        message: 'External cloud AI is disabled. Use local/air-gapped Ollama.'
-      };
-    }
-    if (Array.isArray(policy.allowedAiProviders) && !policy.allowedAiProviders.includes(providerId)) {
-      writeLog('warn', `ai:chat provider ${providerId} not permitted by allowedAiProviders policy`);
-      return {
-        ok: false,
-        error: 'provider_not_allowed_by_policy',
-        message: `Provider "${providerId}" is not allowed by organizational policy.`
-      };
-    }
-
-    const apiKey = typeof payload.apiKey === 'string' ? payload.apiKey.trim() : '';
-    if (providerCfg.requiresKey) {
-      if (!apiKey) {
-        return { ok: false, error: 'missing_api_key' };
-      }
-      if (apiKey.length < 10 || apiKey.length > 512) {
-        writeLog('warn', `ai:chat rejected API key with invalid bounds for ${providerId}`);
-        return { ok: false, error: 'invalid_api_key' };
-      }
-    }
-
-    // Determine endpoint URL
-    let endpointUrl = providerCfg.url;
-    if (providerId === 'ollama') {
-      const base = (policy.ollamaBaseUrl || payload.baseUrl || 'http://localhost:11434').replace(/\/+$/, '');
-      endpointUrl = base + '/v1/chat/completions';
-    }
-
-    // Endpoint security validation
-    const parsedEndpoint = new URL(endpointUrl);
-    if (providerCfg.allowedHost) {
-      if (parsedEndpoint.protocol !== 'https:' || parsedEndpoint.hostname !== providerCfg.allowedHost) {
-        writeLog('error', `ai:chat blocked non-allowlisted endpoint for ${providerId}: ${endpointUrl}`);
-        return { ok: false, error: 'blocked_endpoint' };
-      }
-    } else if (providerId === 'ollama') {
-      if (!isLocalOrPrivateHost(parsedEndpoint.hostname)) {
-        writeLog('error', `ai:chat blocked non-local host for ollama: ${parsedEndpoint.hostname}`);
-        return { ok: false, error: 'blocked_endpoint', message: 'Ollama host must be local or private LAN.' };
-      }
-    }
-
-    if (!Array.isArray(payload.messages) || payload.messages.length === 0 || payload.messages.length > 50) {
-      writeLog('warn', 'ai:chat rejected invalid messages list');
-      return { ok: false, error: 'invalid_messages' };
-    }
-    for (const msg of payload.messages) {
-      if (!msg || typeof msg !== 'object' || typeof msg.role !== 'string' || typeof msg.content !== 'string') {
-        writeLog('warn', 'ai:chat rejected malformed message item');
-        return { ok: false, error: 'malformed_message_entry' };
-      }
-      if (msg.content.length > 65536) {
-        writeLog('warn', 'ai:chat rejected message exceeding 64KB');
-        return { ok: false, error: 'message_too_large' };
-      }
-    }
-
-    const model = typeof payload.model === 'string' && payload.model.trim()
-      ? payload.model.trim()
-      : providerCfg.defaultModel;
-    if (model.length > 128 || !/^[a-zA-Z0-9_.:\-\/]+$/.test(model)) {
-      writeLog('warn', 'ai:chat rejected invalid model identifier');
-      return { ok: false, error: 'invalid_model' };
-    }
-
-    const temperature = typeof payload.temperature === 'number' && Number.isFinite(payload.temperature)
-      ? Math.max(0, Math.min(2, payload.temperature))
-      : 0.2;
-    const max_tokens = typeof payload.max_tokens === 'number' && Number.isFinite(payload.max_tokens)
-      ? Math.max(1, Math.min(4096, Math.floor(payload.max_tokens)))
-      : 220;
-
-    const body = {
-      model: model,
-      messages: payload.messages,
-      temperature: temperature,
-      max_tokens: max_tokens
-    };
-
-    const headers = { 'Content-Type': 'application/json' };
-    if (apiKey) {
-      headers['Authorization'] = 'Bearer ' + apiKey;
-    }
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 45000);
-
-    let res;
-    try {
-      res = await fetch(endpointUrl, {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify(body),
-        signal: controller.signal
-      });
-    } finally {
-      clearTimeout(timeoutId);
-    }
-
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      writeLog('warn', `${providerId} http ${res.status} model=${body.model}`);
-      return {
-        ok: false,
-        provider: providerId,
-        error: (data && data.error && (data.error.message || data.error)) || ('http_' + res.status),
-        raw: data
-      };
-    }
-
-    const content = data && data.choices && data.choices[0] && data.choices[0].message
-      ? String(data.choices[0].message.content || '').trim()
-      : '';
-
-    return {
-      ok: true,
-      provider: providerId,
-      content: content,
-      model: body.model,
-      raw: data
-    };
-  } catch (err) {
-    const isTimeout = err && (err.name === 'AbortError' || err.code === 'ETIMEDOUT');
-    const errMsg = isTimeout ? 'request_timeout' : ((err && err.message) || 'ai_ipc_error');
-    writeLog('warn', `ai:chat request failed: ${errMsg}`);
-    return { ok: false, error: errMsg };
-  }
-}
-
 ipcMain.handle('ai:chat', async (_event, payload) => {
   return handleAiChat(payload);
 });
@@ -1642,7 +1379,7 @@ function attachRendererDiagnostics(contents) {
   });
 }
 
-const CSP_POLICY = "default-src 'self'; script-src 'self' 'unsafe-inline' https://telegram.org https://unpkg.com https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://i.ytimg.com https://*.telegram.org https://lh3.googleusercontent.com https://*.googleusercontent.com; media-src 'self' https://comptia-a-plus-master.pages.dev https://clariora.com.au; connect-src 'self' https://api.telegram.org https://tonconnect.org https://tonapi.io https://*.ton.org https://toncenter.com https://clariora.com.au https://*.supabase.co https://cdn.jsdelivr.net https://unpkg.com https://comptia-a-plus-master.pages.dev https://*.googleapis.com https://*.firebaseio.com https://clariora.firebaseapp.com https://*.firebasestorage.app https://bridge.tonapi.io https://*.tonconnect.org; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://*.telegram.org https://clariora.firebaseapp.com https://accounts.google.com; font-src 'self'; object-src 'none'; base-uri 'self'";
+const CSP_POLICY = "default-src 'self'; script-src 'self' 'unsafe-inline' https://telegram.org https://unpkg.com https://www.gstatic.com https://apis.google.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://i.ytimg.com https://*.telegram.org https://lh3.googleusercontent.com https://*.googleusercontent.com; media-src 'self' https://comptia-a-plus-master.pages.dev https://clariora.com.au; connect-src 'self' https://api.telegram.org https://tonconnect.org https://tonapi.io https://*.ton.org https://toncenter.com https://clariora.com.au https://*.supabase.co https://cdn.jsdelivr.net https://unpkg.com https://comptia-a-plus-master.pages.dev https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://clariora.firebaseapp.com https://*.firebasestorage.app https://bridge.tonapi.io https://*.tonconnect.org; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://*.telegram.org https://clariora.firebaseapp.com https://accounts.google.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self' https://accounts.google.com; worker-src 'self'; manifest-src 'self'; upgrade-insecure-requests";
 
 function applySecurityPolicy() {
   const ses = session.defaultSession;

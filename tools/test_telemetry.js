@@ -425,7 +425,7 @@ function loadTelemetry(sandbox) {
   telemetry.flush();
   assert(sentCalls.length === 1, 'flush() should send once consent is granted, endpoint is https, and enabled is true');
   var sentBody = JSON.parse(sentCalls[0].body.toString ? sentCalls[0].body.toString() : sentCalls[0].body);
-  assert(sentBody.installId === telemetry.getInstallId(), 'uploaded payload should include the anonymous install id');
+  assert(!sentBody.installId, 'uploaded payload should not include installId to preserve privacy');
   assert(Array.isArray(sentBody.events), 'uploaded payload should include an events array');
 
   // Revoking consent should stop further sends.
@@ -460,6 +460,27 @@ function loadTelemetry(sandbox) {
   telemetry.setConsent(true);
   telemetry.flush();
   assert(sentCalls.length === 0, 'flush() must not send over a non-https endpoint even with consent');
+})();
+
+// -----------------------------------------------------------------------
+// Test: onboarding completion, TTFV mean, funnel abandons
+// -----------------------------------------------------------------------
+
+(function testRetentionMetrics() {
+  var sandbox = makeSandbox();
+  var telemetry = loadTelemetry(sandbox);
+
+  telemetry.track('onboarding_shown', { exam: 'core1' });
+  telemetry.track('onboarding_shown', { exam: 'core2' });
+  telemetry.track('onboarding_completed', { exam: 'core1', readiness: 55 });
+  telemetry.track('time_to_first_value', { action: 'diagnostic_started', seconds: 40 });
+  telemetry.track('time_to_first_value', { action: 'today_session_started', seconds: 60 });
+  telemetry.track('funnel_abandon', { funnel: 'onboarding', exam: 'core2' });
+
+  var m = telemetry.metrics();
+  approx(m.onboardingCompletionRate, 0.5, 1e-9, 'onboarding completion rate should be 1/2 = 0.5');
+  approx(m.meanTimeToFirstValueSec, 50, 1e-9, 'mean TTFV should be (40+60)/2 = 50');
+  assert(m.funnelAbandons === 1, 'funnelAbandons should count abandon events');
 })();
 
 // -----------------------------------------------------------------------

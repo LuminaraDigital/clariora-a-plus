@@ -24,12 +24,8 @@
   const isBrowser = typeof window !== 'undefined';
   const tg = isBrowser && window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
 
-  // Real TMA detection: must be running inside Telegram with valid initData or user
-  const isRealTMA = !!(
-    tg &&
-    ((typeof tg.initData === 'string' && tg.initData.length > 0) ||
-     (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id))
-  );
+  // Real TMA detection: require non-empty signed initData (unsafe user alone is spoofable).
+  const isRealTMA = !!(tg && typeof tg.initData === 'string' && tg.initData.length > 0);
 
   const state = {
     isTMA: isRealTMA,
@@ -96,6 +92,12 @@
         syncTheme();
         tg.onEvent('themeChanged', syncTheme);
         tg.onEvent('viewportChanged', syncViewport);
+        if (typeof window.addEventListener === 'function') {
+          window.addEventListener('resize', syncViewport);
+        }
+        if (window.visualViewport && typeof window.visualViewport.addEventListener === 'function') {
+          window.visualViewport.addEventListener('resize', syncViewport);
+        }
 
         // Initial viewport sync
         syncViewport();
@@ -125,13 +127,24 @@
         console.warn('[TMA] Error during WebApp initialization:', err);
       }
     } else {
-      console.log('[TMA] Running outside Telegram: Mock WebApp active for development.');
-      state.user = {
-        id: 99999999,
-        first_name: 'Dev',
-        last_name: 'Tester',
-        username: 'dev_technician'
-      };
+      // Never invent a Telegram identity on production hosts. Localhost only.
+      var host = '';
+      try {
+        host = (window.location && window.location.hostname) || '';
+      } catch (_) {}
+      var isLocalDev = host === 'localhost' || host === '127.0.0.1' || host === '';
+      if (isLocalDev) {
+        console.log('[TMA] Outside Telegram on local host: mock user for development only.');
+        state.user = {
+          id: 99999999,
+          first_name: 'Dev',
+          last_name: 'Tester',
+          username: 'dev_technician'
+        };
+      } else {
+        console.log('[TMA] Outside Telegram: browser session (no Telegram identity).');
+        state.user = null;
+      }
       syncViewport();
     }
 
@@ -150,6 +163,17 @@
 
     doc.style.setProperty('--tg-viewport-height', `${vh}px`);
     doc.style.setProperty('--tg-viewport-stable-height', `${stableVh}px`);
+
+    // Virtual keyboard detection & offset
+    const keyboardHeight = Math.max(0, stableVh - vh);
+    doc.style.setProperty('--tg-keyboard-height', `${keyboardHeight}px`);
+    if (doc && doc.classList) {
+      if (keyboardHeight > 50) {
+        doc.classList.add('tg-keyboard-open');
+      } else {
+        doc.classList.remove('tg-keyboard-open');
+      }
+    }
 
     // Safe area defaults (overridden by Telegram webview parameters if supplied)
     const topInset = (tg && tg.safeAreaInset && tg.safeAreaInset.top) || 0;

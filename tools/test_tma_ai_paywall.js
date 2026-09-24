@@ -65,6 +65,8 @@ async function loadWorker() {
   return workerModule;
 }
 
+const { applyBudgetSql } = require(path.join(__dirname, 'mock_d1_budget.js'));
+
 // In-Memory D1 Mock
 class MockD1 {
   constructor() {
@@ -83,12 +85,26 @@ class MockD1 {
               const id = params[0];
               return self.users.get(id) || null;
             }
+            if (sql.includes('SUM(stars_amount)') && sql.includes('stars_transactions')) {
+              const id = params[0];
+              const total = self.transactions
+                .filter(t => t.telegram_id === id)
+                .reduce((sum, t) => sum + Number(t.amount || t.stars_amount || 0), 0);
+              return { total };
+            }
             if (sql.includes('FROM stars_transactions WHERE id = ?')) {
               return self.transactions.find(t => t.id === params[0]) || null;
             }
             return null;
           },
           async run() {
+            // AI token budget statements (workers/token_budget.js) are
+            // conditional and report their outcome through meta.changes.
+            const budget = applyBudgetSql(self.users, sql, params);
+            if (budget.handled) {
+              assert.ok(!budget.unrecognised, `MockD1 does not model this budget statement: ${sql.trim().slice(0, 80)}`);
+              return { success: true, meta: { changes: budget.changes } };
+            }
             if (sql.includes('INSERT INTO telegram_users')) {
               // UPSERT telegram_users
               const id = params[0];
@@ -104,6 +120,7 @@ class MockD1 {
                 });
               } else if (params.length >= 7) {
                 // Payment update: id, username, first_name, last_name, tier, tier_expires_at, stars_spent
+                // stars_spent is an absolute ledger total (not a delta).
                 self.users.set(id, {
                   ...existing,
                   telegram_id: id,
@@ -112,15 +129,24 @@ class MockD1 {
                   last_name: params[3],
                   tier: params[4],
                   tier_expires_at: params[5],
-                  stars_spent: (existing.stars_spent || 0) + params[6]
+                  stars_spent: params[6]
                 });
               }
             } else if (sql.includes('INSERT INTO stars_transactions')) {
-              self.transactions.push({ id: params[0], telegram_id: params[1], product_id: params[2], amount: params[3] });
+              const chargeId = params[0];
+              if (!self.transactions.find(t => t.id === chargeId)) {
+                self.transactions.push({
+                  id: chargeId,
+                  telegram_id: params[1],
+                  product_id: params[2],
+                  amount: params[3],
+                  stars_amount: params[3]
+                });
+              }
             } else if (sql.includes('INSERT INTO ai_usage_log')) {
               self.logs.push({ telegram_id: params[0], tier: params[1], provider: params[2], model: params[3] });
             }
-            return { success: true };
+            return { success: true, meta: { changes: 1 } };
           }
         };
       }

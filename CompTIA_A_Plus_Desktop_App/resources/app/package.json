@@ -1,6 +1,7 @@
 {
   "name": "clariora-a-plus",
   "version": "3.1.5",
+  "author": "Datacentre Academy",
   "description": "Clariora A+, the CompTIA A+ exam simulator for Core 1 and Core 2",
   "main": "main.js",
   "scripts": {
@@ -18,6 +19,9 @@
   "build": {
     "appId": "com.datacentreacademy.comptia-a-plus-master",
     "productName": "Clariora",
+    "directories": {
+      "output": "release"
+    },
     "publish": [
       {
         "provider": "generic",
@@ -33,7 +37,14 @@
       "!credentials/**",
       "!*serviceAccount*.json",
       "!**/*.env*",
-      "!admin/**"
+      "!admin/**",
+      "!dist/**",
+      "!release/**",
+      "!node_modules/electron{,-*}/**",
+      "!node_modules/electron-builder/**",
+      "!node_modules/app-builder-bin/**",
+      "!node_modules/app-builder-lib/**",
+      "!node_modules/@electron/**"
     ],
     "win": {
       "target": [
@@ -43,8 +54,11 @@
       "icon": "build/icon.ico",
       "artifactName": "CompTIA_A_Plus_Setup_${version}.${ext}",
       "legalTrademarks": "Datacentre Academy",
+      "rfc3161TimeStampServer": "http://timestamp.digicert.com",
       "verifyUpdateCodeSignature": false,
-      "rfc3161TimeStampServer": "http://timestamp.digicert.com"
+      "signtoolOptions": {
+        "rfc3161TimeStampServer": "http://timestamp.digicert.com"
+      }
     },
     "nsis": {
       "oneClick": false,

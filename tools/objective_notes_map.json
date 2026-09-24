@@ -1,5 +1,5 @@
 {
-  "note": "Canonical objective -> study note mapping. notes_reference on every question MUST be one of these files. Source: CompTIA_A_Plus_Mastery/DEEP_DIVE (37 files).",
+  "note": "Canonical objective -> study note mapping. notes_reference on every question MUST be one of these files. Source: notes/ (37 files).",
   "core1": {
     "1.1": "15_Mobile_Devices_and_Laptops.md",
     "1.2": "15_Mobile_Devices_and_Laptops.md",

@@ -12,6 +12,18 @@
 (function(window) {
   'use strict';
 
+  /**
+   * Tier 1 request guard (js/request-guard.js). A user-triggered submission. One attempt only; the caller already queues
+   * failures in localStorage for the next sync.
+   * Degrades to plain fetch when the guard has not loaded.
+   */
+  function guardedFetch(url, init, guardOpts) {
+    var g = (typeof window !== 'undefined' && window.APlus && window.APlus.guard) || null;
+    if (g) return g.fetch(url, init, guardOpts);
+    return fetch(url, init);
+  }
+
+
   window.APlus = window.APlus || {};
   const APlus = window.APlus;
 
@@ -118,11 +130,11 @@
         const endpoint = (typeof window !== 'undefined' && window.location && (window.location.hostname.endsWith('clariora.com.au') || window.location.hostname.endsWith('pages.dev')))
           ? '/api/v1/items/report'
           : 'https://clariora.com.au/api/v1/items/report';
-        await fetch(endpoint, {
+        await guardedFetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
-        });
+        }, { maxAttempts: 1 });
       } catch (err) {
         // Silently queued in localStorage for next sync
       }

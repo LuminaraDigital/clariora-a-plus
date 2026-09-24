@@ -230,6 +230,19 @@
       }
       apxTotal += raidBonus + perfectBonus;
       xpTotal += 20;
+      try {
+        if (global.APlus && APlus.bus && typeof APlus.bus.emit === "function") {
+          APlus.bus.emit("memory:raid:complete", {
+            day: CompTIAMemorySRS.todayKey(),
+            correct,
+            total: questions.length,
+            perfect: correct === questions.length
+          });
+        }
+        if (global.APlus && APlus.dailyQuest && typeof APlus.dailyQuest.markLeg === "function") {
+          APlus.dailyQuest.markLeg("defend");
+        }
+      } catch (_) {}
     }
 
     refreshMemoryHome();

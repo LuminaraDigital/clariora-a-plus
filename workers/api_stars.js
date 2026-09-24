@@ -47,7 +47,8 @@ export function parseStarsInvoicePayload(raw) {
 }
 
 export function resolveStarsGrant(productId) {
-  const product = getStarsProduct(productId) || STARS_PRODUCTS.daily_unlimited;
+  const product = getStarsProduct(productId);
+  if (!product) return null;
   let expiresAt = Date.now() + 24 * 60 * 60 * 1000;
   if (product.id === 'pro_monthly') {
     expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
@@ -57,6 +58,10 @@ export function resolveStarsGrant(productId) {
   return { tier: product.tier, expiresAt, product };
 }
 
+/**
+ * Bind pre-checkout to the payer when invoice payload embeds a telegram id.
+ * Gift policy is not supported: payload.u must match pcq.from.id when present.
+ */
 export function validateStarsPreCheckout(pcq) {
   if (!pcq) {
     return { ok: false, error_message: 'Missing checkout details. Please try again.' };
@@ -81,6 +86,44 @@ export function validateStarsPreCheckout(pcq) {
       error_message: 'Price mismatch. Please reopen checkout from the Mini App.'
     };
   }
+  if (parsed.telegramId != null && pcq.from && pcq.from.id != null) {
+    if (Number(parsed.telegramId) !== Number(pcq.from.id)) {
+      return {
+        ok: false,
+        error_message: 'This invoice was created for a different Telegram account.'
+      };
+    }
+  }
   return { ok: true };
+}
+
+/**
+ * Re-validate a successful_payment before granting. Returns { ok, error, product, grant, parsed }.
+ */
+export function validateStarsSuccessfulPayment(payment, fromTelegramId) {
+  if (!payment) {
+    return { ok: false, error: 'missing_payment' };
+  }
+  if (payment.currency !== 'XTR') {
+    return { ok: false, error: 'non_xtr_currency' };
+  }
+  const parsed = parseStarsInvoicePayload(payment.invoice_payload);
+  const product = getStarsProduct(parsed.productId);
+  if (!product) {
+    return { ok: false, error: 'unknown_product', parsed };
+  }
+  if (Number(payment.total_amount) !== Number(product.stars)) {
+    return { ok: false, error: 'amount_mismatch', parsed, product };
+  }
+  if (parsed.telegramId != null && fromTelegramId != null) {
+    if (Number(parsed.telegramId) !== Number(fromTelegramId)) {
+      return { ok: false, error: 'payer_mismatch', parsed, product };
+    }
+  }
+  const grant = resolveStarsGrant(product.id);
+  if (!grant) {
+    return { ok: false, error: 'grant_unresolved', parsed, product };
+  }
+  return { ok: true, parsed, product, grant };
 }
 

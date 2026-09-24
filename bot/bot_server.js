@@ -175,7 +175,8 @@ async function handleUpdate(update) {
     if (cmd === '/terms') {
       await callTelegram('sendMessage', {
         chat_id: chatId,
-        text: `*Clariora Terms of Sale*\n\n1. Digital unlocks inside Telegram are paid only in Stars (XTR).\n2. Paying confirms you accept these terms.\n3. Telegram Support cannot help with bot purchases.\n4. Use /paysupport for refunds and disputes.`
+        text: `*Clariora Terms of Sale*\n\n1. Digital unlocks inside Telegram are paid only in Stars (XTR).\n2. Paying confirms you accept these terms.\n3. Telegram Support cannot help with bot purchases.\n4. Use /paysupport for refunds and disputes.\n5. Full terms: https://clariora.com.au/terms.html`,
+        parse_mode: 'Markdown'
       });
       return;
     }
@@ -183,7 +184,36 @@ async function handleUpdate(update) {
     if (cmd === '/paysupport' || cmd === '/support') {
       await callTelegram('sendMessage', {
         chat_id: chatId,
-        text: `*Payment Support*\n\nTelegram Support cannot help with purchases made through this bot.\n\nReply with username, purchase time, product, and Stars charge ID from your receipt.`
+        text: `*Payment Support*\n\nTelegram Support cannot help with purchases made through this bot.\n\nReply with username, purchase time, product, and Stars charge ID from your receipt.\n\nEmail: support@datacentre.academy\nPrivacy: https://clariora.com.au/privacy.html`,
+        parse_mode: 'Markdown'
+      });
+      return;
+    }
+
+    if (cmd === '/pro') {
+      await callTelegram('sendMessage', {
+        chat_id: chatId,
+        text: `*Clariora Pro (Telegram Stars)*\n\n• 24-Hour Study Pass: 50 Stars\n• Monthly Pro Pass: 250 Stars\n• Lifetime Master Pass: 1500 Stars\n\nOpen the Mini App and tap Upgrade to pay with Stars (XTR).`,
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: 'Open Mini App Checkout', web_app: { url: WEB_APP_URL } }]
+          ]
+        }
+      });
+      return;
+    }
+
+    if (cmd === '/help') {
+      await callTelegram('sendMessage', {
+        chat_id: chatId,
+        text: `*Clariora Help*\n\n/start - Launch the Mini App\n/app - Open exam simulator\n/daily - Start today's drill\n/pro - Stars pricing\n/terms - Terms of sale\n/paysupport - Billing help\n\nWeb: https://clariora.com.au/app`,
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: 'Launch Clariora', web_app: { url: WEB_APP_URL } }]
+          ]
+        }
       });
       return;
     }

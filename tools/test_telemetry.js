@@ -425,7 +425,7 @@ function loadTelemetry(sandbox) {
   telemetry.flush();
   assert(sentCalls.length === 1, 'flush() should send once consent is granted, endpoint is https, and enabled is true');
   var sentBody = JSON.parse(sentCalls[0].body.toString ? sentCalls[0].body.toString() : sentCalls[0].body);
-  assert(sentBody.installId === telemetry.getInstallId(), 'uploaded payload should include the anonymous install id');
+  assert(!sentBody.installId, 'uploaded payload should not include installId to preserve privacy');
   assert(Array.isArray(sentBody.events), 'uploaded payload should include an events array');
 
   // Revoking consent should stop further sends.

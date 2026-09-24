@@ -21,6 +21,8 @@
   const MODE_BY_TYPE = {
     core1: 'mock',
     core2: 'mock',
+    az900: 'mock',
+    ms_az900: 'mock',
     both: 'mock',
     mixed: 'mock',
     mock: 'mock',
@@ -33,7 +35,8 @@
     coach: 'practice',
     memory: 'practice',
     raid: 'practice',
-    assessment: 'practice'
+    assessment: 'practice',
+    notes: 'practice'
   };
 
   /** Resolve the session mode from a session type plus an optional override. */
@@ -451,6 +454,7 @@
             objective: row.objective || null,
             domain: row.domain || null,
             correct: row.correct,
+            selectedOption: typeof row.answer === 'number' ? row.answer : null,
             seconds: row.secondsOnQuestion || 0,
             examType: resultsPayload.examType,
             assessmentKind: resultsPayload.assessmentKind || null

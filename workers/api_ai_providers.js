@@ -40,7 +40,18 @@ export async function executeNvidiaNim(userMessage, systemPrompt, model, env) {
  * Private Self-Hosted Ollama Provider
  */
 export async function executeOllama(userMessage, systemPrompt, model, env) {
-  const endpoint = env.OLLAMA_ENDPOINT || 'http://127.0.0.1:11434';
+  // Cloudflare Workers cannot reach host localhost; only call a remote endpoint.
+  const endpoint = env.OLLAMA_ENDPOINT;
+  if (!endpoint) return null;
+  const endpointLower = String(endpoint).toLowerCase();
+  if (
+    endpointLower.includes('127.0.0.1') ||
+    endpointLower.includes('localhost') ||
+    endpointLower.includes('169.254.') ||
+    endpointLower.includes('metadata.google.internal')
+  ) {
+    return null;
+  }
   const targetModel = model || env.OLLAMA_MODEL || 'deepseek-r1:8b';
 
   const headers = { 'Content-Type': 'application/json' };

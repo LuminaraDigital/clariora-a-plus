@@ -465,3 +465,35 @@ body.crucible-active header {
 .crucible-switch-container.active .crucible-switch-dot {
   transform: translateX(14px);
 }
+
+/* ==========================================================================
+   L2E UNLOCK: MATRIX CYBER TERMINAL THEME
+   High-contrast neon green and obsidian terminal visual theme.
+   ========================================================================== */
+body.theme-cyber-terminal {
+  background-color: #030a05 !important;
+  background-image: 
+    linear-gradient(rgba(0, 255, 128, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 128, 0.04) 1px, transparent 1px) !important;
+  background-size: 24px 24px !important;
+  color: #c9fcd8 !important;
+}
+
+body.theme-cyber-terminal header {
+  background: rgba(3, 14, 7, 0.95) !important;
+  border-bottom: 1px solid rgba(0, 255, 128, 0.35) !important;
+}
+
+body.theme-cyber-terminal .card,
+body.theme-cyber-terminal .modal-card {
+  background: #06140b !important;
+  border-color: rgba(0, 255, 128, 0.25) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0, 255, 128, 0.08) !important;
+}
+
+body.theme-cyber-terminal .btn-primary {
+  background: #00e676 !important;
+  color: #021a0a !important;
+  font-weight: 700 !important;
+  box-shadow: 0 0 14px rgba(0, 230, 118, 0.4) !important;
+}

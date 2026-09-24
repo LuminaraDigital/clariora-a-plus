@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "clariora",
+    "clariora": "clariora",
+    "staging": "clariora-d7ed3"
+  }
+}

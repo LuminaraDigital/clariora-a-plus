@@ -52,6 +52,28 @@ async function main() {
   });
   const payload = await verifySignedToken(secret, minted);
   assert(payload && payload.telegramId === 99, 'minted user session carries telegramId');
+  assert(payload.telegramVerified === true, 'telegram sessions persist telegramVerified');
+
+  const linked = await mintUserSessionToken(env, {
+    uid: 'firebase_uid_1',
+    provider: 'google',
+    telegramId: 55,
+    telegramVerified: true,
+    email: 'a@b.c',
+    displayName: 'Linked'
+  });
+  const linkedPayload = await verifySignedToken(secret, linked);
+  assert(linkedPayload.telegramVerified === true && linkedPayload.telegramId === 55,
+    'Firebase-linked telegram id survives cookie mint');
+
+  const prodEnv = { ENVIRONMENT: 'production', ADMIN_API_KEY: 'admin-only-key-not-for-sessions' };
+  let prodMintFailed = false;
+  try {
+    await mintUserSessionToken(prodEnv, { uid: 'x', provider: 'google' });
+  } catch (_) {
+    prodMintFailed = true;
+  }
+  assert(prodMintFailed, 'production must refuse minting without AUTH_SESSION_SECRET');
 
   const req = { url: 'https://clariora.com.au/app', headers: { get: () => null } };
   const cookie = userSessionCookieHeader(minted, req);

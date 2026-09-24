@@ -100,11 +100,16 @@ export function clearAdminSessionCookie(request) {
 
 export async function recordAuthSession(body, env, request) {
   const eventType = (body && body.event === 'signup') ? 'signup' : 'signin';
+  // ZERO-TRUST IDENTITY: uid, email, displayName and photoURL are seeded empty and may only
+  // be filled from a cryptographically verified source below. body.provider is a presentation
+  // hint, never an identity. Seeding these from the body let a caller holding a token with no
+  // email claim (anonymous, phone, or custom auth) post an arbitrary address, which the
+  // users-table upsert then merges ON CONFLICT(email) into a stranger's row.
   let provider = (body && body.provider) || 'unknown';
-  let uid = (body && body.uid) || '';
-  let email = (body && body.email) || '';
-  let displayName = (body && body.displayName) || '';
-  let photoURL = (body && body.photoURL) || '';
+  let uid = '';
+  let email = '';
+  let displayName = '';
+  let photoURL = '';
   let telegramId = null;
   let telegramVerified = false;
 
@@ -116,8 +121,8 @@ export async function recordAuthSession(body, env, request) {
     telegramVerified = true;
     uid = 'tg_' + tgUser.id;
     displayName = (tgUser.first_name || '') + (tgUser.last_name ? ' ' + tgUser.last_name : '');
-    email = tgUser.username ? '@' + tgUser.username : email;
-    photoURL = tgUser.photo_url || photoURL;
+    email = tgUser.username ? '@' + tgUser.username : '';
+    photoURL = tgUser.photo_url || '';
   } else if (body && body.telegramLogin) {
     const tgUser = await verifyTelegramLoginWidget(body.telegramLogin, env.TELEGRAM_BOT_TOKEN);
     if (!tgUser) return { ok: false, status: 401, error: 'Invalid or expired Telegram login signature' };
@@ -126,15 +131,16 @@ export async function recordAuthSession(body, env, request) {
     telegramVerified = true;
     uid = 'tg_' + tgUser.id;
     displayName = (tgUser.first_name || '') + (tgUser.last_name ? ' ' + tgUser.last_name : '');
-    email = tgUser.username ? '@' + tgUser.username : email;
-    photoURL = tgUser.photo_url || photoURL;
+    email = tgUser.username ? '@' + tgUser.username : '';
+    photoURL = tgUser.photo_url || '';
   } else if (body && body.idToken) {
     const fbUser = await verifyFirebaseIdToken(body.idToken, env);
     if (!fbUser) return { ok: false, status: 401, error: 'Invalid Firebase ID token' };
-    uid = fbUser.localId || fbUser.uid || uid;
-    email = fbUser.email || email;
-    displayName = fbUser.displayName || displayName;
-    photoURL = fbUser.photoUrl || photoURL;
+    uid = fbUser.localId || fbUser.uid || fbUser.sub || '';
+    if (!uid) return { ok: false, status: 401, error: 'Verified token carries no subject identifier' };
+    email = fbUser.email || '';
+    displayName = fbUser.displayName || fbUser.name || '';
+    photoURL = fbUser.photoUrl || fbUser.picture || '';
     if (!provider || provider === 'unknown') {
       provider = (fbUser.providerUserInfo && fbUser.providerUserInfo[0] && fbUser.providerUserInfo[0].providerId === 'google.com')
         ? 'google'

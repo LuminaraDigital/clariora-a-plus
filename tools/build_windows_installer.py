@@ -111,6 +111,8 @@ CANONICAL_FILES = [
     "professor_messer_220_1201_videos.json",
     "professor_messer_220_1202_videos.json",
     "curated_core2_expansion.json",
+    "curriculum_data.js",
+    "curriculum_outline.js",
     "PROFESSOR_MESSER_220_1201_INDEX.md",
     "PROFESSOR_MESSER_220_1202_INDEX.md",
     "README_EXAM_SUITE.md",
@@ -121,6 +123,7 @@ CANONICAL_DIRS = [
     "css",
     "fonts",
     "notes",
+    "shards",
     "CompTIA_A_Plus_Mastery",
     "CompTIA-A-Plus-Practice-Questions",
 ]

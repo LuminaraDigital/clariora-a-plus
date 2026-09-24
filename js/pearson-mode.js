@@ -100,6 +100,20 @@
         cBtn.onclick = () => this.toggleCalculator();
         headerControls.insertBefore(cBtn, headerControls.firstChild);
       }
+
+      // Add Pearson whiteboard button to exam header if not present
+      if (headerControls && !document.getElementById('pearsonWhiteboardBtn')) {
+        const wBtn = document.createElement('button');
+        wBtn.type = 'button';
+        wBtn.id = 'pearsonWhiteboardBtn';
+        wBtn.className = 'btn btn-secondary';
+        wBtn.style = 'font-size: 0.82rem; padding: 0.35rem 0.7rem; align-items: center; gap: 0.35rem;';
+        wBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><span>Whiteboard</span>';
+        wBtn.onclick = () => {
+          if (window.openScratchpadModal) window.openScratchpadModal();
+        };
+        headerControls.insertBefore(wBtn, headerControls.firstChild);
+      }
     },
 
     /* -------------------------------------------------------------

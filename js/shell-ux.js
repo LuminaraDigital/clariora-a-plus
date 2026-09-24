@@ -98,25 +98,6 @@
      First-run gate
      --------------------------------------------------------------- */
 
-  function ensureBootGate() {
-    if (byId('aplusBootGate')) return;
-    var gate = document.createElement('div');
-    gate.id = 'aplusBootGate';
-    gate.setAttribute('role', 'dialog');
-    gate.setAttribute('aria-modal', 'true');
-    gate.setAttribute('aria-labelledby', 'aplusBootTitle');
-    gate.innerHTML =
-      '<div class="boot-panel">' +
-      '<div class="mark" aria-hidden="true">A+</div>' +
-      '<h2 id="aplusBootTitle">Clariora</h2>' +
-      '<p>Local-first privacy: Progress is saved on this device. Sign in anytime to sync across devices.</p>' +
-      '<div class="boot-progress" aria-hidden="true"><span id="aplusBootBar"></span></div>' +
-      '<button type="button" class="btn" id="aplusBootStartBtn">Continue</button>' +
-      '<div class="boot-meta" id="aplusBootMeta">Setting up</div>' +
-      '</div>';
-    document.body.appendChild(gate);
-  }
-
   function setBootProgress(pct, label) {
     var bar = byId('aplusBootBar');
     var meta = byId('aplusBootMeta');
@@ -162,18 +143,6 @@
     if (APlus.bus && typeof APlus.bus.emit === 'function') {
       APlus.bus.emit('shell:ready', { version: '4.0.0' });
     }
-  }
-
-  function hideBootGate() {
-    var gate = byId('aplusBootGate');
-    if (gate) gate.hidden = true;
-    try {
-      localStorage.setItem(BOOT_KEY, '1');
-      if (APlus.storage) APlus.storage.set('boot_complete', true);
-    } catch (err) {
-      /* storage blocked, gate simply shows again next launch */
-    }
-    emitShellReady();
   }
 
   function hasSeenIntro() {

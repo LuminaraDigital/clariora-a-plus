@@ -54,6 +54,7 @@
       "icon": "build/icon.ico",
       "artifactName": "CompTIA_A_Plus_Setup_${version}.${ext}",
       "legalTrademarks": "Datacentre Academy",
+      "rfc3161TimeStampServer": "http://timestamp.digicert.com",
       "verifyUpdateCodeSignature": false,
       "signtoolOptions": {
         "rfc3161TimeStampServer": "http://timestamp.digicert.com"

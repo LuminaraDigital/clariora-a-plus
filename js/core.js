@@ -52,7 +52,7 @@
   APlus.bus = new EventBus();
 
   /**
-   * Feature Registry: allows modules and sub-agents to register extensible UI components
+   * Feature Registry: allows modules and plugins to register extensible UI components
    */
   class FeatureRegistry {
     constructor() {

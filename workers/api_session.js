@@ -36,8 +36,15 @@ function b64urlDecodeJson(str) {
 }
 
 export function getSessionSecret(env) {
-  const secret = (env && (env.AUTH_SESSION_SECRET || env.ADMIN_API_KEY)) || '';
-  return typeof secret === 'string' ? secret.trim() : '';
+  const dedicated = env && typeof env.AUTH_SESSION_SECRET === 'string'
+    ? env.AUTH_SESSION_SECRET.trim()
+    : '';
+  if (dedicated) return dedicated;
+  const isProd = env && (env.ENVIRONMENT === 'production' || env.NODE_ENV === 'production');
+  // Production must use a dedicated session secret (do not share ADMIN_API_KEY).
+  if (isProd) return '';
+  const fallback = env && typeof env.ADMIN_API_KEY === 'string' ? env.ADMIN_API_KEY.trim() : '';
+  return fallback;
 }
 
 async function hmacSign(secret, message) {
@@ -139,6 +146,10 @@ export async function mintUserSessionToken(env, identity) {
     displayName: identity.displayName || '',
     photoURL: identity.photoURL || '',
     telegramId: identity.telegramId != null ? Number(identity.telegramId) : null,
+    // Persist so Firebase-linked Telegram ids survive cookie resume (Stars invoice, etc.).
+    telegramVerified: identity.telegramVerified === true ||
+      identity.provider === 'telegram' ||
+      identity.provider === 'telegram_tma',
     iat: now,
     exp: now + SESSION_TTL_SEC
   };

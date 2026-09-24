@@ -60,8 +60,8 @@ Welcome to your **CompTIA A+ (220-1101/1201 Core 1 & 220-1102/1202 Core 2)** exa
 - [`study_library.js`](file:///c:/Users/lumin/Desktop/Datacentre_Academy/CompTia_A+/study_library.js) / [`study_library.json`](file:///c:/Users/lumin/Desktop/Datacentre_Academy/CompTia_A+/study_library.json): Unified Study Library (Mastery notes, DOCX lecture extracts, practice markdown, PDF catalog).
 - [`build_exam_bank.py`](file:///c:/Users/lumin/Desktop/Datacentre_Academy/CompTia_A+/build_exam_bank.py) & [`generate_complete_exam_bank.py`](file:///c:/Users/lumin/Desktop/Datacentre_Academy/CompTia_A+/generate_complete_exam_bank.py): Question ingestion and compilation.
 - [`build_study_library.py`](file:///c:/Users/lumin/Desktop/Datacentre_Academy/CompTia_A+/build_study_library.py): Study-content ingestion from every CompTIA A+ course folder.
-- [`create_desktop_dist.py`](file:///c:/Users/lumin/Desktop/Datacentre_Academy/CompTia_A+/create_desktop_dist.py): Packages the Electron desktop app with exam bank + study assets.
-- [`practice_exam.py`](file:///c:/Users/lumin/Desktop/Datacentre_Academy/CompTia_A+/practice_exam.py): Standalone terminal-based Python exam runner.
+- [`tools/build_windows_installer.py`](tools/build_windows_installer.py): Packages the Electron desktop app with signed NSIS installer.
+- [`practice_exam.py`](practice_exam.py): Standalone terminal-based Python exam runner.
 - [`Launch_Exam_Simulator.bat`](file:///c:/Users/lumin/Desktop/Datacentre_Academy/CompTia_A+/Launch_Exam_Simulator.bat): 1-click Windows shortcut for browser simulator.
 - [`Launch_Terminal_Exam.bat`](file:///c:/Users/lumin/Desktop/Datacentre_Academy/CompTia_A+/Launch_Terminal_Exam.bat): 1-click Windows shortcut for CLI exam.
 - [`CompTIA_A_Plus_Desktop_App/Launch_CompTIA_A_Plus.bat`](file:///c:/Users/lumin/Desktop/Datacentre_Academy/CompTia_A+/CompTIA_A_Plus_Desktop_App/Launch_CompTIA_A_Plus.bat): 1-click desktop app launcher.

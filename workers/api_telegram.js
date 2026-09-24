@@ -1,6 +1,12 @@
 /** Telegram WebApp / Login Widget verification. */
 import { timingSafeEqualStr } from './api_crypto.js';
 
+/** WebApp session mint: short replay window (stolen initData expires quickly). */
+const WEBAPP_AUTH_MAX_AGE_SEC = 3600;
+/** Login Widget: Telegram documents up to 24h for widget payloads. */
+const WIDGET_AUTH_MAX_AGE_SEC = 86400;
+const AUTH_FUTURE_SKEW_SEC = 300;
+
 /**
  * Validates Telegram WebApp initData HMAC-SHA256 signature
  */
@@ -10,16 +16,21 @@ async function verifyTelegramInitData(initData, botToken) {
   const hash = params.get('hash');
   if (!hash) return null;
 
-  // Replay Protection: Validate auth_date freshness
+  // Replay protection: auth_date is mandatory (Telegram always sends it).
   const authDateStr = params.get('auth_date');
-  if (authDateStr) {
-    const authDate = parseInt(authDateStr, 10);
-    const nowSeconds = Math.floor(Date.now() / 1000);
-    // Reject if expired (> 24 hours / 86400s) or clock-skewed into future (> 300s)
-    if (isNaN(authDate) || (nowSeconds - authDate) > 86400 || (authDate - nowSeconds) > 300) {
-      console.warn('initData rejected: auth_date expired or invalid timestamp');
-      return null;
-    }
+  if (!authDateStr) {
+    console.warn('initData rejected: missing auth_date');
+    return null;
+  }
+  const authDate = parseInt(authDateStr, 10);
+  const nowSeconds = Math.floor(Date.now() / 1000);
+  if (
+    isNaN(authDate) ||
+    (nowSeconds - authDate) > WEBAPP_AUTH_MAX_AGE_SEC ||
+    (authDate - nowSeconds) > AUTH_FUTURE_SKEW_SEC
+  ) {
+    console.warn('initData rejected: auth_date expired or invalid timestamp');
+    return null;
   }
 
   params.delete('hash');
@@ -76,10 +87,14 @@ async function verifyTelegramLoginWidget(data, botToken) {
   if (!data || !data.hash) return null;
   const hash = data.hash;
 
-  // Validate auth_date freshness (within 24 hours)
+  // Validate auth_date freshness (within 24 hours for Login Widget)
   const authDate = parseInt(data.auth_date, 10);
   const now = Math.floor(Date.now() / 1000);
-  if (isNaN(authDate) || (now - authDate) > 86400 || (authDate - now) > 300) {
+  if (
+    isNaN(authDate) ||
+    (now - authDate) > WIDGET_AUTH_MAX_AGE_SEC ||
+    (authDate - now) > AUTH_FUTURE_SKEW_SEC
+  ) {
     return null;
   }
 

@@ -43,6 +43,7 @@ curriculum_data.js
 curriculum_data.json
 
 # Third-party course media (not redistributable; kept local only)
+vendor_sources/
 Videos For A+/
 PowerPoint for A+/
 Labs for A+/

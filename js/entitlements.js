@@ -15,6 +15,18 @@
 (function (window) {
   'use strict';
 
+  /**
+   * Tier 1 request guard (js/request-guard.js). The full bank is a ~2MB download. Coalesced so several callers on one
+   * screen produce one transfer, and capped at two attempts.
+   * Degrades to plain fetch when the guard has not loaded.
+   */
+  function guardedFetch(url, init, guardOpts) {
+    var g = (typeof window !== 'undefined' && window.APlus && window.APlus.guard) || null;
+    if (g) return g.fetch(url, init, guardOpts);
+    return fetch(url, init);
+  }
+
+
   if (!window) return;
 
   window.APlus = window.APlus || {};
@@ -263,11 +275,11 @@
       if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) {
         headers['X-Telegram-Init-Data'] = window.Telegram.WebApp.initData;
       }
-      return fetch('/api/v1/bank/full', {
+      return guardedFetch('/api/v1/bank/full', {
         method: 'GET',
         headers: headers,
         credentials: 'same-origin'
-      }).then(function (res) {
+      }, { dedupeKey: 'bank:full', maxAttempts: 2 }).then(function (res) {
         if (!res.ok) {
           if (res.status === 403 || res.status === 401) {
             // Server rejected pro entitlement: reset tampered client state
@@ -337,6 +349,11 @@
   function starsTierIsPro(ent) {
     if (!ent || !ent.tier || ent.tier === 'free') return false;
     if (ent.expiresAt && Number(ent.expiresAt) > 0 && Number(ent.expiresAt) < Date.now()) return false;
+    // Optimistic / cloud / local caches are UX only. Paid gates require server (or legacy unmarked) entitlement.
+    var src = ent.source;
+    if (src === 'optimistic' || src === 'unverified_cache' || src === 'cloud' || src === 'local') {
+      return false;
+    }
     return true;
   }
 
@@ -380,7 +397,45 @@
     var f = feature || 'questions';
     var usage = getUsage();
     var used = numberOr(usage[counterFor(f)], 0);
-    return Math.max(0, limitFor(f) - used);
+    var baseLimit = limitFor(f);
+
+    var extraCharges = f === 'coach' ? aiBurstCharges() : 0;
+
+    // Over-limit prompts already spent a charge in consume(), so charges are not reduced by `used` again.
+    return Math.max(0, baseLimit - used) + extraCharges;
+  }
+
+  function readLedgerRaw() {
+    if (typeof window === 'undefined') return null;
+    var key = 'comptia_pom_ledger_v1';
+    try {
+      if (window.APlus && window.APlus.utils && typeof window.APlus.utils.scopedGet === 'function') {
+        var scoped = window.APlus.utils.scopedGet(key);
+        if (scoped) return scoped;
+      }
+      if (window.CompTIAProfiles && typeof window.CompTIAProfiles.scopedGet === 'function') {
+        var viaProfiles = window.CompTIAProfiles.scopedGet(key);
+        if (viaProfiles) return viaProfiles;
+      }
+      return window.localStorage ? window.localStorage.getItem(key) : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function aiBurstCharges() {
+    var charges = 0;
+    try {
+      var raw = readLedgerRaw();
+      var parsed = raw ? JSON.parse(raw) : null;
+      if (!parsed || !Array.isArray(parsed.chain)) return 0;
+      parsed.chain.forEach(function (b) {
+        if (!b.payload || b.payload.unlockId !== 'AI_BURST') return;
+        if (b.type === 'SPEND_UNLOCK') charges += Number(b.payload.charges) || 5;
+        if (b.type === 'CONSUME_UNLOCK') charges = Math.max(0, charges - (Number(b.payload.amount) || 1));
+      });
+    } catch (_) {}
+    return charges;
   }
 
   /**
@@ -413,8 +468,19 @@
     var n = (typeof count === 'number' && count > 0) ? Math.floor(count) : 1;
     var usage = getUsage();
     var key = counterFor(f);
-    usage[key] = numberOr(usage[key], 0) + n;
+    var prev = numberOr(usage[key], 0);
+    usage[key] = prev + n;
     setUsage(usage);
+
+    if (f === 'coach' && typeof window !== 'undefined' && window.CompTIALedger && typeof window.CompTIALedger.consumeUnlock === 'function') {
+      try {
+        var overLimit = Math.min(n, usage[key] - Math.max(prev, limitFor('coach')));
+        if (overLimit > 0) {
+          window.CompTIALedger.consumeUnlock('AI_BURST', overLimit).catch(function () {});
+        }
+      } catch (_) {}
+    }
+
     renderChip();
     try {
       if (APlus.bus && typeof APlus.bus.emit === 'function') {
@@ -612,12 +678,22 @@
   var chipWatchTimer = null;
   function ensureChipVisibilityWatch() {
     if (chipWatchTimer || !hasDom()) return;
-    chipWatchTimer = window.setInterval(function () {
+    var poll = function () {
       var chip = window.document.getElementById('entitlementsChip');
       if (!chip) return;
       var show = chipShouldShow();
       if (chip.hidden === show) chip.hidden = !show;
-    }, 500);
+    };
+    // Twice a second, forever, was burning CPU and battery in backgrounded
+    // tabs to keep a chip in sync that nobody could see. The guard skips ticks
+    // while the document is hidden and fires once on return, so the chip is
+    // correct the moment the user looks at it.
+    var guard = (window.APlus && window.APlus.guard) || null;
+    if (guard && typeof guard.interval === 'function') {
+      chipWatchTimer = guard.interval(poll, 500, { label: 'entitlements:chip' });
+    } else {
+      chipWatchTimer = window.setInterval(poll, 500);
+    }
   }
 
   function titleForReason(reason) {
@@ -634,8 +710,8 @@
     try {
       var tg = window.Telegram && window.Telegram.WebApp;
       if (!tg) return false;
+      // Require signed initData string; initDataUnsafe alone is spoofable in a browser.
       if (tg.initData && String(tg.initData).length > 0) return true;
-      if (tg.initDataUnsafe && tg.initDataUnsafe.user) return true;
       if (window.TMABridge && window.TMABridge.state && window.TMABridge.state.isTMA) return true;
       return false;
     } catch (_) {
@@ -1080,21 +1156,6 @@
     };
   }
 
-  /* Simple pro-only or daily-limited window function gates ----------------- */
-
-  function proOnlyFactory(reason) {
-    return function (original) {
-      return function () {
-        try {
-          if (!gatingEnabled() || isPro()) return original.apply(this, arguments);
-          openUpgrade(reason);
-          return undefined;
-        } catch (_) {
-          return original.apply(this, arguments);
-        }
-      };
-    };
-  }
 
   function dailyFeatureFactory(feature, reason) {
     return function (original) {

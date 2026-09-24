@@ -403,13 +403,23 @@
     } catch (_) {}
 
     try {
-      global.setInterval(function () {
-        try {
-          if (global.CompTIADatabase && typeof global.CompTIADatabase.getAll === 'function') {
-            diffAndStamp(global.CompTIADatabase.getAll());
-          }
-        } catch (_) {}
-      }, Math.max(1000, debounceMs || 4000));
+      // This loop can stamp changes that later push to the network. Run it
+      // through the Tier 1 guard so a backgrounded tab stops generating work:
+      // a pinned tab left open overnight was previously diffing every 4s for
+      // hours with nobody looking at the result.
+      var pollFn = function () {
+        if (global.CompTIADatabase && typeof global.CompTIADatabase.getAll === 'function') {
+          diffAndStamp(global.CompTIADatabase.getAll());
+        }
+      };
+      var guard = (global.APlus && global.APlus.guard) || null;
+      if (guard && typeof guard.interval === 'function') {
+        guard.interval(pollFn, Math.max(1000, debounceMs || 4000), { label: 'sync:diff' });
+      } else {
+        global.setInterval(function () {
+          try { pollFn(); } catch (_) {}
+        }, Math.max(1000, debounceMs || 4000));
+      }
     } catch (_) {}
   }
 

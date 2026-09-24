@@ -17,6 +17,31 @@
 })(typeof self !== 'undefined' ? self : this, function (TMABridge) {
   'use strict';
 
+  /**
+   * Tier 1 request guard (js/request-guard.js). Billing is the most expensive
+   * thing a stray double-click can do here: every duplicate click is a second
+   * Stars invoice or a second on-chain verification round trip. When the guard
+   * is absent (bare module load, tests) we degrade to plain fetch rather than
+   * break checkout.
+   */
+  function guard() {
+    return (typeof window !== 'undefined' && window.APlus && window.APlus.guard) || null;
+  }
+
+  function guardedFetch(url, init, guardOpts) {
+    const g = guard();
+    if (g) return g.fetch(url, init, guardOpts);
+    return fetch(url, init);
+  }
+
+  /** Runs fn under a named single-flight lock, disabling the clicked button. */
+  function guardedAction(key, fn, opts) {
+    const g = guard();
+    if (!g) return Promise.resolve().then(fn);
+    const node = g.currentTarget();
+    return g.button(node, fn, Object.assign({ key: key }, opts || {}));
+  }
+
   const PRODUCTS = [
     {
       id: 'daily_unlimited',
@@ -136,12 +161,15 @@
     try {
       const headers = { 'Content-Type': 'application/json' };
       if (initData) headers['X-Telegram-Init-Data'] = initData;
-      const res = await fetch(invoiceEndpoint('/api/v1/billing/entitlement'), {
+      // Entitlement is read by the paywall sheet, the home widgets and the
+      // coach gate, often within the same tick of boot. Coalesce them onto one
+      // request instead of one per caller.
+      const res = await guardedFetch(invoiceEndpoint('/api/v1/billing/entitlement'), {
         method: 'POST',
         credentials: 'include',
         headers: headers,
         body: JSON.stringify(initData ? { initData: initData } : {})
-      });
+      }, { dedupeKey: 'billing:entitlement', maxAttempts: 2 });
       if (!res.ok) return null;
       const data = await res.json().catch(function () { return null; });
       if (!data || !data.entitlement) return null;
@@ -231,14 +259,15 @@
       try {
         console.log('[StarsBilling] Fetching XTR invoice for ' + product.id + ' (' + product.stars + ' Stars)...');
 
-        const res = await fetch(invoiceEndpoint(serverEndpoint), {
+        // Never auto-retried: a retried invoice request is a second invoice.
+        const res = await guardedFetch(invoiceEndpoint(serverEndpoint), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             productId: product.id,
             initData: tg.initData || ''
           })
-        });
+        }, { maxAttempts: 1 });
 
         const data = await res.json().catch(function () { return {}; });
         if (!res.ok || !data.invoiceLink) {
@@ -248,8 +277,15 @@
           return { success: false, status: 'failed', error: errMsg };
         }
 
-        if (data.sandbox) {
-          console.warn('[StarsBilling] Server returned sandbox invoice link');
+        // Production hosts must never open sandbox or placeholder invoice links.
+        var link = String(data.invoiceLink || '');
+        var isSandboxLink = !!data.sandbox || link.indexOf('$sandbox') !== -1 || link.indexOf('$stars_invoice_mock') !== -1;
+        var hostName = (typeof window !== 'undefined' && window.location && window.location.hostname) || '';
+        var isProdHost = hostName.endsWith('clariora.com.au') || hostName.endsWith('pages.dev');
+        if (isSandboxLink && (isProdHost || !isDevBillingAllowed())) {
+          if (TMABridge) TMABridge.haptic('error');
+          alert('Stars checkout is not live yet on this server. Message /paysupport in @ClarioraBot.');
+          return { success: false, status: 'failed', error: 'SANDBOX_INVOICE_BLOCKED' };
         }
 
         return new Promise(function (resolve, reject) {
@@ -335,14 +371,21 @@
 
       var txHash = null;
       var amountTon = '0';
+      var orderId = null;
       if (typeof window.TONCredentials.sendTonPayment === 'function') {
         try {
           const sent = await window.TONCredentials.sendTonPayment(product.id, {
-            userId: user ? user.uid : null
+            userId: user ? user.uid : null,
+            idToken: idToken
           });
+          if (sent && sent.simulated) {
+            alert('Simulated TON payments are disabled in production. Connect a wallet and pay the merchant address.');
+            return { success: false, status: 'failed', error: 'SIMULATED_TON_BLOCKED' };
+          }
           if (sent && sent.txHash) {
             txHash = sent.txHash;
             amountTon = sent.amountTon || '0';
+            orderId = sent.orderId || null;
           }
         } catch (sendErr) {
           console.warn('[StarsBilling] Direct TON transaction prompt fallback:', sendErr.message);
@@ -357,7 +400,9 @@
         return { success: false, status: 'cancelled' };
       }
 
-      const res = await fetch('/api/v1/billing/ton/verify', {
+      // On-chain verification hits TonCenter. Single attempt only; a retry
+      // re-bills an external API for a transaction we already submitted.
+      const res = await guardedFetch('/api/v1/billing/ton/verify', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -366,9 +411,10 @@
           txHash: String(txHash).trim(),
           walletAddress: wallet,
           amountTon: amountTon,
+          orderId: orderId,
           idToken: idToken
         })
-      });
+      }, { maxAttempts: 1 });
       const data = await res.json().catch(function () { return {}; });
       if (!res.ok || !data.success) {
         alert((data && data.message) || (data && data.error) || 'TON verification failed');
@@ -567,15 +613,49 @@
     if (TMABridge) TMABridge.haptic('light');
   }
 
+  /**
+   * The paywall sheet wires these through inline onclick attributes, so the
+   * exported entry point is the only place a submission lock can live. Each
+   * product gets its own key: locking "buy Pro" must not lock "buy Lifetime".
+   * The lock is held for the whole flow, including the Telegram invoice modal,
+   * so a user tapping through a slow network cannot open two invoices.
+   */
+  function purchaseProductGuarded(productId, serverEndpoint) {
+    return guardedAction('billing:purchase:' + productId, function () {
+      return purchaseProduct(productId, serverEndpoint);
+    }, { pendingText: 'Opening checkout...', cooldownMs: 1000 });
+  }
+
+  function purchaseProductWithTonGuarded(productId) {
+    // Telegram policy gate stays on the exported surface, ahead of the lock:
+    // digital goods inside a Mini App must be sold with Stars (XTR), never TON.
+    // Taking a submission lock before this check would let a policy-violating
+    // call hold the lock while it bounces.
+    var tg = getTelegramWebApp();
+    if (tg && tg.initData) {
+      alert('Inside Telegram, use Stars checkout for digital unlocks.');
+      return purchaseProductGuarded(productId);
+    }
+    return guardedAction('billing:purchase:' + productId, function () {
+      return purchaseProductWithTon(productId);
+    }, { pendingText: 'Verifying...', cooldownMs: 1000 });
+  }
+
+  function activateLicenseGuarded() {
+    return guardedAction('billing:activate-license', function () {
+      return activateLicenseFromSheet();
+    }, { cooldownMs: 1000 });
+  }
+
   return {
     PRODUCTS: PRODUCTS,
     getEntitlements: getEntitlements,
     saveEntitlement: saveEntitlement,
-    purchaseProduct: purchaseProduct,
-    purchaseProductWithTon: purchaseProductWithTon,
+    purchaseProduct: purchaseProductGuarded,
+    purchaseProductWithTon: purchaseProductWithTonGuarded,
     openStarsUpgradeSheet: openStarsUpgradeSheet,
     closeStarsUpgradeSheet: closeStarsUpgradeSheet,
-    activateLicenseKey: activateLicenseFromSheet,
+    activateLicenseKey: activateLicenseGuarded,
     fetchServerEntitlement: fetchServerEntitlement
   };
 });

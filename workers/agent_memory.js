@@ -7,6 +7,12 @@
  * Step C: buildSessionBootPack / assembleCoachBootContext (capped coach boot)
  */
 
+import {
+  sanitizeMemoryItem,
+  formatSandboxedMemories,
+  sanitizePromptInput
+} from './coach_security_guard.js';
+
 const MEMORY_KINDS = new Set([
   'preference',
   'weak_objective',
@@ -102,7 +108,9 @@ export async function upsertMemory(db, auth, { kind, content, objective, score, 
   if (!db || !userId || !content) return null;
   const safeKind = MEMORY_KINDS.has(String(kind)) ? String(kind) : 'session_note';
   const fp = normalizeFingerprint(fingerprint);
-  const safeContent = withFingerprintMarker(content, fp);
+  const cleanContent = sanitizeMemoryItem(content);
+  if (!cleanContent) return null;
+  const safeContent = withFingerprintMarker(cleanContent, fp);
   const now = Date.now();
   await ensureMemorySchema(db);
 
@@ -184,16 +192,7 @@ export async function searchMemories(db, auth, { query, topK, kinds } = {}) {
 }
 
 export function formatMemoriesForPrompt(memories) {
-  if (!memories || !memories.length) return '';
-  const lines = memories.map((m, i) => {
-    const obj = m.objective ? ' [' + m.objective + ']' : '';
-    const cleaned = String(m.content || '').replace(/\[fp:[^\]]+\]\s*/g, '').trim();
-    return (i + 1) + '. (' + m.kind + ')' + obj + ' ' + cleaned;
-  });
-  return [
-    'Learner memory (private, use to personalize coaching; never invent memories):',
-    ...lines
-  ].join('\n');
+  return formatSandboxedMemories(memories);
 }
 
 /** Hard cap for session boot context (~450 tokens). Keeps coach prompts lean. */
@@ -205,10 +204,10 @@ function stripFp(text) {
 
 function summarizeMission(mission) {
   if (!mission || typeof mission !== 'object') return '';
-  const title = String(mission.title || '').trim().slice(0, 120);
-  const summary = String(mission.summary || '').trim().slice(0, 220);
+  const title = sanitizeMemoryItem(String(mission.title || '').trim().slice(0, 120));
+  const summary = sanitizeMemoryItem(String(mission.summary || '').trim().slice(0, 220));
   const primary = mission.primaryObjective
-    ? String(mission.primaryObjective).slice(0, 40)
+    ? sanitizePromptInput(String(mission.primaryObjective).slice(0, 40), 40)
     : '';
   const parts = [];
   if (title) parts.push(title);
@@ -219,18 +218,18 @@ function summarizeMission(mission) {
 
 function summarizeConfusionPair(pair) {
   if (!pair) return '';
-  if (typeof pair === 'string') return stripFp(pair).slice(0, 200);
+  if (typeof pair === 'string') return sanitizeMemoryItem(stripFp(pair).slice(0, 200));
   if (pair.key || (pair.a && pair.b)) {
-    const a = String(pair.a || (String(pair.key || '').split('|')[0]) || '').slice(0, 40);
-    const b = String(pair.b || (String(pair.key || '').split('|')[1]) || '').slice(0, 40);
+    const a = sanitizeMemoryItem(String(pair.a || (String(pair.key || '').split('|')[0]) || '').slice(0, 40));
+    const b = sanitizeMemoryItem(String(pair.b || (String(pair.key || '').split('|')[1]) || '').slice(0, 40));
     const count = Number(pair.count) || 0;
-    const obj = pair.objective ? String(pair.objective).slice(0, 40) : '';
+    const obj = pair.objective ? sanitizePromptInput(String(pair.objective).slice(0, 40), 40) : '';
     let line = 'Confuses ' + a + ' with ' + b;
     if (count) line += ' (' + count + 'x)';
     if (obj) line += ' [' + obj + ']';
     return line.slice(0, 200);
   }
-  if (pair.content) return stripFp(pair.content).slice(0, 200);
+  if (pair.content) return sanitizeMemoryItem(stripFp(pair.content).slice(0, 200));
   return '';
 }
 
@@ -390,13 +389,13 @@ export async function promoteGhostCoachTelemetry(db, auth, payload) {
     const key = String((raw && (raw.key || raw.pair)) || '').trim().toLowerCase();
     if (!key || !key.includes('|')) continue;
     const parts = key.split('|');
-    const a = String((raw && raw.a) || parts[0] || '').slice(0, 40);
-    const b = String((raw && raw.b) || parts[1] || '').slice(0, 40);
+    const a = sanitizeMemoryItem(String((raw && raw.a) || parts[0] || '').slice(0, 40));
+    const b = sanitizeMemoryItem(String((raw && raw.b) || parts[1] || '').slice(0, 40));
     const count = Math.min(99, Math.max(1, Number(raw && raw.count) || 1));
-    const objective = raw && raw.objective ? String(raw.objective).slice(0, 64) : null;
+    const objective = raw && raw.objective ? sanitizePromptInput(String(raw.objective).slice(0, 64), 64) : null;
     const sample = raw && raw.sample
-      ? (' Example: chose "' + String(raw.sample.wrong || '').slice(0, 60) +
-        '" vs "' + String(raw.sample.correct || '').slice(0, 60) + '".')
+      ? (' Example: chose "' + sanitizeMemoryItem(String(raw.sample.wrong || '').slice(0, 60)) +
+        '" vs "' + sanitizeMemoryItem(String(raw.sample.correct || '').slice(0, 60)) + '".')
       : '';
     const fp = 'cp:' + key;
     const content = 'Confuses ' + a + ' with ' + b + ' (seen ' + count + 'x).' + sample;
@@ -413,11 +412,11 @@ export async function promoteGhostCoachTelemetry(db, auth, payload) {
   }
 
   for (const raw of weaks) {
-    const objective = String((raw && (raw.objective || raw.id)) || '').trim().slice(0, 64);
+    const objective = sanitizePromptInput(String((raw && (raw.objective || raw.id)) || '').trim().slice(0, 64), 64);
     if (!objective) continue;
     const wrong = Math.min(99, Math.max(0, Number(raw && raw.wrong) || 0));
     const attempts = Math.min(99, Math.max(0, Number(raw && raw.attempts) || 0));
-    const domain = raw && raw.domain ? String(raw.domain).slice(0, 80) : '';
+    const domain = raw && raw.domain ? sanitizePromptInput(String(raw.domain).slice(0, 80), 80) : '';
     const acc = attempts > 0
       ? Math.round((Number(raw.accuracy != null ? raw.accuracy : ((attempts - wrong) / attempts)) || 0) * 100)
       : null;
@@ -529,11 +528,12 @@ export async function rememberMiss(db, auth, body) {
   if (!objective && !(body && (body.chosenAnswer || body.prompt || body.missSummary))) return null;
   const facts = extractCoachFacts({ body, triage: { intent: 'explain', specialist: 'hardware' }, replyText: '' });
   if (!facts.length) {
+    const rawContent = body.missSummary || body.questionSummary || body.prompt || ('Weak on objective ' + objective);
     return upsertMemory(db, auth, {
       kind: 'weak_objective',
       fingerprint: objective ? 'wo:' + String(objective).toLowerCase() : null,
-      content: body.missSummary || body.questionSummary || body.prompt || ('Weak on objective ' + objective),
-      objective: objective ? String(objective).slice(0, 64) : null,
+      content: sanitizeMemoryItem(rawContent),
+      objective: objective ? sanitizePromptInput(String(objective).slice(0, 64), 64) : null,
       score: 1.5
     });
   }

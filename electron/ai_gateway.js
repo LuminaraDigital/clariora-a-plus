@@ -43,11 +43,16 @@ const AI_PROVIDERS = {
 function isLocalOrPrivateHost(hostname) {
   if (!hostname) return false;
   const h = hostname.toLowerCase();
+  // Block Cloud Metadata Services & Link-Local SSRF vectors
+  if (h === '169.254.169.254' || h.startsWith('169.254.') || h === 'metadata.google.internal' || h === '100.100.100.200') {
+    return false;
+  }
   if (h === 'localhost' || h === '127.0.0.1' || h === '::1') return true;
   if (/^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(h)) return true;
   if (/^192\.168\.\d{1,3}\.\d{1,3}$/.test(h)) return true;
   if (/^172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}$/.test(h)) return true;
-  if (h.endsWith('.local') || h.endsWith('.internal') || h.endsWith('.corp')) return true;
+  if (h.endsWith('.local') || h.endsWith('.corp')) return true;
+  if (h.endsWith('.internal') && h !== 'metadata.google.internal') return true;
   return false;
 }
 
@@ -144,6 +149,10 @@ async function handleAiChat(payload) {
         writeLog('warn', 'ai:chat rejected message exceeding 64KB');
         return { ok: false, error: 'message_too_large' };
       }
+      if (/(?:ignore|bypass|override)\s+(?:all\s+)?(?:previous|prior|above|system)\s+instructions?/i.test(msg.content)) {
+        writeLog('warn', 'ai:chat rejected adversarial prompt injection attempt');
+        return { ok: false, error: 'prompt_injection_rejected', message: 'Query rejected due to instruction override markers.' };
+      }
     }
 
     const model = typeof payload.model === 'string' && payload.model.trim()
@@ -199,9 +208,16 @@ async function handleAiChat(payload) {
       };
     }
 
-    const content = data && data.choices && data.choices[0] && data.choices[0].message
+    let content = data && data.choices && data.choices[0] && data.choices[0].message
       ? String(data.choices[0].message.content || '').trim()
       : '';
+
+    // Cybersecurity Guard: Redact credentials or dangerous payloads from desktop response
+    content = content
+      .replace(/gsk_[a-zA-Z0-9]{20,}/g, '[REDACTED_CREDENTIAL]')
+      .replace(/nvapi-[a-zA-Z0-9_\-]{20,}/g, '[REDACTED_CREDENTIAL]')
+      .replace(/sk-or-v1-[a-zA-Z0-9]{20,}/g, '[REDACTED_CREDENTIAL]')
+      .replace(/sk-[a-zA-Z0-9_\-]{24,}/g, '[REDACTED_CREDENTIAL]');
 
     return {
       ok: true,

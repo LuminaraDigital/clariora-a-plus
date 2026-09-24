@@ -66,6 +66,9 @@
   }
 
   function esc(s) {
+    if (typeof window !== 'undefined' && typeof window.escapeHTML === 'function') {
+      return window.escapeHTML(s);
+    }
     return String(s === null || s === undefined ? '' : s)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;').replace(/'/g, '&#039;');

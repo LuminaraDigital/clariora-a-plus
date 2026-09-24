@@ -3,7 +3,7 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://telegram.org https://unpkg.com https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://i.ytimg.com https://*.telegram.org https://lh3.googleusercontent.com https://*.googleusercontent.com; media-src 'self' https://comptia-a-plus-master.pages.dev https://clariora.com.au; connect-src 'self' https://api.telegram.org https://tonconnect.org https://tonapi.io https://*.ton.org https://toncenter.com https://clariora.com.au https://*.supabase.co https://cdn.jsdelivr.net https://unpkg.com https://comptia-a-plus-master.pages.dev https://*.googleapis.com https://*.firebaseio.com https://clariora.firebaseapp.com https://*.firebasestorage.app https://bridge.tonapi.io https://*.tonconnect.org; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://*.telegram.org https://clariora.firebaseapp.com https://accounts.google.com; frame-ancestors 'self' https://web.telegram.org https://*.telegram.org; font-src 'self'; object-src 'none'; base-uri 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://telegram.org https://unpkg.com https://www.gstatic.com https://apis.google.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://i.ytimg.com https://*.telegram.org https://lh3.googleusercontent.com https://*.googleusercontent.com; media-src 'self' https://comptia-a-plus-master.pages.dev https://clariora.com.au; connect-src 'self' https://api.telegram.org https://tonconnect.org https://tonapi.io https://*.ton.org https://toncenter.com https://clariora.com.au https://*.supabase.co https://cdn.jsdelivr.net https://unpkg.com https://comptia-a-plus-master.pages.dev https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://clariora.firebaseapp.com https://*.firebasestorage.app https://bridge.tonapi.io https://*.tonconnect.org; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://*.telegram.org https://clariora.firebaseapp.com https://accounts.google.com; frame-ancestors 'self' https://web.telegram.org https://*.telegram.org; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self' https://accounts.google.com; worker-src 'self'; manifest-src 'self'; upgrade-insecure-requests
 
 # media-src/connect-src above include the mediaBaseUrl host from
 # release.config.json (https://comptia-a-plus-master.pages.dev/media/).
@@ -14,12 +14,22 @@
 # handlers, so script-src/style-src must allow 'unsafe-inline' for now.
 # Hardening this to nonces or hashes is future work - see
 # docs/CLOUDFLARE_FREE_DEPLOYMENT_GUIDE.md.
+# Also allow cdn.jsdelivr.net in script-src (Supabase client), Firebase WS,
+# form-action / worker-src / manifest-src, and upgrade-insecure-requests.
 
 # js/, css/, fonts/ are not filename-versioned, so a long immutable cache is
 # not safe here. Use a short max-age plus stale-while-revalidate and let the
 # service worker (sw.js) own the real offline caching and invalidation.
 /js/*
   Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+
+# Auth gate must not linger on CDN edges after a deploy flips guest vs gated.
+/js/auth-gate.js
+  Cache-Control: no-cache
+
+# Kill switch must not stick behind CDN after a flag flip.
+/js/features-config.js
+  Cache-Control: no-cache
 
 /css/*
   Cache-Control: public, max-age=3600, stale-while-revalidate=86400
@@ -53,3 +63,12 @@
 
 /landing/img/*
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+# Crawl files must stay fresh after marketing URL changes.
+/robots.txt
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=3600, must-revalidate
+
+/sitemap.xml
+  Content-Type: application/xml; charset=utf-8
+  Cache-Control: public, max-age=3600, must-revalidate

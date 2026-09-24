@@ -895,6 +895,7 @@
             </div>
             <div class="review-item-status" style="display: flex; align-items: center; gap: 0.75rem;">
               ${isFlagged ? '<span class="label">Flagged</span>' : ''}
+              ${window.APlus && APlus.notes && APlus.notes.hasNote(q.id) ? '<span class="label" style="color: var(--gold-primary); border-color: var(--gold-primary);">Note</span>' : ''}
               <span class="label">${statusText}</span>
             </div>
           </button>
@@ -912,6 +913,7 @@
             ` : ''}
             <div id="reviewOptionMount_${idx}"></div>
             ${this.buildExplanationHtml(q)}
+            ${window.APlus && APlus.notesUI ? APlus.notesUI.renderReviewNoteHtml(q) : ''}
             ${window.APlus && APlus.communityBenchmarks ? APlus.communityBenchmarks.renderBadge(q) : ''}
             ${q.video_reference ? `
               <div class="review-video">

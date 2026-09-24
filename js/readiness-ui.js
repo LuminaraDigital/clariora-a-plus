@@ -48,43 +48,8 @@
     }
   }
 
-  /* ------------------------------------------------------------------ *
-   * home-widgets bootstrap
-   * ------------------------------------------------------------------ *
-   * The shell adds <script src="js/home-widgets.js"> after this file. If that
-   * tag is not there yet we inject it once so the home widgets still work; the
-   * script's own boot re-renders when it lands.
-   */
-
-  var widgetInjectTried = false;
-
-  function widgetScriptSrc() {
-    try {
-      var own = document.querySelector('script[src*="readiness-ui.js"]');
-      if (own) {
-        var src = own.getAttribute('src') || '';
-        return src.replace(/readiness-ui\.js.*$/, 'home-widgets.js');
-      }
-    } catch (_) {}
-    return 'js/home-widgets.js';
-  }
-
   function widgets() {
-    if (APlus.homeWidgets) return APlus.homeWidgets;
-    if (widgetInjectTried) return null;
-    widgetInjectTried = true;
-    try {
-      if (document.querySelector('script[src*="home-widgets.js"]')) return null;
-      var s = document.createElement('script');
-      s.src = widgetScriptSrc();
-      s.async = false;
-      s.onload = function () { render(); };
-      s.onerror = function () { console.warn('[readiness-ui] home-widgets.js could not be loaded.'); };
-      (document.head || document.documentElement).appendChild(s);
-    } catch (err) {
-      console.warn('[readiness-ui] home-widgets injection failed:', err);
-    }
-    return null;
+    return APlus.homeWidgets || null;
   }
 
   /* ------------------------------------------------------------------ *
@@ -100,6 +65,16 @@
   function readStreak() {
     if (cachedStreak !== null) return cachedStreak;
     try {
+      if (window.APlus && APlus.streak && typeof APlus.streak.getAsync === 'function') {
+        APlus.streak.getAsync().then(function (s) {
+          var next = s && typeof s.streak === 'number' ? s.streak : 0;
+          if (next !== cachedStreak) {
+            cachedStreak = next;
+            render();
+          }
+        }).catch(function () { cachedStreak = 0; });
+        return null;
+      }
       if (window.CompTIALedger && typeof window.CompTIALedger.getState === 'function') {
         var p = window.CompTIALedger.getState();
         if (p && typeof p.then === 'function') {
@@ -292,12 +267,36 @@
     var el = mount('todayPlanCard');
     if (!el) return;
 
+    var cold = !sum.hasData;
+    var items = focusItems(result.weakest);
+    var focusHtml = '';
+    if (items.length) {
+      focusHtml += '<div class="plan-focus"><span class="label">Focus</span><ul>';
+      items.forEach(function (t) { focusHtml += '<li>' + esc(t) + '</li>'; });
+      focusHtml += '</ul></div>';
+    }
+    var stamps = [];
+    try { stamps = hw.activityTimestamps() || []; } catch (_) { stamps = []; }
+    var stripHtml = hw.buildActivityStrip(hw.activityDays(stamps), { ariaLabel: 'Last 7 days' });
+
+    // Daily Quest surface when gamification flag is on.
+    if (APlus.dailyQuest && typeof APlus.dailyQuest.isEnabled === 'function' &&
+        APlus.dailyQuest.isEnabled() && typeof APlus.dailyQuest.renderInto === 'function') {
+      APlus.dailyQuest.renderInto(el, {
+        cold: cold,
+        focusHtml: focusHtml,
+        stripHtml: stripHtml,
+        result: result,
+        sum: sum
+      });
+      return;
+    }
+
     var mins = (APlus.onboarding && typeof APlus.onboarding.minutesPerDay === 'function')
       ? APlus.onboarding.minutesPerDay() : 25;
     var status = (APlus.onboarding && typeof APlus.onboarding.todayStatus === 'function')
       ? APlus.onboarding.todayStatus() : { done: false };
     var done = Boolean(status && status.done);
-    var cold = !sum.hasData;
 
     var label = done
       ? ('Today: done. Start another ' + mins + ' minutes')
@@ -314,17 +313,8 @@
     if (cold) {
       html += '<span class="tp-note">Best after the diagnostic</span>';
     }
-
-    var items = focusItems(result.weakest);
-    if (items.length) {
-      html += '<div class="plan-focus"><span class="label">Focus</span><ul>';
-      items.forEach(function (t) { html += '<li>' + esc(t) + '</li>'; });
-      html += '</ul></div>';
-    }
-
-    var stamps = [];
-    try { stamps = hw.activityTimestamps() || []; } catch (_) { stamps = []; }
-    html += hw.buildActivityStrip(hw.activityDays(stamps), { ariaLabel: 'Last 7 days' });
+    html += focusHtml;
+    html += stripHtml;
 
     el.innerHTML = html;
 
@@ -432,8 +422,17 @@
     render();
     if (APlus.bus && typeof APlus.bus.on === 'function') {
       APlus.bus.on('exam:finished', scheduleRender);
-      APlus.bus.on('storage:changed', scheduleRender);
+      APlus.bus.on('storage:changed', function () {
+        cachedStreak = null;
+        try {
+          if (APlus.streak && typeof APlus.streak.invalidate === 'function') {
+            APlus.streak.invalidate();
+          }
+        } catch (_) {}
+        scheduleRender();
+      });
       APlus.bus.on('shell:ready', scheduleRender);
+      APlus.bus.on('daily_quest:leg', scheduleRender);
     } else {
       console.warn('[readiness-ui] APlus.bus missing; rendering once only.');
     }

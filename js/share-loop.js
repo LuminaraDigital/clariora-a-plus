@@ -4,6 +4,8 @@
  * After mocks, offer one-tap share of scaled score + streak.
  * On home, surface a share chip when the learner has a score worth showing.
  * Designed for career starters and academy founders who recruit peers.
+ *
+ * Streak authority: CompTIALedger / APlus.streak (never Memory Raid meta).
  */
 (function (window) {
   'use strict';
@@ -11,30 +13,39 @@
   window.APlus = window.APlus || {};
 
   var SHARE_KEY = 'aplus3_share_prompt_v1';
-
-  function esc(s) {
-    return String(s == null ? '' : s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
+  var streakCache = 0;
+  var lastPayload = null;
 
   function readStreak() {
     try {
-      if (window.APlus && APlus.storage && typeof APlus.storage.get === 'function') {
-        var meta = APlus.storage.get('memoryRaidMeta', null);
-        if (meta && typeof meta.streakDays === 'number') return meta.streakDays;
+      if (window.APlus && APlus.streak) {
+        if (typeof APlus.streak.days === 'function') {
+          var d = Number(APlus.streak.days()) || 0;
+          if (d > 0) return d;
+        }
+        var snap = typeof APlus.streak.get === 'function' ? APlus.streak.get() : null;
+        if (snap && typeof snap.streak === 'number' && snap.streak > 0) return snap.streak;
       }
     } catch (_) {}
+    return streakCache || 0;
+  }
+
+  function refreshStreakCache() {
     try {
-      var raw = window.localStorage && window.localStorage.getItem('comptia_memory_raid_meta_v1');
-      if (raw) {
-        var o = JSON.parse(raw);
-        if (o && typeof o.streakDays === 'number') return o.streakDays;
+      if (window.APlus && APlus.streak && typeof APlus.streak.getAsync === 'function') {
+        return APlus.streak.getAsync().then(function (s) {
+          streakCache = (s && s.streak) || 0;
+          return streakCache;
+        });
+      }
+      if (window.CompTIALedger && typeof CompTIALedger.getStreak === 'function') {
+        return CompTIALedger.getStreak().then(function (s) {
+          streakCache = (s && s.streak) || 0;
+          return streakCache;
+        });
       }
     } catch (_) {}
-    return 0;
+    return Promise.resolve(streakCache);
   }
 
   function buildMessage(payload) {
@@ -49,8 +60,8 @@
       lines.push(exam + ' scaled score: ' + score + (passed ? ' (pass line cleared)' : ' (keep drilling)'));
     }
     if (streak > 0) lines.push('Study streak: ' + streak + (streak === 1 ? ' day' : ' days'));
-    lines.push('Free diagnostic, no account: https://comptia-a-plus-master.sparkling-fog-be2d.workers.dev/app');
-    lines.push('Why it beats the packs: https://comptia-a-plus-master.sparkling-fog-be2d.workers.dev/landing/compare.html');
+    lines.push('Free diagnostic, no account: https://clariora.com.au/app');
+    lines.push('Why it beats the packs: https://clariora.com.au/landing/compare.html');
     return lines.join('\n');
   }
 
@@ -66,27 +77,29 @@
   }
 
   function share(payload) {
-    var text = buildMessage(payload);
-    var title = 'My Clariora A+ readiness';
-    if (navigator.share) {
-      return navigator
-        .share({ title: title, text: text })
-        .then(function () {
-          trackShared('native');
-          return { ok: true, method: 'native' };
-        })
-        .catch(function () {
-          return copyText(text).then(function (ok) {
-            if (ok) trackShared('clipboard');
-            return { ok: ok, method: 'clipboard' };
+    return refreshStreakCache().then(function () {
+      var text = buildMessage(payload || lastPayload || {});
+      var title = 'My Clariora A+ readiness';
+      if (navigator.share) {
+        return navigator
+          .share({ title: title, text: text })
+          .then(function () {
+            trackShared('native');
+            return { ok: true, method: 'native' };
+          })
+          .catch(function () {
+            return copyText(text).then(function (ok) {
+              if (ok) trackShared('clipboard');
+              return { ok: ok, method: 'clipboard' };
+            });
           });
-        });
-    }
-    return copyText(text).then(function (ok) {
-      if (ok) trackShared('clipboard');
-      if (ok) flash('Copied share text');
-      else flash('Could not share yet');
-      return { ok: ok, method: 'clipboard' };
+      }
+      return copyText(text).then(function (ok) {
+        if (ok) trackShared('clipboard');
+        if (ok) flash('Copied share text');
+        else flash('Could not share yet');
+        return { ok: ok, method: 'clipboard' };
+      });
     });
   }
 
@@ -185,14 +198,15 @@
     } catch (_) {}
   }
 
-  var lastPayload = null;
-
   function wire() {
+    refreshStreakCache();
     ensureHomeChip();
     if (!window.APlus || !APlus.bus || typeof APlus.bus.on !== 'function') return;
     APlus.bus.on('exam:finished', function (payload) {
       lastPayload = payload || null;
-      maybeCelebrate(payload);
+      refreshStreakCache().then(function () {
+        maybeCelebrate(payload);
+      });
       setTimeout(function () {
         ensureResultsButton(payload);
       }, 200);
@@ -200,12 +214,20 @@
     APlus.bus.on('share:completed', function () {
       ensureHomeChip();
     });
+    APlus.bus.on('storage:changed', function () {
+      refreshStreakCache();
+    });
+    APlus.bus.on('shell:ready', function () {
+      ensureHomeChip();
+      refreshStreakCache();
+    });
   }
 
   window.APlus.shareLoop = {
     share: share,
     buildMessage: buildMessage,
-    readStreak: readStreak
+    readStreak: readStreak,
+    refreshStreakCache: refreshStreakCache
   };
   window.shareClarioraReadiness = function () {
     return share(lastPayload);

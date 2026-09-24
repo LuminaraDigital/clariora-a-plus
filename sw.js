@@ -26,16 +26,28 @@ const DATA_SCRIPTS = ['exam_data.js', 'study_library.js'];
 // written into the cache (keeps the runtime cache small and predictable).
 const MAX_CACHEABLE_BYTES = 3 * 1024 * 1024;
 
-async function getPrecacheUrls() {
+async function getPrecacheEntries() {
   try {
     const res = await fetch(MANIFEST_URL, { cache: 'no-store' });
     if (!res.ok) throw new Error('manifest fetch failed');
-    const entries = await res.json();
-    return entries.map((e) => e.url);
+    return await res.json();
   } catch (err) {
     console.warn('[sw] precache-manifest.json unavailable, using fallback list:', err);
-    return FALLBACK_ASSETS;
+    return FALLBACK_ASSETS.map((url) => ({ url, revision: BUILD_ID }));
   }
+}
+
+// Cached entries are served cache-first for the life of BUILD_ID, so a stale byte
+// here sticks until the next build. Bypass the HTTP cache and tag the URL with the
+// file's revision so no browser or edge cache can answer with an older copy.
+async function precacheEntry(cache, entry) {
+  const sep = entry.url.indexOf('?') === -1 ? '?' : '&';
+  const request = new Request(entry.url + sep + '__rev=' + encodeURIComponent(entry.revision || BUILD_ID), {
+    cache: 'reload'
+  });
+  const response = await fetch(request);
+  if (!response.ok) throw new Error('HTTP ' + response.status);
+  await cache.put(entry.url, response);
 }
 
 // True only when this worker replaces one that already controlled the page.
@@ -47,11 +59,11 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
-      const urls = await getPrecacheUrls();
+      const entries = await getPrecacheEntries();
       await Promise.all(
-        urls.map((url) =>
-          cache.add(url).catch((err) => {
-            console.warn('[sw] precache miss for', url, err);
+        entries.map((entry) =>
+          precacheEntry(cache, entry).catch((err) => {
+            console.warn('[sw] precache miss for', entry.url, err);
           })
         )
       );

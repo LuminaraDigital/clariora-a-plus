@@ -21,6 +21,10 @@
 
     getQuestions(examType = 'both') {
       const raw = this.getRawExamData();
+      if (examType === 'az900' || examType === 'ms_az900') {
+        const azPool = (raw.az900 || (window.AZ900_EXAM_DATA && window.AZ900_EXAM_DATA.az900) || []);
+        return azPool.map(q => ({ ...q, exam: 'az900' }));
+      }
       if (examType === 'core1') {
         return (raw.core1 || []).map(q => ({ ...q, exam: 'core1' }));
       }
@@ -34,6 +38,11 @@
 
     getQuestionById(id) {
       if (!id) return null;
+      if (String(id).startsWith('AZ-')) {
+        const azPool = this.getQuestions('az900');
+        const match = azPool.find(q => q.id === id);
+        if (match) return match;
+      }
       const all = this.getQuestions('both');
       return all.find(q => q.id === id) || null;
     },
@@ -61,11 +70,21 @@
       return videos.find(v => String(v.objective).trim() === objStr) || null;
     },
 
-    getObjectivesData() {
+    getObjectivesData(examType) {
+      const active = (window.APlus && window.APlus.trackRegistry) ? window.APlus.trackRegistry.getActiveTrackId() : 'core1';
+      const target = examType || active;
+      if (target === 'az900' || target === 'ms_az900') {
+        return window.AZ900_OBJECTIVES_DATA || null;
+      }
       return window.COMPTIA_OBJECTIVES_DATA || null;
     },
 
-    getStudyLibrary() {
+    getStudyLibrary(examType) {
+      const active = (window.APlus && window.APlus.trackRegistry) ? window.APlus.trackRegistry.getActiveTrackId() : 'core1';
+      const target = examType || active;
+      if (target === 'az900' || target === 'ms_az900') {
+        return window.AZ900_STUDY_LIBRARY || null;
+      }
       return window.COMPTIA_STUDY_LIBRARY || null;
     },
 
@@ -74,6 +93,13 @@
     },
 
     getDomainList(examType = 'core1') {
+      if (examType === 'az900' || examType === 'ms_az900') {
+        return [
+          { code: '1.0', name: '1.0 Describe cloud concepts', weight: 28 },
+          { code: '2.0', name: '2.0 Describe Azure architecture and services', weight: 37 },
+          { code: '3.0', name: '3.0 Describe Azure management and governance', weight: 35 }
+        ];
+      }
       if (examType === 'core1') {
         return [
           { code: '1.0', name: '1.0 Mobile Devices', weight: 13 },

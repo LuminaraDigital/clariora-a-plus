@@ -12,6 +12,7 @@
  * 4. /api/v1/sync                 - Cross-device learner state delta sync
  * 5. /api/v1/items/report         - Question problem & ambiguity reporting
  * 6. /api/v1/items/stats          - Community item difficulty & discrimination stats
+ * 6b. /api/v1/items/telemetry     - Anonymous item outcome ingest (upserts item_stats_cache)
  * 7. /api/v1/coach                - Gated multi-provider AI gateway (budgets, triage, tools)
  * 7b. /api/v1/coach/stream        - SSE streaming coach (paid tiers)
  * 7c. /api/v1/coach/jobs          - Pro async exam review packs + DLQ
@@ -24,7 +25,11 @@
  * Identity plane: Firebase Auth (web) + Telegram HMAC (TMA/widget). Custom magic-link auth is retired.
  */
 
-import { CoachRateLimiter, enforceCoachRateLimit } from './coach_rate_limiter.js';
+import {
+  CoachRateLimiter,
+  enforceDualKeyLimit,
+  rateLimitHeaders
+} from './coach_rate_limiter.js';
 import { listCircuits } from './circuit_breaker.js';
 import {
   featuresForTier,
@@ -41,6 +46,7 @@ import {
 } from './coach_jobs.js';
 import { handleCoachRequest } from './coach_handler.js';
 import { promoteGhostCoachTelemetry } from './agent_memory.js';
+import { ingestItemTelemetryBatch } from './item_stats.js';
 
 import {
   withAppBase,
@@ -59,7 +65,8 @@ import {
   getStarsProduct,
   parseStarsInvoicePayload,
   resolveStarsGrant,
-  validateStarsPreCheckout
+  validateStarsPreCheckout,
+  validateStarsSuccessfulPayment
 } from './api_stars.js';
 import { timingSafeEqualStr } from './api_crypto.js';
 import { verifyTelegramInitData, verifyTelegramLoginWidget } from './api_telegram.js';
@@ -86,6 +93,7 @@ const PUBLIC_API_ROUTES = [
   { method: 'GET', path: '/api/v1/live' },
   { method: 'GET', path: '/api/v1/ready' },
   { method: 'GET', path: '/api/v1/items/stats' },
+  { method: 'POST', path: '/api/v1/items/telemetry' },
   { method: 'POST', path: '/api/v1/auth/session' },
   { method: 'POST', path: '/api/v1/auth/telegram' },
   { method: 'POST', path: '/api/v1/auth/admin/session' },
@@ -164,12 +172,15 @@ export default {
       'https://comptia-a-plus-master.pages.dev',
       'https://web.telegram.org'
     ];
+    // Loopback origins are echoed back with Allow-Credentials only outside production.
+    // In production any page a victim loads from a local dev server or a localhost-bound
+    // desktop app would otherwise be a fully credentialed cross-origin caller.
+    const allowLoopbackOrigins = !(env && (env.ENVIRONMENT === 'production' || env.NODE_ENV === 'production'));
     let resolvedOrigin = 'https://clariora.com.au';
     if (origin) {
       const isAllowed = ALLOWED_ORIGINS.includes(origin) ||
         /^https:\/\/([a-zA-Z0-9-]+\.)?telegram\.org$/.test(origin) ||
-        origin.startsWith('http://localhost:') ||
-        origin.startsWith('http://127.0.0.1:');
+        (allowLoopbackOrigins && (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')));
       if (isAllowed) {
         resolvedOrigin = origin;
       }
@@ -179,7 +190,7 @@ export default {
       'Access-Control-Allow-Origin': resolvedOrigin,
       'Access-Control-Allow-Credentials': 'true',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-User-Id, X-Telegram-Init-Data, X-Admin-Key',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Telegram-Init-Data, X-Admin-Key',
       'Access-Control-Max-Age': '86400',
       'Vary': 'Origin'
     };
@@ -189,6 +200,48 @@ export default {
     }
 
     const path = url.pathname;
+
+    // Crawl files: force correct Content-Type so SPA fallback never indexes as HTML.
+    if ((path === '/robots.txt' || path === '/sitemap.xml') && request.method === 'GET' && env.ASSETS) {
+      const assetRes = await env.ASSETS.fetch(request);
+      if (assetRes.ok) {
+        const body = await assetRes.arrayBuffer();
+        const contentType =
+          path === '/robots.txt'
+            ? 'text/plain; charset=utf-8'
+            : 'application/xml; charset=utf-8';
+        return new Response(body, {
+          status: 200,
+          headers: {
+            'Content-Type': contentType,
+            'Cache-Control': 'public, max-age=3600, must-revalidate'
+          }
+        });
+      }
+    }
+
+    // Exact .html URLs that must stay at their canonical path with HTTP 200.
+    // Assets html_handling otherwise 307-redirects to the extensionless path,
+    // which breaks Google Search Console, BotFather privacy/terms links, and
+    // in-app legal deep links that expect the .html form.
+    const exactHtmlPath =
+      path === '/privacy.html' ||
+      path === '/terms.html' ||
+      /^\/google[a-z0-9]+\.html$/i.test(path);
+    if (exactHtmlPath && request.method === 'GET' && env.ASSETS) {
+      const barePath = path.replace(/\.html$/i, '');
+      const assetRes = await env.ASSETS.fetch(new Request(new URL(barePath, request.url), request));
+      if (assetRes.ok) {
+        const body = await assetRes.text();
+        return new Response(body, {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/html; charset=utf-8',
+            'Cache-Control': 'public, max-age=0, must-revalidate'
+          }
+        });
+      }
+    }
 
     // Route root to marketing landing page
     if (path === '/' || path === '') {
@@ -261,6 +314,22 @@ export default {
                               path === '/shards/meta.json' ||
                               path === '/shards/manifest.js';
         if (!isPublicShard) {
+          // Gated shards are the question bank in slices. Walking every shard
+          // is the cheapest way to export the paid product, and the entitlement
+          // check below does nothing to slow that down.
+          const shardLimit = await enforceDualKeyLimit(env, request, 'shards', {
+            ipPerMinute: 30
+          });
+          if (!shardLimit.allowed) {
+            return new Response(JSON.stringify({
+              error: 'RATE_LIMITED',
+              message: 'Too many shard requests. Please wait a moment.'
+            }), {
+              status: 429,
+              headers: { ...corsHeaders, ...shardLimit.headers, 'Content-Type': 'application/json' }
+            });
+          }
+
           let isProUser = false;
           try {
             const auth = await resolveRequestAuth(
@@ -292,13 +361,46 @@ export default {
 
       // Full question bank API (authenticated Pro users only)
       if (path === '/api/v1/bank/full' && request.method === 'GET') {
+        // This path returns the paid asset itself (~2MB). An entitled account
+        // looping it is both an egress bill and a clean export of the product,
+        // so entitlement alone is not a sufficient gate.
+        const bankIpLimit = await enforceDualKeyLimit(env, request, 'bank_full', {
+          ipPerMinute: 10
+        });
+        if (!bankIpLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many bank downloads. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...bankIpLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+
         const auth = await resolveRequestAuth(
           request, env, {}, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
         );
         if (!auth.ok) {
           return new Response(JSON.stringify({ error: 'AUTH_REQUIRED' }), {
             status: 401,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            headers: { ...corsHeaders, ...bankIpLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+
+        // Now that identity is proven, meter the caller as well: IP rotation
+        // must not buy a fresh bank-download allowance.
+        const bankUidLimit = await enforceDualKeyLimit(env, request, 'bank_full_uid', {
+          uid: auth.uid,
+          uidPerMinute: 5,
+          ipPerMinute: 20
+        });
+        if (!bankUidLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many bank downloads for this account. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...bankUidLimit.headers, 'Content-Type': 'application/json' }
           });
         }
         let ent = null;
@@ -336,16 +438,48 @@ export default {
             message: 'Authentication required to create a TON payment order.'
           }), { status: 401, headers: corsHeaders });
         }
+        const clientIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
+        const orderLimit = await enforceDualKeyLimit(env, request, 'ton_order', {
+          uid: auth.uid, uidPerMinute: 10, ipPerMinute: 20
+        });
+        if (!orderLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many order requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...orderLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
         const productId = String(body.productId || 'pro_monthly').trim();
         const TON_PRICES = {
           daily_unlimited: { nanotons: 1500000000, amountTon: '1.5' },
           pro_monthly: { nanotons: 7000000000, amountTon: '7.0' },
           lifetime_master: { nanotons: 35000000000, amountTon: '35.0' }
         };
-        const prod = TON_PRICES[productId] || TON_PRICES.daily_unlimited;
-        const isProd = env.ENVIRONMENT === 'production';
+        const prod = TON_PRICES[productId];
+        if (!prod) {
+          return new Response(JSON.stringify({
+            error: 'UNKNOWN_PRODUCT',
+            message: 'Unknown TON product. Use daily_unlimited, pro_monthly, or lifetime_master.'
+          }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+        // Match verify path: ENVIRONMENT or NODE_ENV. Never serve RegistryMockTON when either is production.
+        const isProd = env.ENVIRONMENT === 'production' || env.NODE_ENV === 'production';
         const isTestPayment = !isProd && (env.ALLOW_TEST_PAYMENTS === '1' || env.TON_VERIFY_RELAXED === '1');
-        const merchantWallet = env.TON_MERCHANT_WALLET_ADDRESS || (isTestPayment ? 'EQBvW8Z5huBkMJYdn3GuLD5Co_V7bB0N12_RegistryMockTON' : 'UQC2rrXgl2W5GhkSJ7lpoUAUXsBsDLNI4CXXUDqEdtCZ176T');
+        const merchantWallet = env.TON_MERCHANT_WALLET_ADDRESS || (isTestPayment ? 'EQBvW8Z5huBkMJYdn3GuLD5Co_V7bB0N12_RegistryMockTON' : '');
+        if (!merchantWallet) {
+          return new Response(JSON.stringify({
+            error: 'TON_MERCHANT_UNCONFIGURED',
+            message: 'TON payments require TON_MERCHANT_WALLET_ADDRESS in production.'
+          }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+        if (isProd && !env.DB) {
+          return new Response(JSON.stringify({
+            error: 'TON_ORDERS_UNAVAILABLE',
+            message: 'TON orders require D1 in production so payments can be bound to an account.'
+          }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
         const userId = auth.firebaseUid || (auth.telegramId ? 'tg_' + auth.telegramId : auth.uid);
         const orderId = `clar_${auth.telegramId || auth.firebaseUid}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 
@@ -356,7 +490,11 @@ export default {
               VALUES (?, ?, ?, ?, ?, 'pending')
             `).bind(orderId, userId, auth.telegramId || 0, productId, String(prod.nanotons)).run();
           } catch (e) {
-            console.warn('[TON] ton_orders insert notice:', e && e.message ? e.message : e);
+            console.warn('[TON] ton_orders insert failed:', e && e.message ? e.message : e);
+            return new Response(JSON.stringify({
+              error: 'TON_ORDER_PERSIST_FAILED',
+              message: 'Could not create a payment order. Try again shortly.'
+            }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
           }
         }
 
@@ -406,10 +544,21 @@ export default {
         const circuits = dbOk ? await listCircuits(env.DB) : [];
         const rateLimiterBound = !!(env.COACH_RATE_LIMITER);
         const ready = dbOk;
+        // Booleans only: never echo secret values. Used to confirm wrangler secrets landed.
+        const aiConfigured = {
+          groq: Boolean(env.GROQ_API_KEY),
+          nvidia: Boolean(env.NVIDIA_API_KEY),
+          openrouter: Boolean(env.OPENROUTER_API_KEY),
+          ollama: Boolean(env.OLLAMA_ENDPOINT) &&
+            !String(env.OLLAMA_ENDPOINT).toLowerCase().includes('127.0.0.1') &&
+            !String(env.OLLAMA_ENDPOINT).toLowerCase().includes('localhost'),
+          workersAi: Boolean(env.AI)
+        };
         return new Response(JSON.stringify({
           status: ready ? 'ready' : 'not_ready',
           db: dbOk,
           rateLimiterBound,
+          aiConfigured,
           circuits,
           checkedAt: new Date().toISOString()
         }), {
@@ -432,6 +581,23 @@ export default {
 
       // Auth: Telegram Web Login Widget verification + HttpOnly session cookie
       if (path === '/api/v1/auth/telegram' && request.method === 'POST') {
+        // Unauthenticated entry point: every call runs an HMAC verification and
+        // a D1 upsert, and there is no caller identity to meter against, so IP
+        // is the only key available. Left unlimited this is a free D1 write
+        // amplifier and a signature-brute-force surface.
+        const tgLoginLimit = await enforceDualKeyLimit(env, request, 'auth_telegram', {
+          ipPerMinute: 15
+        });
+        if (!tgLoginLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many Telegram sign-in attempts. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...tgLoginLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+
         const body = await request.json();
         const verifiedUser = await verifyTelegramLoginWidget(body, env.TELEGRAM_BOT_TOKEN);
         if (!verifiedUser) {
@@ -476,12 +642,25 @@ export default {
           user: verifiedUser,
           entitlement: entitlement
         }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...corsHeaders, ...tgLoginLimit.headers, 'Content-Type': 'application/json' }
         }), cookies);
       }
 
       // Auth: record signup / sign-in for Firebase + Telegram (audit + HttpOnly session)
       if (path === '/api/v1/auth/session' && request.method === 'POST') {
+        const clientIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
+        const sessionLimit = await enforceDualKeyLimit(env, request, 'auth_session', {
+          ipPerMinute: 20
+        });
+        if (!sessionLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many authentication requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...sessionLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
         const body = await request.json();
         const recorded = await recordAuthSession(body, env, request);
         if (!recorded.ok) {
@@ -501,13 +680,26 @@ export default {
 
       // Auth: session introspection (cookie)
       if (path === '/api/v1/auth/me' && request.method === 'GET') {
+        // Cheap-looking but not free: resolveRequestAuth verifies a Firebase ID
+        // token against JWKS. Metered on IP first because the caller has no
+        // proven identity until that verification succeeds.
+        const meIpLimit = await enforceDualKeyLimit(env, request, 'auth_me', {
+          ipPerMinute: 60
+        });
+        if (!meIpLimit.allowed) {
+          return new Response(JSON.stringify({ authenticated: false, error: 'RATE_LIMITED' }), {
+            status: 429,
+            headers: { ...corsHeaders, ...meIpLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+
         const auth = await resolveRequestAuth(
           request, env, {}, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
         );
         if (!auth.ok) {
           return new Response(JSON.stringify({ authenticated: false }), {
             status: 401,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            headers: { ...corsHeaders, ...meIpLimit.headers, 'Content-Type': 'application/json' }
           });
         }
         return new Response(JSON.stringify({
@@ -520,7 +712,7 @@ export default {
           telegramId: auth.telegramId,
           source: auth.source
         }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...corsHeaders, ...meIpLimit.headers, 'Content-Type': 'application/json' }
         });
       }
 
@@ -533,6 +725,19 @@ export default {
 
       // Auth: admin cookie exchange (one-time key -> HttpOnly admin session)
       if (path === '/api/v1/auth/admin/session' && request.method === 'POST') {
+        // The admin key is a single shared secret guarding every admin route, so this
+        // exchange is the one endpoint where unthrottled guessing is worth the most.
+        const adminIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
+        const adminLimit = await enforceDualKeyLimit(env, request, 'admin_session', {
+          ipPerMinute: 5
+        });
+        if (!adminLimit.allowed) {
+          console.warn('[Security] Admin session exchange throttled', { ip: adminIp, retryAfter: adminLimit.retryAfter });
+          return new Response(JSON.stringify({ error: 'Too many admin authentication attempts.' }), {
+            status: 429,
+            headers: { ...corsHeaders, ...adminLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
         const issued = await issueAdminSession(request, env);
         if (!issued.ok) {
           return new Response(JSON.stringify({ error: issued.error || 'Unauthorized' }), {
@@ -564,6 +769,19 @@ export default {
           return new Response(JSON.stringify({ error: 'Valid Telegram initData or signed session required' }), {
             status: 401,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        const entIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
+        const entLimit = await enforceDualKeyLimit(env, request, 'entitlement', {
+          uid: auth.uid, uidPerMinute: 30, ipPerMinute: 120
+        });
+        if (!entLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many entitlement checks. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...entLimit.headers, 'Content-Type': 'application/json' }
           });
         }
         let entitlement;
@@ -617,23 +835,30 @@ export default {
           request, env, bodyForAuth, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
         );
 
-        let verifiedUserId = auth.ok ? auth.uid : null;
-
-        // Support explicit test token / localhost development environments
-        const isProd = env.ENVIRONMENT === 'production' || env.NODE_ENV === 'production';
-        const headerUserId = request.headers.get('X-User-Id');
-        if (!verifiedUserId && headerUserId && !isProd && (env.ALLOW_TEST_AUTH === '1' || url.hostname === 'localhost' || url.hostname === '127.0.0.1')) {
-          verifiedUserId = headerUserId;
-        }
-
-        if (!verifiedUserId) {
+        // ZERO-TRUST IDENTITY: Derive UID solely from verified cryptographic token/session
+        if (!auth.ok || !auth.uid) {
           return new Response(JSON.stringify({
             error: 'AUTH_REQUIRED',
             message: 'Valid Telegram initData, session cookie, or Firebase ID token required for cloud sync.'
           }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
 
-        const userId = verifiedUserId;
+        const userId = auth.uid;
+
+        // DUAL-KEY RATE LIMITING (UID + IP)
+        const clientIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
+        const syncLimit = await enforceDualKeyLimit(env, request, 'sync', {
+          uid: userId, uidPerMinute: 30, ipPerMinute: 60
+        });
+        if (!syncLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many sync requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...syncLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
 
         if (request.method === 'GET') {
           if (!env.DB) {
@@ -694,16 +919,21 @@ export default {
       // 4. Problem Reporting
       if (path === '/api/v1/items/report' && request.method === 'POST') {
         const clientIp = request.headers.get('cf-connecting-ip') || 'unknown';
-        const rateCheck = await enforceCoachRateLimit(env, `report:${clientIp}`, 10);
-        if (!rateCheck.allowed) {
-          return new Response(JSON.stringify({ error: 'Too many reports submitted. Please wait a moment.' }), {
+        const reportLimit = await enforceDualKeyLimit(env, request, 'item_report', {
+          ipPerMinute: 10
+        });
+        if (!reportLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many reports submitted. Please wait a moment.'
+          }), {
             status: 429,
-            headers: { ...corsHeaders, 'Retry-After': '60' }
+            headers: { ...corsHeaders, ...reportLimit.headers, 'Content-Type': 'application/json' }
           });
         }
 
         const body = await request.json().catch(() => ({}));
-        const { questionId, category, details, userEmail } = body || {};
+        const { questionId, category, details } = body || {};
         if (!questionId || !category || typeof questionId !== 'string' || typeof category !== 'string') {
           return new Response(JSON.stringify({ error: 'Missing or invalid questionId or category' }), {
             status: 400,
@@ -713,7 +943,16 @@ export default {
         const safeQid = questionId.slice(0, 64);
         const safeCat = category.slice(0, 64);
         const safeDetails = String(details || '').slice(0, 1000);
-        const safeEmail = String(userEmail || 'anon').slice(0, 128);
+
+        // Reporter identity is derived from the verified session, never from body.userEmail.
+        // Accepting it from the client let an anonymous caller write an arbitrary third
+        // party's address into item_reports, both spoofing reports and seeding PII.
+        const reportAuth = await resolveRequestAuth(
+          request, env, {}, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        const safeEmail = (reportAuth.ok && reportAuth.email)
+          ? String(reportAuth.email).slice(0, 128)
+          : 'anon';
 
         if (env.DB) {
           await env.DB.prepare(
@@ -728,14 +967,86 @@ export default {
 
       // 5. Community Stats & Item Benchmarks
       if (path === '/api/v1/items/stats' && request.method === 'GET') {
-        const questionId = url.searchParams.get('qid');
+        const questionId = String(url.searchParams.get('qid') || '').slice(0, 64);
+        const statsLimit = await enforceDualKeyLimit(env, request, 'item_stats', {
+          ipPerMinute: 120
+        });
+        if (!statsLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many stats requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...statsLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
         if (env.DB && questionId) {
-          const row = await env.DB.prepare('SELECT * FROM item_stats_cache WHERE question_id = ?').bind(questionId).first();
+          // Explicit column projection: this route is public, so `SELECT *` would publish
+          // any column later added to item_stats_cache without a second look.
+          const row = await env.DB.prepare(
+            'SELECT question_id, sample_size, p_value, point_biserial, distractor_spread, flagged_miskey ' +
+            'FROM item_stats_cache WHERE question_id = ?'
+          ).bind(questionId).first();
           if (row) {
-            return new Response(JSON.stringify(row), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+            return new Response(JSON.stringify({
+              question_id: row.question_id,
+              sample_size: row.sample_size,
+              p_value: row.p_value,
+              point_biserial: row.point_biserial,
+              distractor_spread: row.distractor_spread,
+              flagged_miskey: row.flagged_miskey || 0
+            }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
           }
         }
-        return new Response(JSON.stringify({ p_value: 0.72, sample_size: 100 }), {
+        // No fabricated crowd size. Clients treat sample_size 0 as "no data yet".
+        return new Response(JSON.stringify({
+          question_id: questionId || null,
+          p_value: null,
+          sample_size: 0,
+          provisional: true
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // 5b. Anonymous item outcome ingest (feeds item_stats_cache)
+      if (path === '/api/v1/items/telemetry' && request.method === 'POST') {
+        const telLimit = await enforceDualKeyLimit(env, request, 'item_telemetry', {
+          ipPerMinute: 60
+        });
+        if (!telLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many telemetry uploads. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...telLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+        if (!env.DB) {
+          return new Response(JSON.stringify({
+            error: 'TELEMETRY_UNAVAILABLE',
+            message: 'Item telemetry requires D1.'
+          }), {
+            status: 503,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        let body = {};
+        try {
+          body = await request.json();
+        } catch (_) {
+          body = {};
+        }
+        // Ignore installId and any other identity fields. Only events are processed.
+        const rawEvents = Array.isArray(body.events) ? body.events : [];
+        const result = await ingestItemTelemetryBatch(env.DB, rawEvents);
+        return new Response(JSON.stringify({
+          success: true,
+          inserted: result.inserted,
+          upserted: result.upserted,
+          skipped: result.skipped
+        }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }
@@ -814,6 +1125,19 @@ export default {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           });
         }
+        const jobsIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
+        const jobsLimit = await enforceDualKeyLimit(env, request, 'coach_jobs', {
+          uid: userId, uidPerMinute: 10, ipPerMinute: 40
+        });
+        if (!jobsLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many review pack requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...jobsLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
         await ensureJobTables(env.DB);
         const job = await enqueueCoachJob(env.DB, {
           userId: userId,
@@ -883,6 +1207,19 @@ export default {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           });
         }
+        const memIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
+        const memLimit = await enforceDualKeyLimit(env, request, 'memory_promote', {
+          uid: auth.uid, uidPerMinute: 20, ipPerMinute: 60
+        });
+        if (!memLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many memory sync requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...memLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
         const result = await promoteGhostCoachTelemetry(env.DB, {
           telegramId: auth.telegramId,
           firebaseUid: auth.firebaseUid
@@ -923,6 +1260,21 @@ export default {
         const resolvedId = auth.telegramId;
         const firebaseUid = auth.firebaseUid;
 
+        const tonIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
+        const tonLimit = await enforceDualKeyLimit(env, request, 'ton_verify', {
+          uid: auth.uid, uidPerMinute: 5, ipPerMinute: 20
+        });
+        if (!tonLimit.allowed) {
+          console.warn('[Security] TON verification throttled', { uid: auth.uid, ip: tonIp });
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many verification attempts. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...tonLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+
         const cleanTxHash = String(txHash || '').trim();
         const cleanProductId = String(productId || '').trim();
         if (!cleanTxHash || !cleanProductId) {
@@ -932,6 +1284,43 @@ export default {
           });
         }
         const isProd = env.ENVIRONMENT === 'production' || env.NODE_ENV === 'production';
+
+        // Bind the redemption to an order this caller created. Without it, memo matching is
+        // skipped and ANY unredeemed inbound transfer to the merchant wallet can be claimed
+        // by whoever quotes its hash first, letting an on-chain observer steal a stranger's
+        // payment. The order must also belong to the caller, or orderId is an IDOR handle.
+        const cleanOrderId = String((body && body.orderId) || '').trim().slice(0, 128);
+        const callerOrderRef = auth.firebaseUid || (auth.telegramId ? 'tg_' + auth.telegramId : auth.uid);
+        if (isProd && !cleanOrderId) {
+          return new Response(JSON.stringify({
+            error: 'ORDER_REQUIRED',
+            message: 'Create a payment order via /api/v1/billing/ton/order before verifying a transaction.'
+          }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+        if (cleanOrderId && env.DB) {
+          const order = await env.DB.prepare(
+            'SELECT order_id, user_id, product_id, status FROM ton_orders WHERE order_id = ?'
+          ).bind(cleanOrderId).first();
+          if (!order || order.user_id !== callerOrderRef) {
+            console.warn('[Security] TON order ownership mismatch', { uid: auth.uid, orderId: cleanOrderId });
+            return new Response(JSON.stringify({
+              error: 'ORDER_NOT_FOUND',
+              message: 'No pending payment order matches this account.'
+            }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+          }
+          if (order.status === 'fulfilled') {
+            return new Response(JSON.stringify({
+              error: 'ORDER_ALREADY_FULFILLED',
+              message: 'This payment order was already redeemed.'
+            }), { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+          }
+          if (order.product_id !== cleanProductId) {
+            return new Response(JSON.stringify({
+              error: 'ORDER_PRODUCT_MISMATCH',
+              message: 'The requested product does not match this payment order.'
+            }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+          }
+        }
         const isTestPayment = !isProd && (env.ALLOW_TEST_PAYMENTS === '1' || env.TON_VERIFY_RELAXED === '1');
         const isValidHashFormat = /^[a-fA-F0-9]{64}$/.test(cleanTxHash) || /^[a-zA-Z0-9+/]{42,44}={0,2}$/.test(cleanTxHash);
         if (!isValidHashFormat && !isTestPayment) {
@@ -966,8 +1355,20 @@ export default {
           pro_monthly: { nanotons: 7000000000 },
           lifetime_master: { nanotons: 35000000000 }
         };
-        const expectedProduct = TON_PRICES[cleanProductId] || TON_PRICES.daily_unlimited;
-        const merchantWallet = env.TON_MERCHANT_WALLET_ADDRESS || (isTestPayment ? 'EQBvW8Z5huBkMJYdn3GuLD5Co_V7bB0N12_RegistryMockTON' : 'UQC2rrXgl2W5GhkSJ7lpoUAUXsBsDLNI4CXXUDqEdtCZ176T');
+        const expectedProduct = TON_PRICES[cleanProductId];
+        if (!expectedProduct) {
+          return new Response(JSON.stringify({
+            error: 'UNKNOWN_PRODUCT',
+            message: 'Unknown TON product. Use daily_unlimited, pro_monthly, or lifetime_master.'
+          }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+        const merchantWallet = env.TON_MERCHANT_WALLET_ADDRESS || (isTestPayment ? 'EQBvW8Z5huBkMJYdn3GuLD5Co_V7bB0N12_RegistryMockTON' : '');
+        if (!merchantWallet && !isTestPayment) {
+          return new Response(JSON.stringify({
+            error: 'TON_MERCHANT_UNCONFIGURED',
+            message: 'TON verification requires TON_MERCHANT_WALLET_ADDRESS in production.'
+          }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
 
         if (env.TONCENTER_API_KEY && (merchantWallet || walletAddress)) {
           try {
@@ -1013,10 +1414,10 @@ export default {
                   Number(inMsg.value || 0) >= (expectedProduct.nanotons * 0.95);
 
                 // Check order memo binding if orderId was provided
-                let memoMatch = true;
-                if (body.orderId) {
+                let memoMatch = !isProd;
+                if (cleanOrderId) {
                   const memoText = inMsg.message || (inMsg.msg_data && inMsg.msg_data.text) || '';
-                  memoMatch = isTestPayment || memoText.includes(body.orderId);
+                  memoMatch = isTestPayment || memoText.includes(cleanOrderId);
                 }
 
                 const success = !t.compute_ph || t.compute_ph.exit_code === 0;
@@ -1104,11 +1505,13 @@ export default {
             ).bind(canonicalTxHash, 0, cleanProductId, String(amountTon || '0'), walletAddress || '').run();
           }
 
-          if (body.orderId) {
+          if (cleanOrderId) {
             try {
+              // Scoped to the caller: an order id alone must never mutate another account's row.
               await env.DB.prepare(
-                "UPDATE ton_orders SET status = 'fulfilled', tx_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE order_id = ?"
-              ).bind(canonicalTxHash, body.orderId).run();
+                "UPDATE ton_orders SET status = 'fulfilled', tx_hash = ?, updated_at = CURRENT_TIMESTAMP " +
+                "WHERE order_id = ? AND user_id = ?"
+              ).bind(canonicalTxHash, cleanOrderId, callerOrderRef).run();
             } catch (_) {}
           }
         }
@@ -1149,6 +1552,19 @@ export default {
           });
         }
         const telegramId = auth.telegramId;
+        const clientIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
+        const invoiceLimit = await enforceDualKeyLimit(env, request, 'stars_invoice', {
+          uid: telegramId, uidPerMinute: 10, ipPerMinute: 20
+        });
+        if (!invoiceLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many invoice requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...invoiceLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
 
         if (!env.TELEGRAM_BOT_TOKEN) {
           if (env.ENVIRONMENT === 'production') {
@@ -1242,6 +1658,30 @@ export default {
           return new Response('Webhook secret not configured', { status: 503, headers: corsHeaders });
         }
 
+        // Backstop behind the edge rule. An attacker who learns the secret, or
+        // any Telegram-side retry storm, still cannot drive unbounded D1 writes
+        // and Bot API calls. Sits after the secret check on purpose: a spoofed
+        // request is already rejected above and must not consume the budget
+        // that real payment callbacks depend on.
+        const hookLimit = await enforceDualKeyLimit(env, request, 'telegram_webhook', {
+          ipPerMinute: 600
+        });
+        if (!hookLimit.allowed) {
+          console.warn(JSON.stringify({
+            event: 'rate_limit_exceeded',
+            action: 'telegram_webhook',
+            dimension: hookLimit.dimension,
+            ip: hookLimit.ip,
+            ts: new Date().toISOString()
+          }));
+          // 429 tells Telegram to retry with backoff; it will redeliver, so a
+          // throttled payment callback is delayed rather than lost.
+          return new Response('Too Many Requests', {
+            status: 429,
+            headers: { ...corsHeaders, ...hookLimit.headers }
+          });
+        }
+
         const update = await request.json().catch(() => ({}));
         if (!update || typeof update !== 'object') {
           return new Response(JSON.stringify({ error: 'Invalid payload' }), { status: 400, headers: corsHeaders });
@@ -1327,49 +1767,81 @@ export default {
           const telegramId = update.message.from.id;
           const chargeId = payment.telegram_payment_charge_id;
           const amount = payment.total_amount;
-          const parsed = parseStarsInvoicePayload(payment.invoice_payload);
-          const productId = parsed.productId || 'daily_unlimited';
-          const grant = resolveStarsGrant(productId);
+          const validation = validateStarsSuccessfulPayment(payment, telegramId);
 
-          if (payment.currency !== 'XTR') {
-            console.warn('Ignoring non-XTR successful_payment', payment.currency);
+          if (!validation.ok) {
+            console.warn('Ignoring invalid successful_payment', validation.error, {
+              chargeId: chargeId || null,
+              telegramId
+            });
+            // Ask Telegram to retry when we cannot persist a grant that should have succeeded.
+            if (validation.error === 'unknown_product' || validation.error === 'amount_mismatch' ||
+                validation.error === 'payer_mismatch') {
+              return new Response(JSON.stringify({ ok: false, error: validation.error }), {
+                status: 400,
+                headers: corsHeaders
+              });
+            }
             return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
           }
 
-          if (env.DB && chargeId) {
-            const existing = await env.DB.prepare(
-              'SELECT id FROM stars_transactions WHERE id = ?'
-            ).bind(chargeId).first();
+          const productId = validation.product.id;
+          const grant = validation.grant;
 
-            if (!existing) {
-              await env.DB.prepare(`
-                INSERT INTO stars_transactions (id, telegram_id, product_id, stars_amount, status, invoice_payload)
-                VALUES (?, ?, ?, ?, 'paid', ?)
-              `).bind(chargeId, telegramId, productId, amount, payment.invoice_payload || '').run();
+          if (!env.DB || !chargeId) {
+            console.error('Stars grant cannot persist: missing DB or chargeId', {
+              hasDb: !!env.DB,
+              chargeId: chargeId || null
+            });
+            return new Response(JSON.stringify({ ok: false, error: 'GRANT_PERSIST_UNAVAILABLE' }), {
+              status: 500,
+              headers: corsHeaders
+            });
+          }
 
-              const existingUser = await env.DB.prepare(
-                'SELECT tier, tier_expires_at FROM telegram_users WHERE telegram_id = ?'
-              ).bind(telegramId).first();
-              const effective = resolveEffectiveTierUpgrade(existingUser, grant.tier, grant.expiresAt);
+          // Atomic-ish idempotency: insert charge with ON CONFLICT DO NOTHING, then
+          // always re-apply the tier upsert so a post-insert user-write failure recovers
+          // on Telegram redelivery. stars_spent is derived from the charge ledger.
+          try {
+            await env.DB.prepare(`
+              INSERT INTO stars_transactions (id, telegram_id, product_id, stars_amount, status, invoice_payload)
+              VALUES (?, ?, ?, ?, 'paid', ?)
+              ON CONFLICT(id) DO NOTHING
+            `).bind(chargeId, telegramId, productId, amount, payment.invoice_payload || '').run();
 
-              await env.DB.prepare(`
-                INSERT INTO telegram_users (telegram_id, username, first_name, last_name, tier, tier_expires_at, stars_spent, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-                ON CONFLICT(telegram_id) DO UPDATE SET
-                  tier = excluded.tier,
-                  tier_expires_at = excluded.tier_expires_at,
-                  stars_spent = telegram_users.stars_spent + excluded.stars_spent,
-                  updated_at = CURRENT_TIMESTAMP
-              `).bind(
-                telegramId,
-                update.message.from.username || '',
-                update.message.from.first_name || '',
-                update.message.from.last_name || '',
-                effective.tier,
-                effective.expiresAt,
-                amount
-              ).run();
-            }
+            const existingUser = await env.DB.prepare(
+              'SELECT tier, tier_expires_at FROM telegram_users WHERE telegram_id = ?'
+            ).bind(telegramId).first();
+            const effective = resolveEffectiveTierUpgrade(existingUser, grant.tier, grant.expiresAt);
+
+            const spentRow = await env.DB.prepare(
+              'SELECT COALESCE(SUM(stars_amount), 0) AS total FROM stars_transactions WHERE telegram_id = ?'
+            ).bind(telegramId).first();
+            const starsSpentTotal = spentRow && spentRow.total != null ? Number(spentRow.total) : Number(amount);
+
+            await env.DB.prepare(`
+              INSERT INTO telegram_users (telegram_id, username, first_name, last_name, tier, tier_expires_at, stars_spent, updated_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+              ON CONFLICT(telegram_id) DO UPDATE SET
+                tier = excluded.tier,
+                tier_expires_at = excluded.tier_expires_at,
+                stars_spent = excluded.stars_spent,
+                updated_at = CURRENT_TIMESTAMP
+            `).bind(
+              telegramId,
+              update.message.from.username || '',
+              update.message.from.first_name || '',
+              update.message.from.last_name || '',
+              effective.tier,
+              effective.expiresAt,
+              starsSpentTotal
+            ).run();
+          } catch (grantErr) {
+            console.error('Stars grant persistence failed', grantErr);
+            return new Response(JSON.stringify({ ok: false, error: 'GRANT_PERSIST_FAILED' }), {
+              status: 500,
+              headers: corsHeaders
+            });
           }
 
           if (env.TELEGRAM_BOT_TOKEN) {

@@ -18,6 +18,18 @@
 (function (window) {
   'use strict';
 
+  /**
+   * Tier 1 request guard (js/request-guard.js). Telemetry is fire-and-forget and must never compete with real traffic:
+   * a single attempt, and the flush loop already applies its own backoff.
+   * Degrades to plain fetch when the guard has not loaded.
+   */
+  function guardedFetch(url, init, guardOpts) {
+    var g = (typeof window !== 'undefined' && window.APlus && window.APlus.guard) || null;
+    if (g) return g.fetch(url, init, guardOpts);
+    return fetch(url, init);
+  }
+
+
   if (!window) return;
 
   var APlus = window.APlus = window.APlus || {};
@@ -209,7 +221,17 @@
   function sendBatch(batch, cfg, onDone) {
     var body;
     try {
-      body = JSON.stringify({ installId: installId, events: batch });
+      // Never upload installId to the public item-stats ingest. Session id in
+      // buffered events is also stripped before the wire format is built.
+      var wireEvents = (batch || []).map(function (evt) {
+        if (!evt || typeof evt !== 'object') return evt;
+        return {
+          n: evt.n,
+          t: evt.t,
+          p: evt.p
+        };
+      });
+      body = JSON.stringify({ events: wireEvents });
     } catch (err) {
       onDone(false);
       return;
@@ -239,12 +261,12 @@
 
     try {
       if (typeof fetch === 'function') {
-        fetch(cfg.endpoint, {
+        guardedFetch(cfg.endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: body,
           keepalive: true
-        }).then(function (res) {
+        }, { maxAttempts: 1 }).then(function (res) {
           onDone(Boolean(res && res.ok));
         }).catch(function () {
           onDone(false);
@@ -427,6 +449,7 @@
         objective: payload.objective,
         domain: payload.domain,
         correct: payload.correct,
+        selectedOption: typeof payload.selectedOption === 'number' ? payload.selectedOption : null,
         seconds: payload.seconds,
         examType: payload.examType,
         assessmentKind: payload.assessmentKind

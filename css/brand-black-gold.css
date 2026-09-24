@@ -6330,3 +6330,56 @@ header .brand {
   padding: 0 16px;
 }
 /* a11y-hard-20260911 */
+
+/* Daily Quest (gamification P0) */
+.daily-quest .dq-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+.daily-quest .dq-progress {
+  font-size: var(--fs-small, 0.85rem);
+  color: var(--text-secondary, #9CA3AF);
+  font-variant-numeric: tabular-nums;
+}
+.daily-quest .dq-note {
+  margin: 0 0 0.5rem;
+  font-size: var(--fs-small, 0.85rem);
+  color: var(--text-secondary, #9CA3AF);
+}
+.daily-quest .dq-legs {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.daily-quest .dq-leg {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.35rem 0;
+}
+.daily-quest .dq-leg.is-done .dq-mark {
+  color: var(--accent-cyan, #22d3ee);
+}
+.daily-quest .dq-mark {
+  flex: 0 0 1.25rem;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+.daily-quest .dq-text {
+  min-width: 0;
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+.daily-quest .dq-hint {
+  display: block;
+  color: var(--text-secondary, #9CA3AF);
+  font-weight: 400;
+  font-size: 0.82rem;
+}

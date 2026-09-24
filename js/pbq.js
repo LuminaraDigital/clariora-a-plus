@@ -99,6 +99,30 @@
       where: 'Rack A14, host DC-NODE-01',
       report: 'Overnight patching left the host booting slowly with intermittent name resolution failures.',
       task: 'Run the diagnostic commands from the console. Type help to list what this console accepts.'
+    },
+    4: {
+      ticket: 'Ticket DC-5102',
+      where: 'Branch Office SOHO Gateway',
+      report: 'A branch office requires immediate network hardening to comply with enterprise security standards.',
+      task: 'Set SSID to Corp-Secure, WPA3-Personal, 80 MHz channel width, DHCP starting at 192.168.1.100, and forward HTTPS (TCP 443) to 192.168.1.50.'
+    },
+    5: {
+      ticket: 'Ticket DC-5120',
+      where: 'Server Room Patch Panel',
+      report: 'A replacement Category 6 UTP patch cord is being terminated according to T568B cabling standards.',
+      task: 'Arrange the 8 colored wire conductors from left to right (Pin 1 to Pin 8) to match the T568B standard sequence.'
+    },
+    6: {
+      ticket: 'Ticket DC-5109',
+      where: 'Engineering Workstation Bench',
+      report: 'A custom CAD workstation is being assembled from bare components.',
+      task: 'Mount the CPU in the socket, install DDR5 RAM, PCIe GPU, M.2 NVMe SSD, and attach the 24-pin ATX power connector.'
+    },
+    7: {
+      ticket: 'Ticket DC-5115',
+      where: 'Windows Storage Console',
+      report: 'A new 2 TB NVMe drive has been installed and must be initialized with GPT and formatted with NTFS.',
+      task: 'Initialize Disk 1 as GPT, create a New Simple Volume across full capacity, format as NTFS, and assign drive letter D:.'
     }
   };
 
@@ -128,7 +152,7 @@
 
     /** Put the ticket brief at the top of each lab pane. Idempotent. */
     renderLabBriefs() {
-      [1, 2, 3].forEach((n) => {
+      [1, 2, 3, 4, 5, 6, 7].forEach((n) => {
         const pane = document.getElementById(`pbqContent${n}`);
         const brief = LAB_BRIEFS[n];
         if (!pane || !brief) return;
@@ -160,7 +184,7 @@
 
     switchLab(labNum) {
       this.renderLabBriefs();
-      [1, 2, 3].forEach(n => {
+      [1, 2, 3, 4, 5, 6, 7].forEach(n => {
         const content = document.getElementById(`pbqContent${n}`);
         const tab = document.getElementById(`pbqTab${n}`);
         if (content) content.style.display = (n === labNum) ? 'block' : 'none';
@@ -184,6 +208,21 @@
           const inp = document.getElementById('terminalInput');
           if (inp) inp.focus();
         }, 100);
+      }
+      if (labNum >= 4 && window.APlus && window.APlus.pbqEngine) {
+        const labKeys = { 4: 'sohoRouter', 5: 'cablePinout', 6: 'motherboardAssembly', 7: 'windowsConsole' };
+        const labKey = labKeys[labNum];
+        const cont = document.getElementById(`pbqContent${labNum}`);
+        if (cont && labKey) {
+          // Remove old sim body if re-rendered
+          const existingBody = cont.querySelector('.pbq-sim-body');
+          if (!existingBody) {
+            window.APlus.pbqEngine.render({ pbqType: labKey }, null, cont, {
+              onSelect: () => {},
+              onSubmit: () => {}
+            });
+          }
+        }
       }
     },
 

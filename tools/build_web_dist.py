@@ -74,6 +74,12 @@ ROOT_EXTRA_FILES = [
     "privacy.html",
     "terms.html",
     "exam_data_free.js",
+    # Google Search Console domain ownership verification.
+    "googlea4923385090ac2c5.html",
+    "googleb853b3d8cec0b0ad.html",
+    # Crawl map: must be real files (SPA not_found_handling otherwise serves index.html).
+    "robots.txt",
+    "sitemap.xml",
 ]
 
 # Whole directories copied in full (minus excluded extensions/paths).
@@ -310,6 +316,13 @@ def main():
     app_index = app_dir / "index.html"
     if src_index.is_file():
         html = src_index.read_text(encoding="utf-8")
+        version = load_version()
+        html = re.sub(
+            r'<!-- APLUS_VERSION --><script>window\.APLUS_VERSION\s*=\s*["\'][^"\']+["\'];</script><!-- /APLUS_VERSION -->',
+            f'<!-- APLUS_VERSION --><script>window.APLUS_VERSION = "{version}";</script><!-- /APLUS_VERSION -->',
+            html
+        )
+        src_index.write_text(html, encoding="utf-8")
         if "<base " not in html.lower():
             html = html.replace("<head>", '<head>\n  <base href="/">', 1)
             if "<base " not in html.lower():

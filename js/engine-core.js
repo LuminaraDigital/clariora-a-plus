@@ -37,12 +37,19 @@
       { prefix: '2.0', name: '2.0 Security', weight: 28 },
       { prefix: '3.0', name: '3.0 Software Troubleshooting', weight: 23 },
       { prefix: '4.0', name: '4.0 Operational Procedures', weight: 21 }
+    ],
+    az900: [
+      { prefix: '1.0', name: '1.0 Describe cloud concepts', weight: 28 },
+      { prefix: '2.0', name: '2.0 Describe Azure architecture and services', weight: 37 },
+      { prefix: '3.0', name: '3.0 Describe Azure management and governance', weight: 35 }
     ]
   };
 
   const PASSING_SCORES = {
     core1: 675,
     core2: 700,
+    az900: 700,
+    ms_az900: 700,
     both: 675,
     domain: 675,
     missed: 675,
@@ -193,9 +200,45 @@
     }
   ];
 
+  const DEFAULT_AZ900_PBQS = [
+    {
+      id: 'PBQ-AZ-01',
+      exam: 'az900',
+      domain: '2.0 Describe Azure architecture and services',
+      objective: '2.2',
+      type: 'pbq',
+      pbqType: 'storageTiers',
+      question: 'A media enterprise is optimizing Azure Storage costs. Categorize each data tier (Hot, Cool, Cold, Archive) based on access frequency and retrieval latency requirements.',
+      explanation: 'Hot tier is optimized for frequent access with lowest access costs. Cool tier is for data accessed infrequently (stored for at least 30 days). Cold tier is for infrequently accessed data (stored for at least 90 days). Archive tier is offline storage with lowest storage cost but hours of retrieval rehydration latency.',
+      tags: ['pbq', 'storage', 'azure', 'cloud']
+    },
+    {
+      id: 'PBQ-AZ-02',
+      exam: 'az900',
+      domain: '1.0 Describe cloud concepts',
+      objective: '1.1',
+      type: 'pbq',
+      pbqType: 'sharedResponsibility',
+      question: 'Audit corporate cloud workloads against the Microsoft Shared Responsibility Model. Classify responsibility (Customer, Microsoft, or Shared) for OS Patching, Physical Datacenter Security, and Data/Information.',
+      explanation: 'In IaaS, the customer manages OS patching, middleware, and data, while Microsoft manages physical hosts and network. In SaaS, Microsoft manages everything except information and data, devices, and accounts.',
+      tags: ['pbq', 'cloud-concepts', 'shared-responsibility']
+    },
+    {
+      id: 'PBQ-AZ-03',
+      exam: 'az900',
+      domain: '2.0 Describe Azure architecture and services',
+      objective: '2.1',
+      type: 'pbq',
+      pbqType: 'azureTopology',
+      question: 'Design a highly available Azure infrastructure layout across Geographies, Regions, Availability Zones, and Resource Groups.',
+      explanation: 'Availability Zones provide fault-isolated locations within a region with independent power, cooling, and networking. Resource Groups act as logical containers for lifecycle management.',
+      tags: ['pbq', 'architecture', 'azure-topology']
+    }
+  ];
+
   /**
    * Main Stratified Sampler
-   * Supports 'core1', 'core2', 'both', 'quick'
+   * Supports 'core1', 'core2', 'az900', 'both', 'quick'
    * In full timed mock exams (targetCount >= 40), compulsory PBQs are placed first (Questions 1-3)
    */
   function sampleStratified(allQuestions, targetCount = 90, examType = 'core1') {
@@ -205,7 +248,10 @@
     let mcqTargetCount = targetCount;
 
     if (targetCount >= 40) {
-      if (examType === 'core1') {
+      if (examType === 'az900' || examType === 'ms_az900') {
+        const poolPbqs = allQuestions.filter(q => q.exam === 'az900' && q.type === 'pbq');
+        pbqsToPrepend = poolPbqs.length > 0 ? shuffle(poolPbqs).slice(0, 3) : DEFAULT_AZ900_PBQS.slice(0, 3);
+      } else if (examType === 'core1') {
         const poolPbqs = allQuestions.filter(q => (q.exam === 'core1' || !q.exam) && q.type === 'pbq');
         pbqsToPrepend = poolPbqs.length > 0 ? shuffle(poolPbqs).slice(0, 3) : DEFAULT_CORE1_PBQS.slice(0, 3);
       } else if (examType === 'core2') {
@@ -220,7 +266,10 @@
     }
 
     let sampled = [];
-    if (examType === 'core1') {
+    if (examType === 'az900' || examType === 'ms_az900') {
+      const azPool = allQuestions.filter(q => q.exam === 'az900' && q.type !== 'pbq');
+      sampled = sampleCoreStratified(azPool, DOMAIN_BLUEPRINTS.az900, Math.min(mcqTargetCount, azPool.length));
+    } else if (examType === 'core1') {
       const c1Pool = allQuestions.filter(q => (q.exam === 'core1' || !q.exam) && q.type !== 'pbq');
       sampled = sampleCoreStratified(c1Pool, DOMAIN_BLUEPRINTS.core1, Math.min(mcqTargetCount, c1Pool.length));
     } else if (examType === 'core2') {
@@ -302,11 +351,16 @@
   }
 
   /**
-   * CompTIA Scaled Score Math: 100 to 900 scale
+   * Scaled Score Math:
+   * CompTIA: 100 to 900 scale (pass 675/700)
+   * Microsoft AZ-900: 100 to 1000 scale (pass 700)
    */
-  function calcScaledScore(rawCorrect, totalQuestions) {
+  function calcScaledScore(rawCorrect, totalQuestions, examType) {
     if (!totalQuestions || totalQuestions <= 0) return 100;
     const ratio = Math.min(1, Math.max(0, rawCorrect / totalQuestions));
+    if (examType === 'az900' || examType === 'ms_az900') {
+      return Math.round(100 + (900 * ratio));
+    }
     return Math.round(100 + (800 * ratio));
   }
 

@@ -30,6 +30,18 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
+  /**
+   * Tier 1 request guard (js/request-guard.js). This module owns the offline-first mission coach, but this path reaches the
+   * same billed AI gateway as the Mini App coach. Never auto-retried.
+   * Degrades to plain fetch when the guard has not loaded.
+   */
+  function guardedFetch(url, init, guardOpts) {
+    var g = (typeof window !== 'undefined' && window.APlus && window.APlus.guard) || null;
+    if (g) return g.fetch(url, init, guardOpts);
+    return fetch(url, init);
+  }
+
+
   const STORAGE_KEY = 'ghost_coach';
   const MAX_EVENTS = 250;
   const MISSION_SIZE_DEFAULT = 12;
@@ -585,7 +597,7 @@
           return { skipped: true, reason: 'auth' };
         }
         const endpoint = memoryApiBase() + '/api/v1/memory/promote';
-        const res = await fetch(endpoint, {
+        const res = await guardedFetch(endpoint, {
           method: 'POST',
           credentials: 'include',
           headers: {

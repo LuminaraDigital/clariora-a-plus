@@ -125,7 +125,11 @@ assert.ok(workerSrc.includes('/api/v1/auth/logout'), 'Worker must expose session
 assert.ok(workerSrc.includes('Access-Control-Allow-Credentials'), 'Worker must allow credentialed CORS for cookies');
 assert.ok(workerSrc.includes('/api/v1/sync'), 'Worker must handle delta sync');
 assert.ok(workerSrc.includes('/api/v1/items/report'), 'Worker must handle defect reporting');
+assert.ok(workerSrc.includes('/api/v1/items/similar'), 'Worker must expose similar route');
 assert.ok(workerSrc.includes('/api/v1/items/stats'), 'Worker must handle community stats');
+assert.ok(workerSrc.includes('retrieve_similar_items') || fs.readFileSync(path.join(ROOT, 'workers', 'tier_policy.js'), 'utf8').includes('retrieve_similar_items'),
+  'Tier policy must allow retrieve_similar_items');
+assert.ok(workerSrc.includes('async scheduled'), 'Worker must export scheduled discrimination cron');
 assert.ok(workerSrc.includes('/api/v1/coach'), 'Worker must handle AI Ghost Coach');
 assert.ok(workerSrc.includes('/api/v1/memory/promote'), 'Worker must promote Ghost Coach memory to D1');
 assert.ok(workerSrc.includes('/api/v1/billing/stars/invoice'), 'Worker must handle Stars invoice creation');

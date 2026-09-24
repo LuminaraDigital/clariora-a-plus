@@ -485,6 +485,23 @@ function executeTool(name, args, context) {
     };
   }
 
+  if (name === 'retrieve_similar_items') {
+    const similar = Array.isArray(context.similarItems) ? context.similarItems : [];
+    const cleaned = similar.slice(0, 5).map((s) => ({
+      id: String(s.id || '').slice(0, 64),
+      objective: String(s.objective || '').slice(0, 40),
+      domain: String(s.domain || '').slice(0, 60),
+      stem: String(s.stem || s.question || '').slice(0, 180)
+    })).filter((s) => s.id);
+    return {
+      count: cleaned.length,
+      items: cleaned,
+      instruction: cleaned.length
+        ? 'Ground your explanation in these related bank items. Cite their ids when helpful. Do not invent ids.'
+        : 'No similar bank items were retrieved; stay within the provided stem and objective.'
+    };
+  }
+
   return { error: 'unknown_tool' };
 }
 
@@ -537,8 +554,24 @@ export async function runCoachTurns({
     objective: body.objective,
     missHistory: body.missHistory,
     weakDomains: body.weakDomains,
-    specialist: triage.specialist
+    specialist: triage.specialist,
+    similarItems: body._similarItems || []
   });
+
+  // Auto-attach similar-item retrieval for explain when the server prefetched neighbors.
+  if (
+    allowTool(tier, 'retrieve_similar_items') &&
+    Array.isArray(body._similarItems) &&
+    body._similarItems.length &&
+    !toolResults.find((t) => t.name === 'retrieve_similar_items')
+  ) {
+    toolResults.push({
+      name: 'retrieve_similar_items',
+      result: executeTool('retrieve_similar_items', {}, {
+        similarItems: body._similarItems
+      })
+    });
+  }
 
   let last = null;
   let turnsUsed = 0;

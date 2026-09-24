@@ -915,6 +915,7 @@
             ${this.buildExplanationHtml(q)}
             ${window.APlus && APlus.notesUI ? APlus.notesUI.renderReviewNoteHtml(q) : ''}
             ${window.APlus && APlus.communityBenchmarks ? APlus.communityBenchmarks.renderBadge(q) : ''}
+            ${window.APlus && APlus.similarQuestions ? APlus.similarQuestions.renderPanel(q) : ''}
             ${q.video_reference ? `
               <div class="review-video">
                 <span class="label">Video reference</span>

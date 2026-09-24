@@ -199,14 +199,73 @@ def validate_bank(bank, only_core=None, errors=None, warnings=None):
     return report
 
 
+def load_item_analysis(path):
+    """Load _bank/analysis/item_stats.json shaped as {question_id: stats} or {items: {...}}."""
+    if not path or not os.path.isfile(path):
+        return {}
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+    if isinstance(data, dict) and isinstance(data.get("items"), dict):
+        return data["items"]
+    if isinstance(data, dict):
+        return data
+    return {}
+
+
+def warn_item_analysis(qs, analysis, warnings):
+    """Flag bank items that community analysis marks as too easy/hard/miskeyed."""
+    if not analysis:
+        return
+    by_id = {q.get("id"): q for q in qs if isinstance(q, dict) and q.get("id")}
+    for qid, stats in analysis.items():
+        if not isinstance(stats, dict):
+            continue
+        if qid not in by_id:
+            continue
+        sample = stats.get("sample_size") or stats.get("n") or 0
+        try:
+            sample = int(sample)
+        except (TypeError, ValueError):
+            sample = 0
+        if sample < 30:
+            continue
+        p = stats.get("p_value", stats.get("p"))
+        try:
+            p = float(p) if p is not None else None
+        except (TypeError, ValueError):
+            p = None
+        pb = stats.get("point_biserial", stats.get("pb"))
+        try:
+            pb = float(pb) if pb is not None else None
+        except (TypeError, ValueError):
+            pb = None
+        flagged = bool(stats.get("flagged_miskey") or stats.get("flagged"))
+        where = f"{qid}"
+        if flagged:
+            warnings.append(f"{where} item analysis flagged_miskey (n={sample})")
+        if p is not None and p > 0.95:
+            warnings.append(f"{where} item analysis p_value={p:.3f} too easy (n={sample})")
+        if p is not None and p < 0.2:
+            warnings.append(f"{where} item analysis p_value={p:.3f} too hard or broken (n={sample})")
+        if pb is not None and pb < 0:
+            warnings.append(f"{where} item analysis point_biserial={pb:.3f} negative discrimination")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--bank", default=os.path.join(APP_DIR, "exam_data.json"))
     ap.add_argument("--core", choices=["core1", "core2"])
     ap.add_argument("--shard")
+    ap.add_argument(
+        "--analysis",
+        default=os.path.join(ROOT, "_bank", "analysis", "item_stats.json"),
+        help="Optional community item_stats.json for quality warnings",
+    )
     args = ap.parse_args()
 
     errors, warnings = [], []
+    analysis = load_item_analysis(args.analysis) if args.analysis else {}
+    all_qs = []
     if args.shard:
         with open(args.shard, encoding="utf-8") as f:
             data = json.load(f)
@@ -217,9 +276,13 @@ def main():
         cores = sorted({q.get("exam") for q in qs})
         for core in cores:
             validate_qs([q for q in qs if q.get("exam") == core], core, errors, warnings)
+        all_qs = qs
         print(f"Shard: {os.path.basename(args.shard)} ({len(qs)} questions, cores={cores})")
     else:
-        with open(args.bank, encoding="utf-8") as f:
+        bank_path = args.bank
+        if not os.path.isfile(bank_path):
+            bank_path = os.path.join(ROOT, "exam_data.json")
+        with open(bank_path, encoding="utf-8") as f:
             bank = json.load(f)
         report = validate_bank(bank, args.core, errors, warnings)
         for core, r in report.items():
@@ -227,6 +290,14 @@ def main():
             print(f"  domains: {r['domains']}")
             print(f"  types: {r['types']}")
             print(f"  with video refs: {r['with_video']} | scenario-style: {r['scenario_like']}")
+        for core in ("core1", "core2"):
+            block = bank.get(core) or []
+            if isinstance(block, dict):
+                block = block.get("questions") or []
+            if isinstance(block, list):
+                all_qs.extend(block)
+
+    warn_item_analysis(all_qs, analysis, warnings)
 
     print()
     if warnings:

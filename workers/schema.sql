@@ -38,10 +38,12 @@ CREATE TABLE IF NOT EXISTS item_telemetry (
     is_correct INTEGER NOT NULL,
     seconds_spent INTEGER NOT NULL,
     exam_type TEXT,
+    ability_proxy REAL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_telemetry_qid ON item_telemetry(question_id);
+CREATE INDEX IF NOT EXISTS idx_item_telemetry_qid_ability ON item_telemetry(question_id, ability_proxy);
 
 -- 4. Question Defect & Ambiguity Reports
 CREATE TABLE IF NOT EXISTS item_reports (
@@ -66,6 +68,13 @@ CREATE TABLE IF NOT EXISTS item_stats_cache (
     distractor_spread TEXT,            -- JSON: {"0": 12, "1": 75, "2": 8, "3": 5}
     flagged_miskey INTEGER NOT NULL DEFAULT 0,
     last_computed TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 5b. Offline / build-time similar-question neighbor cache (JSON array of ids)
+CREATE TABLE IF NOT EXISTS question_neighbors (
+    question_id TEXT PRIMARY KEY,
+    neighbor_ids TEXT NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 6. Telegram Mini App Users & Entitlements

@@ -16,7 +16,7 @@ export const TIER_POLICY = {
     maxTurns: 1,
     streaming: false,
     intents: ['explain'],
-    tools: ['lookup_objective'],
+    tools: ['lookup_objective', 'retrieve_similar_items'],
     specialists: ['hardware'],
     providers: ['groq', 'workers_ai'],
     modelsAllowlist: {
@@ -37,7 +37,7 @@ export const TIER_POLICY = {
     maxTurns: 2,
     streaming: true,
     intents: ['explain', 'drill'],
-    tools: ['lookup_objective', 'get_miss_history'],
+    tools: ['lookup_objective', 'get_miss_history', 'retrieve_similar_items'],
     specialists: ['hardware', 'networking'],
     providers: ['groq', 'workers_ai', 'nvidia'],
     modelsAllowlist: {
@@ -59,7 +59,7 @@ export const TIER_POLICY = {
     maxTurns: 4,
     streaming: true,
     intents: ['explain', 'drill', 'pbq', 'strategy'],
-    tools: ['lookup_objective', 'get_miss_history', 'build_raid_set'],
+    tools: ['lookup_objective', 'get_miss_history', 'build_raid_set', 'retrieve_similar_items'],
     specialists: ['hardware', 'networking', 'security', 'os', 'pbq'],
     providers: ['groq', 'nvidia', 'ollama', 'openrouter', 'workers_ai'],
     modelsAllowlist: {
@@ -83,7 +83,7 @@ export const TIER_POLICY = {
     maxTurns: 5,
     streaming: true,
     intents: ['explain', 'drill', 'pbq', 'strategy', 'war_room'],
-    tools: ['lookup_objective', 'get_miss_history', 'build_raid_set'],
+    tools: ['lookup_objective', 'get_miss_history', 'build_raid_set', 'retrieve_similar_items'],
     specialists: ['hardware', 'networking', 'security', 'os', 'pbq', 'exam_strategy'],
     providers: ['groq', 'nvidia', 'ollama', 'openrouter', 'workers_ai'],
     modelsAllowlist: {

@@ -4,6 +4,24 @@ All notable changes to this project are documented here. The format follows Keep
 
 ## [Unreleased]
 
+### Added
+
+- **Dual-track AZ-900:** Microsoft Azure Fundamentals bank, objectives, study
+  library, and home/exam shell shortcuts alongside CompTIA A+ Core 1 and Core 2.
+- **Community item analytics:** review UI fetches live D1 `item_stats` and hides
+  the community badge until `sample_size >= 30` (no synthetic hash %). Telemetry
+  paths cover drills and adaptive practice, not only full mocks.
+- **Similar questions:** offline `similar_neighbors.json` shipped in `dist_web`,
+  `GET /api/v1/items/similar`, Vectorize binding `clariora-question-embeddings`,
+  and Ghost Coach tool `retrieve_similar_items`.
+- **Item discrimination cron:** nightly point-biserial recompute
+  (`workers/item_discrimination.js`) with quality flags for author review.
+- **Daily Quest (flagged):** Home `#todayPlanCard` three-leg habit loop behind
+  `js/features-config.js` (`gamification.enabled`). Soft streak freeze / reset
+  in `ledger_engine.js`. Set `enabled: false` to hide.
+- **System architecture doc:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and
+  big-data edge plan [docs/BIG_DATA_IMPLEMENTATION_PLAN.md](docs/BIG_DATA_IMPLEMENTATION_PLAN.md).
+
 ### Security
 
 - Telegram WebApp `initData` now requires `auth_date` with a 1-hour replay window;
@@ -18,16 +36,6 @@ All notable changes to this project are documented here. The format follows Keep
 - Ledger toast strips scripts/handlers before HTML insert; markdown `_renderInline`
   escapes raw HTML first and blocks `javascript:` / `data:` links.
 
-### Added
-
-- **Daily Quest (flagged):** Home `#todayPlanCard` can show a three-leg habit
-  loop (Defend flashcards, Attack today's plan, Recover 3Q refresher) behind
-  `js/features-config.js` (`gamification.enabled`). Completing all legs claims
-  a once-per-day `DAILY_QUEST_COMPLETE` ledger bonus. Soft streak uses a 1-day
-  freeze / 2-day reset in `ledger_engine.js`. Share streak reads the ledger
-  facade, not Memory Raid meta. Telemetry events are aggregate only. Default
-  ships with the flag on after staging smoke; set `enabled: false` to hide.
-
 ### Changed
 
 - The product is renamed from CompTIA A+ Master to Clariora across the app
@@ -35,6 +43,10 @@ All notable changes to this project are documented here. The format follows Keep
   TON Connect manifest, legal pages, build scripts and docs. Storage keys,
   the Electron appId, the GitHub repository, the Cloudflare project name and
   the public domain are unchanged so installed apps and links keep working.
+- Packt / unlicensed git submodules removed; study notes consolidated under
+  `notes/guides`. GitHub docs and advisory links point at
+  `LuminaraDigital/clariora-a-plus`.
+- CI Actions bumped to v7; `adm-zip` 0.6.1 and Electron 44.4.x.
 
 ## [3.2.0] - 2026-09-22
 

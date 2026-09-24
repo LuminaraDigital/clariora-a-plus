@@ -1,87 +1,252 @@
 /**
  * Clariora Exam Simulator
- * community-benchmarks.js - Peer Relative Scoring & Item Analytics
+ * community-benchmarks.js - Live peer item analytics (no fabricated rates)
  * File: js/community-benchmarks.js
  *
- * Displays community peer statistics on question review panels:
- * - Community pass rate (% who answer correctly)
- * - Difficulty tier (Beginner, Intermediate, Advanced, Exam-Trap)
- * - Most common distractor trap
+ * Fetches GET /api/v1/items/stats and shows community pass rate only when
+ * sample_size >= MIN_SAMPLE. Cold items show a neutral "not enough data" note
+ * or are omitted. Never invents crowd percentages from question-id hashes.
  */
 
-(function(window) {
+(function (window) {
   'use strict';
 
   window.APlus = window.APlus || {};
   const APlus = window.APlus;
 
-  const escapeHTML = (window.APlus.utils && window.APlus.utils.escapeHTML) || ((s) => String(s || ''));
+  const MIN_SAMPLE = 30;
+  const CACHE_KEY = 'community_stats_cache';
+  const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+
+  const escapeHTML =
+    (window.APlus.utils && window.APlus.utils.escapeHTML) ||
+    function (s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    };
+
+  function apiBase() {
+    try {
+      const host = window.location && window.location.hostname;
+      if (
+        host &&
+        (host.endsWith('clariora.com.au') ||
+          host.endsWith('pages.dev') ||
+          host === 'localhost' ||
+          host === '127.0.0.1')
+      ) {
+        return '';
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    return 'https://clariora.com.au';
+  }
+
+  function guardedFetch(url, init, guardOpts) {
+    const g = (typeof window !== 'undefined' && window.APlus && window.APlus.guard) || null;
+    if (g) return g.fetch(url, init, guardOpts);
+    return fetch(url, init);
+  }
+
+  function tierFromRate(rate) {
+    if (rate >= 80) return 'Standard';
+    if (rate >= 65) return 'Moderate';
+    return 'High Difficulty / Trap';
+  }
+
+  function dominantTrap(spreadJson, options) {
+    let spread = {};
+    try {
+      if (typeof spreadJson === 'string') spread = JSON.parse(spreadJson || '{}');
+      else if (spreadJson && typeof spreadJson === 'object') spread = spreadJson;
+    } catch (_) {
+      spread = {};
+    }
+    let bestKey = null;
+    let bestN = 0;
+    let total = 0;
+    Object.keys(spread).forEach(function (k) {
+      const n = Number(spread[k]) || 0;
+      total += n;
+      if (n > bestN) {
+        bestN = n;
+        bestKey = k;
+      }
+    });
+    if (bestKey == null || total < MIN_SAMPLE) return null;
+    const share = bestN / total;
+    if (share < 0.25) return null;
+    const idx = Number(bestKey);
+    let label = 'Option ' + (idx + 1);
+    if (Array.isArray(options) && options[idx] != null) {
+      label = String(options[idx]).slice(0, 48);
+    }
+    return { index: idx, label: label, share: Math.round(share * 100) };
+  }
+
+  function normalizeRemote(row) {
+    if (!row || typeof row !== 'object') return null;
+    const sampleSize = Number(row.sample_size) || 0;
+    const p = row.p_value == null ? null : Number(row.p_value);
+    const correctRate =
+      p != null && Number.isFinite(p) ? Math.round(Math.min(100, Math.max(0, p * 100))) : null;
+    return {
+      questionId: String(row.question_id || row.questionId || ''),
+      sampleSize: sampleSize,
+      correctRate: correctRate,
+      pValue: p,
+      pointBiserial: row.point_biserial == null ? null : Number(row.point_biserial),
+      distractorSpread: row.distractor_spread || null,
+      flaggedMiskey: Number(row.flagged_miskey) === 1,
+      fetchedAt: Date.now(),
+      provisional: sampleSize < MIN_SAMPLE || row.provisional === true
+    };
+  }
 
   const CommunityBenchmarks = {
     statsCache: {},
+    inflight: {},
 
     init() {
-      // Pre-warm stats cache from local or remote
       this.loadCachedStats();
     },
 
     loadCachedStats() {
-      if (APlus.storage) {
-        this.statsCache = APlus.storage.get('community_stats_cache', {});
+      if (!APlus.storage) return;
+      try {
+        const raw = APlus.storage.get(CACHE_KEY, {});
+        if (raw && typeof raw === 'object') this.statsCache = raw;
+      } catch (_) {
+        this.statsCache = {};
+      }
+    },
+
+    persistCache() {
+      if (!APlus.storage) return;
+      try {
+        APlus.storage.set(CACHE_KEY, this.statsCache);
+      } catch (_) {
+        /* ignore quota */
       }
     },
 
     /**
-     * Get or compute deterministic baseline benchmark for a question
+     * Sync read for render. Returns null when there is not enough live data.
+     * Never invents a percentage.
      */
     getBenchmark(q) {
       if (!q || !q.id) return null;
-
-      // Return server-synced stats if available
-      if (this.statsCache[q.id]) {
-        return this.statsCache[q.id];
-      }
-
-      // Compute consistent baseline metric from question attributes
-      const diff = q.difficulty || 'medium';
-      let baselineRate = 72; // default 72%
-      if (diff === 'easy') baselineRate = 86;
-      else if (diff === 'hard') baselineRate = 58;
-
-      if (q.type === 'multi' || q.type === 'order' || q.type === 'match' || q.type === 'pbq') {
-        baselineRate = Math.max(48, baselineRate - 12);
-      }
-
-      // Stable hash variance based on question ID
-      let hash = 0;
-      for (let i = 0; i < q.id.length; i++) {
-        hash = (hash * 31 + q.id.charCodeAt(i)) % 15;
-      }
-      const adjustedRate = Math.min(94, Math.max(42, baselineRate + (hash - 7)));
-
+      const cached = this.statsCache[q.id];
+      if (!cached || cached.provisional || cached.sampleSize < MIN_SAMPLE) return null;
+      if (cached.correctRate == null) return null;
+      const trap = dominantTrap(cached.distractorSpread, q.options);
       return {
         questionId: q.id,
-        sampleSize: 120 + (hash * 28),
-        correctRate: adjustedRate,
-        difficultyTier: adjustedRate >= 80 ? 'Standard' : adjustedRate >= 65 ? 'Moderate' : 'High Difficulty / Trap',
-        trapDistractor: q.type === 'single' ? 'Distractor' : null
+        sampleSize: cached.sampleSize,
+        correctRate: cached.correctRate,
+        difficultyTier: tierFromRate(cached.correctRate),
+        trapDistractor: trap ? trap.label : null,
+        trapShare: trap ? trap.share : null,
+        flaggedMiskey: Boolean(cached.flaggedMiskey),
+        live: true
       };
     },
 
+    /**
+     * Prefetch live stats for a question (and warm cache). Safe to call often.
+     */
+    fetchStats(questionId) {
+      const qid = String(questionId || '').trim().slice(0, 64);
+      if (!qid) return Promise.resolve(null);
+
+      const existing = this.statsCache[qid];
+      if (existing && existing.fetchedAt && Date.now() - existing.fetchedAt < CACHE_TTL_MS) {
+        return Promise.resolve(existing);
+      }
+      if (this.inflight[qid]) return this.inflight[qid];
+
+      const url = apiBase() + '/api/v1/items/stats?qid=' + encodeURIComponent(qid);
+      const self = this;
+      this.inflight[qid] = guardedFetch(
+        url,
+        { method: 'GET', credentials: 'omit' },
+        { maxAttempts: 1, coalesceKey: 'item-stats:' + qid }
+      )
+        .then(function (res) {
+          if (!res || !res.ok) return null;
+          return res.json();
+        })
+        .then(function (data) {
+          const norm = normalizeRemote(data);
+          if (norm && norm.questionId) {
+            self.statsCache[norm.questionId] = norm;
+            self.persistCache();
+          }
+          return norm;
+        })
+        .catch(function () {
+          return null;
+        })
+        .then(function (norm) {
+          delete self.inflight[qid];
+          return norm;
+        });
+
+      return this.inflight[qid];
+    },
+
     renderBadge(q) {
+      if (!q || !q.id) return '';
+      // Fire-and-forget warm; review re-render may pick it up later.
+      try {
+        this.fetchStats(q.id);
+      } catch (_) {
+        /* ignore */
+      }
+
       const b = this.getBenchmark(q);
-      if (!b) return '';
-
-      const rateColor = b.correctRate >= 75 ? 'var(--color-success)' : b.correctRate >= 60 ? 'var(--color-warning)' : 'var(--color-danger)';
-
-      return `
-        <div class="community-benchmark-badge" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px; padding: 0.35rem 0.65rem; font-size: 0.78rem; margin-top: 0.5rem;">
-          <span style="color: var(--accent-cyan); font-weight: 700; display: inline-flex; align-items: center; gap: 4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="12" width="4" height="8" rx="1"/><rect x="10" y="8" width="4" height="12" rx="1"/><rect x="17" y="4" width="4" height="16" rx="1"/></svg> Community Benchmark:</span>
-          <span><strong style="color: ${rateColor};">${b.correctRate}%</strong> of candidates answered correctly</span>
+      if (b) {
+        const rateColor =
+          b.correctRate >= 75
+            ? 'var(--color-success)'
+            : b.correctRate >= 60
+              ? 'var(--color-warning)'
+              : 'var(--color-danger)';
+        const trapBit = b.trapDistractor
+          ? `<span style="color: var(--text-muted);">&bull;</span>
+             <span style="color: var(--text-secondary);">Common trap: ${escapeHTML(b.trapDistractor)}${
+               b.trapShare != null ? ' (' + b.trapShare + '%)' : ''
+             }</span>`
+          : '';
+        const miskeyBit = b.flaggedMiskey
+          ? `<span style="color: var(--color-warning); font-weight: 700;">Under review</span>`
+          : '';
+        return `
+        <div class="community-benchmark-badge" data-qid="${escapeHTML(q.id)}" style="display: inline-flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px; padding: 0.35rem 0.65rem; font-size: 0.78rem; margin-top: 0.5rem;">
+          <span style="color: var(--accent-cyan); font-weight: 700; display: inline-flex; align-items: center; gap: 4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="12" width="4" height="8" rx="1"/><rect x="10" y="8" width="4" height="12" rx="1"/><rect x="17" y="4" width="4" height="16" rx="1"/></svg> Community:</span>
+          <span><strong style="color: ${rateColor};">${b.correctRate}%</strong> correct (n=${b.sampleSize})</span>
           <span style="color: var(--text-muted);">&bull;</span>
           <span style="color: var(--text-secondary);">${escapeHTML(b.difficultyTier)}</span>
-        </div>
-      `;
+          ${trapBit}
+          ${miskeyBit}
+        </div>`;
+      }
+
+      const pending = this.statsCache[q.id];
+      if (pending && pending.sampleSize > 0 && pending.sampleSize < MIN_SAMPLE) {
+        return `
+        <div class="community-benchmark-badge community-benchmark-pending" data-qid="${escapeHTML(q.id)}" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(148, 163, 184, 0.08); border: 1px solid rgba(148, 163, 184, 0.25); border-radius: 6px; padding: 0.35rem 0.65rem; font-size: 0.78rem; margin-top: 0.5rem; color: var(--text-secondary);">
+          Community benchmark: gathering data (${pending.sampleSize}/${MIN_SAMPLE})
+        </div>`;
+      }
+
+      // No fabricated rates. Omit badge until live data exists.
+      return `<div class="community-benchmark-slot" data-qid="${escapeHTML(q.id)}" hidden></div>`;
     }
   };
 
@@ -89,10 +254,11 @@
 
   if (typeof document !== 'undefined') {
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => CommunityBenchmarks.init());
+      document.addEventListener('DOMContentLoaded', function () {
+        CommunityBenchmarks.init();
+      });
     } else {
       CommunityBenchmarks.init();
     }
   }
-
 })(typeof window !== 'undefined' ? window : this);

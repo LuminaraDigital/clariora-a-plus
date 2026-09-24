@@ -444,7 +444,7 @@
 
     bus.on('item:answered', function (payload) {
       payload = payload || {};
-      track('item_answered', {
+      var props = {
         questionId: payload.questionId,
         objective: payload.objective,
         domain: payload.domain,
@@ -453,7 +453,11 @@
         seconds: payload.seconds,
         examType: payload.examType,
         assessmentKind: payload.assessmentKind
-      });
+      };
+      if (typeof payload.abilityProxy === 'number' && Number.isFinite(payload.abilityProxy)) {
+        props.abilityProxy = Math.max(0, Math.min(1, payload.abilityProxy));
+      }
+      track('item_answered', props);
     });
 
     bus.on('assessment:started', function (payload) {

@@ -23,6 +23,7 @@ import {
   extractAndStoreCoachTurn,
   assembleCoachBootContext
 } from './agent_memory.js';
+import { findSimilarQuestionIds } from './question_vectors.js';
 import {
   detectPromptInjection,
   checkIntentAndDrift,
@@ -273,6 +274,28 @@ export async function handleCoachRequest({
     }
   } catch (memReadErr) {
     console.warn('agent_memory boot pack skipped:', memReadErr && memReadErr.message);
+  }
+
+  // Prefetch similar bank items for RAG-style coach grounding (ids + short stems).
+  try {
+    const seedText = [body.question, body.objective, body.prompt].filter(Boolean).join(' ').slice(0, 1200);
+    const sim = await findSimilarQuestionIds(env, {
+      qid: body.questionId || body.qid || '',
+      text: seedText,
+      k: 5
+    });
+    if (sim && Array.isArray(sim.ids) && sim.ids.length) {
+      body = Object.assign({}, body, {
+        _similarItems: sim.ids.map((id) => ({
+          id,
+          objective: body.objective || '',
+          domain: body.domain || '',
+          stem: ''
+        }))
+      });
+    }
+  } catch (simErr) {
+    console.warn('similar prefetch skipped:', simErr && simErr.message);
   }
 
   const startTime = Date.now();

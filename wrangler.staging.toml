@@ -35,6 +35,13 @@ migrations_dir = "migrations"
 [ai]
 binding = "AI"
 
+[[vectorize]]
+binding = "VECTORIZE"
+index_name = "clariora-question-embeddings"
+
+[triggers]
+crons = ["0 6 * * *"]
+
 [[durable_objects.bindings]]
 name = "COACH_RATE_LIMITER"
 class_name = "CoachRateLimiter"

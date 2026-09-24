@@ -12,21 +12,20 @@ Thank you for helping technicians pass their exams. This guide covers how the pr
 ## Getting set up
 
 ```bash
-git clone https://github.com/LuminaraDigital/comptia-a-plus-master.git
-cd comptia-a-plus-master
-git submodule update --init --recursive
+git clone https://github.com/LuminaraDigital/clariora-a-plus.git
+cd clariora-a-plus
 npm install
 pip install -r requirements-dev.txt
 ```
 
-Run the app with `npm start` (desktop) or serve the folder with any static server (web).
+Run the app with `npm start` (desktop) or serve the folder with any static server (web). Production lives at https://clariora.com.au.
 
 ## Where things live
 
 - Engine and UI modules are in `js/`. Each module is a plain IIFE that hangs off `window.APlus`. There is no bundler by design, so keep modules dependency-free and browser-safe.
 - Exam questions live in `_bank/shards/*.json` and are merged into `exam_data.json` by `tools/build_bank.py`. Do not edit `exam_data.json` directly.
 - The question schema, domain strings and quality bar are defined in [BUILD_SPEC.md](BUILD_SPEC.md). The validator enforces them.
-- Study notes are Markdown in `CompTIA_A_Plus_Mastery/` and `notes/`. They are compiled into `study_library.json` by `build_study_library.py`.
+- Study notes are Markdown in `notes/` (including `notes/guides/`). They are compiled into `study_library.json` by `build_study_library.py`.
 
 ## Adding or fixing questions
 

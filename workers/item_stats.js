@@ -37,7 +37,7 @@ export function mergeDistractorSpread(existingJson, selectedOption) {
 /**
  * Normalize one event from either clean shape or telemetry {name, props} shape.
  * @param {any} raw
- * @returns {null|{questionId:string,selectedOption:number|null,isCorrect:0|1,secondsSpent:number,examType:string|null}}
+ * @returns {null|{questionId:string,selectedOption:number|null,isCorrect:0|1,secondsSpent:number,examType:string|null,abilityProxy:number|null}}
  */
 export function normalizeTelemetryEvent(raw) {
   if (!raw || typeof raw !== 'object') return null;
@@ -80,26 +80,47 @@ export function normalizeTelemetryEvent(raw) {
     examType = String(examType).slice(0, MAX_EXAM_TYPE);
   }
 
-  return { questionId, selectedOption, isCorrect, secondsSpent, examType };
+  // Anonymous 0..1 ability estimate (session accuracy / readiness). Never a user id.
+  let abilityProxy = null;
+  const abRaw = src.abilityProxy != null ? src.abilityProxy : src.ability_proxy;
+  if (typeof abRaw === 'number' && Number.isFinite(abRaw)) {
+    abilityProxy = Math.max(0, Math.min(1, abRaw));
+  }
+
+  return { questionId, selectedOption, isCorrect, secondsSpent, examType, abilityProxy };
 }
 
 /**
  * @param {D1Database} db
- * @param {{questionId:string,selectedOption:number|null,isCorrect:0|1,secondsSpent:number,examType:string|null}} event
+ * @param {{questionId:string,selectedOption:number|null,isCorrect:0|1,secondsSpent:number,examType:string|null,abilityProxy:number|null}} event
  */
 export async function appendTelemetryAndUpsertStats(db, event) {
-  await db.prepare(
-    'INSERT INTO item_telemetry (question_id, selected_option, is_correct, seconds_spent, exam_type) VALUES (?, ?, ?, ?, ?)'
-  ).bind(
-    event.questionId,
-    event.selectedOption,
-    event.isCorrect,
-    event.secondsSpent,
-    event.examType
-  ).run();
+  try {
+    await db.prepare(
+      'INSERT INTO item_telemetry (question_id, selected_option, is_correct, seconds_spent, exam_type, ability_proxy) VALUES (?, ?, ?, ?, ?, ?)'
+    ).bind(
+      event.questionId,
+      event.selectedOption,
+      event.isCorrect,
+      event.secondsSpent,
+      event.examType,
+      event.abilityProxy
+    ).run();
+  } catch (_) {
+    // Pre-migration D1: column may not exist yet.
+    await db.prepare(
+      'INSERT INTO item_telemetry (question_id, selected_option, is_correct, seconds_spent, exam_type) VALUES (?, ?, ?, ?, ?)'
+    ).bind(
+      event.questionId,
+      event.selectedOption,
+      event.isCorrect,
+      event.secondsSpent,
+      event.examType
+    ).run();
+  }
 
   const existing = await db.prepare(
-    'SELECT distractor_spread FROM item_stats_cache WHERE question_id = ?'
+    'SELECT distractor_spread, point_biserial FROM item_stats_cache WHERE question_id = ?'
   ).bind(event.questionId).first();
 
   const distractorJson = mergeDistractorSpread(
@@ -107,11 +128,17 @@ export async function appendTelemetryAndUpsertStats(db, event) {
     event.selectedOption
   );
 
+  // Preserve prior point_biserial until the discrimination cron recomputes it.
+  const priorPb =
+    existing && existing.point_biserial != null && Number.isFinite(Number(existing.point_biserial))
+      ? Number(existing.point_biserial)
+      : null;
+
   const pNew = event.isCorrect;
   await db.prepare(
     `INSERT INTO item_stats_cache (
       question_id, sample_size, correct_count, p_value, point_biserial, distractor_spread, flagged_miskey, last_computed
-    ) VALUES (?, 1, ?, ?, 0.35, ?, 0, CURRENT_TIMESTAMP)
+    ) VALUES (?, 1, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
     ON CONFLICT(question_id) DO UPDATE SET
       sample_size = item_stats_cache.sample_size + 1,
       correct_count = item_stats_cache.correct_count + excluded.correct_count,
@@ -119,7 +146,7 @@ export async function appendTelemetryAndUpsertStats(db, event) {
                 / (item_stats_cache.sample_size + 1),
       distractor_spread = excluded.distractor_spread,
       last_computed = CURRENT_TIMESTAMP`
-  ).bind(event.questionId, pNew, pNew, distractorJson).run();
+  ).bind(event.questionId, pNew, pNew, priorPb, distractorJson).run();
 
   // Optional miskey hint when enough samples and a wrong option dominates.
   const row = await db.prepare(

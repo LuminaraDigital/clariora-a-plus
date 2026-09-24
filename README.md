@@ -1,12 +1,16 @@
 # Clariora
 
-An offline-first exam simulator and study suite for the CompTIA A+ Core 1 (220-1201) and Core 2 (220-1202) certifications. It ships as a progressive web app, a Windows and macOS desktop app built on Electron, and a terminal exam runner in Python.
+**Production deployment:** [https://clariora.com.au](https://clariora.com.au)  
+**Status:** production-ready (release gate PASS, live TMA health OK, CI green on `main`)
+
+An offline-first exam simulator and study suite for CompTIA A+ Core 1 (220-1201), Core 2 (220-1202), and Microsoft Azure AZ-900. It ships as a progressive web app, a Windows / macOS / Linux desktop app built on Electron, a Telegram Mini App, and a terminal exam runner in Python.
 
 Built by Datacentre Academy for technicians training for datacentre and enterprise IT support roles. Licensed under the GNU Affero General Public License v3.0.
 
-[![CI](https://github.com/LuminaraDigital/comptia-a-plus-master/actions/workflows/ci.yml/badge.svg)](https://github.com/LuminaraDigital/comptia-a-plus-master/actions/workflows/ci.yml)
+[![CI](https://github.com/LuminaraDigital/clariora-a-plus/actions/workflows/ci.yml/badge.svg)](https://github.com/LuminaraDigital/clariora-a-plus/actions/workflows/ci.yml)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-3.1.4-gold.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-3.1.5-gold.svg)](CHANGELOG.md)
+[![Live](https://img.shields.io/badge/live-clariora.com.au-0a7a3e.svg)](https://clariora.com.au)
 
 ## Screenshots
 
@@ -32,20 +36,28 @@ Captured from the Windows desktop build at 1440 by 900 with `node tools/capture_
 
 **Exam engine that mirrors the real test**
 
-- 90 questions in 90 minutes, sampled to the official domain weightings for each exam
-- A bank of 1,130 questions, enough for five fresh mock exams per core before any question repeats, each with a full explanation, distractor analysis and a mapped video
-- Scaled scoring from 100 to 900 with the real pass marks (675 for Core 1, 700 for Core 2)
+- Dual-track: CompTIA A+ Core 1 / Core 2 timed mocks, plus Microsoft Azure AZ-900
+- 90 questions in 90 minutes for A+ cores, sampled to the official domain weightings
+- A bank of 1,130+ A+ questions (plus a dedicated AZ-900 bank), each with explanation, distractor analysis, and mapped study media where available
+- Scaled scoring from 100 to 900 with the real pass marks (675 Core 1, 700 Core 2, 700 AZ-900)
 - Single answer, multiple answer, matching, ordering and performance-based question types
-- Flag for review, distractor strike-through, question matrix, pause and resume
-- Domain drills, missed-question drills and an adaptive practice loop that targets weak objectives
+- Flag for review, distractor strike-through, question matrix, pause and resume, Pearson-mode scratchpad
+- Domain drills, missed-question drills, notes/flags drills, and an adaptive practice loop that targets weak objectives
 
 **Study tools**
 
 - A study library built from the objectives, the academy's own notes and open course material
 - Spaced repetition memory mode for facts, ports and command syntax
-- Objective tracker and readiness score against every sub-objective in both blueprints
-- A Professor Messer video index mapped to each objective
-- Ghost Coach, an optional AI tutor that explains a question when you ask (bring your own Groq key)
+- Objective tracker and readiness score against every sub-objective
+- Personal takeaways, mnemonics, and a central study notebook with Markdown export
+- High-yield cram sheet (ports, troubleshooting flow, cabling, Wi-Fi, RAID, CLI)
+- Ghost Coach, an optional AI tutor on the Cloudflare edge (rate-limited free surface + paid rails)
+
+**Community analytics (edge)**
+
+- Live community item stats from D1 when sample size is large enough (no synthetic fake %)
+- Similar-questions on review via offline neighbor file plus optional Vectorize / Workers AI
+- Nightly point-biserial discrimination job for bank quality flags
 
 **Proof of mastery**
 
@@ -54,11 +66,12 @@ Captured from the Windows desktop build at 1440 by 900 with `node tools/capture_
 
 **Runs anywhere**
 
+- Live at [clariora.com.au](https://clariora.com.au) on Cloudflare Workers (assets + API on the same origin)
+- Telegram Mini App via [@ClarioraBot](https://t.me/ClarioraBot)
 - In-app updates on desktop: the app checks GitHub Releases, shows what is new, and installs it when you press the button
 - Installable PWA with a service worker for full offline use
 - Electron desktop builds for Windows (installer and portable), macOS (DMG) and Linux (AppImage and deb)
 - Optional cloud sync through Supabase, off by default
-- Cloudflare Workers static deployment for the web edition
 
 ## Quick start
 
@@ -97,7 +110,7 @@ python practice_exam.py
 | `tools/` | Build, validation, release, test and deploy scripts |
 | `_bank/shards/` | Source shards that the bank builder merges into `exam_data.json` |
 | `notes/` | Comprehensive certification study notes, recall tables, and domain guides in Markdown |
-| `docs/` | System architecture, release, deployment, monetisation and sync guides (see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)) |
+| `docs/` | System architecture, release, deployment, monetisation and sync guides (see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md); big-data edge plan in [docs/BIG_DATA_IMPLEMENTATION_PLAN.md](docs/BIG_DATA_IMPLEMENTATION_PLAN.md)) |
 | `supabase/` | Schema for the optional sync backend |
 | `workers/` | Cloudflare edge proxy, token budget, and AI orchestrator |
 | `functions/` | Firebase Cloud Functions v2 and security services |

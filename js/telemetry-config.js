@@ -18,7 +18,7 @@
     endpoint: 'https://clariora.com.au/api/v1/items/telemetry',
 
     // Master switch. Even when true, nothing is sent until the user consents.
-    enabled: false,
+    enabled: true,
 
     // How often (ms) the buffer is flushed to the endpoint when online.
     flushIntervalMs: 60000,

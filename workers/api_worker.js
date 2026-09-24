@@ -13,6 +13,8 @@
  * 5. /api/v1/items/report         - Question problem & ambiguity reporting
  * 6. /api/v1/items/stats          - Community item difficulty & discrimination stats
  * 6b. /api/v1/items/telemetry     - Anonymous item outcome ingest (upserts item_stats_cache)
+ * 6c. /api/v1/items/similar       - Semantic / neighbor similar questions
+ * 6d. Cron: item discrimination recompute (point-biserial)
  * 7. /api/v1/coach                - Gated multi-provider AI gateway (budgets, triage, tools)
  * 7b. /api/v1/coach/stream        - SSE streaming coach (paid tiers)
  * 7c. /api/v1/coach/jobs          - Pro async exam review packs + DLQ
@@ -47,6 +49,8 @@ import {
 import { handleCoachRequest } from './coach_handler.js';
 import { promoteGhostCoachTelemetry } from './agent_memory.js';
 import { ingestItemTelemetryBatch } from './item_stats.js';
+import { recomputeItemDiscrimination } from './item_discrimination.js';
+import { findSimilarQuestionIds, upsertQuestionVectors } from './question_vectors.js';
 
 import {
   withAppBase,
@@ -93,6 +97,7 @@ const PUBLIC_API_ROUTES = [
   { method: 'GET', path: '/api/v1/live' },
   { method: 'GET', path: '/api/v1/ready' },
   { method: 'GET', path: '/api/v1/items/stats' },
+  { method: 'GET', path: '/api/v1/items/similar' },
   { method: 'POST', path: '/api/v1/items/telemetry' },
   { method: 'POST', path: '/api/v1/auth/session' },
   { method: 'POST', path: '/api/v1/auth/telegram' },
@@ -161,6 +166,16 @@ export function resolveEffectiveTierUpgrade(existingUser, newTier, newExpiresAt)
 export { CoachRateLimiter };
 
 export default {
+  async scheduled(event, env, ctx) {
+    // Nightly (and any configured cron): recompute point-biserial + quality flags.
+    try {
+      const result = await recomputeItemDiscrimination(env.DB, { limit: 300 });
+      console.log('item_discrimination cron', JSON.stringify(result));
+    } catch (err) {
+      console.warn('item_discrimination cron failed:', err && err.message);
+    }
+  },
+
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const origin = request.headers.get('Origin') || '';
@@ -1004,6 +1019,33 @@ export default {
           p_value: null,
           sample_size: 0,
           provisional: true
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // 5c. Similar questions (Vectorize when bound, else D1 neighbor cache)
+      if (path === '/api/v1/items/similar' && request.method === 'GET') {
+        const questionId = String(url.searchParams.get('qid') || '').slice(0, 64);
+        const k = Math.min(10, Math.max(1, Number(url.searchParams.get('k')) || 5));
+        const text = String(url.searchParams.get('q') || '').slice(0, 500);
+        const simLimit = await enforceDualKeyLimit(env, request, 'item_similar', {
+          ipPerMinute: 60
+        });
+        if (!simLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many similar-item requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...simLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+        const result = await findSimilarQuestionIds(env, { qid: questionId, text, k });
+        return new Response(JSON.stringify({
+          question_id: questionId || null,
+          ids: result.ids || [],
+          source: result.source || 'none'
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });

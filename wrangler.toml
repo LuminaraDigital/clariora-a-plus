@@ -34,6 +34,16 @@ migrations_dir = "migrations"
 [ai]
 binding = "AI"
 
+# Vectorize index for semantic similar-questions (create once):
+#   npx wrangler vectorize create clariora-question-embeddings --dimensions=384 --metric=cosine
+[[vectorize]]
+binding = "VECTORIZE"
+index_name = "clariora-question-embeddings"
+
+# Nightly item discrimination (point-biserial) recompute
+[triggers]
+crons = ["0 6 * * *"]
+
 [[durable_objects.bindings]]
 name = "COACH_RATE_LIMITER"
 class_name = "CoachRateLimiter"

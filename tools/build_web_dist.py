@@ -74,6 +74,8 @@ ROOT_EXTRA_FILES = [
     "privacy.html",
     "terms.html",
     "exam_data_free.js",
+    # Offline similar-question neighbors (built by tools/build_similar_neighbors.py).
+    "similar_neighbors.json",
     # Google Search Console domain ownership verification.
     "googlea4923385090ac2c5.html",
     "googleb853b3d8cec0b0ad.html",

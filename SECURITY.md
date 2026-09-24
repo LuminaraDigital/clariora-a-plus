@@ -11,7 +11,7 @@
 
 Please report vulnerabilities privately through GitHub's advisory form:
 
-https://github.com/LuminaraDigital/comptia-a-plus-master/security/advisories/new
+https://github.com/LuminaraDigital/clariora-a-plus/security/advisories/new
 
 If you cannot use that form, email luminaradigitalagency@gmail.com with the subject line "Clariora security".
 

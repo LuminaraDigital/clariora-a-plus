@@ -126,6 +126,7 @@
       this.assessmentKind = null;
       this.questionEnteredAt = Date.now();
       this.questionSeconds = {};
+      this._itemAnsweredEmitted = new Set();
     }
 
     start(config = {}) {
@@ -265,6 +266,39 @@
         question: q,
         isTutorMode: revealAllowed
       });
+
+      // Emit per-item analytics on every practice path (drills, raids, mocks).
+      // Re-answers for the same id in-session overwrite for telemetry (latest).
+      if (APlus.bus && typeof APlus.bus.emit === 'function' && q.id) {
+        if (!this._itemAnsweredEmitted) this._itemAnsweredEmitted = new Set();
+        this._itemAnsweredEmitted.add(q.id);
+        let abilityProxy = null;
+        try {
+          if (APlus.readiness2 && typeof APlus.readiness2.compute === 'function') {
+            const hist = APlus.storage ? APlus.storage.get('history', []) : [];
+            const examKey = this.type === 'core2' ? 'core2' : 'core1';
+            const r = APlus.readiness2.compute({ exam: examKey, history: hist });
+            if (r && typeof r.readiness === 'number' && Number.isFinite(r.readiness)) {
+              abilityProxy = Math.max(0, Math.min(1, r.readiness / 100));
+            } else if (r && r.predicted && typeof r.predicted.point === 'number') {
+              abilityProxy = Math.max(0, Math.min(1, (r.predicted.point - 100) / 800));
+            }
+          }
+        } catch (_) {
+          abilityProxy = null;
+        }
+        APlus.bus.emit('item:answered', {
+          questionId: q.id,
+          objective: q.objective || null,
+          domain: q.domain || null,
+          correct: isCorrect,
+          selectedOption: typeof answerValue === 'number' ? answerValue : null,
+          seconds: secondsOnQuestion,
+          examType: this.type,
+          assessmentKind: this.assessmentKind || this.mode || null,
+          abilityProxy: abilityProxy
+        });
+      }
     }
 
     toggleEliminateOption(optionIdx) {
@@ -446,9 +480,18 @@
 
       APlus.bus.emit('exam:finished', resultsPayload);
 
-      // Per-item anonymised outcomes for premium item analysis (ids only).
+      // Finish-path backfill for answered items not already emitted mid-session
+      // (e.g. Pearson exam-day mode where answers were locked without mid emit).
       if (APlus.bus && typeof APlus.bus.emit === 'function') {
+        const emitted = this._itemAnsweredEmitted || new Set();
+        let abilityProxy = null;
+        try {
+          if (total > 0) abilityProxy = Math.max(0, Math.min(1, rawCorrect / total));
+        } catch (_) {
+          abilityProxy = null;
+        }
         perQuestion.forEach(function (row) {
+          if (!row || !row.id || emitted.has(row.id)) return;
           APlus.bus.emit('item:answered', {
             questionId: row.id,
             objective: row.objective || null,
@@ -457,7 +500,8 @@
             selectedOption: typeof row.answer === 'number' ? row.answer : null,
             seconds: row.secondsOnQuestion || 0,
             examType: resultsPayload.examType,
-            assessmentKind: resultsPayload.assessmentKind || null
+            assessmentKind: resultsPayload.assessmentKind || null,
+            abilityProxy: abilityProxy
           });
         });
       }

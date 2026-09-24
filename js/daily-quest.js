@@ -485,9 +485,12 @@
 
     html += '<ul class="dq-legs" role="list">';
     checklist.forEach(function (item) {
+      var markSvg = item.done
+        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:inline-block;vertical-align:-1px;"><polyline points="20 6 9 17 4 12"/></svg>'
+        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:inline-block;vertical-align:-1px;"><circle cx="12" cy="12" r="9"/></svg>';
       html += '<li class="dq-leg' + (item.done ? ' is-done' : '') + '"' +
         (item.done ? ' aria-current="true"' : '') + '>';
-      html += '<span class="dq-mark" aria-hidden="true">' + (item.done ? '✓' : '○') + '</span>';
+      html += '<span class="dq-mark" aria-hidden="true">' + markSvg + '</span>';
       html += '<span class="dq-text"><strong>' + esc(item.title) + '</strong> ';
       html += '<span class="dq-hint">' + esc(item.hint) + '</span></span></li>';
     });

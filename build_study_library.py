@@ -22,7 +22,6 @@ SOURCE_FOLDERS = [
     "CompTIA-A-Certification-220-1001-The-Total-Course",
     "TOTAL-CompTIA-A-Core-1-220-1201-v15-Course",
     "CompTIA-A-Certification-Core-1---220-1101",
-    "CompTIA-A-Plus-Practice-Questions",
 ]
 
 PDF_MAX_CHARS = 100000

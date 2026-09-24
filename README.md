@@ -97,8 +97,10 @@ python practice_exam.py
 | `tools/` | Build, validation, release, test and deploy scripts |
 | `_bank/shards/` | Source shards that the bank builder merges into `exam_data.json` |
 | `CompTIA_A_Plus_Mastery/`, `notes/` | The academy's study notes in Markdown |
-| `docs/` | Release, deployment, monetisation and sync guides |
+| `docs/` | System architecture, release, deployment, monetisation and sync guides (see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)) |
 | `supabase/` | Schema for the optional sync backend |
+| `workers/` | Cloudflare edge proxy, token budget, and AI orchestrator |
+| `functions/` | Firebase Cloud Functions v2 and security services |
 
 Open course material from Packt Publishing is pulled in as git submodules. Run this after cloning if you want to rebuild the exam bank or study library from source:
 

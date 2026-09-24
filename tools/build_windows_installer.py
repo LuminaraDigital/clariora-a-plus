@@ -115,7 +115,7 @@ CANONICAL_FILES = [
     "curriculum_outline.js",
     "PROFESSOR_MESSER_220_1201_INDEX.md",
     "PROFESSOR_MESSER_220_1202_INDEX.md",
-    "README_EXAM_SUITE.md",
+    "README.md",
 ]
 
 CANONICAL_DIRS = [
@@ -125,7 +125,6 @@ CANONICAL_DIRS = [
     "notes",
     "shards",
     "CompTIA_A_Plus_Mastery",
-    "CompTIA-A-Plus-Practice-Questions",
 ]
 
 # Never copied into the packaged app.

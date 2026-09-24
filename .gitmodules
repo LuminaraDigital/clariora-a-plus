@@ -10,6 +10,3 @@
 [submodule "CompTIA-A-Certification-220-1001-The-Total-Course"]
 	path = CompTIA-A-Certification-220-1001-The-Total-Course
 	url = https://github.com/PacktPublishing/CompTIA-A-Certification-220-1001-The-Total-Course.git
-[submodule "CompTIA-A-Plus-Practice-Questions"]
-	path = CompTIA-A-Plus-Practice-Questions
-	url = https://github.com/siennafaleiro/CompTIA-A-Plus-Practice-Questions.git

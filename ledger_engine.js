@@ -51,7 +51,7 @@
       cost: 90,
       type: "consumable",
       charges: 5,
-      icon: "🤖"
+      icon: ""
     },
     STREAK_FREEZE: {
       id: "STREAK_FREEZE",
@@ -60,7 +60,7 @@
       cost: 200,
       type: "consumable",
       charges: 1,
-      icon: "🛡️"
+      icon: ""
     },
     WEAK_SCAN: {
       id: "WEAK_SCAN",
@@ -68,7 +68,7 @@
       desc: "Deep-dive diagnostic report highlighting sub-objective weaknesses",
       cost: 150,
       type: "feature",
-      icon: "🔍"
+      icon: ""
     },
     CRAM_SHEET: {
       id: "CRAM_SHEET",
@@ -76,7 +76,7 @@
       desc: "Printable high-density summary sheet covering Core 1 & Core 2",
       cost: 1800,
       type: "permanent",
-      icon: "📑"
+      icon: ""
     },
     CYBER_THEME: {
       id: "CYBER_THEME",
@@ -84,7 +84,7 @@
       desc: "High-contrast neon green and obsidian terminal visual theme",
       cost: 600,
       type: "permanent",
-      icon: "💻"
+      icon: ""
     }
   };
 

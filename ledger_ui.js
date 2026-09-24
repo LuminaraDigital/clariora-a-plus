@@ -62,7 +62,7 @@
     for (let i = 0; i < 7; i++) {
       const coin = document.createElement("div");
       coin.className = "l2e-floating-coin";
-      coin.textContent = "🪙";
+      coin.textContent = "+1";
       coin.style.cssText = `
         position: fixed;
         left: ${window.innerWidth / 2 + (Math.random() * 100 - 50)}px;
@@ -149,14 +149,14 @@
 
       if (target) {
         const pct = Math.min(100, Math.round((w.balance / target.cost) * 100));
-        goalTitle.textContent = `${target.icon || "⚡"} ${target.name}`;
+        goalTitle.textContent = target.name;
         if (goalCost) goalCost.textContent = `${target.cost} APX`;
         goalBar.style.width = `${pct}%`;
         if (goalText) goalText.textContent = `${w.balance} / ${target.cost} APX (${pct}%)`;
 
         if (goalRem) {
           if (w.balance >= target.cost) {
-            goalRem.textContent = "🎉 Ready to Unlock! Tap to claim";
+            goalRem.textContent = "Ready to unlock. Tap to claim.";
             goalRem.style.color = "var(--gold-light)";
             goalBar.style.background = "linear-gradient(90deg, #10B981, #059669)";
           } else {
@@ -214,13 +214,13 @@
     if (buffEl) {
       const activeBuffs = [];
       if (unlocksState.consumables && unlocksState.consumables.AI_BURST > 0) {
-        activeBuffs.push(`🤖 AI Burst: ${unlocksState.consumables.AI_BURST} prompts`);
+        activeBuffs.push(`AI Burst: ${unlocksState.consumables.AI_BURST} prompts`);
       }
       if (unlocksState.consumables && unlocksState.consumables.STREAK_FREEZE > 0) {
-        activeBuffs.push(`🛡️ Streak Shield: Active (${unlocksState.consumables.STREAK_FREEZE})`);
+        activeBuffs.push(`Streak Shield: Active (${unlocksState.consumables.STREAK_FREEZE})`);
       }
       if (unlocksState.permanent && unlocksState.permanent.length > 0) {
-        activeBuffs.push(`⭐ ${unlocksState.permanent.length} permanent unlocked`);
+        activeBuffs.push(`${unlocksState.permanent.length} permanent unlocked`);
       }
       buffEl.innerHTML = activeBuffs.length ? activeBuffs.join(" · ") : "No active buffs";
     }
@@ -235,9 +235,9 @@
 
           let btnHtml = "";
           if (owned && OWNED_ACTIONS[item.id]) {
-            btnHtml = `<button type="button" class="btn btn-primary" style="font-size:0.8rem; padding:0.35rem 0.65rem;" onclick="useOwnedUnlock('${item.id}')">✓ ${OWNED_ACTIONS[item.id].label}</button>`;
+            btnHtml = `<button type="button" class="btn btn-primary" style="font-size:0.8rem; padding:0.35rem 0.65rem;" onclick="useOwnedUnlock('${item.id}')">${OWNED_ACTIONS[item.id].label}</button>`;
           } else if (owned) {
-            btnHtml = `<button type="button" class="btn btn-secondary" style="font-size:0.8rem; padding:0.35rem 0.65rem;" disabled>✓ Owned</button>`;
+            btnHtml = `<button type="button" class="btn btn-secondary" style="font-size:0.8rem; padding:0.35rem 0.65rem;" disabled>Owned</button>`;
           } else if (!canAfford) {
             btnHtml = `<button type="button" class="btn btn-secondary" style="font-size:0.8rem; padding:0.35rem 0.65rem; opacity:0.6;" disabled>Need ${item.cost} ${state.tokenSymbol}</button>`;
           } else {
@@ -254,7 +254,7 @@
           return `<div style="padding:0.75rem; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-card); display:flex; flex-direction:column; justify-content:space-between; gap:0.5rem;">
             <div>
               <div style="display:flex; justify-content:space-between; align-items:center;">
-                <strong>${item.icon || "⚡"} ${escapeSafe(item.name)}</strong>
+                <strong>${escapeSafe(item.name)}</strong>
                 ${badgeHtml}
               </div>
               <div style="font-size:0.78rem; color:var(--text-secondary); margin-top:0.3rem;">${escapeSafe(item.desc)}</div>
@@ -340,7 +340,7 @@
           </div>
           <div style="display:flex; justify-content:space-between; margin-bottom: 0.4rem;">
             <span style="color:var(--text-secondary);">Item:</span>
-            <strong>${item.icon || "⚡"} ${escapeSafe(item.name)}</strong>
+            <strong>${escapeSafe(item.name)}</strong>
           </div>
           <div style="display:flex; justify-content:space-between; margin-bottom: 0.4rem;">
             <span style="color:var(--text-secondary);">Cost:</span>
@@ -353,7 +353,7 @@
         </div>
 
         <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4;">
-          🔒 <strong>Educational Safe Transaction</strong>: This block will be signed on your device with your ECDSA P-256 private key and linked to your immutable audit chain. No external network fees or real money involved.
+          <strong>Educational Safe Transaction</strong>: This block will be signed on your device with your ECDSA P-256 private key and linked to your immutable audit chain. No external network fees or real money involved.
         </p>
 
         <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
@@ -392,7 +392,7 @@
       spawnCoinShower();
 
       toast(
-        `<strong>${res.item.icon || "⚡"} Unlocked: ${escapeSafe(res.item.name)}</strong><br><span style="color:var(--text-secondary);font-size:0.75rem;">Mined into Block #${res.block.index}</span>`,
+        `<strong>Unlocked: ${escapeSafe(res.item.name)}</strong><br><span style="color:var(--text-secondary);font-size:0.75rem;">Mined into Block #${res.block.index}</span>`,
         "earn"
       );
 
@@ -557,7 +557,7 @@
       const shield = await CompTIALedger.applyStreakShields();
       if (shield && shield.used > 0) {
         toast(
-          `🛡️ <strong>Streak Shield used</strong> (${shield.used})<br>Your ${shield.streak}-day streak is safe. Study today to keep it going.`,
+          `<strong>Streak Shield used</strong> (${shield.used})<br>Your ${shield.streak}-day streak is safe. Study today to keep it going.`,
           "earn"
         );
       }
@@ -616,7 +616,7 @@
     modal.innerHTML = `
       <div class="modal-card" style="max-width:640px;width:95%;max-height:90vh;overflow-y:auto;">
         <div class="modal-header" style="display:flex;justify-content:space-between;align-items:center;">
-          <h3 id="deficitScanTitle" style="margin:0;">🔍 Mastery Deficit Scan</h3>
+          <h3 id="deficitScanTitle" style="margin:0;">Mastery Deficit Scan</h3>
           <button type="button" class="btn btn-secondary btn-icon" onclick="closeDeficitScan()" aria-label="Close">X</button>
         </div>
         <p style="font-size:0.82rem;color:var(--text-secondary);margin:0.5rem 0 0.9rem;">

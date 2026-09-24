@@ -12,7 +12,6 @@ These repositories are referenced as submodules and are not copied into this rep
 | `CompTIA-A-Core-1-220-1201-Certification-Training-Exam-Prep` | https://github.com/PacktPublishing/CompTIA-A-Core-1-220-1201-Certification-Training-Exam-Prep | MIT |
 | `CompTIA-A-Certification-Core-1---220-1101` | https://github.com/PacktPublishing/CompTIA-A-Certification-Core-1---220-1101 | MIT |
 | `CompTIA-A-Certification-220-1001-The-Total-Course` | https://github.com/PacktPublishing/CompTIA-A-Certification-220-1001-The-Total-Course | MIT |
-| `CompTIA-A-Plus-Practice-Questions` | https://github.com/siennafaleiro/CompTIA-A-Plus-Practice-Questions | See upstream |
 
 Portions of `exam_data.json` and `study_library.json` are derived from the quiz spreadsheets and section guides in the Packt repositories above, used under the MIT licence with this attribution.
 

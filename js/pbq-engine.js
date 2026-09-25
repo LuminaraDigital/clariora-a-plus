@@ -290,8 +290,224 @@
       }
     },
 
+    /**
+     * Render the unified Action Toolbar for interactive PBQ simulations:
+     * - "Verify & Submit Configuration" button
+     * - "Reset Lab" button
+     * - Evaluation feedback container (#pbqEvalResult)
+     */
+    renderActionToolbar(container, pbqType, state, callbacks, resetFn) {
+      callbacks = callbacks || {};
+      if (typeof callbacks.onSelect !== 'function') callbacks.onSelect = () => {};
+      if (typeof callbacks.onSubmit !== 'function') callbacks.onSubmit = () => {};
+
+      const lab = this.getLab(pbqType);
+      const toolbar = document.createElement('div');
+      toolbar.className = 'pbq-action-toolbar';
+      toolbar.style = 'margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 0.75rem;';
+      toolbar.innerHTML = `
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+          <button type="button" class="btn btn-green pbq-verify-btn" style="padding: 0.55rem 1.25rem; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem;">
+            <span>✔</span> <span>Verify &amp; Submit Configuration</span>
+          </button>
+          <button type="button" class="btn btn-secondary pbq-reset-btn" style="padding: 0.55rem 1.1rem; font-size: 0.85rem; cursor: pointer;">
+            Reset Lab
+          </button>
+        </div>
+        <div id="pbqEvalResult" class="pbq-eval-result" aria-live="polite"></div>
+      `;
+      container.appendChild(toolbar);
+
+      const verifyBtn = toolbar.querySelector('.pbq-verify-btn');
+      const resetBtn = toolbar.querySelector('.pbq-reset-btn');
+      const evalBox = toolbar.querySelector('#pbqEvalResult');
+
+      verifyBtn.onclick = () => {
+        const passed = this.score({ pbqType }, state);
+        if (passed) {
+          evalBox.innerHTML = `
+            <div style="border-radius: 6px; border: 1px solid #10b981; background: rgba(16, 185, 129, 0.15); padding: 0.85rem 1.1rem; margin-top: 0.5rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: #10b981; font-size: 0.95rem;">
+                <span>✔</span> <span>CONFIGURATION VERIFIED - 100% COMPLETE</span>
+              </div>
+              <div style="font-size: 0.85rem; color: #e2e8f0; margin-top: 0.4rem; line-height: 1.45;">
+                All parameters match enterprise specifications. Ticket validated and committed to the ledger (+18 APX).
+              </div>
+            </div>
+          `;
+          if (window.APlus && window.APlus.sound && typeof window.APlus.sound.playSuccess === 'function') {
+            window.APlus.sound.playSuccess();
+          }
+          if (window.CompTIALedgerUI && typeof window.CompTIALedgerUI.onPbqComplete === 'function') {
+            window.CompTIALedgerUI.onPbqComplete(lab.title);
+          } else if (window.CompTIALedger && typeof window.CompTIALedger.recordPbqComplete === 'function') {
+            window.CompTIALedger.recordPbqComplete(lab.title);
+          }
+          if (window.APlus && window.APlus.bus && typeof window.APlus.bus.emit === 'function') {
+            window.APlus.bus.emit('pbq:completed', { lab: pbqType, correct: true, score: 100 });
+          }
+          if (typeof callbacks.onSubmit === 'function') {
+            callbacks.onSubmit({ passed: true, state, score: 100 });
+          }
+        } else {
+          const diagnostics = this.getDiagnostics(pbqType, state);
+          evalBox.innerHTML = `
+            <div style="border-radius: 6px; border: 1px solid #ef4444; background: rgba(239, 68, 68, 0.15); padding: 0.85rem 1.1rem; margin-top: 0.5rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: #ef4444; font-size: 0.95rem;">
+                <span>✖</span> <span>CONFIGURATION INCOMPLETE OR INCORRECT</span>
+              </div>
+              <div style="font-size: 0.85rem; color: #cbd5e1; margin-top: 0.4rem;">
+                Please resolve the following ${diagnostics.length} issue${diagnostics.length === 1 ? '' : 's'}:
+              </div>
+              <ul style="margin: 0.4rem 0 0 1.2rem; padding: 0; font-size: 0.84rem; color: #fca5a5; line-height: 1.5;">
+                ${diagnostics.map(d => `<li>${escapeHTML(d)}</li>`).join('')}
+              </ul>
+            </div>
+          `;
+          if (window.APlus && window.APlus.sound && typeof window.APlus.sound.playClick === 'function') {
+            window.APlus.sound.playClick();
+          }
+          if (typeof callbacks.onSubmit === 'function') {
+            callbacks.onSubmit({ passed: false, state, score: 0, diagnostics });
+          }
+        }
+      };
+
+      resetBtn.onclick = () => {
+        if (window.APlus && window.APlus.sound && typeof window.APlus.sound.playClick === 'function') {
+          window.APlus.sound.playClick();
+        }
+        evalBox.innerHTML = '';
+        if (typeof resetFn === 'function') {
+          resetFn();
+        }
+      };
+    },
+
+    /**
+     * Compute specific diagnostic feedback for incomplete or misconfigured simulations
+     */
+    getDiagnostics(pbqType, userState) {
+      const lab = this.getLab(pbqType);
+      const s = userState || {};
+      const sol = lab.solution;
+      const issues = [];
+
+      if (pbqType === 'sohoRouter') {
+        const currentSsid = (s.ssid || '').trim();
+        if (!currentSsid) {
+          issues.push("Wireless SSID (Network Name) is not configured. Expected '" + sol.ssid + "'.");
+        } else if (currentSsid.toLowerCase() !== sol.ssid.toLowerCase()) {
+          issues.push("Wireless SSID is '" + currentSsid + "' (expected '" + sol.ssid + "').");
+        }
+
+        if (s.securityMode !== sol.securityMode) {
+          issues.push("Security mode is '" + (s.securityMode || 'Disabled') + "' (expected '" + sol.securityMode + "').");
+        }
+
+        if (s.encryption !== sol.encryption) {
+          issues.push("Encryption cipher is '" + (s.encryption || 'None') + "' (expected '" + sol.encryption + "' / AES-CCMP).");
+        }
+
+        if (s.channelWidth !== sol.channelWidth) {
+          issues.push("5 GHz channel width is '" + (s.channelWidth || '20 MHz') + "' (expected '" + sol.channelWidth + "' for high throughput).");
+        }
+
+        const currentStartIp = (s.startingIp || '').trim();
+        if (currentStartIp !== sol.startingIp) {
+          issues.push("DHCP starting IP is '" + (currentStartIp || 'empty') + "' (expected '" + sol.startingIp + "' to reserve 192.168.1.2-.99 for servers).");
+        }
+
+        const currentPort = (s.forwardPort || '').trim();
+        if (currentPort !== sol.forwardPort) {
+          issues.push("Port forwarding port is '" + (currentPort || 'empty') + "' (expected '" + sol.forwardPort + "' for HTTPS).");
+        }
+
+        const currentFwdIp = (s.forwardIp || '').trim();
+        if (currentFwdIp !== sol.forwardIp) {
+          issues.push("Port forwarding destination IP is '" + (currentFwdIp || 'empty') + "' (expected '" + sol.forwardIp + "').");
+        }
+
+        if (!s.forwardEnabled) {
+          issues.push("Port forwarding HTTPS rule is not active. Check the 'Active' checkbox in the NAT table.");
+        }
+      } else if (pbqType === 'cablePinout') {
+        const seq = s.sequence || [];
+        const solSeq = T568B_SEQUENCE;
+
+        for (let i = 0; i < 8; i++) {
+          const wire = seq[i];
+          const exp = solSeq[i];
+          const expName = (WIRE_COLORS[exp] && WIRE_COLORS[exp].name) || exp;
+          if (!wire) {
+            issues.push("Pin " + (i + 1) + " is unassigned (expected " + exp + " - " + expName + ").");
+          } else if (wire !== exp) {
+            const actName = (WIRE_COLORS[wire] && WIRE_COLORS[wire].name) || wire;
+            issues.push("Pin " + (i + 1) + " has " + wire + " (" + actName + "), expected " + exp + " (" + expName + ").");
+          }
+        }
+
+        if (seq.length === 8 && seq.every((w, i) => w === T568A_SEQUENCE[i])) {
+          issues.unshift("Standard mismatch: Wires currently match T568A pinout. Reconfigure according to T568B standard.");
+        }
+      } else if (pbqType === 'motherboardAssembly') {
+        const slots = s.slots || {};
+        const solSlots = lab.solution;
+        const slotLabels = {
+          'socket_cpu': 'CPU Socket (LGA 1700)',
+          'slot_ram1': 'DIMM Slot A2 (DDR5)',
+          'slot_pcie_top': 'Primary PCIe x16 Slot',
+          'slot_m2_nvme': 'M.2 NVMe Slot (PCIe 4.0 x4)',
+          'conn_atx_power': '24-Pin ATX Main Power Header'
+        };
+
+        Object.keys(solSlots).forEach((k) => {
+          const assigned = slots[k];
+          const expected = solSlots[k];
+          const expComp = lab.components.find(c => c.id === expected);
+          const expName = expComp ? expComp.name : expected;
+          const slotName = slotLabels[k] || k;
+
+          if (!assigned) {
+            issues.push(slotName + " is unpopulated (requires " + expName + ").");
+          } else if (assigned !== expected) {
+            const actComp = lab.components.find(c => c.id === assigned);
+            const actName = actComp ? actComp.name : assigned;
+            issues.push(slotName + " has incorrect component '" + actName + "' (expected " + expName + ").");
+          }
+        });
+      } else if (pbqType === 'windowsConsole') {
+        if (!s.diskInitialized) {
+          issues.push("Disk 1 is Not Initialized. Click 'Initialize Disk 1 as GPT'.");
+        } else if (s.partitionStyle !== sol.partitionStyle) {
+          issues.push("Disk 1 partition style is " + s.partitionStyle + " (expected " + sol.partitionStyle + " to support volumes >2 TB).");
+        }
+
+        if (!s.volumeCreated) {
+          issues.push("No volume created on Disk 1. Click 'Run New Simple Volume Wizard'.");
+        } else {
+          if (s.driveLetter !== sol.driveLetter) {
+            issues.push("Drive letter is '" + (s.driveLetter || 'unassigned') + "' (expected '" + sol.driveLetter + "').");
+          }
+          if (s.fileSystem !== sol.fileSystem) {
+            issues.push("File system is '" + (s.fileSystem || 'unformatted') + "' (expected '" + sol.fileSystem + "').");
+          }
+          if ((s.volumeLabel || '').trim().toUpperCase() !== sol.volumeLabel.toUpperCase()) {
+            issues.push("Volume label is '" + (s.volumeLabel || '') + "' (expected '" + sol.volumeLabel + "').");
+          }
+        }
+      }
+
+      return issues;
+    },
+
     /* 1. SOHO Wireless Router Simulation */
     renderSohoRouter(container, state, callbacks) {
+      callbacks = callbacks || {};
+      if (typeof callbacks.onSelect !== 'function') callbacks.onSelect = () => {};
+      if (typeof callbacks.onSubmit !== 'function') callbacks.onSubmit = () => {};
+
+      const lab = PBQ_CATALOG.sohoRouter;
       const activeTab = state.activeTab || 'wireless';
       const updateState = (updates) => {
         Object.assign(state, updates);
@@ -316,7 +532,8 @@
       const pane = container.querySelector('#router_pane');
 
       const renderTabContent = () => {
-        if (activeTab === 'wireless') {
+        const curTab = state.activeTab || 'wireless';
+        if (curTab === 'wireless') {
           pane.innerHTML = `
             <div style="display: grid; grid-template-columns: 180px 1fr; gap: 0.8rem; align-items: center; font-size: 0.88rem;">
               <label style="font-weight: 600;">Wireless Network Name (SSID):</label>
@@ -351,7 +568,7 @@
           pane.querySelector('#cfg_sec').onchange = (e) => updateState({ securityMode: e.target.value });
           pane.querySelector('#cfg_enc').onchange = (e) => updateState({ encryption: e.target.value });
           pane.querySelector('#cfg_width').onchange = (e) => updateState({ channelWidth: e.target.value });
-        } else if (activeTab === 'dhcp') {
+        } else if (curTab === 'dhcp') {
           pane.innerHTML = `
             <div style="display: grid; grid-template-columns: 200px 1fr; gap: 0.8rem; align-items: center; font-size: 0.88rem;">
               <label style="font-weight: 600;">Gateway LAN IP:</label>
@@ -361,7 +578,7 @@
               <div><span style="color: #10b981; font-weight: 700;">Enabled</span> (Serving /24 Scope)</div>
 
               <label style="font-weight: 600;">Starting IP Address:</label>
-              <input type="text" id="cfg_startip" value="${escapeHTML(state.startingIp || '192.168.1.100')}" style="background: #1e293b; border: 1px solid var(--border-color); color: #fff; padding: 0.45rem 0.6rem; border-radius: 4px; max-width: 220px;" />
+              <input type="text" id="cfg_startip" value="${escapeHTML(state.startingIp || '192.168.1.2')}" style="background: #1e293b; border: 1px solid var(--border-color); color: #fff; padding: 0.45rem 0.6rem; border-radius: 4px; max-width: 220px;" />
 
               <label style="font-weight: 600;">Ending IP Address:</label>
               <input type="text" id="cfg_endip" value="${escapeHTML(state.endingIp || '192.168.1.254')}" style="background: #1e293b; border: 1px solid var(--border-color); color: #fff; padding: 0.45rem 0.6rem; border-radius: 4px; max-width: 220px;" />
@@ -369,7 +586,7 @@
           `;
           pane.querySelector('#cfg_startip').oninput = (e) => updateState({ startingIp: e.target.value.trim() });
           pane.querySelector('#cfg_endip').oninput = (e) => updateState({ endingIp: e.target.value.trim() });
-        } else if (activeTab === 'nat') {
+        } else if (curTab === 'nat') {
           pane.innerHTML = `
             <div style="font-size: 0.88rem; margin-bottom: 0.8rem;">Configure inbound Virtual Server / Port Forwarding table:</div>
             <table style="width: 100%; border-collapse: collapse; font-size: 0.84rem; text-align: left;">
@@ -412,16 +629,39 @@
         }
       };
 
-      container.querySelector('#tab_wireless').onclick = () => { updateState({ activeTab: 'wireless' }); this.renderSohoRouter(container, state, callbacks); };
-      container.querySelector('#tab_dhcp').onclick = () => { updateState({ activeTab: 'dhcp' }); this.renderSohoRouter(container, state, callbacks); };
-      container.querySelector('#tab_nat').onclick = () => { updateState({ activeTab: 'nat' }); this.renderSohoRouter(container, state, callbacks); };
+      const setTab = (tabName) => {
+        state.activeTab = tabName;
+        updateState({ activeTab: tabName });
+        ['wireless', 'dhcp', 'nat'].forEach((t) => {
+          const btn = container.querySelector('#tab_' + t);
+          if (btn) btn.className = 'btn ' + (t === tabName ? 'btn-primary' : 'btn-secondary');
+        });
+        renderTabContent();
+      };
+
+      container.querySelector('#tab_wireless').onclick = () => setTab('wireless');
+      container.querySelector('#tab_dhcp').onclick = () => setTab('dhcp');
+      container.querySelector('#tab_nat').onclick = () => setTab('nat');
 
       renderTabContent();
+
+      this.renderActionToolbar(container, 'sohoRouter', state, callbacks, () => {
+        const def = JSON.parse(JSON.stringify(lab.defaultState));
+        Object.keys(state).forEach(k => delete state[k]);
+        Object.assign(state, def);
+        callbacks.onSelect(state);
+        this.renderSohoRouter(container, state, callbacks);
+      });
     },
 
     /* 2. Motherboard Component Assembly Simulation */
     renderMotherboardAssembly(container, state, callbacks) {
+      callbacks = callbacks || {};
+      if (typeof callbacks.onSelect !== 'function') callbacks.onSelect = () => {};
+      if (typeof callbacks.onSubmit !== 'function') callbacks.onSubmit = () => {};
+
       const slots = state.slots || {};
+      state.slots = slots;
       const lab = PBQ_CATALOG.motherboardAssembly;
 
       const slotLabels = {
@@ -433,9 +673,18 @@
       };
 
       const updateSlot = (slotKey, compId) => {
-        const nextSlots = { ...slots, [slotKey]: compId };
-        callbacks.onSelect({ slots: nextSlots });
-        this.renderMotherboardAssembly(container, { slots: nextSlots }, callbacks);
+        slots[slotKey] = compId || null;
+        callbacks.onSelect({ slots });
+        const card = container.querySelector(`.mb-slot-card[data-slot="${slotKey}"]`);
+        const assignedComp = lab.components.find(c => c.id === compId);
+        if (card) {
+          card.style.borderColor = assignedComp ? 'var(--accent-cyan)' : 'var(--border-color)';
+          const statusDiv = card.querySelector('.mb-slot-status');
+          if (statusDiv) {
+            statusDiv.style.color = assignedComp ? '#fff' : 'var(--text-secondary)';
+            statusDiv.innerHTML = assignedComp ? `[Installed] ${escapeHTML(assignedComp.name)}` : '<em>[Empty Slot - Select component below]</em>';
+          }
+        }
       };
 
       let slotsHtml = '<div style="display: flex; flex-direction: column; gap: 0.6rem;">';
@@ -444,10 +693,10 @@
         const assignedComp = lab.components.find(c => c.id === currentCompId);
 
         slotsHtml += `
-          <div style="background: #111827; border: 1px solid ${assignedComp ? 'var(--accent-cyan)' : 'var(--border-color)'}; border-radius: 6px; padding: 0.6rem 0.8rem; display: flex; justify-content: space-between; align-items: center;">
+          <div class="mb-slot-card" data-slot="${slotKey}" style="background: #111827; border: 1px solid ${assignedComp ? 'var(--accent-cyan)' : 'var(--border-color)'}; border-radius: 6px; padding: 0.6rem 0.8rem; display: flex; justify-content: space-between; align-items: center;">
             <div>
               <div style="font-size: 0.78rem; color: var(--gold-primary); font-weight: 700; text-transform: uppercase;">${escapeHTML(slotLabels[slotKey])}</div>
-              <div style="font-size: 0.9rem; font-weight: 600; color: ${assignedComp ? '#fff' : 'var(--text-secondary)'};">
+              <div class="mb-slot-status" style="font-size: 0.9rem; font-weight: 600; color: ${assignedComp ? '#fff' : 'var(--text-secondary)'};">
                 ${assignedComp ? `[Installed] ${escapeHTML(assignedComp.name)}` : '<em>[Empty Slot - Select component below]</em>'}
               </div>
             </div>
@@ -477,10 +726,21 @@
           updateSlot(slotKey, e.target.value || null);
         };
       });
+
+      this.renderActionToolbar(container, 'motherboardAssembly', state, callbacks, () => {
+        state.slots = { socket_cpu: null, slot_ram1: null, slot_pcie_top: null, slot_m2_nvme: null, conn_atx_power: null };
+        callbacks.onSelect({ slots: state.slots });
+        this.renderMotherboardAssembly(container, state, callbacks);
+      });
     },
 
     /* 3. Windows Disk Management Console Simulation */
     renderWindowsConsole(container, state, callbacks) {
+      callbacks = callbacks || {};
+      if (typeof callbacks.onSelect !== 'function') callbacks.onSelect = () => {};
+      if (typeof callbacks.onSubmit !== 'function') callbacks.onSubmit = () => {};
+
+      const lab = PBQ_CATALOG.windowsConsole;
       const isInit = Boolean(state.diskInitialized);
       const isVol = Boolean(state.volumeCreated);
 
@@ -563,18 +823,36 @@
       }
 
       const btnReset = container.querySelector('#btn_reset_disk');
-      if (btnReset) btnReset.onclick = () => updateState(JSON.parse(JSON.stringify(PBQ_CATALOG.windowsConsole.defaultState)));
+      if (btnReset) btnReset.onclick = () => updateState(JSON.parse(JSON.stringify(lab.defaultState)));
+
+      this.renderActionToolbar(container, 'windowsConsole', state, callbacks, () => {
+        Object.keys(state).forEach(k => delete state[k]);
+        Object.assign(state, JSON.parse(JSON.stringify(lab.defaultState)));
+        callbacks.onSelect(state);
+        this.renderWindowsConsole(container, state, callbacks);
+      });
     },
 
     /* 4. Network Cable Crimping & Pinout Simulation */
     renderCablePinout(container, state, callbacks) {
+      callbacks = callbacks || {};
+      if (typeof callbacks.onSelect !== 'function') callbacks.onSelect = () => {};
+      if (typeof callbacks.onSubmit !== 'function') callbacks.onSubmit = () => {};
+
+      const lab = PBQ_CATALOG.cablePinout;
       const sequence = state.sequence || [null, null, null, null, null, null, null, null];
+      state.sequence = sequence;
 
       const updateSlotWire = (pinIdx, wireKey) => {
-        const nextSeq = [...sequence];
-        nextSeq[pinIdx] = wireKey || null;
-        callbacks.onSelect({ sequence: nextSeq });
-        this.renderCablePinout(container, { sequence: nextSeq }, callbacks);
+        sequence[pinIdx] = wireKey || null;
+        state.sequence = sequence;
+        callbacks.onSelect({ sequence });
+        const swatch = container.querySelector(`.pin-swatch[data-pin="${pinIdx}"]`);
+        const wireSpec = wireKey ? WIRE_COLORS[wireKey] : null;
+        if (swatch) {
+          swatch.style.border = `2px solid ${wireSpec ? wireSpec.border : '#475569'}`;
+          swatch.style.background = wireSpec ? wireSpec.bg : '#0f172a';
+        }
       };
 
       let pinsHtml = '<div style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 0.4rem; margin-bottom: 1rem;">';
@@ -585,7 +863,7 @@
         pinsHtml += `
           <div style="background: #1e293b; border: 1px solid var(--border-color); border-radius: 6px; padding: 0.5rem 0.2rem; text-align: center;">
             <div style="font-size: 0.75rem; font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.3rem;">Pin ${i + 1}</div>
-            <div style="height: 60px; border-radius: 4px; margin: 0 auto 0.4rem auto; width: 22px; border: 2px solid ${wireSpec ? wireSpec.border : '#475569'}; background: ${wireSpec ? wireSpec.bg : '#0f172a'};"></div>
+            <div class="pin-swatch" data-pin="${i}" style="height: 60px; border-radius: 4px; margin: 0 auto 0.4rem auto; width: 22px; border: 2px solid ${wireSpec ? wireSpec.border : '#475569'}; background: ${wireSpec ? wireSpec.bg : '#0f172a'};"></div>
             <select class="pin-wire-select" data-pin="${i}" style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #fff; font-size: 0.7rem; padding: 0.2rem; border-radius: 3px;">
               <option value="">--</option>
               ${Object.keys(WIRE_COLORS).map(k => `
@@ -610,6 +888,12 @@
           const pinIdx = parseInt(e.target.getAttribute('data-pin'), 10);
           updateSlotWire(pinIdx, e.target.value);
         };
+      });
+
+      this.renderActionToolbar(container, 'cablePinout', state, callbacks, () => {
+        state.sequence = [null, null, null, null, null, null, null, null];
+        callbacks.onSelect({ sequence: state.sequence });
+        this.renderCablePinout(container, state, callbacks);
       });
     },
 
@@ -768,13 +1052,14 @@
         const sol = lab.solution;
         const s = userState;
         return (
-          (s.ssid || '').toLowerCase() === sol.ssid.toLowerCase() &&
+          (s.ssid || '').trim().toLowerCase() === sol.ssid.toLowerCase() &&
           s.securityMode === sol.securityMode &&
           s.encryption === sol.encryption &&
           s.channelWidth === sol.channelWidth &&
-          s.startingIp === sol.startingIp &&
-          s.forwardPort === sol.forwardPort &&
-          s.forwardIp === sol.forwardIp &&
+          (s.startingIp || '').trim() === sol.startingIp &&
+          (s.forwardPort || '').trim() === sol.forwardPort &&
+          (s.forwardIp || '').trim() === sol.forwardIp &&
+          (s.forwardProtocol === 'TCP' || s.forwardProtocol === 'BOTH') &&
           s.forwardEnabled === true
         );
       }
@@ -794,7 +1079,7 @@
           s.volumeCreated === sol.volumeCreated &&
           s.driveLetter === sol.driveLetter &&
           s.fileSystem === sol.fileSystem &&
-          (s.volumeLabel || '').toUpperCase() === sol.volumeLabel.toUpperCase()
+          (s.volumeLabel || '').trim().toUpperCase() === sol.volumeLabel.toUpperCase()
         );
       }
 

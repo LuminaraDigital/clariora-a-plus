@@ -92,6 +92,29 @@
       examKey: 'az900',
       objectivesKey: 'az900',
       shardPrefix: 'az900_'
+    },
+    'az500': {
+      id: 'az500',
+      code: 'AZ-500',
+      vendor: 'Microsoft',
+      title: 'Microsoft Azure Security Technologies',
+      subtitle: 'Identity, Network Security, Compute/Storage & Security Operations',
+      scoreMin: 100,
+      scoreMax: 1000,
+      passingScore: 700,
+      timeMinutes: 100,
+      questionCount: 50,
+      badge: 'Azure AZ-500',
+      icon: 'shield',
+      blueprint: [
+        { prefix: '1.0', name: '1.0 Manage identity and access', weight: 28 },
+        { prefix: '2.0', name: '2.0 Secure networking', weight: 22 },
+        { prefix: '3.0', name: '3.0 Secure compute, storage, and databases', weight: 25 },
+        { prefix: '4.0', name: '4.0 Manage security operations', weight: 25 }
+      ],
+      examKey: 'az500',
+      objectivesKey: 'az500',
+      shardPrefix: 'az500_'
     }
   };
 
@@ -147,6 +170,7 @@
       if (trackId === '1201' || trackId === 'c1') return TRACKS['core1'];
       if (trackId === '1202' || trackId === 'c2') return TRACKS['core2'];
       if (trackId === 'azure' || trackId === 'ms_az900') return TRACKS['az900'];
+      if (trackId === 'az500' || trackId === 'ms_az500' || trackId === 'azure_sec' || trackId === 'azure_security') return TRACKS['az500'];
       return TRACKS[trackId] || TRACKS['core1'];
     },
 

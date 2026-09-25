@@ -1,0 +1,506 @@
+[
+  {
+    "id": "AZ500-001",
+    "exam": "az500",
+    "domain": "1.0 Manage identity and access",
+    "objective": "1.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "An enterprise requires system administrators to have elevated Privileged Identity Management (PIM) permissions to manage Virtual Networks only when needed. What configuration ensures administrators receive JIT access without permanent standing privileges?",
+    "options": [
+      "Assign the Network Contributor role as an Eligible assignment with required approval and max duration",
+      "Assign the Network Contributor role as an Active permanent assignment scoped to the management group",
+      "Create an Access Review scheduled for quarterly review without role expiration",
+      "Configure a Conditional Access policy requiring MFA for all Azure Virtual Machine sign-ins"
+    ],
+    "answer": 0,
+    "explanation": "In Microsoft Entra Privileged Identity Management (PIM), assigning a role as 'Eligible' means the principal does not have permanent standing access. Instead, they must activate the role just-in-time (JIT), supply ticket justification, satisfy MFA, and await approval if configured.",
+    "distractor_analysis": {
+      "1": "Active permanent assignments provide standing privileges, which violates zero-standing-privilege security principles.",
+      "2": "Access reviews evaluate existing permissions periodically but do not eliminate standing privileges.",
+      "3": "Conditional Access policies enforce authentication requirements at sign-in but do not manage JIT RBAC role elevation."
+    },
+    "tags": [
+      "pim",
+      "identity",
+      "rbac",
+      "zero-trust"
+    ]
+  },
+  {
+    "id": "AZ500-002",
+    "exam": "az500",
+    "domain": "1.0 Manage identity and access",
+    "objective": "1.2",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "A software engineering team is building an Azure Function app that needs to read secrets from an Azure Key Vault. What authentication architecture eliminates credential exposure in application configuration settings and supports automatic rotation?",
+    "options": [
+      "Enable a System-Assigned Managed Identity on the Function App and grant it Key Vault Secrets User RBAC",
+      "Create an App Registration with a 2-year client secret and store the secret in local.settings.json",
+      "Use Key Vault access policies linked to a service principal certificate stored in Azure Storage",
+      "Configure Shared Access Signatures (SAS) with stored access policies on the Key Vault secret URI"
+    ],
+    "answer": 0,
+    "explanation": "Managed identities provide an automatically managed identity in Microsoft Entra ID for Azure resources. Applications use managed identities to obtain Microsoft Entra tokens without needing to manage credentials. Granting the Function App's system-assigned identity the 'Key Vault Secrets User' role adheres to the principle of least privilege.",
+    "distractor_analysis": {
+      "1": "Hardcoding client secrets in configuration files introduces credential leakage risks and requires manual rotation.",
+      "2": "Service principal certificates require maintenance and credential storage overhead compared to managed identities.",
+      "3": "Shared Access Signatures (SAS) apply to Azure Storage accounts, not Azure Key Vault secret endpoints."
+    },
+    "tags": [
+      "managed-identity",
+      "key-vault",
+      "authentication",
+      "rbac"
+    ]
+  },
+  {
+    "id": "AZ500-003",
+    "exam": "az500",
+    "domain": "1.0 Manage identity and access",
+    "objective": "1.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A security engineer must enforce that any user sign-in flagged as 'High Risk' by Microsoft Entra ID Protection is automatically forced to change their password securely. Which Conditional Access control should be configured?",
+    "options": [
+      "Configure a Conditional Access policy with Condition 'User risk = High' and Grant control 'Require password change'",
+      "Configure a Conditional Access policy with Condition 'Sign-in risk = High' and Grant control 'Block access'",
+      "Enable Self-Service Password Reset (SSPR) without Conditional Access binding",
+      "Deploy Microsoft Sentinel playbook to revoke active session tokens upon sign-in failure"
+    ],
+    "answer": 0,
+    "explanation": "Microsoft Entra ID Protection calculates User Risk (probability of identity compromise) and Sign-In Risk (probability of rogue sign-in attempt). A Conditional Access policy evaluating 'User Risk = High' with the grant control 'Require password change' (which requires SSPR registration) autonomously forces secure credential remediation.",
+    "distractor_analysis": {
+      "1": "Blocking access prevents remediation and locks out legitimate users indefinitely without self-service recovery.",
+      "2": "SSPR alone enables password resets but does not trigger automatically based on risk evaluations.",
+      "3": "Sentinel playbooks can revoke sessions reactively, but cannot enforce in-band password changes during auth flow."
+    },
+    "tags": [
+      "conditional-access",
+      "identity-protection",
+      "user-risk",
+      "sspr"
+    ]
+  },
+  {
+    "id": "AZ500-004",
+    "exam": "az500",
+    "domain": "1.0 Manage identity and access",
+    "objective": "1.3",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "An organization wants to create an Azure Custom Role that allows administrators to restart Virtual Machines and view metrics, but strictly prevents them from modifying virtual machine disk configurations or IP allocations. Which JSON action block represents this permission model?",
+    "options": [
+      "\"Actions\": [\"Microsoft.Compute/virtualMachines/restart/action\", \"Microsoft.Compute/virtualMachines/read\"], \"NotActions\": []",
+      "\"Actions\": [\"Microsoft.Compute/*\"], \"NotActions\": [\"Microsoft.Compute/virtualMachines/write\"]",
+      "\"Actions\": [\"Microsoft.Compute/virtualMachines/*\"], \"DataActions\": [\"Microsoft.Compute/virtualMachines/restart/action\"]",
+      "\"Actions\": [\"*\"], \"NotActions\": [\"Microsoft.Network/*\", \"Microsoft.Storage/*\"]"
+    ],
+    "answer": 0,
+    "explanation": "Azure RBAC best practices dictate defining explicit, least-privilege 'Actions' rather than broad wildcards with NotActions. Specifying 'Microsoft.Compute/virtualMachines/restart/action' and 'Microsoft.Compute/virtualMachines/read' grants restart and read rights while automatically denying writes to disks or network interfaces.",
+    "distractor_analysis": {
+      "1": "Using 'Microsoft.Compute/*' with a NotAction on write still allows creation/deletion of other compute entities.",
+      "2": "Restart is a control-plane action ('Actions'), not a data-plane action ('DataActions').",
+      "3": "Wildcard '*' grants high administrative power across subscriptions, violating least privilege principles."
+    },
+    "tags": [
+      "rbac",
+      "custom-roles",
+      "least-privilege",
+      "control-plane"
+    ]
+  },
+  {
+    "id": "AZ500-005",
+    "exam": "az500",
+    "domain": "1.0 Manage identity and access",
+    "objective": "1.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "To secure external collaboration, an administrator needs to ensure that guest accounts inactive for more than 90 days are automatically removed from Microsoft Entra tenant security groups. What feature provides this automated governance?",
+    "options": [
+      "Microsoft Entra Access Reviews with auto-apply results based on user inactivity",
+      "Privileged Identity Management alert for dormant accounts",
+      "Dynamic User Membership rules using user.accountEnabled -eq true",
+      "Conditional Access session controls configured with 90-day sign-in frequency"
+    ],
+    "answer": 0,
+    "explanation": "Microsoft Entra Access Reviews allow organizations to review group memberships and application assignments. By scoping an access review to guest users, setting recurrence, evaluating inactivity (e.g., inactive for 90 days), and enabling 'Auto apply results to resource', dormant guest access is automatically revoked.",
+    "distractor_analysis": {
+      "1": "PIM alerts notify administrators of privileged role health but do not automatically purge guest members from security groups.",
+      "2": "Dynamic membership rules evaluate user attributes, but standard directory attributes do not calculate 90-day inactivity purges.",
+      "3": "Sign-in frequency controls require re-authentication but do not remove accounts from security groups upon prolonged inactivity."
+    },
+    "tags": [
+      "access-reviews",
+      "governance",
+      "entra-id",
+      "guest-access"
+    ]
+  },
+  {
+    "id": "AZ500-006",
+    "exam": "az500",
+    "domain": "1.0 Manage identity and access",
+    "objective": "1.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A developer registers an application in Microsoft Entra ID that accesses Microsoft Graph to read directory data on behalf of a signed-in user. Which permission type and consent mechanism are required?",
+    "options": [
+      "Delegated permissions with admin consent granted if accessing tenant-wide directory details",
+      "Application permissions with self-service user consent",
+      "Direct Azure RBAC Reader assignment on the Microsoft Entra tenant root",
+      "Managed Identity assignment with Directory Readers role assigned in Key Vault"
+    ],
+    "answer": 0,
+    "explanation": "Delegated permissions run in the security context of a signed-in user. When accessing sensitive tenant data such as directory details across the tenant, Microsoft Entra ID requires an administrator to grant tenant-wide admin consent for the requested delegated scopes.",
+    "distractor_analysis": {
+      "1": "Application permissions run without a signed-in user (as a daemon) and can NEVER be consented to by regular users; they strictly require admin consent.",
+      "2": "Azure RBAC does not grant Microsoft Graph API permissions; Microsoft Entra OAuth permissions are distinct from Azure resource RBAC.",
+      "3": "Key Vault cannot assign Microsoft Entra directory roles to managed identities."
+    },
+    "tags": [
+      "app-registration",
+      "oauth",
+      "delegated-permissions",
+      "consent"
+    ]
+  },
+  {
+    "id": "AZ500-007",
+    "exam": "az500",
+    "domain": "1.0 Manage identity and access",
+    "objective": "1.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "An enterprise wants to protect on-premises Active Directory accounts from using easily guessable corporate terms or localized profanities in their passwords. Which hybrid security solution synchronizes custom banned password lists to on-premises domain controllers?",
+    "options": [
+      "Microsoft Entra Password Protection with the on-premises DC agent and proxy service",
+      "Azure AD Connect Cloud Sync password hash synchronization only",
+      "Active Directory Federation Services (AD FS) claim rules",
+      "Microsoft Defender for Identity sensor running on Domain Controllers"
+    ],
+    "answer": 0,
+    "explanation": "Microsoft Entra Password Protection detects and blocks known weak and banned passwords. By installing the Microsoft Entra Password Protection DC agent and proxy service on on-premises domain controllers, custom banned password lists and global banned lists are enforced on-premises during password change events.",
+    "distractor_analysis": {
+      "1": "Password hash sync replicates password hashes to Entra ID but does not enforce custom banned dictionary checks on on-premises DCs during resets.",
+      "2": "AD FS handles authentication federation, not password dictionary validation at the local DC level.",
+      "3": "Defender for Identity monitors network traffic and logs for attack reconnaissance (e.g. Pass-the-Hash) but does not validate password complexity policies."
+    },
+    "tags": [
+      "password-protection",
+      "hybrid-identity",
+      "entra-id",
+      "active-directory"
+    ]
+  },
+  {
+    "id": "AZ500-008",
+    "exam": "az500",
+    "domain": "1.0 Manage identity and access",
+    "objective": "1.3",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "A global company has regional IT departments in EMEA, APAC, and Americas. Regional helpdesk staff must be allowed to reset passwords only for users residing in their specific geographic region. How should the users and administrative rights be partitioned in Microsoft Entra ID?",
+    "options": [
+      "Create Administrative Units (AUs) for each region, add regional users, and assign the Password Administrator role scoped to each AU",
+      "Create separate Microsoft Entra tenants for EMEA, APAC, and Americas linked via B2B collaboration",
+      "Assign the Helpdesk Administrator role at the Root Management Group level with an Azure Policy deny rule",
+      "Create regional Security Groups and assign the User Administrator role scoped to the group object"
+    ],
+    "answer": 0,
+    "explanation": "Administrative Units (AUs) allow an organization to subdivide a Microsoft Entra directory into smaller administrative boundaries. Roles like User Administrator or Password Administrator can be assigned with an Administrative Unit as the scope, restricting the helpdesk staff's authority strictly to users within that AU.",
+    "distractor_analysis": {
+      "1": "Deploying multiple tenants creates massive overhead, breaks unified SSO, and introduces B2B collaboration complexity.",
+      "2": "Azure Policy governs Azure Resource Manager resources, not Microsoft Entra directory objects or role permissions.",
+      "3": "Scoping a role to a security group in Entra ID delegates management of the group itself, not management of the individual user objects inside it."
+    },
+    "tags": [
+      "administrative-units",
+      "delegation",
+      "entra-id",
+      "least-privilege"
+    ]
+  },
+  {
+    "id": "AZ500-009",
+    "exam": "az500",
+    "domain": "1.0 Manage identity and access",
+    "objective": "1.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Which Microsoft Entra feature continuously monitors and remediates permission creep, identifying identities with excessive unused permissions across multi-cloud environments (Azure, AWS, GCP)?",
+    "options": [
+      "Microsoft Entra Permissions Management (Cloud Infrastructure Entitlement Management - CIEM)",
+      "Microsoft Defender for Cloud Security Posture Management (CSPM)",
+      "Microsoft Entra Privileged Identity Management (PIM)",
+      "Microsoft Entra ID Protection"
+    ],
+    "answer": 0,
+    "explanation": "Microsoft Entra Permissions Management is a comprehensive CIEM solution that provides granular visibility into permissions assigned to all identities across Azure, AWS, and GCP. It calculates the Permission Creep Index (PCI) and allows automated right-sizing of unused permissions.",
+    "distractor_analysis": {
+      "1": "CSPM assesses workload configuration baselines and compliance, but does not provide deep cross-cloud CIEM identity permission right-sizing.",
+      "2": "PIM manages just-in-time role activation within Azure/Entra ID, but does not scan and right-size AWS IAM or GCP identities.",
+      "3": "Entra ID Protection calculates user and sign-in risk scores based on leaked credentials and anomalous telemetry."
+    },
+    "tags": [
+      "ciem",
+      "permissions-management",
+      "multi-cloud",
+      "least-privilege"
+    ]
+  },
+  {
+    "id": "AZ500-010",
+    "exam": "az500",
+    "domain": "1.0 Manage identity and access",
+    "objective": "1.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "What is a key architectural difference between a System-Assigned Managed Identity and a User-Assigned Managed Identity in Azure?",
+    "options": [
+      "System-assigned lifecycle is tied directly to the Azure resource instance; user-assigned is an independent standalone resource that can be shared across multiple resources",
+      "System-assigned supports Microsoft Entra ID; user-assigned requires local active directory domain joining",
+      "System-assigned supports Azure RBAC, while user-assigned only supports Key Vault access policies",
+      "User-assigned identities do not generate client IDs or service principals in the Microsoft Entra tenant"
+    ],
+    "answer": 0,
+    "explanation": "A System-Assigned Managed Identity is enabled directly on an Azure service instance and shares its lifecycle (when the VM/App is deleted, the identity is automatically deleted). A User-Assigned Managed Identity is created as a standalone Azure resource and can be assigned to one or more Azure resource instances.",
+    "distractor_analysis": {
+      "1": "Both identity types are native cloud Microsoft Entra ID service principals and do not require on-premises AD.",
+      "2": "Both system-assigned and user-assigned identities fully support Azure RBAC and Key Vault access policies.",
+      "3": "Both types create corresponding service principals in Microsoft Entra ID."
+    },
+    "tags": [
+      "managed-identity",
+      "cloud-architecture",
+      "lifecycle",
+      "entra-id"
+    ]
+  },
+  {
+    "id": "AZ500-011",
+    "exam": "az500",
+    "domain": "1.0 Manage identity and access",
+    "objective": "1.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A security auditor discovers that developers are bypassing MFA when logging in from home networks. Which Conditional Access policy architecture guarantees MFA enforcement regardless of trusted location status?",
+    "options": [
+      "A policy targeting 'All cloud apps' with Grant control 'Require multifactor authentication' without excluding trusted IP ranges",
+      "A policy targeting 'Azure Management' and excluding all Named Locations",
+      "An Azure Policy denying VM start actions unless tagged with MFA=Enabled",
+      "A PIM setting requiring ticket numbers but disabling MFA verification"
+    ],
+    "answer": 0,
+    "explanation": "Conditional Access policies enforce requirements based on defined conditions and grant controls. If an enterprise wants unconditional MFA, the policy must target all users and all cloud apps, require MFA as the grant control, and explicitly avoid excluding any location or IP range.",
+    "distractor_analysis": {
+      "1": "Excluding Named Locations bypasses MFA when traffic matches those IPs, allowing home networks if misconfigured.",
+      "2": "Azure Policy operates on Resource Manager templates and resource metadata, not user authentication handshakes.",
+      "3": "Disabling MFA in PIM removes multifactor protection entirely during role elevation."
+    },
+    "tags": [
+      "conditional-access",
+      "mfa",
+      "audit",
+      "compliance"
+    ]
+  },
+  {
+    "id": "AZ500-012",
+    "exam": "az500",
+    "domain": "1.0 Manage identity and access",
+    "objective": "1.3",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "When defining an Azure custom role in JSON, what is the purpose of the 'NotActions' property?",
+    "options": [
+      "It subtracts specific operations from the set of operations granted by the 'Actions' property",
+      "It serves as a permanent deny that overrides any other role assignments granting that permission",
+      "It specifies data-plane permissions that are denied across storage blobs and tables",
+      "It defines the management groups where the role cannot be assigned"
+    ],
+    "answer": 0,
+    "explanation": "In Azure RBAC, 'NotActions' is NOT a deny rule. It simply subtracts operations from the 'Actions' list of that specific role definition. If a user is assigned another role (such as Contributor) that grants that permission, the user will still have that permission.",
+    "distractor_analysis": {
+      "1": "Azure RBAC NotActions is not an explicit deny; it does not block permissions granted by other roles (Azure Deny Assignments do).",
+      "2": "Data-plane exclusions are managed under 'NotDataActions', not 'NotActions'.",
+      "3": "Scopes where the role can be assigned are defined in 'AssignableScopes'."
+    },
+    "tags": [
+      "rbac",
+      "custom-roles",
+      "notactions",
+      "authorization"
+    ]
+  },
+  {
+    "id": "AZ500-013",
+    "exam": "az500",
+    "domain": "1.0 Manage identity and access",
+    "objective": "1.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Which authentication protocol should an engineer configure when federating Microsoft Entra ID with an enterprise SaaS application that supports modern web single sign-on (SSO)?",
+    "options": [
+      "SAML 2.0 or OpenID Connect (OIDC)",
+      "Kerberos Constrained Delegation (KCD)",
+      "NTLMv2 over SMB",
+      "RADIUS / MS-CHAPv2"
+    ],
+    "answer": 0,
+    "explanation": "Microsoft Entra ID supports SAML 2.0, OpenID Connect (OIDC), and WS-Federation for web-based single sign-on with enterprise SaaS applications. SAML 2.0 and OIDC are the industry standards for cloud identity federation.",
+    "distractor_analysis": {
+      "1": "Kerberos Constrained Delegation is an on-premises Windows protocol used primarily with Application Proxy, not cloud SaaS SSO.",
+      "2": "NTLMv2 is a legacy Windows LAN authentication protocol unsuited for modern web SaaS federation.",
+      "3": "RADIUS is commonly used for VPN and 802.1X network access, not web enterprise application SSO."
+    },
+    "tags": [
+      "sso",
+      "saml",
+      "oidc",
+      "federation"
+    ]
+  },
+  {
+    "id": "AZ500-014",
+    "exam": "az500",
+    "domain": "1.0 Manage identity and access",
+    "objective": "1.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "An administrator needs to publish an on-premises web application to remote employees without opening inbound firewall ports on the corporate network perimeter. Which Microsoft Entra component enables this?",
+    "options": [
+      "Microsoft Entra Application Proxy with outbound-only connector agents",
+      "Azure ExpressRoute with Microsoft Peering",
+      "Site-to-Site IPsec VPN Gateway with BGP routing",
+      "Azure Front Door with custom domain DNS routing"
+    ],
+    "answer": 0,
+    "explanation": "Microsoft Entra Application Proxy enables remote users to access on-premises web applications through a secure cloud reverse proxy. The on-premises Application Proxy connector requires only outbound HTTPS connections to Microsoft Entra ID, eliminating the need to open inbound ports.",
+    "distractor_analysis": {
+      "1": "ExpressRoute requires dedicated private telecommunication circuits and significant provisioning overhead.",
+      "2": "Site-to-Site VPN creates network-level tunneling rather than application-layer zero-trust publishing.",
+      "3": "Azure Front Door requires public internet endpoints to route traffic, which would expose the on-premises server."
+    },
+    "tags": [
+      "app-proxy",
+      "zero-trust",
+      "remote-access",
+      "perimeter"
+    ]
+  },
+  {
+    "id": "AZ500-015",
+    "exam": "az500",
+    "domain": "1.0 Manage identity and access",
+    "objective": "1.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "What is the security advantage of using FIDO2 WebAuthn security keys over SMS-based verification for Microsoft Entra MFA?",
+    "options": [
+      "FIDO2 keys provide phishing-resistant authentication bound cryptographically to the relying party domain",
+      "FIDO2 keys do not require internet access on the user client machine",
+      "FIDO2 keys eliminate the need for Microsoft Entra ID tenant directory lookups",
+      "FIDO2 keys automatically grant Global Administrator privileges upon insertion"
+    ],
+    "answer": 0,
+    "explanation": "FIDO2 security keys use public-key cryptography and origin binding, making them immune to adversary-in-the-middle (AiTM) phishing attacks. SMS verification codes can be intercepted via SIM swapping, SS7 attacks, or forwarded through phishing proxies.",
+    "distractor_analysis": {
+      "1": "Client machines still require internet connectivity to communicate with the identity provider during authentication.",
+      "2": "Directory lookups and token issuance still take place in Microsoft Entra ID.",
+      "3": "Security keys are an authentication credential, not an authorization elevation mechanism."
+    },
+    "tags": [
+      "fido2",
+      "phishing-resistant",
+      "mfa",
+      "webauthn"
+    ]
+  },
+  {
+    "id": "AZ500-016",
+    "exam": "az500",
+    "domain": "1.0 Manage identity and access",
+    "objective": "1.3",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A company must prevent unauthorized users from deploying resources outside of the 'Australia East' region across all production subscriptions. Which governance tool enforces this at the control plane?",
+    "options": [
+      "Azure Policy with an 'Allowed locations' policy definition assigned to the Management Group",
+      "A Network Security Group inbound rule blocking non-Australian IP ranges",
+      "Microsoft Entra Conditional Access location condition set to Australia",
+      "Resource Locks applied with the 'ReadOnly' setting on all resource groups"
+    ],
+    "answer": 0,
+    "explanation": "Azure Policy enforces organizational standards and assesses compliance at scale across Azure Resource Manager. Assigning the built-in 'Allowed locations' policy definition with 'Australia East' at the Management Group level prevents deployment of resources into any other region.",
+    "distractor_analysis": {
+      "1": "NSGs filter network packet traffic at the subnet/NIC level; they cannot inspect or block ARM resource deployment regions.",
+      "2": "Conditional Access validates user sign-in context, not the datacenter location where a VM or database is instantiated.",
+      "3": "ReadOnly resource locks prevent all creation, updates, and deletions, which would stop legitimate deployments in Australia East."
+    },
+    "tags": [
+      "azure-policy",
+      "governance",
+      "compliance",
+      "management-groups"
+    ]
+  },
+  {
+    "id": "AZ500-017",
+    "exam": "az500",
+    "domain": "1.0 Manage identity and access",
+    "objective": "1.1",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "In Microsoft Entra Privileged Identity Management (PIM) for Azure Resources, what happens when an Eligible role assignment's expiration date arrives?",
+    "options": [
+      "The user can no longer activate the role until an administrator extends or renews the eligible assignment",
+      "The role automatically converts to an Active permanent assignment",
+      "The user's Microsoft Entra account is disabled in the directory",
+      "The role elevation is immediately triggered and locked active"
+    ],
+    "answer": 0,
+    "explanation": "When an eligible assignment expires in PIM, the user loses the ability to activate the role. If the user still requires the role, a privileged administrator must approve an extension (before expiration) or renewal (after expiration).",
+    "distractor_analysis": {
+      "1": "PIM never promotes an expired eligible role to active permanent status; that would invert zero-trust security.",
+      "2": "PIM manages role assignments, not user account lifecycle; the directory account remains active.",
+      "3": "Expiration revokes activation eligibility rather than forcing permanent activation."
+    },
+    "tags": [
+      "pim",
+      "lifecycle",
+      "role-assignment",
+      "zero-trust"
+    ]
+  },
+  {
+    "id": "AZ500-018",
+    "exam": "az500",
+    "domain": "1.0 Manage identity and access",
+    "objective": "1.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "An enterprise is configuring Microsoft Entra Connect Cloud Sync. Which lightweight agent is installed on on-premises Windows servers to facilitate cloud-based identity synchronization?",
+    "options": [
+      "Microsoft Entra provisioning agent",
+      "Azure Log Analytics MMA agent",
+      "Microsoft Defender for Identity sensor",
+      "Azure Arc Connected Machine agent"
+    ],
+    "answer": 0,
+    "explanation": "Microsoft Entra Connect Cloud Sync utilizes the Microsoft Entra provisioning agent installed on-premises. The synchronization engine runs in the Microsoft cloud, reducing on-premises server footprint compared to classic Azure AD Connect.",
+    "distractor_analysis": {
+      "1": "Log Analytics agents collect event logs and performance metrics, not directory synchronization data.",
+      "2": "Defender for Identity sensors monitor domain controller network traffic to detect lateral movement.",
+      "3": "Azure Arc Connected Machine agents onboard non-Azure servers for Azure Resource Manager governance."
+    },
+    "tags": [
+      "cloud-sync",
+      "hybrid-identity",
+      "provisioning-agent",
+      "entra-id"
+    ]
+  }
+]

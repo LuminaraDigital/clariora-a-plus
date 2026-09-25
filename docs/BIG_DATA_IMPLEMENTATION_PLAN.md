@@ -194,6 +194,7 @@ Offline path: local history + readiness2 + `similar_neighbors.json` + local coac
 | sentence-transformers all-MiniLM | Apache-2.0 | Optional offline index script if CF batch limits bite |
 | LlamaIndex / LangChain / Chroma | MIT / Apache | Patterns only; not product deps |
 | Moodle / Open edX | GPL / AGPL | Reference analytics schemas only |
+| OpenManus-RL / Nemotron / xLAM / SWE-Lego (etc.) | Mixed; some CC-BY-NC | **Local research only** - see `docs/LOCAL_AGENT_TRAINING.md`. Never in `dist_web`. |
 
 Sources checked this session:
 

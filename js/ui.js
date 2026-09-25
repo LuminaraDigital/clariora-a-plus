@@ -352,9 +352,56 @@
         }
       });
 
-      APlus.bus.on('exam:finished', (payload) => {
+      APlus.bus.on('exam:finished', async (payload) => {
         this.renderResults(payload);
         this.showScreen('resultsScreen');
+
+        // Universal Ledger Ingestion Bridge: reward modular engine sessions (Adaptive, Similar, Coach, Heatmap, Cram Sheet)
+        if (window.CompTIALedgerUI && typeof window.CompTIALedgerUI.onExamComplete === 'function') {
+          try {
+            const track = (window.APlus && window.APlus.trackRegistry && window.APlus.trackRegistry.getActiveTrack()) || null;
+            const examType = payload.examType || (track ? track.id : 'core1');
+            let domainKey = payload.domainKey || null;
+            let domainPct = 0;
+            if (payload.domainStats) {
+              if (domainKey && payload.domainStats[domainKey]) {
+                const s = payload.domainStats[domainKey];
+                domainPct = s.total ? (s.correct / s.total) * 100 : 0;
+              } else if (payload.examType === 'domain' || payload.examType === 'drill') {
+                const keys = Object.keys(payload.domainStats);
+                if (keys.length === 1) {
+                  domainKey = keys[0];
+                  const s = payload.domainStats[domainKey];
+                  domainPct = s.total ? (s.correct / s.total) * 100 : 0;
+                }
+              }
+            }
+
+            let crucibleAudit = null;
+            try {
+              if (window.CrucibleUI && typeof window.CrucibleUI.getMutationTracker === 'function') {
+                const mt = window.CrucibleUI.getMutationTracker();
+                if (mt && typeof mt.getAuditSummary === 'function') crucibleAudit = mt.getAuditSummary();
+              }
+            } catch (_) {}
+
+            await window.CompTIALedgerUI.onExamComplete({
+              sessionId: payload.timestamp || String(Date.now()),
+              examType: examType,
+              scaledScore: payload.scaledScore,
+              rawCorrect: payload.rawCorrect,
+              total: payload.totalQuestions || payload.total || (payload.perQuestion && payload.perQuestion.length) || 1,
+              passed: payload.passed,
+              passingScore: payload.passingScore,
+              domainStats: payload.domainStats || {},
+              domainKey: domainKey,
+              domainPct: domainPct,
+              crucibleAudit: crucibleAudit
+            });
+          } catch (bridgeErr) {
+            console.warn('[UI] Ledger ingestion bridge notice:', bridgeErr);
+          }
+        }
       });
     }
 

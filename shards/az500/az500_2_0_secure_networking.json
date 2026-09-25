@@ -1,0 +1,421 @@
+[
+  {
+    "id": "AZ500-019",
+    "exam": "az500",
+    "domain": "2.0 Secure networking",
+    "objective": "2.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "An organization has a Virtual Network containing three subnets: WebSubnet, AppSubnet, and DbSubnet. How should Network Security Groups (NSGs) be configured to allow AppSubnet to receive traffic only from WebSubnet, while blocking all direct Internet access to AppSubnet?",
+    "options": [
+      "Attach an NSG to AppSubnet with an Inbound Allow rule from WebSubnet prefix and an Inbound Deny rule from 'Internet' service tag with lower priority number than default rules",
+      "Attach an NSG to WebSubnet with an Outbound Deny rule to all 0.0.0.0/0 IP addresses",
+      "Deploy an Azure Load Balancer with basic SKU in front of AppSubnet",
+      "Configure a User-Defined Route on AppSubnet with next hop set to 'VirtualNetworkGateway'"
+    ],
+    "answer": 0,
+    "explanation": "NSGs process rules by priority (lowest number evaluated first). Placing an NSG on AppSubnet with an Inbound Allow rule specifying WebSubnet as the source, combined with an Inbound Deny rule from the 'Internet' service tag (priority e.g., 200), ensures web traffic is accepted while direct internet access is explicitly rejected.",
+    "distractor_analysis": {
+      "1": "Filtering on WebSubnet outbound does not protect AppSubnet from rogue traffic originating from other subnets or external sources.",
+      "2": "Basic load balancers do not provide stateful firewall filtering and are retired in favor of Standard load balancers with NSGs.",
+      "3": "Routing traffic to a VPN gateway does not isolate subnets from direct ingress without NSG filtering."
+    },
+    "tags": [
+      "nsg",
+      "network-security",
+      "service-tags",
+      "subnets"
+    ]
+  },
+  {
+    "id": "AZ500-020",
+    "exam": "az500",
+    "domain": "2.0 Secure networking",
+    "objective": "2.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A company wants to manage security rules for 50 web servers across multiple subnets without having to update individual IP addresses in NSG rules whenever new VMs are deployed. What feature satisfies this requirement?",
+    "options": [
+      "Application Security Groups (ASGs)",
+      "Virtual Network NAT Gateways",
+      "Azure Route Server",
+      "Virtual Network Peering with gateway transit"
+    ],
+    "answer": 0,
+    "explanation": "Application Security Groups (ASGs) allow administrators to group virtual machine network interfaces (NICs) into logical application tiers (e.g. 'ASG-Web'). NSG rules can then reference 'ASG-Web' as source or destination, dynamically applying rules as new VMs join the ASG without updating IP lists.",
+    "distractor_analysis": {
+      "1": "NAT Gateways provide outbound internet connectivity for subnets, not dynamic security rule grouping.",
+      "2": "Azure Route Server facilitates BGP route exchange between network virtual appliances and VNets.",
+      "3": "VNet Peering connects distinct virtual networks together but does not abstract IP management in NSGs."
+    },
+    "tags": [
+      "asg",
+      "nsg",
+      "microsegmentation",
+      "networking"
+    ]
+  },
+  {
+    "id": "AZ500-021",
+    "exam": "az500",
+    "domain": "2.0 Secure networking",
+    "objective": "2.2",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "A financial application hosted on Azure VMs must connect to an Azure SQL Database. The compliance standard mandates that traffic MUST NOT traverse the public internet and must connect via a private IP within the VNet. Which network technology should be implemented?",
+    "options": [
+      "Azure Private Endpoint (Azure Private Link)",
+      "Virtual Network Service Endpoints",
+      "Azure Bastion host with IP forwarding",
+      "Point-to-Site VPN connected to Azure SQL public IP"
+    ],
+    "answer": 0,
+    "explanation": "Azure Private Endpoint brings Azure PaaS services (like Azure SQL or Storage) directly into the customer's Virtual Network by assigning it a private IP address from a VNet subnet. Traffic flows entirely over the Microsoft private backbone, and the public endpoint can be completely disabled.",
+    "distractor_analysis": {
+      "1": "Service Endpoints route traffic privately over the Azure backbone, but the PaaS resource retains a public IP address.",
+      "2": "Azure Bastion provides secure RDP/SSH access to VMs, not data-plane connectivity between VMs and databases.",
+      "3": "P2S VPN is for client-to-VNet remote worker access, not inter-service private communication."
+    },
+    "tags": [
+      "private-link",
+      "private-endpoint",
+      "database-security",
+      "zero-trust"
+    ]
+  },
+  {
+    "id": "AZ500-022",
+    "exam": "az500",
+    "domain": "2.0 Secure networking",
+    "objective": "2.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "To satisfy security compliance, an administrator needs to inspect and filter all outbound HTTP/HTTPS internet traffic originating from production VMs using Fully Qualified Domain Name (FQDN) filtering. Which service should be deployed in a dedicated subnet named AzureFirewallSubnet?",
+    "options": [
+      "Azure Firewall",
+      "Network Security Group with Service Tags",
+      "Azure Web Application Firewall on Application Gateway",
+      "Azure Virtual Network Gateway with BGP"
+    ],
+    "answer": 0,
+    "explanation": "Azure Firewall is a cloud-native, stateful firewall service that supports Application Rules with FQDN filtering (e.g. allowing outbound access only to '*.microsoft.com' or 'windowsupdate.com'). It must be deployed into a dedicated subnet named exactly 'AzureFirewallSubnet'.",
+    "distractor_analysis": {
+      "1": "NSGs operate at layers 3 and 4 (IP/port) and do not support layer 7 application-layer FQDN string filtering.",
+      "2": "WAF on Application Gateway is primarily designed to inspect inbound HTTP/HTTPS traffic for web exploits, not outbound egress from VMs.",
+      "3": "VNet Gateways handle VPN/ExpressRoute tunnels, not stateful outbound application filtering."
+    },
+    "tags": [
+      "azure-firewall",
+      "fqdn-filtering",
+      "egress-filtering",
+      "networking"
+    ]
+  },
+  {
+    "id": "AZ500-023",
+    "exam": "az500",
+    "domain": "2.0 Secure networking",
+    "objective": "2.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A systems engineer must allow operations staff to administer Azure Windows and Linux virtual machines via RDP and SSH without assigning public IP addresses to the VMs or exposing management ports (3389/22) to the internet. Which solution meets these criteria?",
+    "options": [
+      "Deploy Azure Bastion in a dedicated 'AzureBastionSubnet'",
+      "Create an NSG rule allowing ports 22 and 3389 from 'Internet'",
+      "Configure a DNAT rule on Azure Firewall mapping public port 443 to port 3389",
+      "Deploy an open source SSH proxy on an unprotected public VM"
+    ],
+    "answer": 0,
+    "explanation": "Azure Bastion is a fully managed PaaS service deployed into 'AzureBastionSubnet'. It provides seamless, secure RDP and SSH connectivity directly through the Azure portal over TLS (port 443) using modern HTML5 browsers, eliminating public IPs on target VMs.",
+    "distractor_analysis": {
+      "1": "Exposing ports 3389 and 22 to the Internet creates severe brute-force and vulnerability exploit surfaces.",
+      "2": "DNAT mapping still exposes management access to public IPs and requires opening firewall ports.",
+      "3": "An unprotected jump host creates a single point of compromise without PaaS security isolation."
+    },
+    "tags": [
+      "bastion",
+      "rdp",
+      "ssh",
+      "zero-trust"
+    ]
+  },
+  {
+    "id": "AZ500-024",
+    "exam": "az500",
+    "domain": "2.0 Secure networking",
+    "objective": "2.1",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "A network security architect must force all virtual machine outbound internet traffic through an Azure Firewall NVA located at IP 10.0.1.4. Which User-Defined Route (UDR) table configuration implements this forced tunneling?",
+    "options": [
+      "Address prefix: 0.0.0.0/0, Next hop type: Virtual appliance, Next hop IP address: 10.0.1.4",
+      "Address prefix: 10.0.0.0/16, Next hop type: Internet, Next hop IP address: None",
+      "Address prefix: 0.0.0.0/0, Next hop type: Virtual network gateway",
+      "Address prefix: 10.0.1.4/32, Next hop type: None"
+    ],
+    "answer": 0,
+    "explanation": "In Azure routing, adding a route for prefix 0.0.0.0/0 with Next Hop Type 'Virtual appliance' and pointing to the private IP of the Azure Firewall (10.0.1.4) overrides the default system route for internet traffic, forcing all outbound egress through the firewall for inspection.",
+    "distractor_analysis": {
+      "1": "Routing RFC 1918 private range to 'Internet' drops or misroutes internal network traffic.",
+      "2": "Next hop 'Virtual network gateway' directs traffic across an ExpressRoute or S2S VPN to on-premises, not the local Azure Firewall.",
+      "3": "A /32 route to the firewall IP itself creates an invalid route loop without routing outbound internet traffic."
+    },
+    "tags": [
+      "udr",
+      "routing",
+      "forced-tunneling",
+      "azure-firewall"
+    ]
+  },
+  {
+    "id": "AZ500-025",
+    "exam": "az500",
+    "domain": "2.0 Secure networking",
+    "objective": "2.3",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A public web application hosted on Azure App Services is under targeted SQL Injection and Cross-Site Scripting (XSS) attacks. What layer 7 security service with OWASP Core Rule Set (CRS) should be placed in front of the application?",
+    "options": [
+      "Azure Web Application Firewall (WAF) on Azure Application Gateway or Azure Front Door",
+      "Azure DDoS Network Protection",
+      "Network Security Group with stateful TCP packet inspection",
+      "Azure NAT Gateway"
+    ],
+    "answer": 0,
+    "explanation": "Azure Web Application Firewall (WAF) operates at Layer 7 and provides centralized protection against common web exploits based on OWASP Core Rule Sets (such as SQL injection, XSS, and command injection) when deployed on Application Gateway or Front Door.",
+    "distractor_analysis": {
+      "1": "Azure DDoS Network Protection mitigates Layer 3 and Layer 4 volumetric attacks (SYN floods, UDP amplification), not Layer 7 payload exploits.",
+      "2": "NSGs operate at Layers 3/4 and cannot parse HTTP payload bodies to detect SQLi or XSS.",
+      "3": "NAT Gateways provide outbound SNAT translation for private subnets and provide no inbound protection."
+    },
+    "tags": [
+      "waf",
+      "owasp",
+      "sql-injection",
+      "application-gateway"
+    ]
+  },
+  {
+    "id": "AZ500-026",
+    "exam": "az500",
+    "domain": "2.0 Secure networking",
+    "objective": "2.3",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "What is the difference between Azure WAF 'Detection mode' and 'Prevention mode'?",
+    "options": [
+      "Detection mode monitors and logs matched requests without blocking; Prevention mode actively blocks requests matching rule criteria",
+      "Detection mode operates at Layer 3; Prevention mode operates at Layer 7",
+      "Detection mode is free; Prevention mode requires a dedicated ExpressRoute circuit",
+      "Detection mode applies only to HTTPS; Prevention mode applies only to HTTP"
+    ],
+    "answer": 0,
+    "explanation": "In Azure WAF, 'Detection mode' observes and logs request attributes and threats to diagnostic storage or Log Analytics without taking action. 'Prevention mode' actively blocks requests that match configured rules (returning HTTP 403 Forbidden).",
+    "distractor_analysis": {
+      "1": "WAF operates at Layer 7 in both modes.",
+      "2": "WAF mode selection is a software policy setting and does not require ExpressRoute circuits.",
+      "3": "Both modes support both HTTP and HTTPS protocols."
+    },
+    "tags": [
+      "waf",
+      "detection-mode",
+      "prevention-mode",
+      "secops"
+    ]
+  },
+  {
+    "id": "AZ500-027",
+    "exam": "az500",
+    "domain": "2.0 Secure networking",
+    "objective": "2.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "What is the default priority order for Network Security Group rules in Azure?",
+    "options": [
+      "Rules with lower numbers have higher priority and are processed first (e.g., 100 before 200)",
+      "Rules with higher numbers have higher priority and are processed first (e.g., 4000 before 100)",
+      "Rules are processed alphabetically by rule name",
+      "Deny rules always execute before Allow rules regardless of priority numbers"
+    ],
+    "answer": 0,
+    "explanation": "Azure NSG rules are evaluated in order of priority: numbers range from 100 to 4096, and rules with LOWER numbers are evaluated first. Once traffic matches a rule, processing stops and that action is taken.",
+    "distractor_analysis": {
+      "1": "Higher numbers have lower priority, not higher priority.",
+      "2": "Rule names are labels for documentation; rule order is determined strictly by integer priority values.",
+      "3": "A lower-number Allow rule (e.g., priority 100) will execute before a higher-number Deny rule (e.g., priority 200)."
+    },
+    "tags": [
+      "nsg",
+      "rule-evaluation",
+      "priority",
+      "firewall"
+    ]
+  },
+  {
+    "id": "AZ500-028",
+    "exam": "az500",
+    "domain": "2.0 Secure networking",
+    "objective": "2.2",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "Two Virtual Networks, VNet1 and VNet2, are connected via Global Virtual Network Peering. A network engineer notices that VM1 in VNet1 cannot ping VM2 in VNet2. What default NSG behavior or network characteristic explains this?",
+    "options": [
+      "Virtual Network Peering includes both VNets under the default 'VirtualNetwork' service tag, so an explicit NSG Deny rule must be blocking the traffic",
+      "Virtual Network Peering automatically blocks ICMP traffic across regions",
+      "Traffic across peered VNets must traverse the public internet and requires public IPs",
+      "Peered virtual networks require a VPN Gateway to establish private routing"
+    ],
+    "answer": 0,
+    "explanation": "When VNets are peered, the default NSG Inbound rule 'AllowVNetInBound' expands to include the peered VNet's address space. Therefore, if communication fails, an administrator has likely configured a custom NSG rule that blocks traffic, or OS firewalls inside the VMs are blocking ICMP.",
+    "distractor_analysis": {
+      "1": "Peering does not natively block ICMP; ICMP is allowed unless dropped by NSGs or host OS firewalls.",
+      "2": "VNet Peering traffic stays entirely on the private Microsoft backbone network and never traverses the public internet.",
+      "3": "VNet Peering establishes direct private connectivity without requiring any VPN Gateways."
+    },
+    "tags": [
+      "vnet-peering",
+      "service-tags",
+      "nsg",
+      "troubleshooting"
+    ]
+  },
+  {
+    "id": "AZ500-029",
+    "exam": "az500",
+    "domain": "2.0 Secure networking",
+    "objective": "2.3",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Which Azure DDoS Protection tier is specifically optimized for small-to-medium businesses wanting cost-effective protection scoped to an individual public IP address without paying for tenant-wide protection plans?",
+    "options": [
+      "Azure DDoS IP Protection",
+      "Azure DDoS Network Protection",
+      "Azure DDoS Infrastructure Protection (Basic)",
+      "Azure Front Door Standard"
+    ],
+    "answer": 0,
+    "explanation": "Azure DDoS IP Protection is designed for small-to-medium businesses, providing enterprise-grade DDoS mitigation features on a per-public-IP basis without requiring a monthly tenant-level commitment.",
+    "distractor_analysis": {
+      "1": "DDoS Network Protection protects all public IPs across an entire virtual network and carries a substantial monthly base cost.",
+      "2": "DDoS Basic/Infrastructure protection is automatic and protects Microsoft's overall infrastructure, but does not provide customer-level telemetry or tuning.",
+      "3": "Azure Front Door is a global CDN/load balancer, not a dedicated per-IP DDoS tier."
+    },
+    "tags": [
+      "ddos",
+      "ip-protection",
+      "network-security",
+      "perimeter"
+    ]
+  },
+  {
+    "id": "AZ500-030",
+    "exam": "az500",
+    "domain": "2.0 Secure networking",
+    "objective": "2.1",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "An administrator configures an NSG associated with a Subnet and another NSG associated with a Network Interface (NIC) on a VM in that subnet. What is the order of evaluation for INBOUND and OUTBOUND traffic?",
+    "options": [
+      "Inbound: Subnet NSG first, then NIC NSG; Outbound: NIC NSG first, then Subnet NSG",
+      "Inbound: NIC NSG first, then Subnet NSG; Outbound: Subnet NSG first, then NIC NSG",
+      "Both Inbound and Outbound evaluate Subnet NSG first, then NIC NSG",
+      "Both Inbound and Outbound evaluate NIC NSG first, then Subnet NSG"
+    ],
+    "answer": 0,
+    "explanation": "For Inbound traffic entering a VM, packet flow hits the Subnet NSG first; if allowed, it then hits the NIC NSG. For Outbound traffic leaving a VM, packet flow hits the NIC NSG first; if allowed, it then hits the Subnet NSG. Traffic must pass BOTH filters to succeed.",
+    "distractor_analysis": {
+      "1": "Inverts the physical network topology flow.",
+      "2": "Outbound originates from the VM/NIC, so NIC NSG must evaluate before the packet reaches the subnet boundary.",
+      "3": "Inbound arrives at the subnet router before reaching the VM NIC."
+    },
+    "tags": [
+      "nsg",
+      "packet-flow",
+      "evaluation-order",
+      "networking"
+    ]
+  },
+  {
+    "id": "AZ500-031",
+    "exam": "az500",
+    "domain": "2.0 Secure networking",
+    "objective": "2.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "What is the primary risk of using 'Service Endpoints' compared to 'Private Endpoints' when securing access to multi-tenant Azure services like Azure Storage?",
+    "options": [
+      "Service Endpoints still allow data exfiltration to unauthorized storage accounts in the same Azure region unless Service Endpoint Policies are applied",
+      "Service Endpoints require public internet bandwidth fees",
+      "Service Endpoints do not support Azure Storage encryption at rest",
+      "Service Endpoints require on-premises VPN tunnels to function"
+    ],
+    "answer": 0,
+    "explanation": "With Service Endpoints, any VM in the subnet can access ANY storage account in the region over the backbone unless restricted by Service Endpoint Policies. In contrast, Private Endpoints link strictly to ONE specific resource instance via a private IP, preventing data exfiltration to unapproved accounts.",
+    "distractor_analysis": {
+      "1": "Service endpoint traffic stays on the Microsoft backbone and does not incur public internet transit fees.",
+      "2": "Storage encryption at rest is an underlying storage service feature independent of network endpoints.",
+      "3": "Service endpoints work inside Azure VNets and do not require on-premises VPN tunnels."
+    },
+    "tags": [
+      "service-endpoints",
+      "private-endpoints",
+      "data-exfiltration",
+      "storage"
+    ]
+  },
+  {
+    "id": "AZ500-032",
+    "exam": "az500",
+    "domain": "2.0 Secure networking",
+    "objective": "2.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A security team needs to log and analyze all IP network traffic flowing into and out of network interfaces across a virtual network, including permitted and denied flows. Which Azure Network Watcher feature provides this?",
+    "options": [
+      "VNet Flow Logs (or NSG Flow Logs) with Traffic Analytics enabled",
+      "Azure Monitor Metric Alerts",
+      "Connection Monitor ICMP probes",
+      "Packet Capture saved to local VM temp drive"
+    ],
+    "answer": 0,
+    "explanation": "NSG / VNet Flow Logs capture source/dest IP, port, protocol, and allow/deny decision for all traffic. When combined with Traffic Analytics, flow logs are ingested into Log Analytics to visualize traffic hotspots, malicious IP sources, and compliance topology.",
+    "distractor_analysis": {
+      "1": "Metric alerts monitor threshold spikes (e.g. CPU > 80%) but do not capture 5-tuple network packet flows.",
+      "2": "Connection Monitor tests synthetic reachability between endpoints rather than capturing all flow records.",
+      "3": "Packet Capture captures raw PCAP packet dumps during active troubleshooting, not continuous flow telemetry."
+    },
+    "tags": [
+      "flow-logs",
+      "traffic-analytics",
+      "network-watcher",
+      "secops"
+    ]
+  },
+  {
+    "id": "AZ500-033",
+    "exam": "az500",
+    "domain": "2.0 Secure networking",
+    "objective": "2.3",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "An enterprise wants to centralize management of firewall rules, IP groups, and security policies across dozens of Azure Firewalls deployed in multiple hub-and-spoke virtual networks. Which management tool provides this?",
+    "options": [
+      "Azure Firewall Manager",
+      "Azure Network Security Group Manager",
+      "Microsoft Sentinel Workbook",
+      "Azure Advisor Security Dashboard"
+    ],
+    "answer": 0,
+    "explanation": "Azure Firewall Manager provides centralized security policy and route management for cloud-based security perimeters across Virtual WAN hubs and standard hub-spoke virtual networks.",
+    "distractor_analysis": {
+      "1": "There is no service called 'NSG Manager'; NSGs are managed via ARM or Azure Policy.",
+      "2": "Sentinel Workbooks visualize incident data but do not centrally deploy firewall rule collections.",
+      "3": "Azure Advisor provides posture suggestions, not firewall policy orchestration."
+    },
+    "tags": [
+      "firewall-manager",
+      "hub-and-spoke",
+      "centralized-governance"
+    ]
+  }
+]

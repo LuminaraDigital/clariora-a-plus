@@ -1,21 +1,29 @@
 #!/usr/bin/env node
-import { readFileSync } from 'node:fs';
+/**
+ * Confirms local .env Cloudflare token works for Wrangler without printing it.
+ * Account API tokens often fail /user/tokens/verify; wrangler whoami is the real gate.
+ */
+import { spawnSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const text = readFileSync(join(root, '.env'), 'utf8');
-const m = text.match(/^\s*CLOUDFLARE_API_TOKEN=(.*)$/m);
-if (!m) {
-  console.log('token_verify=missing');
+if (!existsSync(join(root, '.env'))) {
+  console.error('missing .env');
   process.exit(1);
 }
-const token = m[1].trim().replace(/^["']|["']$/g, '');
-const res = await fetch('https://api.cloudflare.com/client/v4/user/tokens/verify', {
-  headers: { Authorization: `Bearer ${token}` },
+
+const r = spawnSync('npx', ['--yes', 'wrangler', 'whoami'], {
+  cwd: root,
+  encoding: 'utf8',
+  shell: true,
+  env: process.env,
 });
-const j = await res.json();
-console.log(`token_verify_success=${!!j.success}`);
-console.log(`token_status=${(j.result && j.result.status) || 'unknown'}`);
-console.log(`token_id_prefix=${j.result && j.result.id ? String(j.result.id).slice(0, 8) + '…' : 'none'}`);
-if (!j.success) process.exitCode = 1;
+const out = `${r.stdout || ''}${r.stderr || ''}`;
+const ok = /logged in/i.test(out) && r.status === 0;
+console.log(`wrangler_whoami_ok=${ok}`);
+if (!ok) {
+  console.log(out.split(/\r?\n/).slice(0, 8).join('\n'));
+  process.exitCode = 1;
+}

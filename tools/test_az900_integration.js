@@ -15,7 +15,7 @@ console.log('================================================================');
 console.log('\n1. Verifying Track Registry Module...');
 const trackRegistry = require('../js/track-registry.js');
 const tracks = trackRegistry.getTracks();
-assert.strictEqual(tracks.length, 3, 'TrackRegistry should contain 3 tracks (core1, core2, az900)');
+assert.ok(tracks.length >= 3, 'TrackRegistry should contain at least 3 tracks');
 const azTrack = trackRegistry.getTrack('az900');
 assert.strictEqual(azTrack.vendor, 'Microsoft');
 assert.strictEqual(azTrack.code, 'AZ-900');

@@ -33,6 +33,9 @@
     FIRST_EXAM: { id: "FIRST_EXAM", name: "First Block Mined", desc: "Complete your first scored exam", xp: 50, apx: 20 },
     PASS_CORE1: { id: "PASS_CORE1", name: "Core 1 Cleared", desc: "Pass a Core 1 full exam", xp: 120, apx: 60 },
     PASS_CORE2: { id: "PASS_CORE2", name: "Core 2 Cleared", desc: "Pass a Core 2 full exam", xp: 120, apx: 60 },
+    PASS_AZ900: { id: "PASS_AZ900", name: "Azure Fundamentals Cleared", desc: "Pass an AZ-900 full exam", xp: 120, apx: 60 },
+    PASS_AZ500: { id: "PASS_AZ500", name: "Azure Security Cleared", desc: "Pass an AZ-500 full exam", xp: 150, apx: 80 },
+    CRUCIBLE_SURVIVOR: { id: "CRUCIBLE_SURVIVOR", name: "Crucible Survivor", desc: "Survive and pass a Datacenter Crucible exam", xp: 200, apx: 100 },
     SCORE_850: { id: "SCORE_850", name: "Elite 850+", desc: "Score 850 or higher on a full exam", xp: 150, apx: 80 },
     PERFECT_DRILL: { id: "PERFECT_DRILL", name: "Domain Laser", desc: "Score 100% on a domain drill", xp: 80, apx: 40 },
     STREAK_3: { id: "STREAK_3", name: "3-Day Chain", desc: "Study or exam on 3 consecutive days", xp: 60, apx: 30 },
@@ -84,6 +87,15 @@
       desc: "High-contrast neon green and obsidian terminal visual theme",
       cost: 600,
       type: "permanent",
+      icon: ""
+    },
+    PRO_PASS_30D: {
+      id: "PRO_PASS_30D",
+      name: "30-Day Pro Pass",
+      desc: "30-day Pro Pass unlockable with earned APX",
+      cost: 2500,
+      type: "consumable",
+      charges: 30,
       icon: ""
     }
   };
@@ -791,13 +803,41 @@
     );
   }
 
+  function isFullExamAttempt(result) {
+    if (!result) return false;
+    const total = typeof result === "number" ? result : Math.max(0, Number(result.total) || 0);
+    const rawType = String((typeof result === "object" && result.examType) || "core1").toLowerCase();
+    const type = rawType.replace(/[-_\s]/g, "");
+
+    if (rawType.includes("domain") || type.includes("domain")) return false;
+
+    const registry = (global.APlus && global.APlus.trackRegistry) ||
+                     (typeof window !== "undefined" && window.APlus && window.APlus.trackRegistry) ||
+                     (typeof globalThis !== "undefined" && globalThis.APlus && globalThis.APlus.trackRegistry) ||
+                     null;
+    if (registry && typeof registry.getTrack === "function") {
+      const track = registry.getTrack(rawType) || registry.getTrack(type);
+      if (track && track.questionCount) {
+        return total >= Math.floor(track.questionCount * 0.88);
+      }
+    }
+
+    if (type === "az900" || type === "msaz900" || type === "azure") {
+      return total >= 40;
+    }
+    if (type === "az500" || type === "msaz500" || type === "azuresec" || type === "azuresecurity") {
+      return total >= 45;
+    }
+    return total >= (EARN_RULES.fullExamMinQuestions || 60);
+  }
+
   function calcExamReward(result) {
     const total = Math.max(1, Number(result.total) || 1);
     const correct = Number(result.rawCorrect) || 0;
     const scaled = Number(result.scaledScore) || 0;
     const passed = !!result.passed;
     const type = (result.examType || "core1").toLowerCase();
-    const isFull = total >= EARN_RULES.fullExamMinQuestions;
+    const isFull = isFullExamAttempt(result);
 
     let practiceApx = 10 + correct * 2;
     let milestoneApx = 0;
@@ -832,13 +872,29 @@
       }
     });
 
+    // Crucible Behavioral Bonuses (Instinct & Pacing Calibration)
+    let instinctBonus = 0;
+    const audit = result.crucibleAudit;
+    if (audit && typeof audit === "object") {
+      if (audit.totalSwitches !== undefined && audit.correctToWrong === 0 && total >= 15) {
+        instinctBonus += 10;
+        xp += 15;
+      }
+      if (audit.wrongToCorrect && audit.wrongToCorrect > 0) {
+        const calApx = Math.min(15, audit.wrongToCorrect * 5);
+        instinctBonus += calApx;
+        xp += audit.wrongToCorrect * 8;
+      }
+    }
+    practiceApx += instinctBonus;
+
     if (type === "missed") {
       practiceApx = Math.round(practiceApx * 0.75);
       milestoneApx = Math.round(milestoneApx * 0.75);
       xp = Math.round(xp * 0.75);
     }
 
-    return { apx: practiceApx + milestoneApx, practiceApx, milestoneApx, xp, domainBonuses, isFull };
+    return { apx: practiceApx + milestoneApx, practiceApx, milestoneApx, xp, domainBonuses, instinctBonus, isFull };
   }
 
   function examSignature(result) {
@@ -920,15 +976,30 @@
       const b = await mintAchievementIfNew("FIRST_EXAM");
       if (b) minted.push(b);
     }
-    if (result.passed && String(result.examType).toLowerCase() === "core1" && result.total >= 60) {
+    const isFull = isFullExamAttempt(result);
+    const examTypeStr = String(result.examType || "core1").toLowerCase().replace(/[-_\s]/g, "");
+
+    if (result.passed && examTypeStr === "core1" && isFull) {
       const b = await mintAchievementIfNew("PASS_CORE1", { score: result.scaledScore });
       if (b) minted.push(b);
     }
-    if (result.passed && String(result.examType).toLowerCase() === "core2" && result.total >= 60) {
+    if (result.passed && examTypeStr === "core2" && isFull) {
       const b = await mintAchievementIfNew("PASS_CORE2", { score: result.scaledScore });
       if (b) minted.push(b);
     }
-    if (result.scaledScore >= 850 && result.total >= 60) {
+    if (result.passed && (examTypeStr === "az900" || examTypeStr === "msaz900" || examTypeStr === "azure") && isFull) {
+      const b = await mintAchievementIfNew("PASS_AZ900", { score: result.scaledScore });
+      if (b) minted.push(b);
+    }
+    if (result.passed && (examTypeStr === "az500" || examTypeStr === "msaz500" || examTypeStr === "azuresec" || examTypeStr === "azuresecurity") && isFull) {
+      const b = await mintAchievementIfNew("PASS_AZ500", { score: result.scaledScore });
+      if (b) minted.push(b);
+    }
+    if (result.passed && (examTypeStr.includes("crucible") || result.crucible || (result.mode && String(result.mode).toLowerCase() === "crucible")) && isFull) {
+      const b = await mintAchievementIfNew("CRUCIBLE_SURVIVOR", { score: result.scaledScore });
+      if (b) minted.push(b);
+    }
+    if (result.scaledScore >= 850 && isFull) {
       const b = await mintAchievementIfNew("SCORE_850", { score: result.scaledScore });
       if (b) minted.push(b);
     }
@@ -1401,6 +1472,7 @@
     resetLedgerHard,
     calcExamReward,
     applyEarnLimits,
+    isFullExamAttempt,
     EARN_RULES,
     clearKeyCache,
     localDayKey,

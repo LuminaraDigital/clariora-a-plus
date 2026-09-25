@@ -55,6 +55,7 @@
   function spawnCoinShower() {
     if (typeof document === 'undefined') return;
     const target = $("apxHeaderChip") || $("streakChip") || document.body;
+    if (!target || typeof target.getBoundingClientRect !== 'function') return;
     const rect = target.getBoundingClientRect();
     const destX = rect.left + rect.width / 2;
     const destY = rect.top + rect.height / 2;
@@ -428,9 +429,20 @@
     return `<br><span style="color:var(--text-secondary);font-size:0.8rem;">${notes.join(" · ")}</span>`;
   }
 
+  const _processedAttempts = new Set();
   async function onExamComplete(result) {
-    if (!global.CompTIALedger) return null;
-    const out = await CompTIALedger.recordExamComplete(result);
+    if (!global.CompTIALedger || !result) return null;
+    const attemptSig = result.sessionId || [result.examType, result.total, result.rawCorrect, result.scaledScore, Math.floor(Date.now() / 15000)].join(':');
+    if (_processedAttempts.has(attemptSig)) {
+      return null;
+    }
+    _processedAttempts.add(attemptSig);
+    if (_processedAttempts.size > 50) {
+      const oldest = Array.from(_processedAttempts).slice(0, 20);
+      oldest.forEach((k) => _processedAttempts.delete(k));
+    }
+
+    const out = await global.CompTIALedger.recordExamComplete(result);
     await refreshWalletBadge();
 
     if (global.TMABridge && typeof global.TMABridge.haptic === "function") {
@@ -446,6 +458,7 @@
         <code>#${out.block.index}</code> (${shortHash(out.block.hash)})
         · +${out.reward.xp} XP
         ${out.minted.length ? ` · Achievements: ${out.minted.map((m) => m.payload.name).join(", ")}` : ""}
+        ${out.reward.instinctBonus ? ` · <span style="color:var(--accent-green);">Instinct Bonus: +${out.reward.instinctBonus} APX</span>` : ""}
         ${earnLimitNote(out.reward)}
       `;
     }
@@ -498,30 +511,102 @@
     }
   }
 
+  function updateDomainDropdown() {
+    const sel = $("domainSelect");
+    if (!sel) return;
+    const registry = (global.APlus && global.APlus.trackRegistry) ||
+                     (typeof window !== "undefined" && window.APlus && window.APlus.trackRegistry) ||
+                     (typeof globalThis !== "undefined" && globalThis.APlus && globalThis.APlus.trackRegistry) ||
+                     null;
+    if (!registry || typeof registry.getActiveTrack !== "function") return;
+    const track = registry.getActiveTrack();
+    if (!track || !Array.isArray(track.blueprint) || track.blueprint.length === 0) return;
+
+    const prevVal = sel.value;
+    sel.innerHTML = "";
+    const group = document.createElement("optgroup");
+    group.label = track.title || track.code || "Domains";
+    track.blueprint.forEach((bp, idx) => {
+      const opt = document.createElement("option");
+      opt.value = `${track.id}_${idx + 1}`;
+      opt.textContent = `${track.badge || track.code}: ${bp.name || bp.prefix}`;
+      group.appendChild(opt);
+    });
+    sel.appendChild(group);
+    if (prevVal) {
+      for (let i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value === prevVal) {
+          sel.selectedIndex = i;
+          break;
+        }
+      }
+    }
+  }
+
   async function stakeSelectedDomain() {
-    const val = $("domainSelect").value;
-    const map = {
-      c1_1: "1.0 Mobile Devices",
-      c1_2: "2.0 Networking",
-      c1_3: "3.0 Hardware",
-      c1_4: "4.0 Virtualization and Cloud Computing",
-      c1_5: "5.0 Hardware and Network Troubleshooting",
-      c2_1: "1.0 Operating Systems",
-      c2_2: "2.0 Security",
-      c2_3: "3.0 Software Troubleshooting",
-      c2_4: "4.0 Operational Procedures"
-    };
-    const domainKey = map[val] || val;
-    const out = await CompTIALedger.stakeDomain(domainKey, 30);
+    const sel = $("domainSelect");
+    const val = sel ? sel.value : "";
+    let domainKey = val;
+
+    const registry = (global.APlus && global.APlus.trackRegistry) ||
+                     (typeof window !== "undefined" && window.APlus && window.APlus.trackRegistry) ||
+                     (typeof globalThis !== "undefined" && globalThis.APlus && globalThis.APlus.trackRegistry) ||
+                     null;
+
+    if (registry && typeof registry.getActiveTrack === "function") {
+      const track = registry.getActiveTrack();
+      if (track && Array.isArray(track.blueprint)) {
+        const match = track.blueprint.find((bp, idx) => {
+          const key1 = `${track.id}_${idx + 1}`;
+          const key2 = `${track.id}_${bp.prefix}`;
+          const alias1 = track.id === "core1" ? `c1_${idx + 1}` : track.id === "core2" ? `c2_${idx + 1}` : key1;
+          return val === key1 || val === key2 || val === alias1 || val === bp.name || val === bp.prefix ||
+                 (val && val.toLowerCase() === (bp.name || "").toLowerCase()) ||
+                 (val && (bp.name || "").toLowerCase().startsWith(val.toLowerCase()));
+        });
+        if (match) {
+          domainKey = match.name;
+        }
+      }
+    }
+
+    if (!domainKey || domainKey === val) {
+      const map = {
+        c1_1: "1.0 Mobile Devices",
+        c1_2: "2.0 Networking",
+        c1_3: "3.0 Hardware",
+        c1_4: "4.0 Virtualization and Cloud Computing",
+        c1_5: "5.0 Hardware and Network Troubleshooting",
+        c2_1: "1.0 Operating Systems",
+        c2_2: "2.0 Security",
+        c2_3: "3.0 Software Troubleshooting",
+        c2_4: "4.0 Operational Procedures",
+        // Azure AZ-900 domain keys
+        az900_1: "1.0 Describe cloud concepts",
+        az900_2: "2.0 Describe Azure architecture and services",
+        az900_3: "3.0 Describe Azure management and governance",
+        // Azure AZ-500 domain keys
+        az500_1: "1.0 Manage identity and access",
+        az500_2: "2.0 Secure networking",
+        az500_3: "3.0 Secure compute, storage, and databases",
+        az500_4: "4.0 Manage security operations"
+      };
+      domainKey = map[val] || val;
+    }
+
+    const ledger = global.CompTIALedger || (typeof CompTIALedger !== "undefined" ? CompTIALedger : null);
+    if (!ledger) return { ok: false, error: "CompTIALedger not loaded" };
+    const out = await ledger.stakeDomain(domainKey, 30);
     await refreshWalletBadge();
     if (!out.ok) {
       toast(escapeSafe(out.error), "warn");
-      return;
+      return out;
     }
     toast(
       `Staked <strong>30 APX</strong> on ${escapeSafe(domainKey)}. Score 80%+ on a drill from tomorrow onward to get it back plus 12 APX.`,
       "earn"
     );
+    return out;
   }
 
   async function exportLedger() {
@@ -564,12 +649,31 @@
     } catch (err) {
       console.warn("Streak shield check failed:", err && err.message);
     }
+    updateDomainDropdown();
+    try {
+      const reg = (global.APlus && global.APlus.trackRegistry) ||
+                  (typeof window !== "undefined" && window.APlus && window.APlus.trackRegistry) ||
+                  (typeof globalThis !== "undefined" && globalThis.APlus && globalThis.APlus.trackRegistry);
+      if (reg && typeof reg.onTrackChange === "function") {
+        reg.onTrackChange(() => updateDomainDropdown());
+      }
+    } catch (_) {}
     await refreshWalletBadge();
   }
 
   const OWNED_ACTIONS = {
     CRAM_SHEET: { label: "Print sheet", run: () => global.APlus && APlus.cramSheet && APlus.cramSheet.printAll() },
-    WEAK_SCAN: { label: "Run scan", run: () => openDeficitScan() }
+    WEAK_SCAN: { label: "Run scan", run: () => openDeficitScan() },
+    PRO_PASS_30D: {
+      label: "Activate Pass",
+      run: async () => {
+        if (await CompTIALedger.hasActiveUnlock("PRO_PASS_30D")) {
+          await CompTIALedger.consumeUnlock("PRO_PASS_30D", 1);
+          toast("Activated 1 day of your 30-Day Pro Pass!", "earn");
+          await refreshWalletBadge();
+        }
+      }
+    }
   };
 
   function useOwnedUnlock(unlockId) {
@@ -655,6 +759,7 @@
     onPbqComplete,
     claimDaily,
     stakeSelectedDomain,
+    updateDomainDropdown,
     exportLedger,
     verifyNow,
     promptUnlock,
@@ -674,6 +779,7 @@
   global.closeLedgerModal = closeLedgerModal;
   global.claimDailyApx = claimDaily;
   global.stakeSelectedDomain = stakeSelectedDomain;
+  global.updateDomainDropdown = updateDomainDropdown;
   global.exportPomLedger = exportLedger;
   global.verifyPomLedger = verifyNow;
   global.renderLedgerModal = renderLedgerModal;

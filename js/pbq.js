@@ -157,6 +157,13 @@
         const brief = LAB_BRIEFS[n];
         if (!pane || !brief) return;
 
+        // If the lab already renders its own pbq-sim-header (labs 4-7), hide legacy brief box to prevent duplication
+        if (n >= 4 && pane.querySelector('.pbq-sim-header')) {
+          const oldBox = document.getElementById(`pbqBrief${n}`);
+          if (oldBox) oldBox.style.display = 'none';
+          return;
+        }
+
         let box = document.getElementById(`pbqBrief${n}`);
         if (!box) {
           box = document.createElement('div');
@@ -218,8 +225,16 @@
           const existingBody = cont.querySelector('.pbq-sim-body');
           if (!existingBody) {
             window.APlus.pbqEngine.render({ pbqType: labKey }, null, cont, {
-              onSelect: () => {},
-              onSubmit: () => {}
+              onSelect: (state) => {
+                cont._pbqState = state;
+              },
+              onSubmit: (res) => {
+                if (res && res.passed) {
+                  if (window.APlus && window.APlus.bus && typeof window.APlus.bus.emit === 'function') {
+                    window.APlus.bus.emit('pbq:completed', { lab: labKey, correct: true, score: 100 });
+                  }
+                }
+              }
             });
           }
         }

@@ -1,0 +1,825 @@
+{
+  "title": "AZ-500: Microsoft Azure Security Technologies - Objectives Tracker",
+  "version": "1.0.0",
+  "exam": "az500",
+  "code": "AZ-500",
+  "storage_key": "az500_objectives_progress_v1",
+  "objectives": [
+    {
+      "id": "az500-1-1",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "1.0 Manage identity and access",
+      "code": "1.1",
+      "title": "Manage security controls for identity and access",
+      "checked": false
+    },
+    {
+      "id": "az500-1-2-1",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "1.0 Manage identity and access",
+      "code": "1.1",
+      "title": "Manage Azure built-in role assignments",
+      "reference_url": "https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles",
+      "checked": false
+    },
+    {
+      "id": "az500-1-2-2",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "1.0 Manage identity and access",
+      "code": "1.1",
+      "title": "Manage custom roles, including Azure roles and Microsoft Entra roles",
+      "reference_url": "https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/custom-create",
+      "checked": false
+    },
+    {
+      "id": "az500-1-2-3",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "1.0 Manage identity and access",
+      "code": "1.1",
+      "title": "Implement and manage Microsoft Entra Permissions Management",
+      "reference_url": "https://learn.microsoft.com/en-us/entra/permissions-management/overview",
+      "checked": false
+    },
+    {
+      "id": "az500-1-2-4",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "1.0 Manage identity and access",
+      "code": "1.1",
+      "title": "Plan and manage Azure resources in Microsoft Entra Privileged Identity Management, including settings and assignments",
+      "reference_url": "https://learn.microsoft.com/en-us/entra/id-governance/privileged-identity-management/pim-getting-started",
+      "checked": false
+    },
+    {
+      "id": "az500-1-2-5",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "1.0 Manage identity and access",
+      "code": "1.1",
+      "title": "Implement multi-factor authentication (MFA) for access to Azure resources",
+      "reference_url": "https://learn.microsoft.com/en-us/entra/identity/authentication/howto-mfa-mfasettings",
+      "checked": false
+    },
+    {
+      "id": "az500-1-2-6",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "1.0 Manage identity and access",
+      "code": "1.1",
+      "title": "Implement Conditional Access policies for cloud resources in Azure",
+      "reference_url": "https://learn.microsoft.com/en-us/entra/identity/conditional-access/overview",
+      "checked": false
+    },
+    {
+      "id": "az500-1-2",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "1.0 Manage identity and access",
+      "code": "1.2",
+      "title": "Manage Microsoft Entra application access",
+      "checked": false
+    },
+    {
+      "id": "az500-1-3-7",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "1.0 Manage identity and access",
+      "code": "1.2",
+      "title": "Manage access to enterprise applications in Microsoft Entra ID, including OAuth permission grants",
+      "reference_url": "https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/manage-application-permissions",
+      "checked": false
+    },
+    {
+      "id": "az500-1-3-8",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "1.0 Manage identity and access",
+      "code": "1.2",
+      "title": "Manage Microsoft Entra app registrations",
+      "reference_url": "https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app?tabs=certificate%2Cexpose-a-web-api",
+      "checked": false
+    },
+    {
+      "id": "az500-1-3-9",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "1.0 Manage identity and access",
+      "code": "1.2",
+      "title": "Configure app registration permission scopes",
+      "reference_url": "https://learn.microsoft.com/en-us/entra/identity-platform/permissions-consent-overview",
+      "checked": false
+    },
+    {
+      "id": "az500-1-3-10",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "1.0 Manage identity and access",
+      "code": "1.2",
+      "title": "Manage app registration permission consent",
+      "reference_url": "https://learn.microsoft.com/en-us/entra/identity-platform/application-consent-experience",
+      "checked": false
+    },
+    {
+      "id": "az500-1-3-11",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "1.0 Manage identity and access",
+      "code": "1.2",
+      "title": "Manage and use service principals",
+      "reference_url": "https://learn.microsoft.com/en-us/entra/identity-platform/app-objects-and-service-principals",
+      "checked": false
+    },
+    {
+      "id": "az500-1-3-12",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "1.0 Manage identity and access",
+      "code": "1.2",
+      "title": "Manage managed identities",
+      "reference_url": "https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview",
+      "checked": false
+    },
+    {
+      "id": "az500-2-1",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "2.0 Secure networking",
+      "code": "2.1",
+      "title": "Implement network security",
+      "checked": false
+    },
+    {
+      "id": "az500-2-2-13",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "2.0 Secure networking",
+      "code": "2.1",
+      "title": "Configure Virtual Network connectivity",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vnet-vnet-rm-ps?toc=%2fazure%2fvirtual-network%2ftoc.json",
+      "checked": false
+    },
+    {
+      "id": "az500-2-2-14",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "2.0 Secure networking",
+      "code": "2.1",
+      "title": "Configure Network Security Groups (NSGs)",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/virtual-network/manage-network-security-group",
+      "checked": false
+    },
+    {
+      "id": "az500-2-2-15",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "2.0 Secure networking",
+      "code": "2.1",
+      "title": "Create and configure Azure Firewall",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/firewall/tutorial-firewall-deploy-portal",
+      "checked": false
+    },
+    {
+      "id": "az500-2-2-16",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "2.0 Secure networking",
+      "code": "2.1",
+      "title": "Create and configure Azure Front Door service",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/frontdoor/front-door-overview",
+      "checked": false
+    },
+    {
+      "id": "az500-2-2-17",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "2.0 Secure networking",
+      "code": "2.1",
+      "title": "Create and configure Application Security Groups (ASG)",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/virtual-network/security-overview",
+      "checked": false
+    },
+    {
+      "id": "az500-2-2-18",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "2.0 Secure networking",
+      "code": "2.1",
+      "title": "Configure remote access management",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/security/fundamentals/management",
+      "checked": false
+    },
+    {
+      "id": "az500-2-2-19",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "2.0 Secure networking",
+      "code": "2.1",
+      "title": "Configure baseline",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/security/fundamentals/network-overview",
+      "checked": false
+    },
+    {
+      "id": "az500-2-2-20",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "2.0 Secure networking",
+      "code": "2.1",
+      "title": "Configure resource firewall",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/storage/common/storage-network-security",
+      "checked": false
+    },
+    {
+      "id": "az500-2-2",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "2.0 Secure networking",
+      "code": "2.2",
+      "title": "Implement host security",
+      "checked": false
+    },
+    {
+      "id": "az500-2-3-21",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "2.0 Secure networking",
+      "code": "2.2",
+      "title": "Configure endpoint security within the VM",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/security/fundamentals/antimalware",
+      "checked": false
+    },
+    {
+      "id": "az500-2-3-22",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "2.0 Secure networking",
+      "code": "2.2",
+      "title": "Configure VM security",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/security/fundamentals/iaas",
+      "checked": false
+    },
+    {
+      "id": "az500-2-3-23",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "2.0 Secure networking",
+      "code": "2.2",
+      "title": "Harden VMs in Azure",
+      "reference_url": "https://docs.microsoft.com/en-us/archive/blogs/mvpawardprogram/just-in-time-access-azure-vms",
+      "checked": false
+    },
+    {
+      "id": "az500-2-3-24",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "2.0 Secure networking",
+      "code": "2.2",
+      "title": "Configure System Updates for VMs in Azure",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/automation/automation-tutorial-update-management",
+      "checked": false
+    },
+    {
+      "id": "az500-2-3-25",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "2.0 Secure networking",
+      "code": "2.2",
+      "title": "Configure baseline",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/cloud-adoption-framework/govern/security-baseline/toolchain",
+      "checked": false
+    },
+    {
+      "id": "az500-2-3",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "2.0 Secure networking",
+      "code": "2.3",
+      "title": "Implement Microsoft Azure Resource management security",
+      "checked": false
+    },
+    {
+      "id": "az500-2-4-26",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "2.0 Secure networking",
+      "code": "2.3",
+      "title": "Create Microsoft Azure Resource Locks",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/lock-resources",
+      "checked": false
+    },
+    {
+      "id": "az500-2-4-27",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "2.0 Secure networking",
+      "code": "2.3",
+      "title": "Manage Resource Group Security",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/role-based-access-control/overview",
+      "checked": false
+    },
+    {
+      "id": "az500-2-4-28",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "2.0 Secure networking",
+      "code": "2.3",
+      "title": "Configure Azure Policies",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/governance/policy/tutorials/create-and-manage",
+      "checked": false
+    },
+    {
+      "id": "az500-2-4-29",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "2.0 Secure networking",
+      "code": "2.3",
+      "title": "Configure custom RBAC roles",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/role-based-access-control/custom-roles",
+      "checked": false
+    },
+    {
+      "id": "az500-2-4-30",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "2.0 Secure networking",
+      "code": "2.3",
+      "title": "Configure Subscription and Resource Permissions",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/cost-management-billing/manage/add-change-subscription-administrator",
+      "checked": false
+    },
+    {
+      "id": "az500-3-1",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.1",
+      "title": "Configure container security",
+      "checked": false
+    },
+    {
+      "id": "az500-3-2-31",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.1",
+      "title": "Configure network - Enable containers to use Azure Virtual Network capabilities",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/virtual-network/container-networking-overview",
+      "checked": false
+    },
+    {
+      "id": "az500-3-2-32",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.1",
+      "title": "Configure authentication",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/container-registry/container-registry-authentication",
+      "checked": false
+    },
+    {
+      "id": "az500-3-2-33",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.1",
+      "title": "Configure container isolation",
+      "reference_url": "https://azure.microsoft.com/en-us/resources/container-security-in-microsoft-azure/",
+      "checked": false
+    },
+    {
+      "id": "az500-3-2-34",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.1",
+      "title": "Configure AKS security",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/aks/concepts-security",
+      "checked": false
+    },
+    {
+      "id": "az500-3-2-35",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.1",
+      "title": "Configure Container Registry",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/container-registry/container-registry-authentication",
+      "checked": false
+    },
+    {
+      "id": "az500-3-2-36",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.1",
+      "title": "Implement vulnerability management",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/container-instances/container-instances-image-security",
+      "checked": false
+    },
+    {
+      "id": "az500-3-2",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.2",
+      "title": "Configure Security Policies to Manage Data",
+      "checked": false
+    },
+    {
+      "id": "az500-3-3-37",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.2",
+      "title": "Configure Data Classification",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/cloud-adoption-framework/govern/policy-compliance/data-classification",
+      "checked": false
+    },
+    {
+      "id": "az500-3-3-38",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.2",
+      "title": "Configure Data Retention",
+      "reference_url": "https://docs.microsoft.com/en-us/rest/api/storageservices/setting-a-storage-analytics-data-retention-policy",
+      "checked": false
+    },
+    {
+      "id": "az500-3-3-39",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.2",
+      "title": "Configure Data Sovereignty",
+      "reference_url": "https://azure.microsoft.com/en-us/global-infrastructure/geographies/",
+      "checked": false
+    },
+    {
+      "id": "az500-3-3-40",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.2",
+      "title": "Azure customer data protection",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/security/fundamentals/protection-customer-data",
+      "checked": false
+    },
+    {
+      "id": "az500-3-3",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.3",
+      "title": "Configure Security for Data Infrastructure",
+      "checked": false
+    },
+    {
+      "id": "az500-3-4-41",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.3",
+      "title": "Enable Database Authentication",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/sql-database/sql-database-aad-authentication",
+      "checked": false
+    },
+    {
+      "id": "az500-3-4-42",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.3",
+      "title": "Enable Database Auditing",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auditing",
+      "checked": false
+    },
+    {
+      "id": "az500-3-4-43",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.3",
+      "title": "Configure Azure SQL Database Advanced Threat Protection",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/sql-database/sql-database-threat-detection",
+      "checked": false
+    },
+    {
+      "id": "az500-3-4-44",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.3",
+      "title": "Configure Access Control for Storage Accounts",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/storage/blobs/security-recommendations",
+      "checked": false
+    },
+    {
+      "id": "az500-3-4-45",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.3",
+      "title": "Configure Key Management for Storage Accounts",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage",
+      "checked": false
+    },
+    {
+      "id": "az500-3-4-46",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.3",
+      "title": "Configure Azure AD Authentication for Azure Storage",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/storage/common/storage-auth-aad",
+      "checked": false
+    },
+    {
+      "id": "az500-3-4-47",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.3",
+      "title": "Configure Azure AD Domain Services Authentication for Azure Files",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/storage/files/storage-files-active-directory-enable",
+      "checked": false
+    },
+    {
+      "id": "az500-3-4-48",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.3",
+      "title": "Create and manage Shared Access Signatures (SAS)",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview",
+      "checked": false
+    },
+    {
+      "id": "az500-3-4-49",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.3",
+      "title": "Configure security for HDInsights",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/hdinsight/domain-joined/apache-domain-joined-architecture",
+      "checked": false
+    },
+    {
+      "id": "az500-3-4-50",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.3",
+      "title": "Configure security for Cosmos DB",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/cosmos-db/database-security",
+      "checked": false
+    },
+    {
+      "id": "az500-3-4-51",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.3",
+      "title": "Configure security for Azure Data Lake",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-access-control",
+      "checked": false
+    },
+    {
+      "id": "az500-3-4",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.4",
+      "title": "Configure Encryption for Data at Rest",
+      "checked": false
+    },
+    {
+      "id": "az500-3-5-52",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.4",
+      "title": "Implement Azure SQL Database Always Encrypted",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/sql-database/sql-database-always-encrypted",
+      "checked": false
+    },
+    {
+      "id": "az500-3-5-53",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.4",
+      "title": "Implement Database Encryption - Transparent Data Encryption (TDE)",
+      "reference_url": "https://docs.microsoft.com/en-us/sql/relational-databases/security/encryption/transparent-data-encryption",
+      "checked": false
+    },
+    {
+      "id": "az500-3-5-54",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.4",
+      "title": "Implement Storage Service Encryption",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/storage/common/storage-service-encryption",
+      "checked": false
+    },
+    {
+      "id": "az500-3-5-55",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "3.0 Secure compute, storage, and databases",
+      "code": "3.4",
+      "title": "Implement Disk Encryption",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/security/fundamentals/azure-disk-encryption-vms-vmss",
+      "checked": false
+    },
+    {
+      "id": "az500-4-1",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "4.0 Manage security operations",
+      "code": "4.1",
+      "title": "Configure Application Security",
+      "checked": false
+    },
+    {
+      "id": "az500-4-2-56",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "4.0 Manage security operations",
+      "code": "4.1",
+      "title": "Configure SSL/TLS certs",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/cloud-services/cloud-services-configure-ssl-certificate-portal",
+      "checked": false
+    },
+    {
+      "id": "az500-4-2-57",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "4.0 Manage security operations",
+      "code": "4.1",
+      "title": "Configure Azure services to protect web apps",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/security/fundamentals/paas-applications-using-app-services",
+      "checked": false
+    },
+    {
+      "id": "az500-4-2-58",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "4.0 Manage security operations",
+      "code": "4.1",
+      "title": "Create an application security baseline",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/security/fundamentals/paas-deployments",
+      "checked": false
+    },
+    {
+      "id": "az500-4-2",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "4.0 Manage security operations",
+      "code": "4.2",
+      "title": "Configure and Manage Key Vault",
+      "checked": false
+    },
+    {
+      "id": "az500-4-3-59",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "4.0 Manage security operations",
+      "code": "4.2",
+      "title": "Secrets",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/key-vault/about-keys-secrets-and-certificates#key-vault-secrets",
+      "checked": false
+    },
+    {
+      "id": "az500-4-3-60",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "4.0 Manage security operations",
+      "code": "4.2",
+      "title": "Certificates",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/key-vault/about-keys-secrets-and-certificates#key-vault-certificates",
+      "checked": false
+    },
+    {
+      "id": "az500-4-3-61",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "4.0 Manage security operations",
+      "code": "4.2",
+      "title": "Keys",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/key-vault/about-keys-secrets-and-certificates#key-vault-keys",
+      "checked": false
+    },
+    {
+      "id": "az500-4-3",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "4.0 Manage security operations",
+      "code": "4.3",
+      "title": "Configure security services",
+      "checked": false
+    },
+    {
+      "id": "az500-4-4-62",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "4.0 Manage security operations",
+      "code": "4.3",
+      "title": "Configure Azure Monitor",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/azure-monitor/azure-management",
+      "checked": false
+    },
+    {
+      "id": "az500-4-4-63",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "4.0 Manage security operations",
+      "code": "4.3",
+      "title": "Configure diagnostic logging",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/azure-monitor/platform/platform-logs-overview",
+      "checked": false
+    },
+    {
+      "id": "az500-4-4-64",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "4.0 Manage security operations",
+      "code": "4.3",
+      "title": "Configure log retention",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/azure-monitor/app/data-retention-privacy",
+      "checked": false
+    },
+    {
+      "id": "az500-4-4-65",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "4.0 Manage security operations",
+      "code": "4.3",
+      "title": "Configure vulnerability scanning",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/security-center/security-center-vulnerability-assessment-recommendations",
+      "checked": false
+    },
+    {
+      "id": "az500-4-4",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "4.0 Manage security operations",
+      "code": "4.4",
+      "title": "Configure security policies",
+      "checked": false
+    },
+    {
+      "id": "az500-4-5-66",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "4.0 Manage security operations",
+      "code": "4.4",
+      "title": "Configure centralized policy management by using Azure Security Center",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/security-center/tutorial-security-policy",
+      "checked": false
+    },
+    {
+      "id": "az500-4-5",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "4.0 Manage security operations",
+      "code": "4.5",
+      "title": "Manage security alerts",
+      "checked": false
+    },
+    {
+      "id": "az500-4-6-67",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "4.0 Manage security operations",
+      "code": "4.5",
+      "title": "Review and respond to alerts and recommendations",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/security-center/security-center-managing-and-responding-alerts",
+      "checked": false
+    },
+    {
+      "id": "az500-4-6-68",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "4.0 Manage security operations",
+      "code": "4.5",
+      "title": "Configure a Playbook for a security event by using Azure Security Center",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/security-center/security-center-playbooks",
+      "checked": false
+    },
+    {
+      "id": "az500-4-6-69",
+      "exam": "az500",
+      "exam_code": "AZ-500",
+      "domain": "4.0 Manage security operations",
+      "code": "4.5",
+      "title": "Investigate escalated security incidents",
+      "reference_url": "https://docs.microsoft.com/en-us/azure/security-center/security-center-incident",
+      "checked": false
+    }
+  ]
+}

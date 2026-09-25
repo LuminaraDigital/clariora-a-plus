@@ -25,6 +25,10 @@
         const azPool = (raw.az900 || (window.AZ900_EXAM_DATA && window.AZ900_EXAM_DATA.az900) || []);
         return azPool.map(q => ({ ...q, exam: 'az900' }));
       }
+      if (examType === 'az500' || examType === 'ms_az500' || examType === 'azure_security' || examType === 'azure_sec') {
+        const azPool = (raw.az500 || (window.AZ500_EXAM_DATA && window.AZ500_EXAM_DATA.az500) || []);
+        return azPool.map(q => ({ ...q, exam: 'az500' }));
+      }
       if (examType === 'core1') {
         return (raw.core1 || []).map(q => ({ ...q, exam: 'core1' }));
       }
@@ -38,7 +42,12 @@
 
     getQuestionById(id) {
       if (!id) return null;
-      if (String(id).startsWith('AZ-')) {
+      if (String(id).startsWith('AZ500-') || String(id).startsWith('PBQ-AZ500')) {
+        const azPool = this.getQuestions('az500');
+        const match = azPool.find(q => q.id === id);
+        if (match) return match;
+      }
+      if (String(id).startsWith('AZ-') || String(id).startsWith('PBQ-AZ-')) {
         const azPool = this.getQuestions('az900');
         const match = azPool.find(q => q.id === id);
         if (match) return match;
@@ -73,6 +82,9 @@
     getObjectivesData(examType) {
       const active = (window.APlus && window.APlus.trackRegistry) ? window.APlus.trackRegistry.getActiveTrackId() : 'core1';
       const target = examType || active;
+      if (target === 'az500' || target === 'ms_az500' || target === 'azure_security' || target === 'azure_sec') {
+        return window.AZ500_OBJECTIVES_DATA || null;
+      }
       if (target === 'az900' || target === 'ms_az900') {
         return window.AZ900_OBJECTIVES_DATA || null;
       }
@@ -82,6 +94,9 @@
     getStudyLibrary(examType) {
       const active = (window.APlus && window.APlus.trackRegistry) ? window.APlus.trackRegistry.getActiveTrackId() : 'core1';
       const target = examType || active;
+      if (target === 'az500' || target === 'ms_az500' || target === 'azure_security' || target === 'azure_sec') {
+        return window.AZ500_STUDY_LIBRARY || null;
+      }
       if (target === 'az900' || target === 'ms_az900') {
         return window.AZ900_STUDY_LIBRARY || null;
       }
@@ -93,6 +108,14 @@
     },
 
     getDomainList(examType = 'core1') {
+      if (examType === 'az500' || examType === 'ms_az500' || examType === 'azure_security' || examType === 'azure_sec') {
+        return [
+          { code: '1.0', name: '1.0 Manage identity and access', weight: 28 },
+          { code: '2.0', name: '2.0 Secure networking', weight: 22 },
+          { code: '3.0', name: '3.0 Secure compute, storage, and databases', weight: 25 },
+          { code: '4.0', name: '4.0 Manage security operations', weight: 25 }
+        ];
+      }
       if (examType === 'az900' || examType === 'ms_az900') {
         return [
           { code: '1.0', name: '1.0 Describe cloud concepts', weight: 28 },

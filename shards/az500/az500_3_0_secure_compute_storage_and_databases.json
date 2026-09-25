@@ -1,0 +1,450 @@
+[
+  {
+    "id": "AZ500-034",
+    "exam": "az500",
+    "domain": "3.0 Secure compute, storage, and databases",
+    "objective": "3.1",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "A healthcare provider must store patient records in Azure Blob Storage under strict regulatory WORM (Write Once, Read Many) compliance. The policy mandates that records cannot be modified or deleted by anyone\u2014including Global Administrators\u2014for 7 years. What storage feature should be configured?",
+    "options": [
+      "Immutable Blob Storage with a Time-Based Retention Policy configured in 'Locked' compliance mode",
+      "Azure Storage Account CanNotDelete Resource Lock",
+      "Soft Delete for blobs with a 2,555-day retention window",
+      "Azure Key Vault Customer-Managed Key (CMK) encryption"
+    ],
+    "answer": 0,
+    "explanation": "Immutable Blob Storage with a Time-Based Retention Policy locked in regulatory compliance mode meets strict WORM requirements (SEC Rule 17a-4, CFTC). Once locked, the policy cannot be deleted or shortened by any user, including root administrators and Microsoft support, until the retention period expires.",
+    "distractor_analysis": {
+      "1": "Resource locks can be deleted at any time by administrators with User Access Administrator or Owner privileges.",
+      "2": "Soft delete allows authorized users to permanently purge or undelete blobs and does not enforce immutable WORM compliance.",
+      "3": "Customer-managed keys protect data confidentiality at rest, but do not prevent authorized users from deleting or altering blobs."
+    },
+    "tags": [
+      "worm",
+      "immutable-storage",
+      "compliance",
+      "blob-storage"
+    ]
+  },
+  {
+    "id": "AZ500-035",
+    "exam": "az500",
+    "domain": "3.0 Secure compute, storage, and databases",
+    "objective": "3.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A third-party vendor requires temporary read-only access to a specific Azure Blob Storage container for 4 hours. Which mechanism provides this access with the ability to immediately revoke access if necessary?",
+    "options": [
+      "A Service SAS token associated with a Stored Access Policy on the container",
+      "Sharing the Storage Account Secondary Access Key",
+      "A User Delegation SAS token without time limits",
+      "Adding the vendor as a Contributor on the resource group"
+    ],
+    "answer": 0,
+    "explanation": "A Stored Access Policy provides server-side control over Shared Access Signatures (SAS). If an administrator needs to revoke access immediately, they can modify or delete the Stored Access Policy, which instantly invalidates all SAS tokens generated from it without regenerating storage account keys.",
+    "distractor_analysis": {
+      "1": "Sharing account access keys grants full root control over all data in the storage account and cannot be easily scoped or revoked.",
+      "2": "A SAS token without a stored policy cannot be revoked without regenerating the underlying signing keys.",
+      "3": "Contributor rights grant broad control plane management access across all resources in the resource group."
+    },
+    "tags": [
+      "sas",
+      "stored-access-policy",
+      "storage-security",
+      "least-privilege"
+    ]
+  },
+  {
+    "id": "AZ500-036",
+    "exam": "az500",
+    "domain": "3.0 Secure compute, storage, and databases",
+    "objective": "3.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A financial database in Azure SQL contains Credit Card Numbers. The requirement states that call center staff should only see the last four digits (e.g., 'XXXX-XXXX-XXXX-1234') without altering the underlying raw data on disk. Which security feature satisfies this requirement?",
+    "options": [
+      "Dynamic Data Masking (DDM) with a Credit Card mask function",
+      "Always Encrypted with randomized encryption",
+      "Transparent Data Encryption (TDE)",
+      "Row-Level Security (RLS) predicate function"
+    ],
+    "answer": 0,
+    "explanation": "Dynamic Data Masking (DDM) limits sensitive data exposure by masking it to non-privileged users at query runtime. The data in the database remains unchanged, and full data remains visible to users granted the 'UNMASK' permission.",
+    "distractor_analysis": {
+      "1": "Always Encrypted encrypts data at the client side using drivers, preventing DBAs from reading cleartext, but does not provide partial display masks to non-privileged users.",
+      "2": "TDE encrypts database files at rest on the storage medium to protect against stolen media; it does not mask data in SQL query results.",
+      "3": "Row-Level Security controls which rows a user can view, not which column characters are masked."
+    },
+    "tags": [
+      "dynamic-data-masking",
+      "azure-sql",
+      "database-security",
+      "data-protection"
+    ]
+  },
+  {
+    "id": "AZ500-037",
+    "exam": "az500",
+    "domain": "3.0 Secure compute, storage, and databases",
+    "objective": "3.2",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "An enterprise must ensure that Azure Database Administrators (DBAs) and cloud operators can never view plaintext Social Security Numbers (SSNs), even when running direct administrative queries on Azure SQL Database. The data must be decrypted only within client applications holding the encryption key. What technology must be used?",
+    "options": [
+      "Azure SQL Always Encrypted",
+      "Transparent Data Encryption (TDE) with customer-managed keys",
+      "Azure SQL Auditing to Log Analytics",
+      "SQL Server BitLocker disk encryption"
+    ],
+    "answer": 0,
+    "explanation": "Always Encrypted ensures sensitive data is encrypted inside client applications before being sent to Azure SQL. The database engine never sees plaintext data, and encryption keys (Column Master Key and Column Encryption Key) are kept in a trusted client key store like Azure Key Vault.",
+    "distractor_analysis": {
+      "1": "TDE protects data at rest on disk, but DBAs with SELECT permissions still query and read cleartext in memory and over connections.",
+      "2": "SQL Auditing logs query activity, but does not prevent DBAs from seeing plaintext data.",
+      "3": "BitLocker protects host operating system disks, not database column-level encryption separated from DBA access."
+    },
+    "tags": [
+      "always-encrypted",
+      "azure-sql",
+      "dba-separation",
+      "encryption"
+    ]
+  },
+  {
+    "id": "AZ500-038",
+    "exam": "az500",
+    "domain": "3.0 Secure compute, storage, and databases",
+    "objective": "3.3",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A company is deploying Azure Virtual Machines to run sensitive proprietary algorithms. They need to protect data currently in use (in CPU registers and RAM) against hypervisor memory-dump inspection and malicious cloud fabric operators. What Azure compute tier should they deploy?",
+    "options": [
+      "Azure Confidential VMs with AMD SEV-SNP or Intel TDX hardware-based memory encryption",
+      "Standard Azure D-series VMs with Azure Disk Encryption",
+      "Burstable B-series VMs with Host Encryption enabled",
+      "Spot VMs with Microsoft Antimalware extension"
+    ],
+    "answer": 0,
+    "explanation": "Azure Confidential Computing encrypts data in memory (data in use) using hardware-level technologies like AMD SEV-SNP (Secure Encrypted Virtualization-Secure Nested Paging) and Intel TDX. The hypervisor cannot read VM memory contents, protecting against host compromises.",
+    "distractor_analysis": {
+      "1": "Azure Disk Encryption protects data at rest on virtual hard disks, not memory in use in RAM.",
+      "2": "Host encryption encrypts temporary disk data at the compute host, but does not encrypt active execution state in system RAM.",
+      "3": "Spot VMs are low-cost interruptible instances that offer no confidential computing memory isolation."
+    },
+    "tags": [
+      "confidential-computing",
+      "memory-encryption",
+      "sev-snp",
+      "compute-security"
+    ]
+  },
+  {
+    "id": "AZ500-039",
+    "exam": "az500",
+    "domain": "3.0 Secure compute, storage, and databases",
+    "objective": "3.3",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "To minimize the attack surface of virtual machines, an administrator wants management ports (3389 and 22) locked down by default and only opened dynamically upon authorized request for a maximum window of 3 hours. Which Defender for Cloud feature implements this?",
+    "options": [
+      "Just-In-Time (JIT) VM Access",
+      "Adaptive Network Hardening",
+      "File Integrity Monitoring (FIM)",
+      "Regulatory Compliance Dashboard"
+    ],
+    "answer": 0,
+    "explanation": "Just-In-Time (JIT) VM Access locks down inbound traffic to management ports by modifying NSG rules to Deny by default. When an authorized user requests access, Defender for Cloud temporarily modifies the NSG to allow inbound traffic only from the user's IP for a specified time window.",
+    "distractor_analysis": {
+      "1": "Adaptive Network Hardening analyzes machine learning traffic patterns to recommend permanent NSG tightening.",
+      "2": "File Integrity Monitoring tracks changes to critical OS files, registries, and application files.",
+      "3": "Regulatory Compliance dashboard scores environments against frameworks like NIST or PCI-DSS."
+    },
+    "tags": [
+      "jit",
+      "defender-for-cloud",
+      "nsg",
+      "compute-security"
+    ]
+  },
+  {
+    "id": "AZ500-040",
+    "exam": "az500",
+    "domain": "3.0 Secure compute, storage, and databases",
+    "objective": "3.3",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "A DevOps team manages an Azure Kubernetes Service (AKS) cluster. Which combination of controls ensures that containers cannot access the underlying Azure host metadata endpoint (169.254.169.254) or assume rogue Azure identities?",
+    "options": [
+      "Enable Microsoft Entra Workload ID and deploy Azure Network Policies to block egress to 169.254.169.254",
+      "Deploy Pods with root privileged containers in a hostNetwork configuration",
+      "Assign the Owner role to the AKS node pool managed identity",
+      "Store service principal credentials in plain text ConfigMaps mounted as volumes"
+    ],
+    "answer": 0,
+    "explanation": "Microsoft Entra Workload ID uses Kubernetes service account token federation to access Azure resources securely without storing secrets. Pairing this with Azure Network Policies (or Calico) to block egress to the Instance Metadata Service (IMDS: 169.254.169.254) prevents container pods from stealing VM-level node tokens.",
+    "distractor_analysis": {
+      "1": "Privileged containers and hostNetwork share the host networking namespace, giving attackers direct access to host metadata.",
+      "2": "Granting Owner privileges to node pools violates least privilege and escalates compromise impact.",
+      "3": "Plaintext ConfigMaps expose sensitive credentials to any container with read permissions."
+    },
+    "tags": [
+      "aks",
+      "kubernetes",
+      "workload-id",
+      "network-policy"
+    ]
+  },
+  {
+    "id": "AZ500-041",
+    "exam": "az500",
+    "domain": "3.0 Secure compute, storage, and databases",
+    "objective": "3.3",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Which vulnerability assessment tool integrated into Microsoft Defender for Containers scans images stored in Azure Container Registry (ACR) for known Common Vulnerabilities and Exposures (CVEs)?",
+    "options": [
+      "Defender vulnerability management (powered by Qualys or Microsoft Defender engine) for container images",
+      "Azure Bastion container scanner",
+      "Azure App Service diagnostic logs",
+      "Azure Monitor Network Insights"
+    ],
+    "answer": 0,
+    "explanation": "Microsoft Defender for Containers scans container images pushed to Azure Container Registry (ACR) for known vulnerabilities, software bugs, and CVEs, providing remediation guidance and security scoring in Defender for Cloud.",
+    "distractor_analysis": {
+      "1": "Azure Bastion is an RDP/SSH jump proxy and has no image scanning capability.",
+      "2": "App Service diagnostic logs track HTTP web requests, not container binary vulnerabilities.",
+      "3": "Network Insights visualizes network topologies and latency, not container packages."
+    },
+    "tags": [
+      "acr",
+      "container-security",
+      "cve",
+      "vulnerability-assessment"
+    ]
+  },
+  {
+    "id": "AZ500-042",
+    "exam": "az500",
+    "domain": "3.0 Secure compute, storage, and databases",
+    "objective": "3.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "An enterprise wants to enforce that all data uploaded to an Azure Storage account must be encrypted at rest using keys generated and managed in the company's Azure Key Vault. What configuration must be enabled on the storage account?",
+    "options": [
+      "Customer-Managed Keys (CMK) encryption with Key Vault integration",
+      "Microsoft-managed Storage Service Encryption (SSE)",
+      "Client-side encryption using zip passwords",
+      "Azure Disk Encryption with BitLocker"
+    ],
+    "answer": 0,
+    "explanation": "Customer-Managed Keys (CMK) allow organizations to use their own RSA encryption keys stored in Azure Key Vault for storage encryption at rest. This enables full control over key rotation, revocation, and audit logging of cryptographic operations.",
+    "distractor_analysis": {
+      "1": "Microsoft-managed keys are the default, but Microsoft generates and manages the lifecycle rather than the customer.",
+      "2": "Client-side password hashing is not a native cloud governance mechanism.",
+      "3": "Azure Disk Encryption applies to virtual machine OS and data disks, not Azure Blob Storage accounts."
+    },
+    "tags": [
+      "cmk",
+      "storage-security",
+      "key-vault",
+      "byok"
+    ]
+  },
+  {
+    "id": "AZ500-043",
+    "exam": "az500",
+    "domain": "3.0 Secure compute, storage, and databases",
+    "objective": "3.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "How can an administrator permanently disable the use of account access keys (shared keys) on an Azure Storage account to mandate that all access occurs via Microsoft Entra ID?",
+    "options": [
+      "Set 'Allow storage account key access' (allowSharedKeyAccess) to Disabled (false) in the storage account configuration",
+      "Delete the Primary and Secondary access keys from the Azure portal",
+      "Apply a ReadOnly lock on the storage account",
+      "Enable CORS rules blocking PUT and GET verbs"
+    ],
+    "answer": 0,
+    "explanation": "Disabling 'Shared Key access' (`allowSharedKeyAccess = false`) enforces that all requests to the storage account must authenticate using Microsoft Entra ID (via OAuth 2.0 / RBAC). Any request signed with shared keys or account SAS tokens will be rejected.",
+    "distractor_analysis": {
+      "1": "Account keys cannot be deleted; they can only be regenerated. Disabling shared key access is the Microsoft recommended control.",
+      "2": "A ReadOnly lock stops ARM control plane modifications but does not block data plane reading with shared keys.",
+      "3": "CORS governs cross-origin browser requests, not shared key authentication."
+    },
+    "tags": [
+      "storage-security",
+      "shared-key",
+      "entra-id",
+      "zero-trust"
+    ]
+  },
+  {
+    "id": "AZ500-044",
+    "exam": "az500",
+    "domain": "3.0 Secure compute, storage, and databases",
+    "objective": "3.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "What is the primary function of Transparent Data Encryption (TDE) in Azure SQL Database?",
+    "options": [
+      "It encrypts database files, log files, and backup files at rest in real time using a symmetric database encryption key (DEK)",
+      "It masks column outputs during SELECT queries in SQL Server Management Studio",
+      "It encrypts communication channels across the public internet using TLS 1.3",
+      "It prevents SQL injection vulnerabilities in web applications"
+    ],
+    "answer": 0,
+    "explanation": "Transparent Data Encryption (TDE) protects Azure SQL Database, Azure SQL Managed Instance, and Azure Synapse Analytics against malicious offline activity by encrypting data at rest (database files, transaction logs, and backups) without requiring application changes.",
+    "distractor_analysis": {
+      "1": "Column masking is the role of Dynamic Data Masking (DDM).",
+      "2": "Network transport encryption is handled by TLS/SSL.",
+      "3": "SQL injection prevention requires parameterized queries and WAF inspection, not storage encryption."
+    },
+    "tags": [
+      "tde",
+      "azure-sql",
+      "encryption-at-rest",
+      "database-security"
+    ]
+  },
+  {
+    "id": "AZ500-045",
+    "exam": "az500",
+    "domain": "3.0 Secure compute, storage, and databases",
+    "objective": "3.2",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "An auditor requests proof of all administrative actions and security events executed against an Azure SQL Database over the last 12 months. Which feature should be enabled and where should the logs be sent?",
+    "options": [
+      "Enable Azure SQL Auditing and stream audit logs to an Azure Log Analytics workspace or Storage Account",
+      "Enable SQL Server Profiler trace on local client workstation",
+      "Configure SQL Agent job to export sys.tables every 24 hours",
+      "Download Azure Activity Log records manually every 90 days"
+    ],
+    "answer": 0,
+    "explanation": "Azure SQL Auditing tracks database events (logins, failed queries, schema changes, DML execution) and writes them to an audit log stored in an Azure Storage Account, Log Analytics workspace, or Event Hub with retention periods configured to meet audit compliance requirements.",
+    "distractor_analysis": {
+      "1": "SQL Server Profiler is a legacy debugging utility not suited for continuous, tamper-evident regulatory compliance auditing.",
+      "2": "Exporting table schemas does not log user access or DDL/DML query activity.",
+      "3": "The default Azure Activity Log retention is only 90 days, failing the 12-month audit standard unless explicitly archived."
+    },
+    "tags": [
+      "auditing",
+      "azure-sql",
+      "compliance",
+      "log-analytics"
+    ]
+  },
+  {
+    "id": "AZ500-046",
+    "exam": "az500",
+    "domain": "3.0 Secure compute, storage, and databases",
+    "objective": "3.3",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "What is the key security benefit of configuring 'Trusted Launch' when deploying Azure Virtual Machines?",
+    "options": [
+      "It provides Secure Boot and virtual Trusted Platform Module (vTPM) to protect against bootkits, rootkits, and firmware compromises",
+      "It guarantees 99.999% uptime across three availability zones",
+      "It encrypts database network traffic without requiring certificates",
+      "It automatically assigns Global Administrator roles to VM local users"
+    ],
+    "answer": 0,
+    "explanation": "Trusted Launch hardens Gen2 Azure VMs with Secure Boot (validating OS bootloaders against trusted signatures) and vTPM (attestation of boot integrity and secure storage of keys), protecting against persistent rootkits and kernel-level tampering.",
+    "distractor_analysis": {
+      "1": "High availability SLAs are governed by Availability Zones and regional replication, not Trusted Launch.",
+      "2": "Database traffic encryption requires TLS certificates and database connection strings.",
+      "3": "Trusted Launch has no connection to Entra ID directory role assignments."
+    },
+    "tags": [
+      "trusted-launch",
+      "vtpm",
+      "secure-boot",
+      "compute-security"
+    ]
+  },
+  {
+    "id": "AZ500-047",
+    "exam": "az500",
+    "domain": "3.0 Secure compute, storage, and databases",
+    "objective": "3.3",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "When configuring Azure Disk Encryption (ADE) on a Linux Virtual Machine, which Azure Key Vault requirements must be configured?",
+    "options": [
+      "The Key Vault must be in the same Azure region and subscription as the VM, and have 'Azure Disk Encryption for volume encryption' enabled",
+      "The Key Vault must be deployed with a public IP in a different region",
+      "The Key Vault must have Purge Protection disabled and Soft Delete disabled",
+      "The Key Vault must use only Access Policies with Key Vault Secrets Officer role"
+    ],
+    "answer": 0,
+    "explanation": "Azure Disk Encryption requires the Key Vault to reside in the same Azure subscription and region as the virtual machine being encrypted, and the Key Vault must have the 'Azure Disk Encryption for volume encryption' deployment flag enabled.",
+    "distractor_analysis": {
+      "1": "ADE cannot access a Key Vault in a different region; co-location in the same region is mandatory.",
+      "2": "Soft Delete is mandatory and cannot be disabled in modern Key Vaults; disabling purge protection would weaken key safety.",
+      "3": "Key Vault Secrets Officer is an RBAC role; ADE requires specific Key Vault access configuration flags for ARM integration."
+    },
+    "tags": [
+      "ade",
+      "disk-encryption",
+      "key-vault",
+      "compute-security"
+    ]
+  },
+  {
+    "id": "AZ500-048",
+    "exam": "az500",
+    "domain": "3.0 Secure compute, storage, and databases",
+    "objective": "3.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "An engineer wants to protect an Azure Storage account so that only connections using TLS version 1.2 or higher are accepted. What setting should be configured?",
+    "options": [
+      "Set the 'Minimum TLS version' property on the storage account to TLS 1.2",
+      "Configure an NSG inbound rule denying port 80",
+      "Enable Secure Transfer Required while leaving TLS version at default",
+      "Deploy an Application Gateway with TLS termination in front of the storage account"
+    ],
+    "answer": 0,
+    "explanation": "Setting 'Minimum TLS version' to TLS 1.2 on the storage account enforces that all incoming client requests negotiate TLS 1.2 or greater; requests attempting to use older TLS 1.0 or 1.1 handshakes are immediately dropped.",
+    "distractor_analysis": {
+      "1": "Port 80 is unencrypted HTTP, while TLS version negotiation occurs on HTTPS port 443.",
+      "2": "Secure Transfer Required enforces HTTPS over HTTP, but if minimum TLS is not set to 1.2, clients could still negotiate legacy TLS 1.0/1.1.",
+      "3": "Application Gateway is not needed when Azure Storage natively provides the minimum TLS version enforcement setting."
+    },
+    "tags": [
+      "tls",
+      "storage-security",
+      "encryption-in-transit",
+      "compliance"
+    ]
+  },
+  {
+    "id": "AZ500-049",
+    "exam": "az500",
+    "domain": "3.0 Secure compute, storage, and databases",
+    "objective": "3.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A developer needs to configure an Azure SQL Database firewall. Which firewall setting allows connections from the developer's workstation while adhering to security best practices?",
+    "options": [
+      "Add a specific IP firewall rule specifying the developer's individual public IP address, and set 'Allow Azure services and resources to access this server' to OFF (No)",
+      "Set 'Allow Azure services and resources to access this server' to ON (Yes)",
+      "Add an IP range from 0.0.0.0 to 255.255.255.255",
+      "Disable the SQL firewall entirely"
+    ],
+    "answer": 0,
+    "explanation": "Best practices dictate adding a specific client IP rule for the authorized workstation and setting 'Allow Azure services and resources to access this server' to No (OFF). Enabling that setting allows ANY tenant in Azure to reach the SQL gateway port.",
+    "distractor_analysis": {
+      "1": "Allowing all Azure services opens the database gateway to any Azure customer VM across the entire cloud.",
+      "2": "Adding 0.0.0.0/0 creates an open proxy vulnerability exposing database ports to the entire internet.",
+      "3": "The Azure SQL firewall cannot be disabled; removing all rules denies all access."
+    },
+    "tags": [
+      "azure-sql",
+      "firewall",
+      "least-privilege",
+      "zero-trust"
+    ]
+  }
+]

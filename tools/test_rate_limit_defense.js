@@ -13,7 +13,7 @@
  * D1-shaped shim, so the atomicity claims are executed rather than asserted.
  */
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
@@ -302,7 +302,9 @@ async function tier1() {
 async function tier2() {
   section('TIER 2  edge ruleset (infra/cloudflare/rate-limit-ruleset.json)');
 
-  const ruleset = JSON.parse(readFileSync(join(ROOT, 'infra', 'cloudflare', 'rate-limit-ruleset.json'), 'utf8'));
+  const fullRuleset = join(ROOT, 'infra', 'cloudflare', 'rate-limit-ruleset.full.json');
+  const rulesetFile = existsSync(fullRuleset) ? fullRuleset : join(ROOT, 'infra', 'cloudflare', 'rate-limit-ruleset.json');
+  const ruleset = JSON.parse(readFileSync(rulesetFile, 'utf8'));
   const VALID_PERIODS = new Set([10, 60, 120, 300, 600, 3600]);
 
   await check('every rule uses an API-accepted period', () => {

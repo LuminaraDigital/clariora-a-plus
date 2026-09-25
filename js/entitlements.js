@@ -372,6 +372,16 @@
     try {
       if (starsTierIsPro(window.__CLARIORA_SERVER_ENTITLEMENT__)) return true;
     } catch (_) {}
+    try {
+      if (typeof window !== 'undefined' && window.CompTIALedger && typeof window.CompTIALedger.checkWalletUnlock === 'function') {
+        var raw = readLedgerRaw();
+        var parsed = raw ? JSON.parse(raw) : null;
+        if (parsed && Array.isArray(parsed.chain)) {
+          var w = window.CompTIALedger.replayWallet ? window.CompTIALedger.replayWallet(parsed.chain) : null;
+          if (w && window.CompTIALedger.checkWalletUnlock(w, 'PRO_PASS_30D')) return true;
+        }
+      }
+    } catch (_) {}
     return false;
   }
 

@@ -47,6 +47,7 @@ class FakeDate extends RealDate {
 }
 
 function createLedgerContext() {
+  clock.offsetMs = 0;
   const store = {};
   const localStorageMock = {
     getItem: (k) => (Object.prototype.hasOwnProperty.call(store, k) ? store[k] : null),
@@ -116,6 +117,9 @@ async function run() {
     assert.equal(catalog.CRAM_SHEET.cost, 1800);
     assert.equal(catalog.CYBER_THEME.type, 'permanent');
     assert.equal(catalog.CYBER_THEME.cost, 600);
+    assert.equal(catalog.PRO_PASS_30D.type, 'consumable');
+    assert.equal(catalog.PRO_PASS_30D.cost, 2500);
+    assert.equal(catalog.PRO_PASS_30D.charges, 30);
   });
 
   await test('Genesis block initializes with 100 APX and signed chain tip', async () => {

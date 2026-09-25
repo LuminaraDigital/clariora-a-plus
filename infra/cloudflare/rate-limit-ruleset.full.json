@@ -1,0 +1,110 @@
+{
+  "_comment": [
+    "FULL multi-rule Tier 2 design for Business/Enterprise (more than 1 http_ratelimit rule).",
+    "Free/Pro zones reject this with Cloudflare error 50001 (N out of 1).",
+    "Production default deploy uses rate-limit-ruleset.json (single rule).",
+    "Deploy full: CF_API_TOKEN=... CF_ZONE_ID=... node infra/cloudflare/deploy-rate-limits.mjs --full"
+  ],
+  "name": "clariora-edge-rate-limits",
+  "kind": "zone",
+  "phase": "http_ratelimit",
+  "description": "Volumetric IP rate limiting in front of the Clariora Worker and Firebase endpoints",
+  "rules": [
+    {
+      "description": "Telegram Bot API webhook - generous ceiling, never starve payment callbacks",
+      "expression": "(http.request.uri.path eq \"/api/v1/telegram/webhook\")",
+      "action": "block",
+      "ratelimit": {
+        "characteristics": ["cf.colo.id", "ip.src"],
+        "period": 60,
+        "requests_per_period": 600,
+        "mitigation_timeout": 60
+      },
+      "_rationale": "Telegram retries failed webhook deliveries. Dropping a successful_payment callback loses a real Stars purchase, so this ceiling exists only to stop a spoofed flood, not to shape normal traffic. The HMAC secret check in the Worker is the real authenticity gate."
+    },
+    {
+      "description": "LLM inference - highest marginal cost per request in the product",
+      "expression": "(http.request.uri.path in {\"/api/v1/coach\" \"/api/v1/coach/stream\" \"/api/v1/coach/jobs\"})",
+      "action": "block",
+      "ratelimit": {
+        "characteristics": ["cf.colo.id", "ip.src"],
+        "period": 60,
+        "requests_per_period": 10,
+        "mitigation_timeout": 300
+      },
+      "_rationale": "Every request past this point can spend Groq / NVIDIA / OpenRouter tokens. 10/min/IP is far above any human study session and far below anything worth scripting. Longer mitigation timeout because the cost of a false negative here is money, not latency."
+    },
+    {
+      "description": "Authentication and session endpoints - credential stuffing surface",
+      "expression": "(starts_with(http.request.uri.path, \"/api/v1/auth/\"))",
+      "action": "block",
+      "ratelimit": {
+        "characteristics": ["cf.colo.id", "ip.src"],
+        "period": 60,
+        "requests_per_period": 10,
+        "mitigation_timeout": 300
+      },
+      "_rationale": "Unauthenticated entry points. /api/v1/auth/telegram in particular runs an HMAC verification and a D1 upsert per call with no caller identity to meter against, so IP is the only key available at this layer."
+    },
+    {
+      "description": "Billing and payment verification - external API spend and grant writes",
+      "expression": "(starts_with(http.request.uri.path, \"/api/v1/billing/\"))",
+      "action": "block",
+      "ratelimit": {
+        "characteristics": ["cf.colo.id", "ip.src"],
+        "period": 60,
+        "requests_per_period": 12,
+        "mitigation_timeout": 300
+      },
+      "_rationale": "TON verification calls the paid TonCenter API; Stars invoice creation calls the Telegram Bot API. Both are third-party spend triggered by an unauthenticated-ish request shape."
+    },
+    {
+      "description": "Bulk question bank and shards - scraping target, large egress",
+      "expression": "(http.request.uri.path in {\"/api/v1/bank/full\" \"/exam_data.js\" \"/exam_data.json\"}) or (starts_with(http.request.uri.path, \"/shards/\"))",
+      "action": "block",
+      "ratelimit": {
+        "characteristics": ["cf.colo.id", "ip.src"],
+        "period": 60,
+        "requests_per_period": 20,
+        "mitigation_timeout": 120
+      },
+      "_rationale": "These paths return the paid asset itself (exam_data.json is ~2MB). A scraper walking them is both an egress bill and the theft of the product. Legitimate clients fetch each of these at most a handful of times per session."
+    },
+    {
+      "description": "State sync and telemetry writes - D1 write amplification",
+      "expression": "(http.request.uri.path in {\"/api/v1/sync\" \"/api/v1/memory/promote\" \"/api/v1/items/report\"})",
+      "action": "block",
+      "ratelimit": {
+        "characteristics": ["cf.colo.id", "ip.src"],
+        "period": 60,
+        "requests_per_period": 60,
+        "mitigation_timeout": 60
+      },
+      "_rationale": "Each of these is a D1 write. A client stuck in a re-render loop can emit these continuously; the Worker-side limiter catches that too, but only after paying for the invocation."
+    },
+    {
+      "description": "Catch-all API ceiling - standard endpoints",
+      "expression": "(starts_with(http.request.uri.path, \"/api/\"))",
+      "action": "block",
+      "ratelimit": {
+        "characteristics": ["cf.colo.id", "ip.src"],
+        "period": 60,
+        "requests_per_period": 100,
+        "mitigation_timeout": 60
+      },
+      "_rationale": "The spec'd standard-endpoint ceiling. Sits last so the cheaper specific rules above always win."
+    },
+    {
+      "description": "Burst guard - absorbs the first second of a flood before the 60s windows react",
+      "expression": "(starts_with(http.request.uri.path, \"/api/\"))",
+      "action": "block",
+      "ratelimit": {
+        "characteristics": ["cf.colo.id", "ip.src"],
+        "period": 10,
+        "requests_per_period": 40,
+        "mitigation_timeout": 60
+      },
+      "_rationale": "A 60-second window lets an attacker deliver 100 requests in 100 milliseconds and then idle. The short window caps instantaneous concurrency, which is what actually drives Worker and D1 cost spikes."
+    }
+  ]
+}

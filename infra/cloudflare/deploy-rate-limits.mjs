@@ -7,9 +7,15 @@
  * the only place in this stack where a hostile request can be dropped without
  * being billed as a Worker invocation.
  *
+ * Free/Pro zones allow only 1 rule in http_ratelimit (Cloudflare error 50001).
+ * Default JSON is the single-rule Free/Pro set. Use --full for Business/Enterprise.
+ *
  * Usage:
  *   CF_API_TOKEN=... CF_ZONE_ID=... node infra/cloudflare/deploy-rate-limits.mjs
  *   CF_API_TOKEN=... CF_ZONE_ID=... node infra/cloudflare/deploy-rate-limits.mjs --dry-run
+ *   CF_API_TOKEN=... CF_ZONE_ID=... node infra/cloudflare/deploy-rate-limits.mjs --full
+ *
+ * Or: node infra/cloudflare/run_deploy_rate_limits.mjs  (maps CLOUDFLARE_* from .env)
  *
  * The API token needs the "Zone / Zone WAF / Edit" permission on the target zone.
  * Never commit the token; use `wrangler secret`-style handling or a CI secret.
@@ -20,14 +26,15 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const RULESET_PATH = join(HERE, 'rate-limit-ruleset.json');
+const RULESET_DEFAULT = join(HERE, 'rate-limit-ruleset.json');
+const RULESET_FULL = join(HERE, 'rate-limit-ruleset.full.json');
 const API_BASE = 'https://api.cloudflare.com/client/v4';
 
 const VALID_PERIODS = new Set([10, 60, 120, 300, 600, 3600]);
 
 function fail(message) {
   console.error(`\n  ERROR  ${message}\n`);
-  process.exit(1);
+  process.exitCode = 1;
 }
 
 /** Strips the `_comment` / `_rationale` documentation keys the API rejects. */
@@ -78,8 +85,6 @@ function validate(ruleset) {
       problems.push(`${label}: requests_per_period must be positive`);
     }
 
-    // The catch-all matches every /api/ path, so anything below it on a 60s
-    // window can never be the first rule to block.
     const isCatchAll = /^\(starts_with\(http\.request\.uri\.path, "\/api\/"\)\)$/.test(rule.expression.trim());
     if (isCatchAll && rl.period === 60 && catchAllIndex === -1) catchAllIndex = i;
     else if (catchAllIndex !== -1 && rl.period === 60) {
@@ -89,10 +94,11 @@ function validate(ruleset) {
 
   if (problems.length) {
     fail(`ruleset validation failed:\n    - ${problems.join('\n    - ')}`);
+    throw new Error('validation failed');
   }
 }
 
-async function cf(token, method, path, body) {
+async function cfRequest(token, method, path, body) {
   const res = await fetch(`${API_BASE}${path}`, {
     method,
     headers: {
@@ -103,25 +109,31 @@ async function cf(token, method, path, body) {
   });
 
   const payload = await res.json().catch(() => ({}));
-  if (!res.ok || payload.success === false) {
-    const errors = (payload.errors || []).map((e) => `${e.code}: ${e.message}`).join('; ');
-    fail(`Cloudflare API ${method} ${path} -> ${res.status}\n         ${errors || JSON.stringify(payload).slice(0, 400)}`);
-  }
-  return payload.result;
+  return { ok: res.ok && payload.success !== false, status: res.status, payload };
+}
+
+function formatErrors(payload) {
+  return (payload.errors || []).map((e) => `${e.code}: ${e.message}`).join('; ')
+    || JSON.stringify(payload).slice(0, 400);
 }
 
 async function main() {
   const dryRun = process.argv.includes('--dry-run');
+  const useFull = process.argv.includes('--full');
   const token = process.env.CF_API_TOKEN;
   const zoneId = process.env.CF_ZONE_ID;
+  const RULESET_PATH = useFull ? RULESET_FULL : RULESET_DEFAULT;
 
-  const raw = await readFile(RULESET_PATH, 'utf8').catch(() => fail(`cannot read ${RULESET_PATH}`));
+  const raw = await readFile(RULESET_PATH, 'utf8').catch(() => {
+    fail(`cannot read ${RULESET_PATH}`);
+    throw new Error('missing ruleset');
+  });
   const parsed = JSON.parse(raw);
   const ruleset = stripDocKeys(parsed);
 
   validate(parsed);
 
-  console.log(`\n  Ruleset: ${ruleset.name} (${ruleset.rules.length} rules)\n`);
+  console.log(`\n  Ruleset: ${ruleset.name} (${ruleset.rules.length} rules) [${useFull ? 'full' : 'free/pro'}]\n`);
   for (const rule of parsed.rules) {
     const rl = rule.ratelimit;
     console.log(
@@ -136,19 +148,59 @@ async function main() {
     return;
   }
 
-  if (!token) fail('CF_API_TOKEN is not set');
-  if (!zoneId) fail('CF_ZONE_ID is not set');
+  if (!token) {
+    fail('CF_API_TOKEN is not set');
+    return;
+  }
+  if (!zoneId) {
+    fail('CF_ZONE_ID is not set');
+    return;
+  }
 
-  const result = await cf(token, 'PUT', `/zones/${zoneId}/rulesets/phases/http_ratelimit/entrypoint`, {
-    name: ruleset.name,
-    kind: 'zone',
-    phase: 'http_ratelimit',
-    description: ruleset.description,
-    rules: ruleset.rules
-  });
+  const entryPath = `/zones/${zoneId}/rulesets/phases/http_ratelimit/entrypoint`;
+  const getResult = await cfRequest(token, 'GET', entryPath);
+
+  let result;
+  if (getResult.ok && getResult.payload.result) {
+    // Phase entrypoint PUT rejects kind/phase (implied by URL).
+    const put = await cfRequest(token, 'PUT', entryPath, {
+      name: ruleset.name,
+      description: ruleset.description,
+      rules: ruleset.rules
+    });
+    if (!put.ok) {
+      fail(`Cloudflare API PUT ${entryPath} -> ${put.status}\n         ${formatErrors(put.payload)}`);
+      return;
+    }
+    result = put.payload.result;
+  } else {
+    // Entrypoint missing: create zone ruleset with kind + phase.
+    const create = await cfRequest(token, 'POST', `/zones/${zoneId}/rulesets`, {
+      name: ruleset.name,
+      kind: 'zone',
+      phase: 'http_ratelimit',
+      description: ruleset.description,
+      rules: ruleset.rules
+    });
+    if (!create.ok) {
+      const errText = formatErrors(create.payload);
+      if (String(errText).includes('50001') && useFull) {
+        fail(
+          `${errText}\n\n         Free/Pro plans allow only 1 http_ratelimit rule.\n` +
+          `         Re-run without --full to deploy rate-limit-ruleset.json.`
+        );
+        return;
+      }
+      fail(`Cloudflare API POST /zones/.../rulesets -> ${create.status}\n         ${errText}`);
+      return;
+    }
+    result = create.payload.result;
+  }
 
   console.log(`  Deployed. Ruleset id ${result.id}, version ${result.version}.\n`);
   console.log('  Verify with: node infra/cloudflare/verify-edge-limits.mjs https://clariora.com.au\n');
 }
 
-main().catch((err) => fail(err && err.stack ? err.stack : String(err)));
+main().catch((err) => {
+  fail(err && err.stack ? err.stack : String(err));
+});

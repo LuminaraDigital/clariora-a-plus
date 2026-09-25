@@ -50,6 +50,9 @@ jobs:
             echo "Non-redistributable content is tracked."; exit 1; fi
           echo "Tree is clean."
 
+      - name: Scan tracked tree for leaked credentials
+        run: python tools/security_scan.py
+
       - name: Guard production wrangler routes stay production-only
         run: |
           set -e
@@ -167,35 +170,30 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Check for the deploy token
-        id: token
+      - name: Require Cloudflare deploy token
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           if [ -z "$CF_TOKEN" ]; then
-            echo "present=false" >> "$GITHUB_OUTPUT"
-            echo "CLOUDFLARE_API_TOKEN secret is not set; skipping deploy."
-          else
-            echo "present=true" >> "$GITHUB_OUTPUT"
+            echo "CLOUDFLARE_API_TOKEN is not set in GitHub Actions secrets."
+            echo "Refusing a green-but-skipped production deploy on main."
+            echo "Set repo or production-environment secret CLOUDFLARE_API_TOKEN, then re-run."
+            exit 1
           fi
 
       - name: Build web distribution
-        if: steps.token.outputs.present == 'true'
         run: python tools/build_web_dist.py
 
       - name: Test web distribution
-        if: steps.token.outputs.present == 'true'
         run: node tools/test_web_dist.js
 
       - name: Reject accidental staging config on production deploy
-        if: steps.token.outputs.present == 'true'
         run: |
           set -e
           if grep -q 'ENVIRONMENT = "staging"' wrangler.toml; then
             echo "wrangler.toml must remain ENVIRONMENT=production"; exit 1; fi
 
       - name: Deploy with wrangler
-        if: steps.token.outputs.present == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: npx -y wrangler@4 deploy

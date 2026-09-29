@@ -14,6 +14,7 @@
 .groq_key
 **/groq-secrets.local.js
 **/groq_secrets.local.json
+users.json
 build/certs/
 credentials/
 *serviceAccount*.json
@@ -29,6 +30,9 @@ release/
 dist/
 dist_web/
 **/dist/
+# Third-party agent frameworks must never live in this product tree
+services/paperclip/
+**/paperclipai/
 CompTIA_A_Plus_Desktop_App/**
 !CompTIA_A_Plus_Desktop_App/
 !CompTIA_A_Plus_Desktop_App/resources/

@@ -236,15 +236,26 @@
     document.head.appendChild(el);
   }
 
+  function isLocalHostEnvironment() {
+    try {
+      var host = (typeof window !== 'undefined' && window.location && window.location.hostname) || '';
+      var proto = (typeof window !== 'undefined' && window.location && window.location.protocol) || '';
+      return host === 'localhost' || host === '127.0.0.1' || host === '' || proto === 'file:';
+    } catch (_) {
+      return false;
+    }
+  }
+
   function ensureWall() {
     injectWallStyles();
     var existing = document.getElementById(GATE_ID);
     if (existing) return existing;
 
-    // Desktop/Electron may study offline without cloud auth. Web stays hard-gated.
+    // Desktop/Electron or local preview may study offline without cloud edge auth. Web production stays hard-gated.
     var isElectron = !!(window.electronAPI || (window.location && window.location.protocol === 'file:'));
-    var offlineBtnHtml = isElectron
-      ? '<button type="button" class="btn-auth-secondary" id="gateOfflineBtn">Continue offline on this device</button>'
+    var isLocalDev = isLocalHostEnvironment();
+    var offlineBtnHtml = (isElectron || isLocalDev)
+      ? '<button type="button" class="btn-auth-secondary" id="gateOfflineBtn">Continue on this device (' + (isElectron ? 'offline' : 'local preview') + ')</button>'
       : '';
 
     var wall = document.createElement('div');
@@ -384,12 +395,20 @@
         body: JSON.stringify(body)
       }, { dedupeKey: 'auth:session:' + key, maxAttempts: 1 });
       if (!res.ok) {
+        if (isLocalHostEnvironment() && (res.status === 404 || res.status === 501 || res.status === 502)) {
+          console.warn('[AuthGate] Local preview without edge worker proxy (status ' + res.status + '). Unlocking authenticated client session.');
+          return { ok: true, localDev: true };
+        }
         state.lastReportKey = '';
         return { ok: false, status: res.status };
       }
       return { ok: true };
     } catch (err) {
       console.warn('[AuthGate] session report failed:', err);
+      if (isLocalHostEnvironment()) {
+        console.warn('[AuthGate] Local preview offline for edge session. Unlocking authenticated client session.');
+        return { ok: true, localDev: true };
+      }
       state.lastReportKey = '';
       return { ok: false, error: err };
     }

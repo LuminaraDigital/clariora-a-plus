@@ -691,18 +691,25 @@
     if (!service) return;
 
     try {
-      await service.signInWithGoogle();
-      closeModal();
+      var user = await service.signInWithGoogle();
+      if (user) {
+        closeModal();
+      }
     } catch (err) {
       console.warn('[AuthUI] Google sign-in failed:', err);
-      if (err.code !== 'auth/popup-closed-by-user') {
-        var msg = err.message || 'Google sign-in could not be completed.';
-        if (authState.modalOpen) showError(msg);
-        else if (window.ClarioraAuthGate && document.getElementById('gateErrorNote')) {
-          var gateErr = document.getElementById('gateErrorNote');
-          gateErr.hidden = false;
-          gateErr.textContent = msg;
-        }
+      if (err && err.code === 'auth/popup-closed-by-user') {
+        return;
+      }
+      var msg = (err && err.message) || 'Google sign-in could not be completed.';
+      if (err && err.code === 'auth/unauthorized-domain') {
+        msg = 'This domain is not authorized for Google Sign-in in Firebase Console. Please add it to Authorized Domains.';
+      }
+      if (authState.modalOpen) {
+        showError(msg);
+      } else if (document.getElementById('gateErrorNote')) {
+        var gateErr = document.getElementById('gateErrorNote');
+        gateErr.hidden = false;
+        gateErr.textContent = msg;
       }
     }
   }

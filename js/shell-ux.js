@@ -1118,6 +1118,11 @@
           if (APlus.telemetry && typeof APlus.telemetry.track === 'function') {
             APlus.telemetry.track('feature_opened', { feature: 'recent_empty_cta' });
           }
+          try {
+            if (APlus.bus && typeof APlus.bus.emit === 'function') {
+              APlus.bus.emit('feature:opened', { feature: 'recent_empty_cta' });
+            }
+          } catch (_) {}
         } catch (_) {}
         try {
           if (APlus.onboarding && typeof APlus.onboarding.startToday === 'function') {

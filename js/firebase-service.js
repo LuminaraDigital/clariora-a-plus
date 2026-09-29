@@ -86,6 +86,21 @@
           state.firestoreAvailable = false;
         }
 
+        // Handle pending redirect sign-in from Google OAuth flow
+        if (typeof mods.auth.getRedirectResult === 'function') {
+          mods.auth.getRedirectResult(state.auth).then(function (result) {
+            if (result && result.user) {
+              console.log('[Firebase] Redirect sign-in success:', result.user.email);
+              state.currentUser = result.user;
+              notifyAuthSubscribers(result.user);
+            }
+          }).catch(function (redirectErr) {
+            if (redirectErr && redirectErr.code !== 'auth/popup-closed-by-user') {
+              console.warn('[Firebase] Redirect result notice:', redirectErr);
+            }
+          });
+        }
+
         // Listen for authentication changes
         mods.auth.onAuthStateChanged(state.auth, function (user) {
           state.currentUser = user;
@@ -144,14 +159,21 @@
     var provider = new authMod.GoogleAuthProvider();
     provider.addScope('profile');
     provider.addScope('email');
+    if (typeof provider.setCustomParameters === 'function') {
+      provider.setCustomParameters({ prompt: 'select_account' });
+    }
 
     try {
       var result = await authMod.signInWithPopup(state.auth, provider);
       return result.user;
     } catch (err) {
-      if (err.code === 'auth/popup-blocked' || err.code === 'auth/popup-closed-by-user') {
-        console.log('[Firebase] Popup blocked or closed; trying redirect...');
-        return authMod.signInWithRedirect(state.auth, provider);
+      if (err && err.code === 'auth/popup-blocked') {
+        console.log('[Firebase] Popup blocked; redirecting to Google sign-in...');
+        await authMod.signInWithRedirect(state.auth, provider);
+        return null;
+      }
+      if (err && err.code === 'auth/operation-not-supported-in-this-environment') {
+        throw new Error('Google Sign-In is not supported in this offline/desktop shell. Please run in a standard web browser.');
       }
       throw err;
     }

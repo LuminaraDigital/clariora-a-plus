@@ -107,7 +107,7 @@ ATTR_RE = re.compile(
 # (curriculum_data.js media_path fields, hardcoded refs in js/*.js such as
 # boot-intro.js's brand video/poster constants). media/videos is matched
 # too, but is always dropped separately - never shipped.
-MEDIA_PATH_RE = re.compile(r'media/(?:brand|labs|slides|videos)/[^"\'\\\r\n]+')
+MEDIA_PATH_RE = re.compile(r'media/(?:brand|labs|slides|videos|hardware)/[^"\'\\\r\n]+')
 
 
 def is_excluded_path(rel_path: Path) -> bool:

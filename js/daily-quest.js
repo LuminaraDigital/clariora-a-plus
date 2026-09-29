@@ -481,6 +481,12 @@
       html += '<p class="dq-note">Study streak paused at ' + status.streak +
         ' days. Study today to keep it.</p>';
       track('streak_soft_freeze', { streak: status.streak });
+      try {
+        var busA = A();
+        if (busA && busA.bus && typeof busA.bus.emit === 'function') {
+          busA.bus.emit('streak:soft_freeze', { streak: status.streak });
+        }
+      } catch (_) {}
     }
 
     html += '<ul class="dq-legs" role="list">';

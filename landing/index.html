@@ -42,6 +42,7 @@
       Clariora A+
     </a>
     <nav class="nav-links" aria-label="Site">
+      <a href="#labs">Hardware Labs</a>
       <a href="why.html">Why Clariora</a>
       <a href="compare.html">Compare</a>
       <a href="how.html">How it works</a>
@@ -58,6 +59,7 @@
         <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </summary>
       <div class="nav-menu-panel">
+        <a href="#labs">Hardware Labs</a>
         <a href="why.html">Why Clariora</a>
         <a href="compare.html">Compare</a>
         <a href="how.html">How it works</a>
@@ -108,6 +110,116 @@
         <li><strong>Dual track</strong><span>CompTIA A+ and Microsoft Azure Fundamentals</span></li>
         <li><strong>1</strong><span>sign-in gates the product so progress is yours</span></li>
       </ul>
+    </div>
+  </section>
+
+  <section class="section" id="labs" aria-label="Interactive 3D Hardware Labs">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Interactive 3D Hardware</span>
+        <h2>Inspect physical hardware before you touch customer equipment.</h2>
+        <p>CompTIA A+ Core 1 tests physical assembly, pinouts, and rack ergonomics. Rotate realistic 3D component models, inspect key exam objectives, and practice PBQs in the browser.</p>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Select hardware model">
+        <button class="tab" role="tab" id="tab-hw-mobo" aria-selected="true" data-model="mobo">ATX Motherboard (Obj 3.4)</button>
+        <button class="tab" role="tab" id="tab-hw-rj45" aria-selected="false" tabindex="-1" data-model="rj45">RJ-45 Modular Plug (Obj 2.1)</button>
+        <button class="tab" role="tab" id="tab-hw-rack" aria-selected="false" tabindex="-1" data-model="rack">42U Datacenter Rack (Obj 3.4)</button>
+      </div>
+
+      <div class="labs-stage" id="labs-stage">
+        <div class="labs-stage__canvas-wrap" id="labs-canvas-wrap">
+          <div class="labs-stage__toolbar" id="labs-toolbar" role="toolbar" aria-label="3D Viewport Controls">
+            <div class="labs-toolbar__group">
+              <button type="button" class="labs-tool-btn is-active" id="btn-mode-pbr" data-mode="pbr" title="Studio Photorealistic Shading">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20Z"/></svg>
+                <span>Studio</span>
+              </button>
+              <button type="button" class="labs-tool-btn" id="btn-mode-wire" data-mode="wireframe" title="Holographic Wireframe Blueprint">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m3 3 18 18M21 3 3 21"/></svg>
+                <span>Wireframe</span>
+              </button>
+              <button type="button" class="labs-tool-btn" id="btn-mode-explode" data-mode="explode" title="Exploded Architecture Layering">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="m3 3 6 6M15 15l6 6M21 3l-6 6M9 15l-6 6"/></svg>
+                <span>Explode</span>
+              </button>
+            </div>
+            <div class="labs-toolbar__group">
+              <button type="button" class="labs-tool-btn is-active" id="btn-cam-hero" title="Perspective Hero View">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                <span>Hero</span>
+              </button>
+              <button type="button" class="labs-tool-btn" id="btn-cam-top" title="Top-Down Engineering View">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+                <span>Plan</span>
+              </button>
+              <button type="button" class="labs-tool-btn" id="btn-tool-action" title="Interactive Hardware Operation">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg>
+                <span id="btn-tool-action-label">Operate</span>
+              </button>
+            </div>
+            <div class="labs-toolbar__group">
+              <button type="button" class="labs-tool-btn is-active" id="btn-tool-rotate" title="Toggle 360 Auto-Rotation" aria-pressed="true">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-1.19"/></svg>
+                <span>Rotate</span>
+              </button>
+              <button type="button" class="labs-tool-btn" id="btn-tool-reset" title="Reset Camera to Home Orientation">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                <span>Reset</span>
+              </button>
+              <button type="button" class="labs-tool-btn is-active" id="btn-tool-sound" title="Toggle Tactile Audio Feedback" aria-pressed="true">
+                <svg id="icon-sound-on" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+                <svg id="icon-sound-off" class="is-hidden" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="labs-stage__badge" id="labs-stage-badge">
+            <span class="labs-stage__badge-dot" aria-hidden="true"></span>
+            <span id="labs-badge-text">3D WebGL Engine</span>
+          </div>
+          <div class="labs-stage__viewport" id="labs-viewport">
+            <div class="labs-stage__sheen" id="labs-sheen" aria-hidden="true"></div>
+            <div class="labs-stage__model-container" id="labs-model-container">
+              <img
+                id="labs-img"
+                class="labs-stage__img"
+                src="img/motherboard-1200.webp"
+                srcset="img/motherboard-600.webp 600w, img/motherboard-1200.webp 1200w"
+                sizes="(min-width: 900px) 680px, 100vw"
+                width="1200"
+                height="800"
+                alt="3D ATX Motherboard hardware model with LGA 1700 socket, DDR5 slots, PCIe 4.0 x16, and M.2 NVMe"
+                loading="lazy">
+              <div class="labs-hotspots" id="labs-hotspots" aria-label="Interactive hardware hotspots"></div>
+            </div>
+          </div>
+          <div class="labs-stage__hint">
+            <span>Move cursor or drag to tilt in 3D space. Click hotspots to inspect exam objectives.</span>
+          </div>
+        </div>
+
+        <div class="labs-inspector" id="labs-inspector" aria-live="polite">
+          <div class="labs-inspector__header">
+            <span class="eyebrow" id="labs-obj-tag">CompTIA A+ Core 1 | Obj 3.4</span>
+            <h3 id="labs-comp-title">LGA 1700 CPU Socket and Retention Lever</h3>
+          </div>
+          <p id="labs-comp-desc" class="labs-inspector__desc">
+            Land Grid Array (LGA) packages place contact pins directly on the motherboard socket rather than on the processor. Align the Pin 1 gold triangle indicator to avoid pin damage. The Zero Insertion Force (ZIF) lever secures the Integrated Heat Spreader.
+          </p>
+          <div class="labs-inspector__spec-card">
+            <h4>Key Exam Takeaway</h4>
+            <p id="labs-comp-takeaway">Modern Intel desktop processors and AMD AM5 utilize LGA sockets. Contrast with legacy AMD AM4 Pin Grid Array (PGA) where pins were soldered directly on the CPU.</p>
+          </div>
+          <div class="labs-inspector__nav">
+            <span class="small muted">Hotspot quick-select:</span>
+            <div class="labs-inspector__hotspot-list" id="labs-hotspot-list"></div>
+          </div>
+          <div class="labs-inspector__actions">
+            <a class="btn btn-secondary" href="/app">Launch Interactive PBQs</a>
+            <a class="btn btn-secondary" href="how.html">View exam syllabus</a>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -192,6 +304,7 @@
   <div class="container">
     <p><strong>Clariora A+</strong> by Datacentre Academy / Luminara Digital. CompTIA A+ is a trademark of CompTIA. Clariora is not affiliated with or endorsed by CompTIA.</p>
     <p>
+      <a href="#labs">Hardware Labs</a> ·
       <a href="why.html">Why</a> ·
       <a href="compare.html">Compare</a> ·
       <a href="how.html">How</a> ·
@@ -204,7 +317,11 @@
     </p>
   </div>
 </footer>
+<script src="vendor/three.min.js" defer></script>
+<script src="vendor/OrbitControls.js" defer></script>
+<script src="vendor/GLTFLoader.js" defer></script>
 <script src="hero-mesh.js" defer></script>
+<script src="labs-3d.js" defer></script>
 <script>
 (function () {
   document.querySelectorAll('[data-busy]').forEach(function (el) {

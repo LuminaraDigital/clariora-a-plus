@@ -216,11 +216,12 @@ async function runAll() {
   // 1. Verify Catalog and Scoring Functions
   console.log('1. Verifying PBQEngine.score & getDiagnostics for Labs 4-7...');
 
-  test('PBQEngine.catalog contains all four advanced labs', () => {
+  test('PBQEngine.catalog contains all advanced labs including datacenterRack', () => {
     assert.ok(pbqEngine.catalog.sohoRouter, 'sohoRouter must exist');
     assert.ok(pbqEngine.catalog.cablePinout, 'cablePinout must exist');
     assert.ok(pbqEngine.catalog.motherboardAssembly, 'motherboardAssembly must exist');
     assert.ok(pbqEngine.catalog.windowsConsole, 'windowsConsole must exist');
+    assert.ok(pbqEngine.catalog.datacenterRack, 'datacenterRack must exist');
   });
 
   test('Lab 4 (sohoRouter): default state fails score and provides diagnostics', () => {
@@ -301,6 +302,43 @@ async function runAll() {
     assert.strictEqual(pbqEngine.getDiagnostics('windowsConsole', sol).length, 0);
   });
 
+  test('Lab 8 (datacenterRack): PBQEngine.catalog.datacenterRack exists', () => {
+    assert.ok(pbqEngine.catalog.datacenterRack, 'datacenterRack lab must exist in catalog');
+    assert.strictEqual(pbqEngine.catalog.datacenterRack.title, '42U Datacenter Rack Lab');
+  });
+
+  test('Lab 8 (datacenterRack): default/empty state fails with diagnostics', () => {
+    const lab = pbqEngine.getLab('datacenterRack');
+    const state = JSON.parse(JSON.stringify(lab.defaultState));
+    assert.strictEqual(pbqEngine.score({ pbqType: 'datacenterRack' }, state), false);
+
+    const diags = pbqEngine.getDiagnostics('datacenterRack', state);
+    assert.strictEqual(diags.length, 5, 'All 5 empty rack slots reported');
+    assert.ok(diags.some(d => d.includes('unpopulated')), 'Reports unpopulated rack slots');
+  });
+
+  test('Lab 8 (datacenterRack): safety diagnostic when UPS is mounted at top of rack (tipping hazard)', () => {
+    const badState = {
+      slots: {
+        'u41_42_tor': 'comp_ups_battery',
+        'u40_patch': null,
+        'u36_37_server': null,
+        'u34_storage': null,
+        'u1_3_ups': null
+      }
+    };
+    assert.strictEqual(pbqEngine.score({ pbqType: 'datacenterRack' }, badState), false);
+    const diags = pbqEngine.getDiagnostics('datacenterRack', badState);
+    assert.ok(diags.some(d => d.toLowerCase().includes('tipping hazard') || d.toLowerCase().includes('tipping')), 'Warns about tipping hazard');
+    assert.ok(diags.some(d => d.includes('UPS')), 'Identifies UPS as cause of tipping hazard');
+  });
+
+  test('Lab 8 (datacenterRack): correct rack assignment passes with 0 diagnostics', () => {
+    const sol = pbqEngine.getLab('datacenterRack').solution;
+    assert.strictEqual(pbqEngine.score({ pbqType: 'datacenterRack' }, { slots: sol }), true);
+    assert.strictEqual(pbqEngine.getDiagnostics('datacenterRack', { slots: sol }).length, 0);
+  });
+
   // 2. Action Toolbar and Verification Behavior in Render Methods
   console.log('\n2. Verifying Action Toolbar & Interactive Verification Workflow...');
 
@@ -353,6 +391,26 @@ async function runAll() {
     assert.strictEqual(ledgerCalls[0], lab.title, 'Exact lab title passed to ledger');
   });
 
+  test('Clicking Verify on completed datacenterRack state triggers success banner, sound, and ledger award', () => {
+    const container = makeMockElement('div');
+    const lab = pbqEngine.getLab('datacenterRack');
+    const state = { slots: { ...lab.solution } };
+
+    ledgerCalls.length = 0;
+    const initialSuccessSounds = soundCalls.success;
+
+    pbqEngine.renderActionToolbar(container, 'datacenterRack', state, {}, () => {});
+    const verifyBtn = container.querySelector('.pbq-verify-btn');
+    const evalBox = container.querySelector('#pbqEvalResult');
+
+    verifyBtn.onclick();
+    assert.ok(evalBox.innerHTML.includes('CONFIGURATION VERIFIED'), 'Success banner rendered');
+    assert.ok(evalBox.innerHTML.includes('+18 APX'), 'APX award stated in banner');
+    assert.strictEqual(soundCalls.success, initialSuccessSounds + 1, 'playSuccess() invoked');
+    assert.strictEqual(ledgerCalls.length, 1, 'CompTIALedgerUI.onPbqComplete called once');
+    assert.strictEqual(ledgerCalls[0], lab.title, 'Exact lab title passed to ledger');
+  });
+
   test('Reset Lab button executes resetFn and clears feedback banner', () => {
     const container = makeMockElement('div');
     const state = { ...pbqEngine.getLab('sohoRouter').defaultState };
@@ -368,6 +426,32 @@ async function runAll() {
 
     verifyBtn.onclick();
     assert.ok(evalBox.innerHTML.length > 0, 'Feedback banner populated before reset');
+
+    resetBtn.onclick();
+    assert.strictEqual(evalBox.innerHTML, '', 'Feedback banner cleared on reset');
+    assert.strictEqual(resetRan, true, 'resetFn executed');
+  });
+
+  test('Lab 8 (datacenterRack): action toolbar reset and verify workflow', () => {
+    const container = makeMockElement('div');
+    const lab = pbqEngine.getLab('datacenterRack');
+    const state = { slots: { ...lab.solution } };
+    let resetRan = false;
+
+    pbqEngine.renderActionToolbar(container, 'datacenterRack', state, {}, () => {
+      resetRan = true;
+    });
+
+    const verifyBtn = container.querySelector('.pbq-verify-btn');
+    const resetBtn = container.querySelector('.pbq-reset-btn');
+    const evalBox = container.querySelector('#pbqEvalResult');
+
+    assert.ok(verifyBtn, 'Verify button must be present');
+    assert.ok(resetBtn, 'Reset button must be present');
+    assert.ok(evalBox, '#pbqEvalResult container must be present');
+
+    verifyBtn.onclick();
+    assert.ok(evalBox.innerHTML.includes('CONFIGURATION VERIFIED'), 'Success banner rendered');
 
     resetBtn.onclick();
     assert.strictEqual(evalBox.innerHTML, '', 'Feedback banner cleared on reset');
@@ -428,6 +512,14 @@ async function runAll() {
 
     await test('Completing different lab (Lab 5 Cable Pinout) awards APX', async () => {
       const labTitle = pbqEngine.getLab('cablePinout').title;
+      const res = await ledger.recordPbqComplete(labTitle);
+      assert.strictEqual(res.skipped, false);
+      assert.strictEqual(res.block.type, 'PBQ_COMPLETE');
+      assert.strictEqual(res.block.tokenDelta, 18);
+    });
+
+    await test('Completing Lab 8 (42U Datacenter Rack) awards APX', async () => {
+      const labTitle = pbqEngine.getLab('datacenterRack').title;
       const res = await ledger.recordPbqComplete(labTitle);
       assert.strictEqual(res.skipped, false);
       assert.strictEqual(res.block.type, 'PBQ_COMPLETE');

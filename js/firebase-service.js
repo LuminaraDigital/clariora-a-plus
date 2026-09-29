@@ -150,9 +150,20 @@
    * Sign in with Google (Popup with Redirect fallback)
    */
   async function signInWithGoogle() {
-    await init();
+    if (!state.initialized || !state.auth || !state.modules) {
+      await init();
+    }
     if (!state.auth || !state.modules) {
       throw new Error('Firebase Auth is not available');
+    }
+
+    var isDesktopOrFile = (typeof window !== 'undefined') &&
+      (!!window.electronAPI || (window.location && window.location.protocol === 'file:'));
+    if (isDesktopOrFile) {
+      var deskErr = new Error('Google Sign-In is supported in standard web browsers. In this desktop app, your progress is safely stored on this computer.');
+      deskErr.code = 'auth/operation-not-supported-in-this-environment';
+      deskErr.isDesktopShell = true;
+      throw deskErr;
     }
 
     var authMod = state.modules.auth;
@@ -168,12 +179,20 @@
       return result.user;
     } catch (err) {
       if (err && err.code === 'auth/popup-blocked') {
-        console.log('[Firebase] Popup blocked; redirecting to Google sign-in...');
-        await authMod.signInWithRedirect(state.auth, provider);
-        return null;
+        if (typeof window !== 'undefined' && window.location && window.location.protocol.startsWith('http')) {
+          console.log('[Firebase] Popup blocked; redirecting to Google sign-in...');
+          await authMod.signInWithRedirect(state.auth, provider);
+          return null;
+        }
       }
       if (err && err.code === 'auth/operation-not-supported-in-this-environment') {
         throw new Error('Google Sign-In is not supported in this offline/desktop shell. Please run in a standard web browser.');
+      }
+      if (err && err.code === 'auth/unauthorized-domain') {
+        var host = (typeof window !== 'undefined' && window.location && window.location.hostname) || '';
+        var domErr = new Error('This domain (' + (host || 'local file') + ') is not yet authorized for Google Sign-in in Firebase Console. Sign in with email or continue locally.');
+        domErr.code = 'auth/unauthorized-domain';
+        throw domErr;
       }
       throw err;
     }
@@ -207,6 +226,7 @@
     if (displayName && result.user) {
       try {
         await authMod.updateProfile(result.user, { displayName: displayName });
+        result.user.displayName = displayName;
       } catch (pErr) {
         console.debug('[Firebase] Display name update notice:', pErr);
       }
@@ -380,12 +400,27 @@
     var user = getCurrentUser();
     if (!user || !state.db || !state.modules || !state.firestoreAvailable) return false;
 
+    var activePrefix = null;
+    if (typeof window !== 'undefined' && window.CompTIAProfiles && typeof window.CompTIAProfiles.getActiveId === 'function') {
+      activePrefix = 'comptia_p_' + window.CompTIAProfiles.getActiveId() + '__';
+    }
+
     var payload = {};
     if (typeof localStorage !== 'undefined') {
       for (var i = 0; i < localStorage.length; i++) {
         var k = localStorage.key(i);
-        if (k && (k.startsWith('comptia_') || k.startsWith('aplus3_'))) {
-          if (k === 'comptia_database_master_v3' || k.indexOf('telemetry') !== -1 || k.indexOf('groq') !== -1) continue;
+        if (!k) continue;
+        if (k === 'comptia_database_master_v3' || k.indexOf('telemetry') !== -1 || k.indexOf('groq') !== -1 || k.indexOf('license') !== -1) continue;
+
+        // Isolate per-user persistent memory: never leak another profile's keys to this user's cloud store
+        if (k.startsWith('comptia_p_')) {
+          if (activePrefix && k.startsWith(activePrefix)) {
+            payload[k] = localStorage.getItem(k);
+          }
+          continue;
+        }
+
+        if (k.startsWith('comptia_') || k.startsWith('aplus3_')) {
           payload[k] = localStorage.getItem(k);
         }
       }
@@ -417,10 +452,13 @@
       }
     }
 
-    if (changed && typeof window !== 'undefined' && window.CompTIADatabase && typeof window.CompTIADatabase.init === 'function') {
-      try {
-        window.CompTIADatabase.init();
-      } catch (_) {}
+    if (changed && typeof window !== 'undefined') {
+      if (window.CompTIADatabase && typeof window.CompTIADatabase.init === 'function') {
+        try { window.CompTIADatabase.init(); } catch (_) {}
+      }
+      if (window.CompTIAProductTrust && typeof window.CompTIAProductTrust.afterProfileChange === 'function') {
+        try { window.CompTIAProductTrust.afterProfileChange(); } catch (_) {}
+      }
     }
   }
 

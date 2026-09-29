@@ -6638,7 +6638,7 @@ header .brand {
 }
 
 .app-3d-modal-card {
-  animation: app3DModalEnter 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: app3DModalEnter var(--dur-base) var(--ease-out);
 }
 
 @keyframes app3DModalEnter {
@@ -6653,7 +6653,7 @@ header .brand {
 }
 
 .app-3d-hotspot-pin {
-  transition: transform 0.15s ease, filter 0.15s ease;
+  transition: transform var(--dur-fast) var(--ease-out), filter var(--dur-fast) var(--ease-out);
 }
 
 .app-3d-hotspot-pin:hover {
@@ -6718,7 +6718,7 @@ header .brand {
   padding: 6px var(--sp-1);
   min-width: 140px;
   cursor: pointer;
-  transition: border-color var(--dur-fast) ease, background var(--dur-fast) ease;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
 }
 
 .app-3d-bench-item:hover {
@@ -6753,7 +6753,7 @@ header .brand {
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.15);
   display: inline-block;
-  transition: background var(--dur-base) ease, box-shadow var(--dur-base) ease;
+  transition: background var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
 }
 
 .app-3d-post-led.is-amber {

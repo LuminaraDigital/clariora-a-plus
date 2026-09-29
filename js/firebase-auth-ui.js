@@ -693,17 +693,38 @@
     try {
       var user = await service.signInWithGoogle();
       if (user) {
+        renderHeaderPill(user);
+        notifyAuthenticated({ isTelegram: false, user: user, event: 'signin' });
         closeModal();
+        if (window.ClarioraAuthGate) {
+          if (typeof window.ClarioraAuthGate.handleFirebaseUser === 'function') {
+            window.ClarioraAuthGate.handleFirebaseUser(user);
+          } else if (typeof window.ClarioraAuthGate.unlockInternal === 'function') {
+            window.ClarioraAuthGate.unlockInternal({
+              provider: 'google',
+              uid: user.uid,
+              email: user.email || '',
+              displayName: user.displayName || 'Learner'
+            });
+          }
+        }
       }
     } catch (err) {
       console.warn('[AuthUI] Google sign-in failed:', err);
       if (err && err.code === 'auth/popup-closed-by-user') {
         return;
       }
+      var isDesktop = (typeof window !== 'undefined') &&
+        (!!window.electronAPI || (window.location && window.location.protocol === 'file:'));
+      var isDesktopErr = isDesktop || (err && (err.code === 'auth/operation-not-supported-in-this-environment' || err.isDesktopShell));
+
       var msg = (err && err.message) || 'Google sign-in could not be completed.';
-      if (err && err.code === 'auth/unauthorized-domain') {
-        msg = 'This domain is not authorized for Google Sign-in in Firebase Console. Please add it to Authorized Domains.';
+      if (isDesktopErr) {
+        msg = 'Google Sign-In is supported in standard web browsers. On this device, progress is stored locally, or you can sign in with email.';
+      } else if (err && err.code === 'auth/unauthorized-domain') {
+        msg = 'This domain is not yet authorized for Google Sign-in in Firebase Console. Sign in with email or continue locally.';
       }
+
       if (authState.modalOpen) {
         showError(msg);
       } else if (document.getElementById('gateErrorNote')) {
@@ -766,14 +787,32 @@
     authState.busy = true;
 
     try {
+      var activeUser = null;
       if (authState.mode === 'signup') {
-        var created = await service.signUpWithEmail(email, pass, name);
-        notifyAuthenticated({ isTelegram: false, user: created, event: 'signup' });
+        activeUser = await service.signUpWithEmail(email, pass, name);
+        notifyAuthenticated({ isTelegram: false, user: activeUser, event: 'signup' });
       } else {
-        var signedIn = await service.signInWithEmail(email, pass);
-        notifyAuthenticated({ isTelegram: false, user: signedIn, event: 'signin' });
+        activeUser = await service.signInWithEmail(email, pass);
+        notifyAuthenticated({ isTelegram: false, user: activeUser, event: 'signin' });
       }
-      closeModal();
+      if (activeUser) {
+        renderHeaderPill(activeUser);
+        closeModal();
+        if (window.ClarioraAuthGate) {
+          if (typeof window.ClarioraAuthGate.handleFirebaseUser === 'function') {
+            await window.ClarioraAuthGate.handleFirebaseUser(activeUser);
+          } else if (typeof window.ClarioraAuthGate.unlockInternal === 'function') {
+            window.ClarioraAuthGate.unlockInternal({
+              provider: 'email',
+              uid: activeUser.uid,
+              email: activeUser.email || '',
+              displayName: activeUser.displayName || name || 'Learner'
+            });
+          }
+        }
+      } else {
+        closeModal();
+      }
     } catch (err) {
       console.warn('[AuthUI] Email auth failed:', err);
       var userMessage = 'Authentication failed. Check your details and try again.';

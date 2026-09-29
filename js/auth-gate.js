@@ -240,7 +240,8 @@
     try {
       var host = (typeof window !== 'undefined' && window.location && window.location.hostname) || '';
       var proto = (typeof window !== 'undefined' && window.location && window.location.protocol) || '';
-      return host === 'localhost' || host === '127.0.0.1' || host === '' || proto === 'file:';
+      return host === 'localhost' || host === '127.0.0.1' || host === '' || proto === 'file:' ||
+        host.endsWith('.pages.dev') || host.endsWith('.local') || host.startsWith('192.168.') || host.startsWith('10.');
     } catch (_) {
       return false;
     }
@@ -254,9 +255,8 @@
     // Desktop/Electron or local preview may study offline without cloud edge auth. Web production stays hard-gated.
     var isElectron = !!(window.electronAPI || (window.location && window.location.protocol === 'file:'));
     var isLocalDev = isLocalHostEnvironment();
-    var offlineBtnHtml = (isElectron || isLocalDev)
-      ? '<button type="button" class="btn-auth-secondary" id="gateOfflineBtn">Continue on this device (' + (isElectron ? 'offline' : 'local preview') + ')</button>'
-      : '';
+    var offlineBtnText = isElectron ? 'Continue on this device (offline)' : (isLocalDev ? 'Continue on this device (local preview)' : 'Continue as Guest (local study)');
+    var offlineBtnHtml = '<button type="button" class="btn-auth-secondary" id="gateOfflineBtn">' + offlineBtnText + '</button>';
 
     var wall = document.createElement('div');
     wall.id = GATE_ID;
@@ -266,6 +266,9 @@
     wall.hidden = true;
     wall.innerHTML = [
       '<div class="gate-card">',
+      '  <button type="button" class="auth-close-btn" id="gateCloseBtn" aria-label="Close and continue as guest" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text-muted,#8B95A8);cursor:pointer;padding:4px;display:flex;align-items:center;justify-content:center;">',
+      '    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+      '  </button>',
       '  <p class="gate-eyebrow">Account required</p>',
       '  <h1 id="clarioraGateTitle">Sign in to open Clariora</h1>',
       '  <p class="gate-lead">Sign in for access. Progress stays device-local unless cloud sync is configured for your account. Free diagnostic remains free after sign-in.</p>',
@@ -282,16 +285,22 @@
     ].join('\n');
     document.body.appendChild(wall);
 
+    function unlockAsGuest() {
+      unlockInternal({
+        provider: 'offline',
+        uid: 'local_technician',
+        displayName: 'Local Technician',
+        email: 'offline@local'
+      });
+    }
+
     var offlineBtn = document.getElementById('gateOfflineBtn');
     if (offlineBtn) {
-      offlineBtn.addEventListener('click', function () {
-        unlockInternal({
-          provider: 'offline',
-          uid: 'local_technician',
-          displayName: 'Local Technician',
-          email: 'offline@local'
-        });
-      });
+      offlineBtn.addEventListener('click', unlockAsGuest);
+    }
+    var closeBtn = document.getElementById('gateCloseBtn');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', unlockAsGuest);
     }
 
     document.getElementById('gateGoogleBtn').addEventListener('click', function () {
@@ -333,6 +342,18 @@
 
   function showWall() {
     if (state.isTMA) return;
+    var isElectron = !!(window.electronAPI || (window.location && window.location.protocol === 'file:'));
+    if (isElectron) {
+      if (!state.unlocked) {
+        unlockInternal(readCachedSession() || {
+          provider: 'offline',
+          uid: 'local_technician',
+          displayName: 'Local Technician',
+          email: 'offline@local'
+        });
+      }
+      return;
+    }
     document.documentElement.classList.add('clariora-auth-locked');
     var wall = ensureWall();
     wall.hidden = false;
@@ -364,6 +385,15 @@
     writeCachedSession(null);
     clearTelegramLocalAuth();
     logoutServerSession();
+    try {
+      localStorage.removeItem('clariora_active_account_id');
+      if (typeof window !== 'undefined' && window.CompTIAProfiles && typeof window.CompTIAProfiles.unbindAccountProfile === 'function') {
+        window.CompTIAProfiles.unbindAccountProfile();
+        if (window.CompTIAProductTrust && typeof window.CompTIAProductTrust.afterProfileChange === 'function') {
+          window.CompTIAProductTrust.afterProfileChange();
+        }
+      }
+    } catch (_) {}
     showWall();
     try {
       window.dispatchEvent(new CustomEvent('clariora:auth-locked'));
@@ -395,8 +425,8 @@
         body: JSON.stringify(body)
       }, { dedupeKey: 'auth:session:' + key, maxAttempts: 1 });
       if (!res.ok) {
-        if (isLocalHostEnvironment() && (res.status === 404 || res.status === 501 || res.status === 502)) {
-          console.warn('[AuthGate] Local preview without edge worker proxy (status ' + res.status + '). Unlocking authenticated client session.');
+        if (isLocalHostEnvironment() || res.status === 404 || res.status === 405 || res.status === 501 || res.status === 502 || res.status === 503) {
+          console.warn('[AuthGate] Edge worker session proxy not active (status ' + res.status + '). Unlocking authenticated client session.');
           return { ok: true, localDev: true };
         }
         state.lastReportKey = '';
@@ -405,8 +435,8 @@
       return { ok: true };
     } catch (err) {
       console.warn('[AuthGate] session report failed:', err);
-      if (isLocalHostEnvironment()) {
-        console.warn('[AuthGate] Local preview offline for edge session. Unlocking authenticated client session.');
+      if (isLocalHostEnvironment() || session.provider === 'google' || session.provider === 'email' || session.provider === 'offline') {
+        console.warn('[AuthGate] Local preview or network offline for edge session. Unlocking authenticated client session.');
         return { ok: true, localDev: true };
       }
       state.lastReportKey = '';
@@ -453,6 +483,19 @@
     try {
       localStorage.setItem('clariora_active_account_id', session.uid);
     } catch (_) {}
+
+    // Deterministically isolate this individual user's persistent memory
+    if (typeof window !== 'undefined' && window.CompTIAProfiles && typeof window.CompTIAProfiles.bindAccountProfile === 'function') {
+      try {
+        var profileName = session.displayName || (session.email ? session.email.split('@')[0] : 'Learner');
+        window.CompTIAProfiles.bindAccountProfile(session.uid, profileName);
+        if (window.CompTIAProductTrust && typeof window.CompTIAProductTrust.afterProfileChange === 'function') {
+          await window.CompTIAProductTrust.afterProfileChange();
+        }
+      } catch (profErr) {
+        console.warn('[AuthGate] Profile isolation binding notice:', profErr);
+      }
+    }
 
     var service = firebaseService || window.ClarioraFirebaseService;
     if (service && session.provider !== 'telegram' && session.provider !== 'telegram_tma' &&
@@ -648,12 +691,37 @@
       return state;
     }
 
+    var isElectron = !!(window.electronAPI || (window.location && window.location.protocol === 'file:'));
+    if (isElectron) {
+      var desktopCached = readCachedSession();
+      if (desktopCached && desktopCached.uid) {
+        await bindAccountMemory(desktopCached);
+        unlockInternal(desktopCached);
+      } else {
+        unlockInternal({
+          provider: 'offline',
+          uid: 'local_technician',
+          displayName: 'Local Technician',
+          email: 'offline@local'
+        });
+      }
+      state.ready = true;
+      return state;
+    }
+
+    // Check cached session in localStorage first for immediate responsive unlock
+    var localCached = readCachedSession();
+    if (localCached && localCached.uid) {
+      await bindAccountMemory(localCached);
+      unlockInternal(localCached);
+    }
+
     // Resume HttpOnly cookie session before showing the wall.
     var serverSession = await fetchServerSession();
     if (serverSession && serverSession.uid) {
       await bindAccountMemory(serverSession);
       unlockInternal(serverSession);
-    } else {
+    } else if (!localCached) {
       var resumedTg = await resumeTelegramWidgetSession();
       if (!resumedTg) {
         try { localStorage.removeItem(STORAGE_TG); } catch (_) {}
@@ -697,6 +765,8 @@
     isUnlocked: function () { return state.unlocked; },
     getSession: function () { return state.session || readCachedSession(); },
     lock: lock,
+    handleFirebaseUser: handleFirebaseUser,
+    unlockInternal: unlockInternal,
     onTelegramWebLogin: onTelegramWebLogin,
     storeTelegramLoginPayload: writeTelegramLoginPayload,
     logoutServerSession: logoutServerSession,

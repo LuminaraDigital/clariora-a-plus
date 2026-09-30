@@ -281,6 +281,9 @@
 
     window.clearHistory = function() {
       const wipe = () => {
+        if (APlus.learner && typeof APlus.learner.clearHistory === 'function') {
+          APlus.learner.clearHistory();
+        }
         if (APlus.storage) {
           APlus.storage.remove('history');
           APlus.storage.remove('missed');
@@ -288,6 +291,12 @@
         }
         localStorage.removeItem('comptia_a_plus_history');
         localStorage.removeItem('comptia_a_plus_missed');
+        try {
+          if (window.CompTIAProfiles && typeof CompTIAProfiles.scopedRemove === 'function') {
+            CompTIAProfiles.scopedRemove('comptia_a_plus_history');
+            CompTIAProfiles.scopedRemove('comptia_a_plus_missed');
+          }
+        } catch (_) {}
         renderHistoryTable();
         updateMissedCountDisplay();
         if (APlus.ghostCoach && typeof APlus.ghostCoach.refreshMission === 'function') {
@@ -307,17 +316,54 @@
       if (confirm('Clear exam attempt history and missed question pool?')) wipe();
     };
 
-    window.renderHistoryTable = function() {
-      const records = APlus.storage ? APlus.storage.get('history', []) : [];
-      const container = document.getElementById('historyTableContainer');
-      if (!container) return;
-
-      if (records.length === 0) {
-        container.innerHTML = `<p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">No exam attempts recorded yet. Complete an exam to view your score progression!</p>`;
-        return;
+    function historyRows() {
+      try {
+        if (APlus.learner && typeof APlus.learner.getHistory === 'function') {
+          const rows = APlus.learner.getHistory();
+          if (Array.isArray(rows)) return rows;
+        }
+      } catch (err) {
+        console.warn('[app] history read failed:', err);
       }
+      return APlus.storage ? (APlus.storage.get('history', []) || []) : [];
+    }
 
-      let html = `
+    function historyExamLabel(exam) {
+      if (exam === 'core1') return 'Core 1';
+      if (exam === 'core2') return 'Core 2';
+      if (exam === 'both') return 'Core 1 + Core 2';
+      return exam || '';
+    }
+
+    function historyAttemptCells(r) {
+      const raw = (r.rawCorrect != null && r.totalQuestions)
+        ? (r.rawCorrect + '/' + r.totalQuestions)
+        : (r.raw || '');
+      let percentage = r.percentage || '';
+      if (!percentage && r.totalQuestions) {
+        percentage = ((Number(r.rawCorrect) / Number(r.totalQuestions)) * 100).toFixed(1) + '%';
+      }
+      const status = (r.status != null)
+        ? String(r.status)
+        : (r.passed ? 'PASSED' : 'FAILED');
+      let date = r.date || '';
+      if (!date && r.timestamp) {
+        try { date = new Date(r.timestamp).toLocaleString(); } catch (_) { date = ''; }
+      }
+      const exam = historyExamLabel(r.examType);
+      return { date, exam, raw, percentage, status, score: r.scaledScore };
+    }
+
+    window.renderHistoryTable = function() {
+      const records = historyRows();
+      const containers = document.querySelectorAll('[data-history-table], #historyTableContainer');
+      if (!containers.length) return;
+
+      let html;
+      if (records.length === 0) {
+        html = '<p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">No exam attempts recorded yet. Complete an exam to view your score progression!</p>';
+      } else {
+        html = `
         <table class="history-table">
           <thead>
             <tr>
@@ -331,23 +377,27 @@
           </thead>
           <tbody>
       `;
-
-      records.forEach(r => {
-        const statusColor = (r.status === 'PASSED') ? 'var(--accent-green)' : 'var(--accent-red)';
-        html += `
+        records.forEach(r => {
+          const cell = historyAttemptCells(r);
+          const passed = String(cell.status).toUpperCase() === 'PASSED' || r.passed === true;
+          const statusColor = passed ? 'var(--accent-green)' : 'var(--accent-red)';
+          html += `
           <tr>
-            <td>${escapeHTML(r.date)}</td>
-            <td><strong>${escapeHTML(r.examType)}</strong></td>
-            <td style="font-family: monospace; font-weight: 700; font-size: 1.05rem;">${escapeHTML(String(r.scaledScore))} / 900</td>
-            <td>${escapeHTML(r.raw)}</td>
-            <td>${escapeHTML(r.percentage)}</td>
-            <td style="color: ${statusColor}; font-weight: 700;">${escapeHTML(r.status)}</td>
+            <td>${escapeHTML(cell.date)}</td>
+            <td><strong>${escapeHTML(cell.exam)}</strong></td>
+            <td style="font-family: monospace; font-weight: 700; font-size: 1.05rem;">${escapeHTML(String(cell.score))} / 900</td>
+            <td>${escapeHTML(cell.raw)}</td>
+            <td>${escapeHTML(cell.percentage)}</td>
+            <td style="color: ${statusColor}; font-weight: 700;">${escapeHTML(cell.status)}</td>
           </tr>
         `;
-      });
+        });
+        html += '</tbody></table>';
+      }
 
-      html += '</tbody></table>';
-      container.innerHTML = html;
+      containers.forEach(function (container) {
+        container.innerHTML = html;
+      });
     };
 
     window.updateMissedCountDisplay = function() {
@@ -369,6 +419,12 @@
 
     renderHistoryTable();
     updateMissedCountDisplay();
+
+    if (APlus.bus && typeof APlus.bus.on === 'function') {
+      APlus.bus.on('exam:finished', function () {
+        renderHistoryTable();
+      });
+    }
 
     if (window.CompTIALedgerUI && typeof window.CompTIALedgerUI.init === 'function') {
       window.CompTIALedgerUI.init();

@@ -114,6 +114,45 @@
     return pool.slice(0, RAID_SIZE);
   }
 
+  function setFlashcardChrome(on) {
+    const btn = $("flashcardExitBtn");
+    if (btn) btn.hidden = !on;
+    if (document.body) document.body.classList.toggle("flashcard-session", !!on);
+    if (!on) {
+      const pacing = $("cruciblePacingHorizon");
+      if (pacing) pacing.style.display = "none";
+    }
+  }
+
+  /**
+   * Leave a flashcard session and return to Study. Does not reload the page
+   * and does not record the sitting as an exam attempt.
+   */
+  function abandonMemorySession() {
+    try {
+      if (global.currentExamSession && global.currentExamSession.timerInterval) {
+        clearInterval(global.currentExamSession.timerInterval);
+        global.currentExamSession.timerInterval = null;
+        global.currentExamSession.isPaused = true;
+      }
+    } catch (_) {}
+    try {
+      const engine = global.APlus && global.APlus.engine;
+      if (engine && engine.timerInterval) {
+        clearInterval(engine.timerInterval);
+        engine.timerInterval = null;
+        engine.isPaused = true;
+      }
+    } catch (_) {}
+    setFlashcardChrome(false);
+    if (typeof global.showScreen === "function") {
+      try { global.showScreen("startScreen"); } catch (_) {}
+    }
+    if (typeof global.switchHomeTab === "function") {
+      try { global.switchHomeTab("study"); } catch (_) {}
+    }
+  }
+
   function startMemoryRaid() {
     if (!global.CompTIAMemorySRS) {
       alert("Memory SRS engine not loaded.");
@@ -149,6 +188,7 @@
     showScreen("examScreen");
     renderQuestion();
     renderMatrix();
+    setFlashcardChrome(true);
     if (global.CompTIALedgerUI && CompTIALedgerUI.toast) {
       CompTIALedgerUI.toast(
         `<strong>Memory Raid</strong><br>${pool.length} cards · spaced recall · APX for successes`,
@@ -286,6 +326,14 @@
     if (!global.CompTIAMemorySRS) return;
     syncFromMissedBank();
     refreshMemoryHome();
+    try {
+      if (global.APlus && global.APlus.bus && typeof global.APlus.bus.on === "function") {
+        global.APlus.bus.on("exam:started", function (payload) {
+          const memory = payload && (payload.type === "memory" || payload.mode === "memory");
+          setFlashcardChrome(!!memory);
+        });
+      }
+    } catch (_) {}
   }
 
   global.CompTIAMemoryMode = {
@@ -294,6 +342,7 @@
     refreshMemoryHome,
     syncFromMissedBank,
     startMemoryRaid,
+    abandonMemorySession,
     startDueReview,
     settleMemorySession,
     openMemoryModal,

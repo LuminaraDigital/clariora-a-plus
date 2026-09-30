@@ -64,8 +64,23 @@
   // TOOLBAR: PACING HORIZON
   // =========================================================================
 
+  function isFlashcardSession() {
+    try {
+      const shell = window.currentExamSession;
+      if (shell && (shell.type === 'memory' || shell.memoryRaid)) return true;
+      const eng = window.APlus && window.APlus.engine;
+      if (eng && (eng.type === 'memory' || eng.memoryRaid)) return true;
+    } catch (_) {}
+    return false;
+  }
+
   function renderToolbarPacing(currentIndex, remainingSeconds, totalQuestions, totalSeconds) {
     let container = document.getElementById('cruciblePacingHorizon');
+    // PBQ reserve is an exam pacing aid. Flashcards do not have PBQs.
+    if (isFlashcardSession()) {
+      if (container) container.style.display = 'none';
+      return;
+    }
     if (!container) {
       const timerDisplay = document.getElementById('timerDisplay');
       if (!timerDisplay || !timerDisplay.parentNode) return;

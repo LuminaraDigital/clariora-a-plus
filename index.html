@@ -137,8 +137,9 @@
   <!-- Firebase Authentication & Cloud Learning Backend -->
   <script src="js/firebase-config.js"></script>
   <script src="js/firebase-service.js"></script>
-  <script src="js/firebase-auth-ui.js?v=4.3.7"></script>
-  <script src="js/auth-gate.js?v=4.3.7"></script>
+  <script src="js/session-identity.js?v=4.3.8"></script>
+  <script src="js/firebase-auth-ui.js?v=4.3.8"></script>
+  <script src="js/auth-gate.js?v=4.3.8"></script>
   <!-- Clariora Level 4: The Datacenter Crucible -->
   <script src="js/crucible-engine.js"></script>
   <script src="js/crucible-ui.js"></script>
@@ -2785,7 +2786,7 @@
         <h3 id="moreGroupData" class="label">Data</h3>
         <nav class="drawer-nav" aria-labelledby="moreGroupData">
           <ul>
-            <li id="drawerAccountItem"><button type="button" class="drawer-item" onclick="closeMoreMenu(); if(window.ClarioraAuthUI){ if(localStorage.getItem('clariora_telegram_auth') || (window.ClarioraFirebaseService && window.ClarioraFirebaseService.getCurrentUser())) { ClarioraAuthUI.openAccountMenu(); } else { ClarioraAuthUI.openModal(); } }" title="Account settings and cloud sync"><svg class="drawer-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="drawer-item-text" id="drawerAccountText">Sign in / Account</span><span class="drawer-item-meta" id="drawerAccountMeta">Cloud Sync</span></button></li>
+            <li id="drawerAccountItem"><button type="button" class="drawer-item" onclick="closeMoreMenu(); if(window.ClarioraAuthUI){ if((window.ClarioraAuthUI.hasBoundSubject && window.ClarioraAuthUI.hasBoundSubject()) || localStorage.getItem('clariora_telegram_auth') || (window.ClarioraFirebaseService && window.ClarioraFirebaseService.getCurrentUser())) { ClarioraAuthUI.openAccountMenu(); } else { ClarioraAuthUI.openModal(); } }" title="Account settings and cloud sync"><svg class="drawer-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="drawer-item-text" id="drawerAccountText">Sign in / Account</span><span class="drawer-item-meta" id="drawerAccountMeta">Cloud Sync</span></button></li>
             <li><button type="button" class="drawer-item" id="dbMemoryStatusChip" onclick="CompTIADatabase.openModal()" title="Local database and PC memory" aria-label="Database status"><svg class="drawer-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/></svg><span class="drawer-item-text">Local database</span><span class="drawer-item-meta"><strong id="dbMemoryStatusBadge">Memory</strong></span></button></li>
             <li><button type="button" class="drawer-item" onclick="CompTIAProductTrust.onExportBackup()"><svg class="drawer-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 4v10M8 11l4 4 4-4M4 19h16"/></svg><span class="drawer-item-text">Export backup</span></button></li>
             <li><button type="button" class="drawer-item" onclick="CompTIAProductTrust.onImportBackup()"><svg class="drawer-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 16V6M8 9l4-4 4 4M4 19h16"/></svg><span class="drawer-item-text">Import backup</span></button></li>

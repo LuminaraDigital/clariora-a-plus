@@ -153,11 +153,16 @@
    * Global Shims for Complete Backward Compatibility with existing HTML inline handlers
    */
   function registerGlobalShims() {
-    window.startExam = function(type, questionCount, timeMinutes) {
+    window.startExam = function(type, questionCount, timeMinutes, mode) {
+      if (type && typeof type === 'object') {
+        APlus.engine.start(type);
+        return;
+      }
       APlus.engine.start({
         type: type || 'core1',
         questionCount: questionCount || 90,
-        timeMinutes: timeMinutes || 90
+        timeMinutes: timeMinutes || 90,
+        mode: mode
       });
     };
 
@@ -328,73 +333,13 @@
       return APlus.storage ? (APlus.storage.get('history', []) || []) : [];
     }
 
-    function historyExamLabel(exam) {
-      if (exam === 'core1') return 'Core 1';
-      if (exam === 'core2') return 'Core 2';
-      if (exam === 'both') return 'Core 1 + Core 2';
-      return exam || '';
-    }
-
-    function historyAttemptCells(r) {
-      const raw = (r.rawCorrect != null && r.totalQuestions)
-        ? (r.rawCorrect + '/' + r.totalQuestions)
-        : (r.raw || '');
-      let percentage = r.percentage || '';
-      if (!percentage && r.totalQuestions) {
-        percentage = ((Number(r.rawCorrect) / Number(r.totalQuestions)) * 100).toFixed(1) + '%';
-      }
-      const status = (r.status != null)
-        ? String(r.status)
-        : (r.passed ? 'PASSED' : 'FAILED');
-      let date = r.date || '';
-      if (!date && r.timestamp) {
-        try { date = new Date(r.timestamp).toLocaleString(); } catch (_) { date = ''; }
-      }
-      const exam = historyExamLabel(r.examType);
-      return { date, exam, raw, percentage, status, score: r.scaledScore };
-    }
-
     window.renderHistoryTable = function() {
       const records = historyRows();
       const containers = document.querySelectorAll('[data-history-table], #historyTableContainer');
       if (!containers.length) return;
-
-      let html;
-      if (records.length === 0) {
-        html = '<p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">No exam attempts recorded yet. Complete an exam to view your score progression!</p>';
-      } else {
-        html = `
-        <table class="history-table">
-          <thead>
-            <tr>
-              <th>Date & Time</th>
-              <th>Exam Mode</th>
-              <th>Score</th>
-              <th>Raw Correct</th>
-              <th>Accuracy</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
-        records.forEach(r => {
-          const cell = historyAttemptCells(r);
-          const passed = String(cell.status).toUpperCase() === 'PASSED' || r.passed === true;
-          const statusColor = passed ? 'var(--accent-green)' : 'var(--accent-red)';
-          html += `
-          <tr>
-            <td>${escapeHTML(cell.date)}</td>
-            <td><strong>${escapeHTML(cell.exam)}</strong></td>
-            <td style="font-family: monospace; font-weight: 700; font-size: 1.05rem;">${escapeHTML(String(cell.score))} / 900</td>
-            <td>${escapeHTML(cell.raw)}</td>
-            <td>${escapeHTML(cell.percentage)}</td>
-            <td style="color: ${statusColor}; font-weight: 700;">${escapeHTML(cell.status)}</td>
-          </tr>
-        `;
-        });
-        html += '</tbody></table>';
-      }
-
+      const html = (APlus.learner && typeof APlus.learner.buildHistoryTableHtml === 'function')
+        ? APlus.learner.buildHistoryTableHtml(records)
+        : (APlus.learner && APlus.learner.HISTORY_EMPTY_HTML) || '';
       containers.forEach(function (container) {
         container.innerHTML = html;
       });

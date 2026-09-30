@@ -288,7 +288,7 @@
             <section id="readinessHero" class="hero-card">
               <div class="shell-fallback" data-shell-fallback>
                 <h2 id="shellDiagnosticHeading">Take the 20-question diagnostic to get your readiness score.</h2>
-                <button type="button" class="btn btn-secondary" id="shellDiagnosticBtn" onclick="if (window.startPlacementDiagnostic) startPlacementDiagnostic(); else if (window.APlus &amp;&amp; APlus.onboarding) APlus.onboarding.start(); else startExam('core1',20,20)">Start the 20-question diagnostic</button>
+                <button type="button" class="btn btn-secondary" id="shellDiagnosticBtn" onclick="if (window.startPlacementDiagnostic) startPlacementDiagnostic(); else if (window.APlus &amp;&amp; APlus.onboarding) APlus.onboarding.start(); else startExam('core1',20,20,'diagnostic')">Start the 20-question diagnostic</button>
               </div>
             </section>
 
@@ -1110,6 +1110,9 @@
         APlus.masteryHeatmap.render(hmMount);
       }
       if (window.CrucibleUI) CrucibleUI.init();
+      if (window.APlus && APlus.courseSwitch && typeof APlus.courseSwitch.remount === 'function') {
+        try { APlus.courseSwitch.remount(); } catch (e) {}
+      }
     }
 
     /* NAVIGATION */
@@ -1138,7 +1141,7 @@
     }
 
     /* EXAM GENERATION AND START */
-    function startExam(type, questionCount, timeMinutes) {
+    function startExam(type, questionCount, timeMinutes, mode) {
       if (!examData) {
         alert("Exam questions data not found!");
         return;
@@ -1168,18 +1171,38 @@
 
       // Shuffle pool
       shuffleArray(pool);
+      var sessionMode = mode || examModeForSessionType(type);
+      if (sessionMode === 'diagnostic' && window.APlus && APlus.honesty && typeof APlus.honesty.resolveDiagnosticLength === 'function' && pool.length) {
+        var nonPbq = 0;
+        for (var qi = 0; qi < pool.length; qi++) {
+          if (pool[qi] && pool[qi].type !== 'pbq') nonPbq++;
+        }
+        questionCount = APlus.honesty.resolveDiagnosticLength(nonPbq);
+      }
       const selected = pool.slice(0, Math.min(questionCount, pool.length));
+      var clockSeconds = timeMinutes * 60;
+      if (window.APlus && APlus.honesty && typeof APlus.honesty.sessionClockSeconds === 'function') {
+        clockSeconds = APlus.honesty.sessionClockSeconds({
+          mode: sessionMode,
+          diagnostic: sessionMode === 'diagnostic',
+          questionCount: questionCount,
+          timeMinutes: timeMinutes,
+          delivered: selected.length
+        });
+      } else if (sessionMode === 'diagnostic' && selected.length) {
+        clockSeconds = selected.length * 60;
+      }
 
       currentExamSession = {
         type: type,
-        mode: examModeForSessionType(type),
+        mode: sessionMode,
         questions: selected,
         currentIndex: 0,
         userAnswers: {},
         eliminatedOptions: {},
         flaggedQuestions: new Set(),
-        totalSeconds: timeMinutes * 60,
-        remainingSeconds: timeMinutes * 60,
+        totalSeconds: clockSeconds,
+        remainingSeconds: clockSeconds,
         timerInterval: null,
         isPaused: false,
         passingScore: passingScore
@@ -1190,6 +1213,15 @@
       renderQuestion();
       renderMatrix();
       syncExamModeUi();
+      if (sessionMode === 'diagnostic' && window.APlus && APlus.honesty && selected.length) {
+        var deliveredLabelCount = selected.length;
+        var heading = document.getElementById('shellDiagnosticHeading');
+        if (heading) heading.textContent = APlus.honesty.diagnosticTakeLabel(deliveredLabelCount) + ' to get your readiness score.';
+        var diagBtn = document.getElementById('shellDiagnosticBtn');
+        if (diagBtn) diagBtn.textContent = APlus.honesty.diagnosticStartLabel(deliveredLabelCount);
+        var heroDiag = document.getElementById('heroDiagnosticBtn');
+        if (heroDiag) heroDiag.textContent = APlus.honesty.diagnosticTakeLabel(deliveredLabelCount);
+      }
     }
 
     /* Show the quiet "explanations after submit" line under exam conditions. */
@@ -1312,24 +1344,38 @@
     /* TIMER */
     function startTimer() {
       if (currentExamSession.timerInterval) clearInterval(currentExamSession.timerInterval);
+      if (window.__aplusShellTimer) clearInterval(window.__aplusShellTimer);
       if (window.CrucibleUI) CrucibleUI.resetMutationTracker();
       updateTimerUI();
 
       currentExamSession.timerInterval = setInterval(() => {
+        if (window.__aplusFlashcardAbandoned && currentExamSession && currentExamSession.type === 'memory') {
+          clearInterval(currentExamSession.timerInterval);
+          return;
+        }
         if (!currentExamSession.isPaused) {
           currentExamSession.remainingSeconds--;
           updateTimerUI();
 
           if (currentExamSession.remainingSeconds <= 0) {
             clearInterval(currentExamSession.timerInterval);
+            if (currentExamSession.memoryAbandoned) return;
             alert("Time has expired! Submitting your exam now.");
             finishExam();
           }
         }
       }, 1000);
+      window.__aplusShellTimer = currentExamSession.timerInterval;
     }
 
     function updateTimerUI() {
+      // Engine sessions paint their own digits. An idle shell clock (the
+      // 90:00 default) must not overwrite a diagnostic that just started.
+      if (window.APlus && APlus.engine && APlus.engine.questions && APlus.engine.questions.length
+          && currentExamSession && currentExamSession.type !== 'memory'
+          && (!currentExamSession.questions || currentExamSession.questions.length === 0)) {
+        return;
+      }
       const s = currentExamSession.remainingSeconds;
       const mins = Math.floor(s / 60);
       const secs = s % 60;
@@ -1595,6 +1641,7 @@
 
     /* EXAM SCORING & RESULTS */
     function finishExam() {
+      if (currentExamSession && currentExamSession.memoryAbandoned) return;
       if (currentExamSession.timerInterval) clearInterval(currentExamSession.timerInterval);
 
       const questions = currentExamSession.questions;
@@ -1931,6 +1978,10 @@
 
     function saveHistoryRecord(record) {
       try {
+        if (window.APlus && APlus.learner && typeof APlus.learner.recordAttempt === 'function') {
+          APlus.learner.recordAttempt(record);
+          return;
+        }
         const list = getHistoryRecords();
         list.unshift(record);
         if (list.length > 20) list.pop();
@@ -1941,46 +1992,16 @@
     }
 
     function renderHistoryTable() {
-      const records = getHistoryRecords();
-      const container = document.getElementById('historyTableContainer');
-      if (!container) return;
-
-      if (records.length === 0) {
-        container.innerHTML = `<p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">No exam attempts recorded yet. Complete an exam to view your score progression!</p>`;
-        return;
-      }
-
-      let html = `
-        <table class="history-table">
-          <thead>
-            <tr>
-              <th>Date & Time</th>
-              <th>Exam Mode</th>
-              <th>Score</th>
-              <th>Raw Correct</th>
-              <th>Accuracy</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
-
-      records.forEach(r => {
-        const statusColor = (r.status === 'PASSED') ? 'var(--accent-green)' : 'var(--accent-red)';
-        html += `
-          <tr>
-            <td>${escapeHTML(r.date)}</td>
-            <td><strong>${escapeHTML(r.examType)}</strong></td>
-            <td style="font-family: monospace; font-weight: 700; font-size: 1.05rem;">${escapeHTML(String(r.scaledScore))} / 900</td>
-            <td>${escapeHTML(r.raw)}</td>
-            <td>${escapeHTML(r.percentage)}</td>
-            <td style="color: ${statusColor}; font-weight: 700;">${escapeHTML(r.status)}</td>
-          </tr>
-        `;
+      const records = (window.APlus && APlus.learner && typeof APlus.learner.getHistory === 'function')
+        ? APlus.learner.getHistory()
+        : getHistoryRecords();
+      const html = (window.APlus && APlus.learner && typeof APlus.learner.buildHistoryTableHtml === 'function')
+        ? APlus.learner.buildHistoryTableHtml(records)
+        : '';
+      const containers = document.querySelectorAll('[data-history-table], #historyTableContainer');
+      containers.forEach(function (container) {
+        container.innerHTML = html;
       });
-
-      html += `</tbody></table>`;
-      container.innerHTML = html;
     }
 
     function clearHistory() {

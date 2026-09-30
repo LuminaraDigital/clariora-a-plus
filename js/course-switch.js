@@ -126,6 +126,7 @@
     } catch (err) {
       console.warn('[course-switch] onboarding check failed:', err);
     }
+    syncDiagnosticLabels(offer.count);
     try {
       if (APlus.engine && typeof APlus.engine.start === 'function') {
         APlus.engine.start({
@@ -140,8 +141,21 @@
       console.warn('[course-switch] diagnostic start failed:', err);
     }
     if (typeof window.startExam === 'function') {
-      window.startExam(exam, offer.count, offer.minutes);
+      window.startExam(exam, offer.count, offer.minutes, 'diagnostic');
     }
+  }
+
+  function syncDiagnosticLabels(count) {
+    var H = honesty();
+    if (!H || !count) return;
+    var heading = document.getElementById('shellDiagnosticHeading');
+    if (heading && typeof H.diagnosticTakeLabel === 'function') {
+      heading.textContent = H.diagnosticTakeLabel(count) + ' to get your readiness score.';
+    }
+    var btn = document.getElementById('shellDiagnosticBtn');
+    if (btn && typeof H.diagnosticStartLabel === 'function') btn.textContent = H.diagnosticStartLabel(count);
+    var heroBtn = document.getElementById('heroDiagnosticBtn');
+    if (heroBtn && typeof H.diagnosticTakeLabel === 'function') heroBtn.textContent = H.diagnosticTakeLabel(count);
   }
 
   function boot() {
@@ -153,6 +167,16 @@
       console.warn('[course-switch] listener failed:', err);
     }
     remount();
+    try {
+      if (APlus.bus && typeof APlus.bus.on === 'function') {
+        APlus.bus.on('exam:started', function (payload) {
+          if (!payload || payload.mode !== 'diagnostic') return;
+          syncDiagnosticLabels(payload.totalQuestions);
+        });
+      }
+    } catch (err) {
+      console.warn('[course-switch] diagnostic label sync failed:', err);
+    }
   }
 
   APlus.courseSwitch = {

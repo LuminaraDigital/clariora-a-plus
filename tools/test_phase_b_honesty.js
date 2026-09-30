@@ -217,5 +217,138 @@ test('recordAttempt is visible to getHistory and the mirror', function () {
   assert.strictEqual(learner.getHistory().length, 0);
 });
 
+console.log('\nlive QA clock, history, flashcards\n');
+
+test('diagnostic clock follows the delivered count, not the requested 20 minutes', function () {
+  assert.strictEqual(honesty.sessionClockSeconds({
+    mode: 'diagnostic',
+    questionCount: 20,
+    timeMinutes: 20,
+    delivered: 10
+  }), 10 * 60);
+  assert.strictEqual(honesty.sessionClockSeconds({
+    mode: 'diagnostic',
+    questionCount: 20,
+    timeMinutes: 20,
+    delivered: 20
+  }), 20 * 60);
+});
+
+test('a 20-minute request that only delivered 10 does not keep a 20:00 clock', function () {
+  assert.strictEqual(honesty.sessionClockSeconds({
+    mode: 'mock',
+    questionCount: 20,
+    timeMinutes: 20,
+    delivered: 10
+  }), 10 * 60);
+});
+
+test('full mocks and sprints keep their own minutes', function () {
+  assert.strictEqual(honesty.sessionClockSeconds({
+    mode: 'mock',
+    questionCount: 90,
+    timeMinutes: 90,
+    delivered: 90
+  }), 90 * 60);
+  assert.strictEqual(honesty.sessionClockSeconds({
+    mode: 'mock',
+    questionCount: 20,
+    timeMinutes: 25,
+    delivered: 20
+  }), 25 * 60);
+});
+
+test('fresh attempt keeps bankRevision and paints in the history table', function () {
+  var localStorageStub = makeLocalStorage();
+  var storeData = {};
+  var profileId = 'p_live_qa';
+  var fakeWindow = {
+    localStorage: localStorageStub,
+    CompTIAProfiles: {
+      scopedGet: function (baseKey) {
+        return localStorageStub.getItem('comptia_p_' + profileId + '__' + baseKey);
+      },
+      scopedSet: function (baseKey, value) {
+        localStorageStub.setItem('comptia_p_' + profileId + '__' + baseKey, value);
+      },
+      scopedRemove: function (baseKey) {
+        localStorageStub.removeItem('comptia_p_' + profileId + '__' + baseKey);
+      }
+    },
+    APlus: {
+      storage: {
+        get: function (key, fallback) {
+          return Object.prototype.hasOwnProperty.call(storeData, key) ? storeData[key] : fallback;
+        },
+        set: function (key, value) { storeData[key] = value; return true; },
+        remove: function (key) { delete storeData[key]; return true; }
+      }
+    }
+  };
+  global.window = fakeWindow;
+  global.localStorage = localStorageStub;
+  global.CompTIAProfiles = fakeWindow.CompTIAProfiles;
+  global.APlus = fakeWindow.APlus;
+  var learnerPath = require.resolve(path.join(ROOT, 'learner_state.js'));
+  delete require.cache[learnerPath];
+  var learner = require(learnerPath);
+  learner.resetHistorySourceLog();
+  learner.clearHistory();
+
+  var rows = learner.recordAttempt({
+    examType: 'CORE2',
+    scaledScore: 340,
+    raw: '3/10',
+    status: 'FAILED',
+    bankRevision: 2,
+    mode: 'diagnostic',
+    date: '30/09/2026, 07:45 am'
+  });
+  assert.strictEqual(rows.length, 1);
+  assert.strictEqual(rows[0].scaledScore, 340);
+  assert.strictEqual(rows[0].rawCorrect, 3);
+  assert.strictEqual(rows[0].totalQuestions, 10);
+  assert.strictEqual(rows[0].bankRevision, 2);
+  assert.strictEqual(rows[0].examType, 'core2');
+
+  var html = learner.buildHistoryTableHtml(learner.getHistory());
+  assert.ok(html.indexOf('340') >= 0, 'table should show the score');
+  assert.ok(html.indexOf('3/10') >= 0, 'table should show the raw score');
+  assert.strictEqual(html.indexOf('No exam attempts recorded yet'), -1);
+
+  learner.resetHistorySourceLog();
+  localStorageStub.setItem('comptia_p_' + profileId + '__comptia_a_plus_history', '[]');
+  localStorageStub.removeItem('comptia_a_plus_history');
+  var fromMirror = learner.getHistory();
+  assert.strictEqual(fromMirror.length, 1, 'empty profile key must not hide the mirror');
+  assert.strictEqual(fromMirror[0].scaledScore, 340);
+  learner.clearHistory();
+});
+
+test('PBQ reserve stays off for flashcards and exit does not record an attempt', function () {
+  assert.strictEqual(honesty.shouldShowPbqReserve({ type: 'memory', memoryRaid: true }), false);
+  assert.strictEqual(honesty.shouldShowPbqReserve({ type: 'core2', flashcard: true }), false);
+  assert.strictEqual(honesty.shouldShowPbqReserve({ type: 'core2' }), true);
+  var plan = honesty.flashcardExitPlan();
+  assert.strictEqual(plan.recordAttempt, false);
+  assert.strictEqual(plan.screen, 'startScreen');
+  assert.strictEqual(plan.tab, 'study');
+  assert.strictEqual(plan.hidePbqReserve, true);
+});
+
+test('exit control is hidden by CSS and the shell history reader is shared', function () {
+  var fs = require('fs');
+  var css = fs.readFileSync(path.join(ROOT, 'css', 'brand-black-gold.css'), 'utf8');
+  assert.ok(/#flashcardExitBtn\[hidden\]\s*\{[^}]*display:\s*none\s*!important/.test(css));
+  assert.ok(/body\.flashcard-session\s+#cruciblePacingHorizon\s*\{[^}]*display:\s*none\s*!important/.test(css));
+  var html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  assert.ok(html.indexOf('APlus.learner.getHistory') >= 0);
+  assert.ok(html.indexOf('APlus.learner.recordAttempt') >= 0);
+  assert.ok(html.indexOf("startExam('core1',20,20,'diagnostic')") >= 0);
+  var engine = fs.readFileSync(path.join(ROOT, 'js', 'engine.js'), 'utf8');
+  assert.ok(engine.indexOf('sessionClockSeconds') >= 0);
+  assert.ok(engine.indexOf('recordAttempt') >= 0);
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed\n');
 process.exit(failed ? 1 : 0);

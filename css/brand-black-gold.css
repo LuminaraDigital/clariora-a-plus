@@ -5159,6 +5159,16 @@ header::after {
   cursor: not-allowed;
 }
 
+/* The hidden attribute loses to .toolbar-btn { display: inline-flex }.
+   Exit flashcards must stay off the exam toolbar until a memory raid. */
+#flashcardExitBtn[hidden] {
+  display: none !important;
+}
+
+body.flashcard-session #cruciblePacingHorizon {
+  display: none !important;
+}
+
 .toolbar-btn svg {
   width: 16px;
   height: 16px;

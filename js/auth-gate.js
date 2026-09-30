@@ -44,6 +44,19 @@
     lastReportKey: ''
   };
 
+  var lockDepth = 0;
+  var droppingForeign = false;
+  var suppressAuthLock = false;
+  var bootSettled = false;
+
+  function learnerIdentity() {
+    return (typeof window !== 'undefined' && window.ClarioraSessionIdentity) || null;
+  }
+
+  function firebaseServiceRef() {
+    return firebaseService || (typeof window !== 'undefined' && window.ClarioraFirebaseService) || null;
+  }
+
   /** Profile-only cache. Never store idToken, initData, hashes, or login payloads. */
   function sanitizeSessionForStorage(session) {
     if (!session) return null;
@@ -335,9 +348,40 @@
     if (authUI && authUI.setWallMode) authUI.setWallMode(false);
   }
 
+  function refreshLearnerSurfaces() {
+    try {
+      if (window.CompTIADatabase && typeof window.CompTIADatabase.rebindFromLocalStorage === 'function') {
+        window.CompTIADatabase.rebindFromLocalStorage();
+      }
+    } catch (err) {
+      console.warn('[AuthGate] storage rebind notice:', err);
+    }
+    try { if (typeof window.renderHistoryTable === 'function') window.renderHistoryTable(); } catch (_) {}
+    try { if (typeof window.updateMissedCountDisplay === 'function') window.updateMissedCountDisplay(); } catch (_) {}
+    try {
+      if (window.CompTIAProductTrust && typeof window.CompTIAProductTrust.refreshProfileSelect === 'function') {
+        window.CompTIAProductTrust.refreshProfileSelect();
+      }
+    } catch (_) {}
+  }
+
+  function bindSubjectSurfaces(session) {
+    var api = learnerIdentity();
+    if (api && session && session.uid && typeof api.adoptSubject === 'function') {
+      try { api.adoptSubject(localStorage, session); } catch (err) {
+        console.warn('[AuthGate] adopt subject notice:', err);
+      }
+    }
+    if (authUI && typeof authUI.bindSubject === 'function') {
+      try { authUI.bindSubject(session && session.uid ? session : null); } catch (_) {}
+    }
+    refreshLearnerSurfaces();
+  }
+
   function unlockInternal(session) {
     state.unlocked = true;
     state.ready = true;
+    bindSubjectSurfaces(session);
     writeCachedSession(session);
     hideWall();
     try {
@@ -347,16 +391,44 @@
   }
 
   function lock() {
-    state.session = null;
-    state.unlocked = false;
-    state.lastReportKey = '';
-    writeCachedSession(null);
-    clearTelegramLocalAuth();
-    logoutServerSession();
-    showWall();
+    if (lockDepth) return;
+    lockDepth++;
     try {
-      window.dispatchEvent(new CustomEvent('clariora:auth-locked'));
-    } catch (_) {}
+      state.session = null;
+      state.unlocked = false;
+      state.lastReportKey = '';
+      writeCachedSession(null);
+      clearTelegramLocalAuth();
+      if (authUI && typeof authUI.bindSubject === 'function') authUI.bindSubject(null);
+      logoutServerSession();
+      var service = firebaseServiceRef();
+      if (service && service.getCurrentUser && service.getCurrentUser() && service.signOutUser) {
+        suppressAuthLock = true;
+        service.signOutUser().then(function () {}, function () { suppressAuthLock = false; });
+      }
+      showWall();
+      try {
+        window.dispatchEvent(new CustomEvent('clariora:auth-locked'));
+      } catch (_) {}
+    } finally {
+      lockDepth--;
+    }
+  }
+
+  async function dropForeignFirebase() {
+    var service = firebaseServiceRef();
+    if (!service || !service.signOutUser || !service.getCurrentUser) return;
+    if (!service.getCurrentUser()) return;
+    droppingForeign = true;
+    suppressAuthLock = true;
+    try {
+      await service.signOutUser();
+    } catch (err) {
+      console.warn('[AuthGate] foreign Firebase sign-out notice:', err);
+      suppressAuthLock = false;
+    } finally {
+      droppingForeign = false;
+    }
   }
 
   async function reportSession(session, eventType) {
@@ -431,12 +503,20 @@
 
   async function bindAccountMemory(session) {
     if (!session || !session.uid) return;
+    var api = learnerIdentity();
+    if (api && typeof api.adoptSubject === 'function') {
+      try { api.adoptSubject(localStorage, session); } catch (err) {
+        console.warn('[AuthGate] adopt subject notice:', err);
+      }
+    }
     try {
       localStorage.setItem('clariora_active_account_id', session.uid);
     } catch (_) {}
 
-    var service = firebaseService || window.ClarioraFirebaseService;
-    if (service && session.provider !== 'telegram' && session.provider !== 'telegram_tma' &&
+    var service = firebaseServiceRef();
+    var cloudUser = service && service.getCurrentUser ? service.getCurrentUser() : null;
+    var sameCloudUser = !!(cloudUser && cloudUser.uid === session.uid);
+    if (sameCloudUser && service && session.provider !== 'telegram' && session.provider !== 'telegram_tma' &&
         session.provider !== 'offline' &&
         typeof service.ensureUserProfile === 'function') {
       try {
@@ -485,10 +565,25 @@
     };
   }
 
-  async function handleFirebaseUser(user) {
+  async function handleFirebaseUser(user, force) {
     if (!user) {
-      if (!state.isTMA) lock();
+      if (!state.isTMA && !suppressAuthLock && !droppingForeign) lock();
       return;
+    }
+    var api = learnerIdentity();
+    if (!force && api && typeof api.resolveBootIdentity === 'function') {
+      var explicit = api.consumeExplicitSignIn();
+      var decision = api.resolveBootIdentity(state.session, user, explicit);
+      if (decision.dropFirebase) {
+        await dropForeignFirebase();
+        if (state.session && authUI && typeof authUI.bindSubject === 'function') {
+          authUI.bindSubject(state.session);
+        }
+        return;
+      }
+      if (state.unlocked && state.session && state.session.uid === user.uid && !explicit) {
+        return;
+      }
     }
     var session = sessionFromFirebaseUser(user);
     if (session.isNewUser) session.event = 'signup';
@@ -538,6 +633,7 @@
       return;
     }
     setGateError('');
+    await dropForeignFirebase();
     await bindAccountMemory(session);
     unlockInternal(session);
   }
@@ -568,6 +664,8 @@
 
   function onTelegramWebLogin(user, rawLogin) {
     if (!user || !user.id) return;
+    var api = learnerIdentity();
+    if (api && typeof api.consumeExplicitSignIn === 'function') api.consumeExplicitSignIn();
     writeTelegramLoginPayload();
     try {
       localStorage.setItem(STORAGE_TG, JSON.stringify(sanitizeTelegramProfile(user)));
@@ -589,7 +687,9 @@
         showWall();
         return null;
       }
-      return bindAccountMemory(session);
+      return dropForeignFirebase().then(function () {
+        return bindAccountMemory(session);
+      });
     }).then(function (ok) {
       if (ok === null) return;
       unlockInternal(session);
@@ -626,44 +726,73 @@
     if (state.isTMA) {
       await handleTelegramNative();
       state.ready = true;
+      bootSettled = true;
       return state;
     }
 
-    // Resume HttpOnly cookie session before showing the wall.
+    // Cookie subject is resolved before any Firebase user is accepted.
+    // IndexedDB may still hold a different Google account from this browser.
     var serverSession = await fetchServerSession();
-    if (serverSession && serverSession.uid) {
-      await bindAccountMemory(serverSession);
-      unlockInternal(serverSession);
-    } else {
-      var resumedTg = await resumeTelegramWidgetSession();
-      if (!resumedTg) {
-        try { localStorage.removeItem(STORAGE_TG); } catch (_) {}
-      }
-    }
-
-    if (!state.unlocked) {
-      showWall();
-      openSignupIntentIfRequested();
-    }
-
-    var service = firebaseService || window.ClarioraFirebaseService;
-    if (service) {
-      service.onAuthStateChanged(function (user) {
-        if (user) handleFirebaseUser(user);
-        else if (!state.unlocked) lock();
-      });
-      try {
-        await service.init();
-        var current = service.getCurrentUser && service.getCurrentUser();
-        if (current) {
-          await handleFirebaseUser(current);
-        } else if (!state.unlocked) {
-          showWall();
+    if (!(state.unlocked && state.session && state.session.uid)) {
+      var api = learnerIdentity();
+      var service = firebaseServiceRef();
+      if (service && service.init) {
+        try { await service.init(); } catch (err) {
+          console.warn('[AuthGate] Firebase init notice:', err);
         }
-      } catch (err) {
-        console.warn('[AuthGate] Firebase init notice:', err);
-        if (!state.unlocked) showWall();
       }
+      var fbUser = service && service.getCurrentUser ? service.getCurrentUser() : null;
+      var redirectUser = null;
+      if (service && typeof service.consumeRedirectSignIn === 'function') {
+        try { redirectUser = await service.consumeRedirectSignIn(); } catch (_) { redirectUser = null; }
+      }
+      if (redirectUser && api && typeof api.markExplicitSignIn === 'function') {
+        api.markExplicitSignIn();
+        fbUser = redirectUser;
+      }
+      var explicit = api && typeof api.consumeExplicitSignIn === 'function'
+        ? api.consumeExplicitSignIn()
+        : false;
+      var decision = (api && typeof api.resolveBootIdentity === 'function')
+        ? api.resolveBootIdentity(serverSession, fbUser, explicit)
+        : {
+          subject: serverSession || null,
+          dropFirebase: false,
+          reason: serverSession && serverSession.uid ? 'server-session' : (fbUser ? 'firebase-resume' : 'anonymous')
+        };
+
+      if (decision.dropFirebase) {
+        await dropForeignFirebase();
+        fbUser = null;
+      }
+
+      if ((decision.reason === 'explicit-firebase' || decision.reason === 'firebase-resume') && fbUser) {
+        await handleFirebaseUser(fbUser, true);
+      } else if (decision.subject && decision.subject.uid) {
+        await bindAccountMemory(decision.subject);
+        unlockInternal(decision.subject);
+      } else {
+        var resumedTg = await resumeTelegramWidgetSession();
+        if (!resumedTg) {
+          try { localStorage.removeItem(STORAGE_TG); } catch (_) {}
+          showWall();
+          openSignupIntentIfRequested();
+        }
+      }
+    }
+
+    bootSettled = true;
+    var serviceListen = firebaseServiceRef();
+    if (serviceListen && typeof serviceListen.onAuthStateChanged === 'function') {
+      serviceListen.onAuthStateChanged(function (user) {
+        if (!bootSettled || droppingForeign) return;
+        if (user) return;
+        if (suppressAuthLock) {
+          suppressAuthLock = false;
+          return;
+        }
+        if (!state.unlocked) lock();
+      });
     } else if (!state.unlocked) {
       showWall();
     }

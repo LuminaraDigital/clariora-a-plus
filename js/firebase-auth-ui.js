@@ -21,7 +21,8 @@
     accountOpen: false,
     busy: false,
     wallMode: false,
-    authListeners: []
+    authListeners: [],
+    subject: null
   };
 
   function escapeHtml(str) {
@@ -57,48 +58,34 @@
       starsChip.style.display = authState.isTMA ? 'inline-flex' : 'none';
     }
 
-    // Restore Telegram web profile chip only; session authority is HttpOnly cookie + /auth/me.
+    // Strip leftover Telegram login payloads. Do not paint that cache:
+    // the header binds only to the subject AuthGate adopts from the verified session.
     try { localStorage.removeItem('clariora_telegram_login_payload'); } catch (_) {}
-    var savedTg = localStorage.getItem('clariora_telegram_auth');
-    if (savedTg) {
-      try {
+    try {
+      var savedTg = localStorage.getItem('clariora_telegram_auth');
+      if (savedTg) {
         var tgUser = JSON.parse(savedTg);
         if (tgUser && tgUser.hash) {
-          // Strip legacy sensitive fields from prior builds.
-          tgUser = {
+          localStorage.setItem('clariora_telegram_auth', JSON.stringify({
             id: tgUser.id,
             first_name: tgUser.first_name || '',
             last_name: tgUser.last_name || '',
             username: tgUser.username || '',
             photo_url: tgUser.photo_url || ''
-          };
-          localStorage.setItem('clariora_telegram_auth', JSON.stringify(tgUser));
+          }));
         }
-        var tgName = tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : '');
-        renderHeaderPill({
-          displayName: tgName,
-          photoURL: tgUser.photo_url,
-          email: tgUser.username ? '@' + tgUser.username : null,
-          isTelegram: true
-        });
-        // Do not notifyAuthenticated from cache alone; AuthGate resumes via cookie.
-      } catch (e) {}
-    }
+      }
+    } catch (_) {}
 
+    // Leave the header empty until AuthGate binds the verified subject.
+    // Painting a signed-out chip or a cached profile here is what flipped
+    // the name on reload.
     var service = firebaseService || window.ClarioraFirebaseService;
     if (service) {
       service.onAuthStateChanged(function (user) {
-        renderHeaderPill(user);
-        if (user && authState.modalOpen) {
-          closeModal();
-        }
-        if (user) {
-          notifyAuthenticated({ isTelegram: false, user: user, event: 'signin' });
-        }
+        if (user && authState.modalOpen) closeModal();
       });
       service.init();
-    } else {
-      renderHeaderPill(null);
     }
 
     if (options.wall) setWallMode(true);
@@ -526,6 +513,44 @@
   }
 
   /**
+   * Header chip. When a subject is bound, every paint uses that subject.
+   * A Firebase or Telegram profile for a different uid cannot replace the name.
+   */
+  function bindSubject(subject) {
+    if (!subject || !subject.uid) {
+      authState.subject = null;
+      renderHeaderPill(null);
+      return;
+    }
+    var api = window.ClarioraSessionIdentity;
+    var name = (api && typeof api.displayNameFor === 'function')
+      ? api.displayNameFor(subject)
+      : (subject.displayName || 'Learner');
+    authState.subject = {
+      uid: String(subject.uid),
+      displayName: name,
+      email: subject.email || '',
+      photoURL: subject.photoURL || '',
+      provider: subject.provider || ''
+    };
+    renderHeaderPill(authState.subject);
+  }
+
+  function hasBoundSubject() {
+    return !!(authState.subject && authState.subject.uid);
+  }
+
+  function markExplicitSignIn() {
+    var api = window.ClarioraSessionIdentity;
+    if (api && typeof api.markExplicitSignIn === 'function') api.markExplicitSignIn();
+  }
+
+  function clearExplicitSignIn() {
+    var api = window.ClarioraSessionIdentity;
+    if (api && typeof api.consumeExplicitSignIn === 'function') api.consumeExplicitSignIn();
+  }
+
+  /**
    * Renders the header control pill
    */
   function renderHeaderPill(user) {
@@ -533,6 +558,8 @@
     if (!mount) return;
 
     if (authState.isTMA) return; // Leave for TMA bridge
+
+    if (authState.subject && user) user = authState.subject;
 
     if (!user) {
       mount.innerHTML = [
@@ -690,10 +717,13 @@
     var service = firebaseService || window.ClarioraFirebaseService;
     if (!service) return;
 
+    markExplicitSignIn();
     try {
-      await service.signInWithGoogle();
+      var user = await service.signInWithGoogle();
       closeModal();
+      if (user) notifyAuthenticated({ isTelegram: false, user: user, event: 'signin' });
     } catch (err) {
+      clearExplicitSignIn();
       console.warn('[AuthUI] Google sign-in failed:', err);
       if (err.code !== 'auth/popup-closed-by-user') {
         var msg = err.message || 'Google sign-in could not be completed.';
@@ -757,6 +787,7 @@
       submitBtn.setAttribute('aria-busy', 'true');
     }
     authState.busy = true;
+    markExplicitSignIn();
 
     try {
       if (authState.mode === 'signup') {
@@ -768,6 +799,7 @@
       }
       closeModal();
     } catch (err) {
+      clearExplicitSignIn();
       console.warn('[AuthUI] Email auth failed:', err);
       var userMessage = 'Authentication failed. Check your details and try again.';
       if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
@@ -822,6 +854,7 @@
 
   function handleTelegramSignIn() {
     clearError();
+    markExplicitSignIn();
     if (!window.Telegram || !window.Telegram.Login) {
       var script = document.createElement('script');
       script.src = 'https://telegram.org/js/telegram-widget.js?22';
@@ -847,6 +880,7 @@
       { bot_id: '8280144046', request_access: true },
       function (data) {
         if (!data) {
+          clearExplicitSignIn();
           showError('Telegram login cancelled.');
           return;
         }
@@ -878,13 +912,6 @@
                 window.dispatchEvent(new CustomEvent('clariora:entitlement-updated'));
               } catch (_) {}
             }
-            var displayName = result.user.first_name + (result.user.last_name ? ' ' + result.user.last_name : '');
-            renderHeaderPill({
-              displayName: displayName,
-              photoURL: result.user.photo_url,
-              email: result.user.username ? '@' + result.user.username : null,
-              isTelegram: true
-            });
             notifyAuthenticated({
               isTelegram: true,
               user: result.user,
@@ -893,53 +920,42 @@
             });
             closeModal();
           } else {
+            clearExplicitSignIn();
             showError(result.error || 'Telegram verification failed.');
           }
         })
         .catch(function (err) {
+          clearExplicitSignIn();
           showError('Authentication error: ' + err.message);
         });
       }
     );
   }
 
-  function openAccountMenu() {
-    var savedTg = localStorage.getItem('clariora_telegram_auth');
-    var tgUser = null;
-    if (savedTg) {
-      try { tgUser = JSON.parse(savedTg); } catch (_) {}
-    }
-    var service = firebaseService || window.ClarioraFirebaseService;
-    var user = service ? service.getCurrentUser() : null;
+  function providerLabelFor(provider) {
+    if (provider === 'google') return 'Google';
+    if (provider === 'telegram' || provider === 'telegram_tma') return 'Telegram';
+    if (provider === 'offline') return 'This device';
+    if (provider === 'email' || provider === 'password') return 'Email';
+    return 'Account';
+  }
 
-    if (!tgUser && !user) {
+  function openAccountMenu() {
+    var service = firebaseService || window.ClarioraFirebaseService;
+    var subject = authState.subject;
+    if (!subject || !subject.uid) {
       openModal();
       return;
     }
 
-    var displayName = '';
-    var emailOrHandle = '';
-    var providerLabel = '';
+    var displayName = subject.displayName || 'Learner';
+    var emailOrHandle = subject.email || 'Signed in';
+    var providerLabel = providerLabelFor(subject.provider);
     var avatarHtml = '';
-
-    if (tgUser) {
-      displayName = tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : '');
-      emailOrHandle = tgUser.username ? '@' + tgUser.username : 'Telegram Account';
-      providerLabel = 'Telegram';
-      if (tgUser.photo_url) {
-        avatarHtml = '<img src="' + escapeHtml(tgUser.photo_url) + '" class="user-chip-avatar" style="width:42px;height:42px;" alt="' + escapeHtml(displayName) + '">';
-      } else {
-        avatarHtml = '<span class="user-chip-initials" style="width:42px;height:42px;font-size:16px;">' + escapeHtml((displayName.charAt(0) || 'T').toUpperCase()) + '</span>';
-      }
+    if (subject.photoURL) {
+      avatarHtml = '<img src="' + escapeHtml(subject.photoURL) + '" class="user-chip-avatar" style="width:42px;height:42px;" alt="' + escapeHtml(displayName) + '">';
     } else {
-      displayName = user.displayName || (user.email ? user.email.split('@')[0] : 'Learner');
-      emailOrHandle = user.email || 'Cloud Account';
-      providerLabel = (user.providerData && user.providerData[0] && user.providerData[0].providerId === 'google.com') ? 'Google' : 'Email';
-      if (user.photoURL) {
-        avatarHtml = '<img src="' + escapeHtml(user.photoURL) + '" class="user-chip-avatar" style="width:42px;height:42px;" alt="' + escapeHtml(displayName) + '">';
-      } else {
-        avatarHtml = '<span class="user-chip-initials" style="width:42px;height:42px;font-size:16px;">' + escapeHtml((displayName.charAt(0) || 'L').toUpperCase()) + '</span>';
-      }
+      avatarHtml = '<span class="user-chip-initials" style="width:42px;height:42px;font-size:16px;">' + escapeHtml((displayName.charAt(0) || 'L').toUpperCase()) + '</span>';
     }
 
     var safeDisplayName = escapeHtml(displayName);
@@ -1019,18 +1035,21 @@
     if (signOutBtn) {
       signOutBtn.onclick = function () {
         closeSheet();
-        if (tgUser) {
+        bindSubject(null);
+        try {
           localStorage.removeItem('clariora_telegram_auth');
           localStorage.removeItem('clariora_telegram_login_payload');
           localStorage.removeItem('clariora_auth_session_v1');
-          renderHeaderPill(null);
-          if (window.ClarioraAuthGate) window.ClarioraAuthGate.lock();
-        } else if (service) {
-          service.signOutUser().then(function () {
-            localStorage.removeItem('clariora_auth_session_v1');
-            renderHeaderPill(null);
-            if (window.ClarioraAuthGate) window.ClarioraAuthGate.lock();
-          });
+        } catch (_) {}
+        var finish = function () {
+          if (window.ClarioraAuthGate && window.ClarioraAuthGate.lock) {
+            window.ClarioraAuthGate.lock();
+          }
+        };
+        if (service && typeof service.signOutUser === 'function') {
+          service.signOutUser().then(finish, finish);
+        } else {
+          finish();
         }
       };
     }
@@ -1048,6 +1067,8 @@
     handleForgotPassword: handleForgotPassword,
     openAccountMenu: openAccountMenu,
     setWallMode: setWallMode,
-    onAuthenticated: onAuthenticated
+    onAuthenticated: onAuthenticated,
+    bindSubject: bindSubject,
+    hasBoundSubject: hasBoundSubject
   };
 });

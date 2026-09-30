@@ -145,6 +145,7 @@ check('renders the exact class contract', function () {
     '<div class="domain-bar"><span class="name">2.0 Networking</span>' +
     '<div class="track"><div class="fill" style="width:62%"></div>' +
     '<div class="passline" style="left:75%"></div></div>' +
+    '<span class="domain-verdict">Fail</span>' +
     '<span class="pct tnum">13 / 21, 62%</span></div>',
     'row markup');
 });
@@ -177,6 +178,35 @@ check('fill has no ok class below the pass line', function () {
   const below = R.buildDomainBarRow({ name: 'X', correct: 13, total: 21, passingScore: 700 });
   contains(below, 'class="fill"', '62% vs 75 pass line');
   absent(below, 'fill ok', 'below the line must not be ok');
+});
+
+check('domain label is blank until the sample is large enough', function () {
+  eq(R.domainResultLabel({ correct: 0, total: 2, passPercent: R.passLinePercent(675) }), '', '0/2');
+  eq(R.domainResultLabel({ correct: 2, total: 2, passPercent: R.passLinePercent(675) }), '', '2/2 still thin');
+  eq(R.MIN_DOMAIN_SAMPLE, 5, 'minimum sample');
+});
+
+check('domain label is Pass only when sample and threshold are both met', function () {
+  const line = R.passLinePercent(675);
+  eq(R.domainResultLabel({ correct: 4, total: 5, passPercent: line }), 'Pass', '4/5 clears 675 line');
+  eq(R.domainResultLabel({ correct: 5, total: 5, passPercent: line }), 'Pass', '5/5');
+  eq(R.domainResultLabel({ correct: 0, total: 5, passPercent: line }), 'Fail', '0/5');
+  eq(R.domainResultLabel({ correct: 3, total: 5, passPercent: line }), 'Fail', '3/5 is 60 percent');
+});
+
+check('0/2 row does not say Pass or Fail', function () {
+  const html = R.buildDomainBarRow({ name: '1.0 Mobile Devices', correct: 0, total: 2, passingScore: 675 });
+  absent(html, 'domain-verdict', 'no verdict element');
+  absent(html, '>Pass<', 'no Pass word');
+  absent(html, '>Fail<', 'no Fail word');
+  absent(html, 'fill ok', 'thin sample is not marked passed');
+  contains(html, '0 / 2, 0%', 'the count stays visible');
+});
+
+check('a large enough passing domain is labelled Pass', function () {
+  const html = R.buildDomainBarRow({ name: '2.0 Networking', correct: 8, total: 10, passingScore: 675 });
+  contains(html, 'class="domain-verdict">Pass', 'Pass label');
+  contains(html, 'class="fill ok"', 'ok fill');
 });
 
 check('zero total does not divide by zero', function () {

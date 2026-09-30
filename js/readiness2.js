@@ -537,6 +537,8 @@
 
     var hasData = observations > 0 || examHistory.length > 0;
     var lastAttempt = examHistory.length ? examHistory[0].scaledScore : null;
+    var historyAnswers = answersBehindHistory(history, exam);
+    var answersUsed = answersUsedFor(source, observations, historyAnswers);
 
     var effList = [];
     parts.forEach(function (p) {
@@ -573,6 +575,7 @@
       passes: passRate.passes,
       passAttempts: passRate.attempts,
       passRate: passRate,
+      answersUsed: answersUsed,
       domains: domains,
       weakest: weakest,
       parts: parts.map(function (p) {
@@ -643,17 +646,52 @@
   }
 
   /**
+   * Answers that actually entered the estimate.
+   * History-only: sum of totalQuestions on the attempts in the history window.
+   * Objectives-only: objective observations.
+   * Blend: the larger of those two. The same sittings feed both estimators,
+   * so adding them (or treating every attempt as 90 answers) inflates N.
+   */
+  function answersBehindHistory(history, exam) {
+    var rows = historyForExam(history, exam).slice(0, HISTORY_WINDOW);
+    var sum = 0;
+    var known = 0;
+    rows.forEach(function (r) {
+      var n = Number(r && r.totalQuestions);
+      if (isFinite(n) && n > 0) {
+        sum += n;
+        known += 1;
+      }
+    });
+    return { sum: sum, known: known, attempts: rows.length };
+  }
+
+  function answersUsedFor(source, observations, historyAnswers) {
+    var obs = Math.max(0, Math.round(Number(observations) || 0));
+    var hist = historyAnswers && historyAnswers.known > 0
+      ? Math.max(0, Math.round(historyAnswers.sum))
+      : 0;
+    if (source === 'history') return hist > 0 ? hist : obs;
+    if (source === 'blend') return Math.max(obs, hist);
+    return obs;
+  }
+
+  /**
    * band(result)
    * The likely range around the predicted score, from the binomial standard
    * error of the observed accuracy: se = sqrt(p(1-p)/n), score = 100 + 800p.
-   * Few observations give a wide band; the band tightens as n grows. Attempt
-   * history counts toward n at 90 answers per recorded exam, since a recorded
-   * attempt is itself a sample of the same skill.
+   * n is answersUsed from compute(): the answers that entered the model.
+   * It is never padded out to a full 90-question exam.
    */
   function band(result) {
     var r = result || {};
     if (!r.hasData || !isFinite(r.predicted)) return null;
-    var n = Math.max(0, Number(r.observations) || 0) + 90 * Math.max(0, Number(r.historyAttempts) || 0);
+    var n;
+    if (r.answersUsed != null && isFinite(Number(r.answersUsed))) {
+      n = Math.max(0, Number(r.answersUsed));
+    } else {
+      n = Math.max(0, Number(r.observations) || 0);
+    }
     if (n < 1) return null;
     var p = clamp(((Number(r.predicted) || 100) - 100) / 800, 0.02, 0.98);
     var se = Math.sqrt(p * (1 - p) / n);
@@ -707,6 +745,8 @@
     historyForExam: historyForExam,
     historyPredicted: historyPredicted,
     passRateFor: passRateFor,
+    answersBehindHistory: answersBehindHistory,
+    answersUsedFor: answersUsedFor,
     format: format
   };
 

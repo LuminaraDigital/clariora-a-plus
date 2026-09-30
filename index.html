@@ -114,6 +114,7 @@
   <script src="js/sync-config.js"></script>
   <script src="js/sync.js"></script>
   <script src="js/streak.js"></script>
+  <script src="js/honesty.js"></script>
   <script src="js/readiness-ui.js"></script>
   <script src="js/home-widgets.js"></script>
   <script src="js/readiness2.js"></script>
@@ -121,6 +122,7 @@
   <script src="js/daily-quest.js"></script>
   <script src="js/pearson-mode.js"></script>
   <script src="js/mastery-heatmap.js"></script>
+  <script src="js/course-switch.js"></script>
   <script src="js/community-benchmarks.js"></script>
   <script src="js/similar-questions.js"></script>
   <script src="js/report-problem-modal.js"></script>
@@ -285,8 +287,8 @@
             <!-- Readiness mount. Rendered by the onboarding module when present. -->
             <section id="readinessHero" class="hero-card">
               <div class="shell-fallback" data-shell-fallback>
-                <h2>Take the 20-question diagnostic to get your readiness score.</h2>
-                <button type="button" class="btn btn-secondary" onclick="window.APlus &amp;&amp; APlus.onboarding ? APlus.onboarding.start() : startExam('both',20,20)">Start diagnostic</button>
+                <h2 id="shellDiagnosticHeading">Take the 20-question diagnostic to get your readiness score.</h2>
+                <button type="button" class="btn btn-secondary" id="shellDiagnosticBtn" onclick="if (window.startPlacementDiagnostic) startPlacementDiagnostic(); else if (window.APlus &amp;&amp; APlus.onboarding) APlus.onboarding.start(); else startExam('core1',20,20)">Start the 20-question diagnostic</button>
               </div>
             </section>
 
@@ -323,7 +325,7 @@
                 </button>
               </div>
               <div class="mock-grid">
-                <div class="card">
+                <div class="card" data-course="core1">
                   <div class="card-title">Core 1</div>
                   <div class="card-meta">220-1201. 90 questions, 90 minutes, pass 675.</div>
                   <details class="blueprint">
@@ -338,7 +340,7 @@
                   </details>
                   <button type="button" class="btn btn-secondary card-cta" onclick="startExam('core1', 90, 90)">Start Core 1</button>
                 </div>
-                <div class="card">
+                <div class="card" data-course="core2">
                   <div class="card-title">Core 2</div>
                   <div class="card-meta">220-1202. 90 questions, 90 minutes, pass 700.</div>
                   <details class="blueprint">
@@ -352,7 +354,7 @@
                   </details>
                   <button type="button" class="btn btn-secondary card-cta" onclick="startExam('core2', 90, 90)">Start Core 2</button>
                 </div>
-                <div class="card" style="border-color: rgba(56, 189, 248, 0.35);">
+                <div class="card" data-course="az900" style="border-color: rgba(56, 189, 248, 0.35);">
                   <div class="card-title" style="color: #38bdf8;">Azure AZ-900</div>
                   <div class="card-meta">Microsoft Fundamentals. 45 questions, 50 minutes, pass 700.</div>
                   <details class="blueprint">
@@ -365,7 +367,7 @@
                   </details>
                   <button type="button" class="btn btn-secondary card-cta" style="border-color: rgba(56, 189, 248, 0.5); color: #38bdf8;" onclick="startExam('az900', 45, 50)">Start AZ-900</button>
                 </div>
-                <div class="card" style="border-color: rgba(168, 85, 247, 0.35);">
+                <div class="card" data-course="az500" style="border-color: rgba(168, 85, 247, 0.35);">
                   <div class="card-title" style="color: #c084fc;">Azure AZ-500</div>
                   <div class="card-meta">Microsoft Security Engineer. 50 questions, 100 minutes, pass 700.</div>
                   <details class="blueprint">
@@ -388,7 +390,7 @@
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
                 <button type="button" class="btn btn-secondary" onclick="startExam('both', 20, 25)" style="text-align: left; padding: 10px 12px; display: flex; flex-direction: column; gap: 3px;">
                   <strong style="color: var(--gold-light); font-size: 13px;">20-Question sprint</strong>
-                  <span style="font-size: 11px; color: var(--text-secondary);">Fast-paced mixed diagnostic</span>
+                  <span style="font-size: 11px; color: var(--text-secondary);">Mixed Core 1 and Core 2 practice</span>
                 </button>
                 <button type="button" class="btn btn-secondary" onclick="startExam('az900', 15, 20)" style="text-align: left; padding: 10px 12px; display: flex; flex-direction: column; gap: 3px;">
                   <strong style="color: #38bdf8; font-size: 13px;">Azure 15 sprint</strong>
@@ -512,7 +514,7 @@
               <h3 class="section-heading" style="margin-bottom: 0;">Exam history and trends</h3>
               <button type="button" class="btn btn-secondary" style="font-size: 12px; padding: 4px 10px;" onclick="clearHistory()">Clear history</button>
             </div>
-            <div id="historyTableContainer">
+            <div id="historyTableContainer" data-history-table>
               <p class="more-note">No attempts recorded yet.</p>
             </div>
           </section>
@@ -545,6 +547,7 @@
         </div>
         <div class="exam-toolbar-actions">
           <span id="examExplanationsNote" class="toolbar-note" hidden>Explanations after submit</span>
+          <button type="button" id="flashcardExitBtn" class="btn btn-secondary toolbar-btn" hidden onclick="if (window.CompTIAMemoryMode &amp;&amp; CompTIAMemoryMode.abandonMemorySession) CompTIAMemoryMode.abandonMemorySession();">Exit flashcards</button>
           <button type="button" id="flagBtn" class="flag-btn toolbar-btn" onclick="toggleFlagCurrentQuestion()" aria-pressed="false">Flag</button>
           <button type="button" class="btn btn-secondary toolbar-btn" onclick="openReviewModal()">Review</button>
           <button type="button" id="examScratchpadBtn" class="btn btn-secondary toolbar-btn" onclick="openScratchpadModal()" aria-label="Open exam whiteboard">Whiteboard</button>
@@ -2771,7 +2774,7 @@
             <h4 class="label">Attempt history</h4>
             <button type="button" class="btn btn-secondary" onclick="clearHistory()">Clear</button>
           </div>
-          <div id="historyTableContainer">
+          <div id="historyTableDrawer" data-history-table>
             <p class="more-note">No attempts recorded yet.</p>
           </div>
         </div>

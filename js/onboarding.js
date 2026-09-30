@@ -493,9 +493,34 @@
     return (m && m > 0) ? m : DEFAULT_MINUTES;
   }
 
+  function activeTrackExam() {
+    try {
+      var reg = A() && A().trackRegistry;
+      var id = reg && typeof reg.getActiveTrackId === 'function' ? reg.getActiveTrackId() : '';
+      if (id === 'core1' || id === 'core2') return id;
+    } catch (_) {}
+    return '';
+  }
+
   function profileExam() {
+    var fromTrack = activeTrackExam();
+    if (fromTrack) return fromTrack;
     var p = getProfile();
     return normExam((p && p.exam) || 'core1');
+  }
+
+  function diagnosticSpecFor(exam) {
+    var honesty = A() && A().honesty;
+    if (honesty && typeof honesty.diagnosticOffer === 'function') {
+      return honesty.diagnosticOffer(exam || profileExam());
+    }
+    return {
+      exam: exam || 'core1',
+      count: 20,
+      minutes: 20,
+      takeLabel: 'Take the 20-question diagnostic',
+      startLabel: 'Start the 20-question diagnostic'
+    };
   }
 
   function passingLabel(exam) {
@@ -594,7 +619,8 @@
     });
     html += '</div></div>';
 
-    html += '<button type="button" class="ob-primary btn" id="obStartDiagnostic">Start the 20-question diagnostic</button>';
+    var diagSpec = diagnosticSpecFor(d.exam);
+    html += '<button type="button" class="ob-primary btn" id="obStartDiagnostic">' + esc(diagSpec.startLabel) + '</button>';
     html += '<button type="button" class="ob-quiet" id="obSkip">Skip for now</button>';
     html += '</div></div>';
 
@@ -703,8 +729,9 @@
     var d = state.draft;
     var a = A();
     var w = W();
+    var spec = diagnosticSpecFor(d.exam);
     var go = w && w.document ? w.document.getElementById('obStartDiagnostic') : null;
-    setBusy(go, true, 'Starting diagnostic...', 'Start the 20-question diagnostic');
+    setBusy(go, true, 'Starting diagnostic...', spec.startLabel);
 
     // Persist the answers so the profile survives a reload mid-diagnostic.
     var existing = getProfile() || {};
@@ -726,7 +753,7 @@
     var started = false;
     try {
       if (a && a.engine && typeof a.engine.start === 'function') {
-        a.engine.start({ type: d.exam, questionCount: 20, timeMinutes: 20, mode: 'diagnostic' });
+        a.engine.start({ type: d.exam, questionCount: spec.count, timeMinutes: spec.minutes, mode: 'diagnostic' });
         started = true;
       }
     } catch (err) {
@@ -734,7 +761,7 @@
     }
     if (!started) {
       if (w && typeof w.startExam === 'function') {
-        w.startExam(d.exam, 20, 20);
+        w.startExam(d.exam, spec.count, spec.minutes);
         started = true;
       }
     }
@@ -744,7 +771,7 @@
       track('form_validation_error', { form: 'onboarding', field: 'engine' });
       renderStep1();
       var retry = w && w.document ? w.document.getElementById('obStartDiagnostic') : null;
-      setBusy(retry, false, null, 'Start the 20-question diagnostic');
+      setBusy(retry, false, null, spec.startLabel);
       setFieldError('obDateError', 'Could not start the diagnostic. Refresh the page and try again.');
     }
   }
@@ -1032,6 +1059,8 @@
       state.draft.notBooked = !p.testDate;
       state.draft.minutesPerDay = Number(p.minutesPerDay) || DEFAULT_MINUTES;
     }
+    var tracked = activeTrackExam();
+    if (tracked) state.draft.exam = tracked;
     renderStep1();
     return true;
   }

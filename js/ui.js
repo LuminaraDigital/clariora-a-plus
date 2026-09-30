@@ -47,6 +47,12 @@
     '4.0 Operational Procedures'
   ];
 
+  /**
+   * A domain may say Pass or Fail only after this many answered questions.
+   * 0/2 (and any other tiny sample) stays unlabeled.
+   */
+  const MIN_DOMAIN_SAMPLE = 5;
+
   /** Pass mark expressed as a percentage of the 100-900 scale. 675 -> 71.875 */
   function passLinePercent(passingScore) {
     const p = Number(passingScore);
@@ -100,6 +106,23 @@
   }
 
   /**
+   * domainResultLabel({ correct, total, passPercent, minSample }) -> '' | 'Pass' | 'Fail'
+   * Pass and Fail both require a large enough sample and a comparison to the
+   * pass line. A thin sample returns '' so the row cannot say Pass at 0/2.
+   */
+  function domainResultLabel(spec) {
+    const s = spec || {};
+    const total = Number(s.total) || 0;
+    const correct = Number(s.correct) || 0;
+    const minSample = (s.minSample != null) ? Number(s.minSample) : MIN_DOMAIN_SAMPLE;
+    if (!(total >= minSample)) return '';
+    const percent = (correct / total) * 100;
+    const threshold = Number(s.passPercent);
+    if (!isFinite(threshold)) return '';
+    return percent >= threshold ? 'Pass' : 'Fail';
+  }
+
+  /**
    * One domain result row.
    * spec: { name, correct, total, passingScore } or { name, percent, passPercent }
    */
@@ -116,11 +139,23 @@
 
     const width = Math.max(0, Math.min(100, percent));
     const linePos = Math.max(0, Math.min(100, passPercent));
-    const isOk = percent >= passPercent;
+    const verdict = total > 0
+      ? domainResultLabel({
+          correct: correct,
+          total: total,
+          passPercent: passPercent
+        })
+      : '';
+    // A counted sample can look like a pass only when the label says Pass.
+    // Percent-only rows (no sample) keep the geometric pass-line test.
+    const isOk = total > 0 ? (verdict === 'Pass') : (percent >= passPercent && percent > 0);
     const fillClass = isOk ? 'fill ok' : 'fill';
     const readout = total
       ? (correct + ' / ' + total + ', ' + percent + '%')
       : (percent + '%');
+    const verdictHtml = verdict
+      ? '<span class="domain-verdict">' + verdict + '</span>'
+      : '';
 
     return '<div class="domain-bar">' +
       '<span class="name">' + escapeHTML(s.name || '') + '</span>' +
@@ -128,6 +163,7 @@
         '<div class="' + fillClass + '" style="width:' + width + '%"></div>' +
         '<div class="passline" style="left:' + round1(linePos) + '%"></div>' +
       '</div>' +
+      verdictHtml +
       '<span class="pct tnum">' + escapeHTML(readout) + '</span>' +
     '</div>';
   }
@@ -1266,6 +1302,8 @@
     buildDomainBarRow: buildDomainBarRow,
     buildDomainBars: buildDomainBars,
     buildScoreCopy: buildScoreCopy,
+    domainResultLabel: domainResultLabel,
+    MIN_DOMAIN_SAMPLE: MIN_DOMAIN_SAMPLE,
     passLinePercent: passLinePercent,
     sortDomainsByBlueprint: sortDomainsByBlueprint,
     BLUEPRINT_ORDER: BLUEPRINT_ORDER

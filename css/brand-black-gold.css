@@ -790,6 +790,10 @@ footer {
   gap: var(--sp-2);
 }
 
+.mock-grid > .card.is-active-course {
+  border-color: var(--gold-primary, #c9a227);
+}
+
 .card {
   background: var(--surface-2) !important;
   border: 1px solid var(--border-light) !important;
@@ -5606,24 +5610,15 @@ header .brand {
   opacity: 0.6;
 }
 
-/* The pass marker is labelled once, on the first row. */
-.domain-bar:first-child .passline::after {
-  content: "Pass";
-  position: absolute;
-  bottom: calc(100% + 4px);
-  left: 50%;
-  transform: translateX(-50%);
+/* Pass / Fail words come from domainResultLabel, and only when the sample
+   is large enough. The pass line stays a marker with no verdict text. */
+.domain-bar .domain-verdict {
   font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-secondary);
   white-space: nowrap;
-  pointer-events: none;
-}
-
-.domain-bar:first-child {
-  padding-top: 20px;
 }
 
 .stat-box,

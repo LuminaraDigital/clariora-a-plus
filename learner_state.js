@@ -245,6 +245,81 @@
     historySourceLogged = false;
   }
 
+  var HISTORY_CAP = 25;
+  var READINESS_CACHE_KEY = "comptia_readiness_cache_v1";
+
+  /** Drop the cached readiness banner so the next read recomputes from history. */
+  function invalidateReadinessCache() {
+    try {
+      if (global.CompTIAProfiles && typeof global.CompTIAProfiles.scopedRemove === "function") {
+        global.CompTIAProfiles.scopedRemove(READINESS_CACHE_KEY);
+      }
+    } catch (_) {}
+    const store = ls();
+    if (!store) return;
+    try { store.removeItem(READINESS_CACHE_KEY); } catch (_) {}
+  }
+
+  /**
+   * Write one list to the profile-scoped key, the legacy key, and the
+   * aplus3 mirror. Progress and the dashboard both read getHistory(), which
+   * unions those sources. Keeping them identical stops a new attempt from
+   * showing on one surface and not the other.
+   */
+  function persistHistoryList(records) {
+    const list = Array.isArray(records) ? records.slice(0, HISTORY_CAP) : [];
+    const payload = JSON.stringify(list);
+    try {
+      if (global.CompTIAProfiles && typeof global.CompTIAProfiles.scopedSet === "function") {
+        global.CompTIAProfiles.scopedSet(HISTORY_BASE_KEY, payload);
+      }
+    } catch (_) {}
+    const store = ls();
+    if (store) {
+      try { store.setItem(HISTORY_BASE_KEY, payload); } catch (_) {}
+    }
+    try {
+      const APlus = global.APlus;
+      if (APlus && APlus.storage && typeof APlus.storage.set === "function") {
+        APlus.storage.set("history", list);
+      } else if (store) {
+        store.setItem(HISTORY_MIRROR_KEY, payload);
+      }
+    } catch (_) {}
+    invalidateReadinessCache();
+    return list;
+  }
+
+  function attemptKey(record) {
+    if (!record || typeof record !== "object") return "";
+    const ts = record.timestamp != null ? record.timestamp : record.date;
+    const score = record.scaledScore != null ? record.scaledScore : "";
+    return String(ts) + "|" + String(score);
+  }
+
+  /**
+   * recordAttempt(record) -> canonical history after the write.
+   * Called from the exam finish path so Progress can refresh without a reload.
+   */
+  function recordAttempt(record) {
+    if (!record || typeof record !== "object") return getHistory();
+    const stamped = Object.assign({}, record);
+    if (stamped.timestamp == null) stamped.timestamp = Date.now();
+    const key = attemptKey(stamped);
+    const prior = getHistory().filter(function (row) {
+      return attemptKey(row) !== key;
+    });
+    persistHistoryList([stamped].concat(prior));
+    resetHistorySourceLog();
+    return getHistory();
+  }
+
+  function clearHistory() {
+    persistHistoryList([]);
+    resetHistorySourceLog();
+    return [];
+  }
+
   function themeGet() {
     return localStorage.getItem("comptia_theme") || "dark";
   }
@@ -618,6 +693,9 @@
   global.APlus.learner.HISTORY_BASE_KEY = HISTORY_BASE_KEY;
   global.APlus.learner.HISTORY_MIRROR_KEY = HISTORY_MIRROR_KEY;
   global.APlus.learner.getHistory = getHistory;
+  global.APlus.learner.recordAttempt = recordAttempt;
+  global.APlus.learner.clearHistory = clearHistory;
+  global.APlus.learner.invalidateReadinessCache = invalidateReadinessCache;
   global.APlus.learner.normalizeHistoryRecords = normalizeHistoryRecords;
   global.APlus.learner.normExamType = normExamType;
   global.APlus.learner.resetHistorySourceLog = resetHistorySourceLog;
@@ -628,6 +706,9 @@
   if (typeof module === "object" && module && module.exports) {
     module.exports = {
       getHistory: getHistory,
+      recordAttempt: recordAttempt,
+      clearHistory: clearHistory,
+      invalidateReadinessCache: invalidateReadinessCache,
       normalizeHistoryRecords: normalizeHistoryRecords,
       normExamType: normExamType,
       resetHistorySourceLog: resetHistorySourceLog,

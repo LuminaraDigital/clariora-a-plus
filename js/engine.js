@@ -165,7 +165,7 @@
       this.eliminatedOptions = {};
       this.flaggedQuestions = new Set();
       this.totalSeconds = timeMinutes * 60;
-      this.remainingSeconds = timeMinutes * 60;
+      this.remainingSeconds = this.totalSeconds;
       this.isPaused = false;
       this.domainKey = config.domainKey || null;
       this.coachMissionId = config.coachMissionId || null;
@@ -174,6 +174,16 @@
       this.questionSeconds = {};
       this.questionEnteredAt = Date.now();
       this.passingScore = APlus.engineCore.getPassingScore(type === 'assessment' ? (config.exam || 'core1') : type);
+
+      // Diagnostic clock matches the questions actually delivered (1 minute each).
+      if (this.mode === 'diagnostic' && this.questions.length > 0) {
+        const honesty = APlus.honesty;
+        const seconds = honesty && typeof honesty.diagnosticClockSeconds === 'function'
+          ? honesty.diagnosticClockSeconds(this.questions.length)
+          : this.questions.length * 60;
+        this.totalSeconds = seconds;
+        this.remainingSeconds = seconds;
+      }
 
       this.startTimer();
 
@@ -194,14 +204,20 @@
 
     startTimer() {
       if (this.timerInterval) clearInterval(this.timerInterval);
+      const emitTick = () => {
+        APlus.bus.emit('exam:timer:tick', {
+          remainingSeconds: this.remainingSeconds,
+          totalSeconds: this.totalSeconds,
+          alertLevel: timerAlertLevel(this.remainingSeconds)
+        });
+      };
+      // Paint the real clock immediately. The markup defaults to 90:00, which
+      // is wrong for a shorter diagnostic until the first one-second tick.
+      emitTick();
       this.timerInterval = setInterval(() => {
         if (!this.isPaused) {
           this.remainingSeconds--;
-          APlus.bus.emit('exam:timer:tick', {
-            remainingSeconds: this.remainingSeconds,
-            totalSeconds: this.totalSeconds,
-            alertLevel: timerAlertLevel(this.remainingSeconds)
-          });
+          emitTick();
 
           if (this.remainingSeconds <= 0) {
             clearInterval(this.timerInterval);
@@ -420,9 +436,8 @@
         const mergedMissed = Array.from(new Set([...existingMissed, ...newlyMissedIds]));
         APlus.storage.set('missed', mergedMissed);
 
-        const history = APlus.storage.get('history', []);
         const finishedAt = new Date();
-        history.unshift({
+        const attempt = {
           // Millisecond timestamp so attempts inside the same minute still
           // order correctly. The locale date string is display only, and
           // Date.parse of it is only minute precision.
@@ -439,13 +454,20 @@
           status: passed ? 'PASSED' : 'FAILED',
           passingScore: this.passingScore,
           domainStats: domainStats,
+          perQuestion: perQuestion,
           // Which generation of the question bank scored this attempt. Lets a
           // future correction invalidate exactly the affected attempts instead
           // of guessing from timestamps.
           bankRevision: (APlus.bankIntegrity && APlus.bankIntegrity.BANK_REVISION) || 2
-        });
-        if (history.length > 25) history.pop();
-        APlus.storage.set('history', history);
+        };
+        if (APlus.learner && typeof APlus.learner.recordAttempt === 'function') {
+          APlus.learner.recordAttempt(attempt);
+        } else {
+          const history = APlus.storage.get('history', []);
+          history.unshift(attempt);
+          if (history.length > 25) history.pop();
+          APlus.storage.set('history', history);
+        }
       }
 
       const missedQuestionIds = perQuestion.filter(r => !r.correct && r.id).map(r => r.id);
@@ -483,6 +505,10 @@
       };
 
       APlus.bus.emit('exam:finished', resultsPayload);
+
+      try {
+        if (typeof window.renderHistoryTable === 'function') window.renderHistoryTable();
+      } catch (_) {}
 
       // Finish-path backfill for answered items not already emitted mid-session
       // (e.g. Pearson exam-day mode where answers were locked without mid emit).

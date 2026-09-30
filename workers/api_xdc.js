@@ -97,9 +97,9 @@ export function normalizeXdcAddress(addr) {
 }
 
 /**
- * Queries an XDC JSON-RPC endpoint to fetch and verify an on-chain transaction receipt.
+ * Queries an XDC JSON-RPC endpoint to fetch and verify an on-chain transaction receipt and value.
  */
-export async function verifyXdcReceipt(txHash, network = 'mainnet', expectedMerchant = null) {
+export async function verifyXdcReceipt(txHash, network = 'mainnet', expectedMerchant = null, expectedWei = null) {
   const net = XDC_NETWORKS[network] || XDC_NETWORKS.mainnet;
   const cleanTx = String(txHash || '').trim();
 
@@ -142,12 +142,41 @@ export async function verifyXdcReceipt(txHash, network = 'mainnet', expectedMerc
         }
       }
 
+      // If expected value is specified, inspect transaction details
+      let txDetails = null;
+      if (expectedWei) {
+        try {
+          const txRes = await fetch(rpcUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              jsonrpc: '2.0',
+              method: 'eth_getTransactionByHash',
+              params: [formattedTx],
+              id: 2
+            })
+          });
+          if (txRes.ok) {
+            const txData = await txRes.json();
+            txDetails = txData && txData.result;
+            if (txDetails && txDetails.value) {
+              const actualWei = BigInt(txDetails.value || '0x0');
+              const minWei = BigInt(expectedWei);
+              if (actualWei < minWei) {
+                return { ok: false, pending: false, error: 'Transaction value does not match expected product price' };
+              }
+            }
+          }
+        } catch (_) {}
+      }
+
       return {
         ok: true,
         receipt,
         blockNumber: receipt.blockNumber,
         from: receipt.from,
-        to: receipt.to
+        to: receipt.to,
+        value: txDetails ? txDetails.value : undefined
       };
     } catch (e) {
       lastError = e;
@@ -171,10 +200,13 @@ export async function createOracleAttestation({
   env
 }) {
   const score = Number(scaledScore) || 0;
-  const isPassed = Boolean(passed && score >= 675);
+  const cleanCode = String(examCode || '').trim().toUpperCase();
+  const isCore2OrCloud = cleanCode.endsWith('2') || cleanCode.includes('1102') || cleanCode.includes('1202') || cleanCode.includes('AZ-900') || cleanCode.includes('AZ900');
+  const minPassScore = isCore2OrCloud ? 700 : 675;
+  const isPassed = Boolean(passed && score >= minPassScore);
 
   if (!isPassed) {
-    return { ok: false, error: 'Candidate score does not meet certified passing standard' };
+    return { ok: false, error: `Candidate score (${score}) does not meet certified passing standard (${minPassScore})` };
   }
 
   const certifiedAt = Math.floor(Date.now() / 1000);

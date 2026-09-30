@@ -82,8 +82,14 @@ contract ClarioraProofOfMasterySBT is IERC721, IERC5192 {
         string calldata metadataUri,
         bytes calldata oracleSignature
     ) external returns (uint256) {
-        require(scaledScore >= 675, "Exam score does not meet certified passing standard");
+        uint16 minPassScore = 675;
+        bytes memory codeBytes = bytes(examCode);
+        if (codeBytes.length > 0 && codeBytes[codeBytes.length - 1] == '2') {
+            minPassScore = 700;
+        }
+        require(scaledScore >= minPassScore, "Exam score does not meet certified passing standard");
         require(certifiedAt <= block.timestamp + 300, "Future timestamp rejected");
+        require(block.timestamp <= certifiedAt + 30 days, "Attestation expired");
 
         // Construct attestation message hash
         bytes32 messageHash = keccak256(

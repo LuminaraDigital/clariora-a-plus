@@ -284,6 +284,29 @@
           <p>Sequence the electro-photographic imaging cycle: Processing, Charging, Exposing, Developing, Transferring, Fusing, and Cleaning to solve print defect questions.</p>
         </div>
       </div>
+
+      <div class="terminal-card" aria-label="Interactive Command Prompt Diagnostic Sandbox">
+        <div class="terminal-header">
+          <div class="terminal-dots" aria-hidden="true">
+            <span class="terminal-dot terminal-dot-red"></span>
+            <span class="terminal-dot terminal-dot-yellow"></span>
+            <span class="terminal-dot terminal-dot-green"></span>
+          </div>
+          <span class="terminal-title">Windows Terminal : Diagnostic PBQ Sandbox (Obj 1.4 &amp; 1.9)</span>
+          <span class="small muted">Interactive Preview</span>
+        </div>
+        <div class="terminal-chips" role="toolbar" aria-label="Quick diagnostic commands">
+          <button type="button" class="term-chip is-active" data-cmd="ipconfig">ipconfig /all</button>
+          <button type="button" class="term-chip" data-cmd="ping">ping -t gateway</button>
+          <button type="button" class="term-chip" data-cmd="tracert">tracert 8.8.8.8</button>
+          <button type="button" class="term-chip" data-cmd="sfc">sfc /scannow</button>
+          <button type="button" class="term-chip" data-cmd="netstat">netstat -ano</button>
+          <button type="button" class="term-chip" data-cmd="chkdsk">chkdsk C: /f</button>
+        </div>
+        <div class="terminal-body" id="term-screen" role="region" aria-live="polite">
+          <pre class="terminal-pre" id="term-output"></pre>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -468,6 +491,32 @@
       btn.addEventListener('click', function () { select(btn); });
     });
   });
+  (function () {
+    var commands = {
+      ipconfig: "C:\\Users\\technician> ipconfig /all\n\nWindows IP Configuration\n   Host Name . . . . . . . . . . . . : WORKSTATION-04\n   Primary Dns Suffix  . . . . . . . : corp.clariora.local\n   Node Type . . . . . . . . . . . . : Hybrid\n   IP Routing Enabled. . . . . . . . : No\n\nEthernet adapter Local Area Connection:\n   Description . . . . . . . . . . . : Intel(R) Ethernet Connection I219-LM\n   Physical Address. . . . . . . . . : 00-1A-2B-3C-4D-5E\n   DHCP Enabled. . . . . . . . . . . : Yes\n   Autoconfiguration Enabled . . . . : Yes\n   IPv4 Address. . . . . . . . . . . : 169.254.14.88(Preferred)\n   Subnet Mask . . . . . . . . . . . : 255.255.0.0\n   Default Gateway . . . . . . . . . : 0.0.0.0\n   DNS Servers . . . . . . . . . . . : 127.0.0.1\n\n[DIAGNOSTIC]: APIPA address 169.254.x.x indicates DHCP server unreachable (Core 1 Obj 2.4). Check physical link or DHCP scope pool.",
+      ping: "C:\\Users\\technician> ping 192.168.1.1\n\nPinging 192.168.1.1 with 32 bytes of data:\nReply from 192.168.1.1: bytes=32 time<1ms TTL=64\nReply from 192.168.1.1: bytes=32 time=1ms TTL=64\nReply from 192.168.1.1: bytes=32 time<1ms TTL=64\nReply from 192.168.1.1: bytes=32 time<1ms TTL=64\n\nPing statistics for 192.168.1.1:\n    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss),\nApproximate round trip times in milli-seconds:\n    Minimum = 0ms, Maximum = 1ms, Average = 0ms\n\n[DIAGNOSTIC]: Local default gateway is fully responsive. Fault isolated to external WAN or DNS resolver (Core 1 Obj 2.2).",
+      tracert: "C:\\Users\\technician> tracert 8.8.8.8\n\nTracing route to dns.google [8.8.8.8] over a maximum of 30 hops:\n\n  1    <1 ms    <1 ms    <1 ms  192.168.1.1\n  2     8 ms     7 ms     8 ms  10.240.0.1\n  3     9 ms     9 ms    10 ms  core-edge-router.isp.net [203.0.113.1]\n  4     *        *        *     Request timed out.\n  5    14 ms    13 ms    13 ms  dns.google [8.8.8.8]\n\nTrace complete.\n\n[DIAGNOSTIC]: Hop 4 packet drop is an ICMP rate-limit, not a hard disconnect; end-to-end routing to public DNS succeeded.",
+      sfc: "C:\\Windows\\system32> sfc /scannow\n\nBeginning system scan. This process will take some time.\n\nBeginning verification phase of system scan.\nVerification 100% complete.\n\nWindows Resource Protection found corrupt files and successfully repaired them.\nFor online repairs, details are included in the CBS log file located at windir\\Logs\\CBS\\CBS.log.\n\n[DIAGNOSTIC]: Core 2 Obj 1.6 system integrity verified. Corrupted DLLs replaced from SxS store component repository.",
+      netstat: "C:\\Users\\technician> netstat -ano\n\nActive Connections\n\n  Proto  Local Address          Foreign Address        State           PID\n  TCP    0.0.0.0:22             0.0.0.0:0              LISTENING       844\n  TCP    0.0.0.0:80             0.0.0.0:0              LISTENING       4\n  TCP    0.0.0.0:443            0.0.0.0:0              LISTENING       4\n  TCP    0.0.0.0:3389           0.0.0.0:0              LISTENING       1208\n  TCP    192.168.1.45:51234     198.51.100.24:443      ESTABLISHED     3120\n\n[DIAGNOSTIC]: Port 3389 listening indicates Remote Desktop Protocol (RDP) service active. Cross-reference PID 1208 in Task Manager.",
+      chkdsk: "C:\\Windows\\system32> chkdsk C: /f\n\nThe type of the file system is NTFS.\nVolume label is OSDisk.\n\nStage 1: Examining basic file system structure ...\n  256000 file records processed. File verification completed.\nStage 2: Examining file name linkage ...\n  312000 index entries processed. Index verification completed.\nStage 3: Examining security descriptors ...\n  Security descriptor verification completed.\n\nWindows has scanned the file system and found no problems. No further action is required.\n\n[DIAGNOSTIC]: File system metadata and master file table (MFT) integrity verified without bad sectors (Core 2 Obj 3.1)."
+    };
+
+    var termPre = document.getElementById('term-output');
+    if (!termPre) return;
+    termPre.textContent = commands.ipconfig;
+
+    var chips = document.querySelectorAll('.term-chip');
+    chips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        chips.forEach(function (c) { c.classList.remove('is-active'); });
+        chip.classList.add('is-active');
+        var cmd = chip.getAttribute('data-cmd');
+        if (commands[cmd]) {
+          termPre.textContent = commands[cmd];
+        }
+      });
+    });
+  })();
 })();
 </script>
 </body>

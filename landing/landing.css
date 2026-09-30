@@ -986,6 +986,116 @@ ul {
   background: linear-gradient(var(--gold-tint), var(--gold-tint)), var(--glass-bg-strong);
 }
 
+.terminal-card {
+  margin-top: var(--sp-4);
+  background: var(--surface-0);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-card);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.terminal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: var(--sp-1);
+  padding-inline: var(--sp-2);
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--line);
+}
+
+.terminal-dots {
+  display: flex;
+  gap: var(--sp-1);
+}
+
+.terminal-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--r-pill);
+}
+
+.terminal-dot-red {
+  background: var(--danger);
+}
+
+.terminal-dot-yellow {
+  background: var(--warn);
+}
+
+.terminal-dot-green {
+  background: var(--ok);
+}
+
+.terminal-title {
+  font-size: var(--fs-small);
+  color: var(--text-2);
+  font-family: monospace;
+}
+
+.terminal-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  padding: var(--sp-2);
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--line);
+}
+
+.term-chip {
+  padding-block: var(--sp-1);
+  padding-inline: var(--sp-2);
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-family: monospace;
+  font-size: var(--fs-label);
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease);
+}
+
+.term-chip:hover {
+  background: var(--gold-tint);
+  border-color: var(--gold);
+  color: var(--text-1);
+}
+
+.term-chip.is-active {
+  background: var(--gold);
+  color: var(--on-gold);
+  border-color: var(--gold);
+  font-weight: 600;
+}
+
+.terminal-body {
+  padding: var(--sp-3);
+  background: var(--surface-0);
+  min-height: 200px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.terminal-pre {
+  margin: 0;
+  font-family: "Courier New", Courier, monospace;
+  font-size: var(--fs-small);
+  line-height: var(--lh-body);
+  color: var(--text-1);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.terminal-prompt {
+  color: var(--gold);
+}
+
+.terminal-diag {
+  color: var(--ok);
+  font-weight: 600;
+}
+
 .pain {
   display: grid;
   gap: var(--sp-2);

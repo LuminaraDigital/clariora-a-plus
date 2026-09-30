@@ -120,7 +120,7 @@
           }]
         });
       } else {
-        console.warn('[XDC] Chain switch warning:', switchError && switchError.message ? switchError.message : switchError);
+        throw new Error((switchError && switchError.message) || 'Network switch rejected. Please switch to ' + targetConfig.chainName);
       }
     }
   }
@@ -177,22 +177,47 @@
       params: [txParams]
     });
 
-    // 4. Verify transaction with Clariora edge
-    const verifyRes = await fetch('/api/v1/billing/xdc/verify', {
-      method: 'POST',
-      headers: orderHeaders,
-      body: JSON.stringify({
-        productId,
-        orderId: order.orderId,
-        txHash,
-        network: net,
-        walletAddress: currentAccount
-      })
-    });
+    // 4. Verify transaction with Clariora edge (with block finalization retries)
+    let verification = null;
+    let lastError = null;
 
-    const verification = await verifyRes.json();
-    if (!verifyRes.ok || !verification || !verification.success) {
-      throw new Error((verification && (verification.message || verification.error)) || 'Payment verification pending. Please refresh in a moment.');
+    for (let attempt = 0; attempt < 5; attempt++) {
+      if (attempt > 0) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
+      try {
+        const verifyRes = await fetch('/api/v1/billing/xdc/verify', {
+          method: 'POST',
+          headers: orderHeaders,
+          body: JSON.stringify({
+            productId,
+            orderId: order.orderId,
+            txHash,
+            network: net,
+            walletAddress: currentAccount
+          })
+        });
+
+        const data = await verifyRes.json();
+        if (verifyRes.ok && data && data.success) {
+          verification = data;
+          break;
+        }
+
+        // Retry if transaction was broadcasted but not yet included in a block
+        if (data && data.error === 'ONCHAIN_VERIFY_FAILED' && attempt < 4) {
+          continue;
+        }
+
+        lastError = new Error((data && (data.message || data.error)) || 'Payment verification failed');
+      } catch (err) {
+        lastError = err;
+        if (attempt >= 4) throw lastError;
+      }
+    }
+
+    if (!verification) {
+      throw lastError || new Error('Payment verification pending. Block inclusion timed out.');
     }
 
     return {

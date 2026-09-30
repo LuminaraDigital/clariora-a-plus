@@ -89,6 +89,23 @@ async function runAsyncTests() {
   })();
 
   await (async () => {
+    // Failing Core 2 score test (680 is >= 675, but Core 2 requires 700)
+    const failCore2Result = await createOracleAttestation({
+      userId: 'test_user_core2',
+      examCode: '220-1202',
+      scaledScore: 685, // Passing is 700 for Core 2
+      passed: true,
+      localLedgerRoot: '0x1234',
+      chain: 'xdc',
+      walletAddress: '0x2542f888b57d413b8655e3858022af3e3ee72667',
+      env: {}
+    });
+    assert.strictEqual(failCore2Result.ok, false, 'Core 2 score below 700 must be rejected');
+    console.log('  ✔ [PASS] AI Oracle correctly rejects Core 2 attempt below 700 passing standard (685 < 700)');
+    passed++;
+  })();
+
+  await (async () => {
     // Passing score on XDC (ERC-5192)
     const xdcPassResult = await createOracleAttestation({
       userId: 'test_user_2',

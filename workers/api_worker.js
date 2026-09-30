@@ -1491,7 +1491,7 @@ export default {
         if (env.TONCENTER_API_KEY && (merchantWallet || walletAddress)) {
           try {
             const targetAddress = merchantWallet || walletAddress;
-            const isTonTestnet = (body && body.network === 'testnet') || env.TON_NETWORK === 'testnet';
+            const isTonTestnet = !isProd && ((body && body.network === 'testnet') || env.TON_NETWORK === 'testnet');
             const tcBase = isTonTestnet ? 'https://testnet.toncenter.com/api/v2/' : 'https://toncenter.com/api/v2/';
             const tcUrl = tcBase + 'getTransactions?address=' +
               encodeURIComponent(targetAddress) + '&limit=20';
@@ -1691,7 +1691,9 @@ export default {
         const isProd = env.ENVIRONMENT === 'production' || env.NODE_ENV === 'production';
         const isTestPayment = !isProd && (env.ALLOW_TEST_PAYMENTS === '1' || env.XDC_VERIFY_RELAXED === '1' || cleanTxHash.startsWith('sim_'));
 
-        const callerOrderRef = auth.firebaseUid || (auth.telegramId ? 'tg_' + auth.telegramId : auth.uid);
+        const firebaseUid = auth.firebaseUid || (!auth.telegramId ? auth.uid : null);
+        const resolvedId = auth.telegramId || null;
+        const callerOrderRef = firebaseUid || (resolvedId ? 'tg_' + resolvedId : auth.uid);
 
         if (isProd && !cleanOrderId) {
           return new Response(JSON.stringify({
@@ -1726,10 +1728,18 @@ export default {
           }
         }
 
+        const targetNetwork = (!isProd && network === 'apothem') ? 'apothem' : 'mainnet';
+        const expectedProduct = XDC_PRODUCTS[cleanProductId];
+
         // On-chain JSON-RPC verification
         if (!isTestPayment) {
           const expectedMerchant = env.XDC_CONTRACT_ADDRESS || env.XDC_TREASURY_ADDRESS || null;
-          const verification = await verifyXdcReceipt(cleanTxHash, network || 'mainnet', expectedMerchant);
+          const verification = await verifyXdcReceipt(
+            cleanTxHash,
+            targetNetwork,
+            expectedMerchant,
+            expectedProduct ? expectedProduct.amountWei : null
+          );
           if (!verification.ok) {
             return new Response(JSON.stringify({
               error: 'ONCHAIN_VERIFY_FAILED',
@@ -1738,8 +1748,9 @@ export default {
           }
         }
 
-        // Anti-replay check via KV
-        const replayKey = `xdc_redeemed_${cleanTxHash.toLowerCase()}`;
+        // Anti-replay check via KV (normalized hash format)
+        const normTxHash = cleanTxHash.startsWith('xdc') ? '0x' + cleanTxHash.slice(3) : cleanTxHash;
+        const replayKey = `xdc_redeemed_${normTxHash.toLowerCase()}`;
         if (env.KV_SESSIONS) {
           const alreadyUsed = await env.KV_SESSIONS.get(replayKey);
           if (alreadyUsed) {
@@ -1760,21 +1771,36 @@ export default {
         let effective = { tier: newTier, expiresAt: grantExpiresAt };
 
         if (env.DB) {
-          const existingUser = await env.DB.prepare(
-            'SELECT id, tier, tier_expires_at FROM auth_accounts WHERE id = ?'
-          ).bind(callerOrderRef).first();
+          if (resolvedId) {
+            const existingUser = await env.DB.prepare(
+              'SELECT tier, tier_expires_at FROM telegram_users WHERE telegram_id = ?'
+            ).bind(resolvedId).first();
+            effective = resolveEffectiveTierUpgrade(existingUser, newTier, grantExpiresAt);
 
-          effective = resolveEffectiveTierUpgrade(existingUser, newTier, grantExpiresAt);
+            await env.DB.prepare(
+              'INSERT INTO telegram_users (telegram_id, tier, tier_expires_at, updated_at) ' +
+              'VALUES (?, ?, ?, CURRENT_TIMESTAMP) ' +
+              'ON CONFLICT(telegram_id) DO UPDATE SET ' +
+              'tier = excluded.tier, tier_expires_at = excluded.tier_expires_at, updated_at = CURRENT_TIMESTAMP'
+            ).bind(resolvedId, effective.tier, effective.expiresAt).run();
+          }
+          if (firebaseUid) {
+            await ensureAuthAccountAiColumns(env.DB);
+            const existingAccount = await env.DB.prepare(
+              'SELECT tier, tier_expires_at FROM auth_accounts WHERE uid = ?'
+            ).bind(firebaseUid).first();
+            effective = resolveEffectiveTierUpgrade(existingAccount, newTier, grantExpiresAt);
 
-          await env.DB.prepare(
-            'UPDATE auth_accounts SET tier = ?, tier_expires_at = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
-          ).bind(effective.tier, effective.expiresAt, callerOrderRef).run();
+            await env.DB.prepare(
+              'UPDATE auth_accounts SET tier = ?, tier_expires_at = ? WHERE uid = ?'
+            ).bind(effective.tier, effective.expiresAt, firebaseUid).run();
+          }
 
           if (cleanOrderId) {
             try {
               await env.DB.prepare(
                 "UPDATE xdc_orders SET status = 'fulfilled', tx_hash = ?, wallet_address = ?, updated_at = CURRENT_TIMESTAMP WHERE order_id = ? AND user_id = ?"
-              ).bind(cleanTxHash, walletAddress || '', cleanOrderId, callerOrderRef).run();
+              ).bind(normTxHash, walletAddress || '', cleanOrderId, callerOrderRef).run();
             } catch (_) {}
           }
         }
@@ -1784,7 +1810,7 @@ export default {
           tier: effective.tier,
           expiresAt: effective.expiresAt,
           onChainConfirmed: true,
-          network: network || 'mainnet',
+          network: targetNetwork,
           features: featuresForTier(effective.tier),
           message: 'XDC Network payment verified. Pro tier unlocked on enterprise rails.'
         }), {

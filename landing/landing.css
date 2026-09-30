@@ -944,8 +944,23 @@ ul {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
 }
 
+.grid-3 {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+}
+
 .grid-4 {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+}
+
+.card-header-icon {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin-bottom: var(--sp-1);
+}
+
+.card-header-icon h3 {
+  margin: 0;
 }
 
 .card {
@@ -1118,6 +1133,14 @@ html:not(.js) .tabs {
 
 .ic-info {
   color: var(--info);
+}
+
+.ic-gold {
+  color: var(--gold);
+}
+
+.ic-warn {
+  color: var(--warn);
 }
 
 /* ============================================================

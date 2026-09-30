@@ -36,6 +36,13 @@ async function run() {
   console.log(`Auditing live server at ${BASE}...`);
   let failures = 0;
 
+  // 0. Probe if local server is active
+  const probe = await get('/api/v1/health');
+  if (probe.statusCode === 0) {
+    console.log(`[test_live_server] Local server not running on ${BASE} (connection refused). Skipping live server audit.`);
+    return;
+  }
+
   // 1. Root redirect check
   const root = await get('/');
   if (root.statusCode === 302 && root.headers.location && root.headers.location.startsWith('/landing/')) {

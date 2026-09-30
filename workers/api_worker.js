@@ -90,6 +90,13 @@ import {
   executeGroq,
   executeWorkersAi
 } from './api_ai_providers.js';
+import {
+  XDC_PRODUCTS,
+  XDC_NETWORKS,
+  ensureXdcTables,
+  verifyXdcReceipt,
+  createOracleAttestation
+} from './api_xdc.js';
 
 /** Explicit public API routes. Everything else under /api/v1 requires auth or is admin/webhook gated. */
 const PUBLIC_API_ROUTES = [
@@ -526,6 +533,75 @@ export default {
         });
       }
 
+      // XDC Network Pre-payment Order Generation (links on-chain payment to authenticated account)
+      if (path === '/api/v1/billing/xdc/order' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok) {
+          return new Response(JSON.stringify({
+            error: 'AUTH_REQUIRED',
+            message: 'Authentication required to create an XDC payment order.'
+          }), { status: 401, headers: corsHeaders });
+        }
+        const orderLimit = await enforceDualKeyLimit(env, request, 'xdc_order', {
+          uid: auth.uid, uidPerMinute: 10, ipPerMinute: 20
+        });
+        if (!orderLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many order requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...orderLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+        const productId = String(body.productId || 'pro_monthly').trim();
+        const prod = XDC_PRODUCTS[productId];
+        if (!prod) {
+          return new Response(JSON.stringify({
+            error: 'UNKNOWN_PRODUCT',
+            message: 'Unknown XDC product. Use daily_unlimited, pro_monthly, or lifetime_master.'
+          }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+        const network = String(body.network || 'mainnet').trim();
+        const netConfig = XDC_NETWORKS[network] || XDC_NETWORKS.mainnet;
+        const merchantAddress = env.XDC_TREASURY_ADDRESS || '0x2542f888B57d413b8655E3858022aF3e3eE72667';
+        const contractAddress = env.XDC_CONTRACT_ADDRESS || merchantAddress;
+        const userId = auth.firebaseUid || (auth.telegramId ? 'tg_' + auth.telegramId : auth.uid);
+        const orderId = `clar_xdc_${auth.telegramId || auth.firebaseUid}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+
+        if (env.DB) {
+          await ensureXdcTables(env.DB);
+          try {
+            await env.DB.prepare(`
+              INSERT INTO xdc_orders (order_id, user_id, telegram_id, product_id, amount_wei, wallet_address, status)
+              VALUES (?, ?, ?, ?, ?, ?, 'pending')
+            `).bind(orderId, userId, auth.telegramId || 0, productId, prod.amountWei, String(body.walletAddress || '')).run();
+          } catch (e) {
+            console.warn('[XDC] xdc_orders insert failed:', e && e.message ? e.message : e);
+          }
+        }
+
+        return new Response(JSON.stringify({
+          success: true,
+          orderId,
+          memo: orderId,
+          merchantAddress,
+          contractAddress,
+          amountXdc: prod.amountXdc,
+          amountWei: prod.amountWei,
+          productId,
+          network: netConfig.name,
+          chainId: netConfig.chainId,
+          hexChainId: netConfig.hexChainId,
+          rpcUrl: netConfig.rpcUrls[0]
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
       // 1. Health / ready probes
       if (path === '/api/v1/health' || path === '/api/v1/live') {
         return new Response(JSON.stringify({
@@ -535,7 +611,7 @@ export default {
           tmaSupported: true,
           aiProviders: ['groq', 'nvidia', 'ollama', 'openrouter', 'workers_ai'],
           freeSurface: FREE_SURFACE,
-          payRails: ['telegram_stars', 'ton_onchain'],
+          payRails: ['telegram_stars', 'ton_onchain', 'xdc_network'],
           auth: {
             identityPlane: 'firebase+telegram',
             sessionCookies: true,
@@ -1415,7 +1491,9 @@ export default {
         if (env.TONCENTER_API_KEY && (merchantWallet || walletAddress)) {
           try {
             const targetAddress = merchantWallet || walletAddress;
-            const tcUrl = 'https://toncenter.com/api/v2/getTransactions?address=' +
+            const isTonTestnet = (body && body.network === 'testnet') || env.TON_NETWORK === 'testnet';
+            const tcBase = isTonTestnet ? 'https://testnet.toncenter.com/api/v2/' : 'https://toncenter.com/api/v2/';
+            const tcUrl = tcBase + 'getTransactions?address=' +
               encodeURIComponent(targetAddress) + '&limit=20';
             const tcRes = await fetch(tcUrl, {
               headers: { 'X-API-Key': env.TONCENTER_API_KEY }
@@ -1566,6 +1644,207 @@ export default {
           features: featuresForTier(effective.tier),
           message: 'TON transaction confirmed. Paid tier unlocked with hard AI budgets.'
         }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // XDC Network On-Chain Payment Verification & Entitlement Activation
+      // @see https://docs.xdc.network/api/
+      if (path === '/api/v1/billing/xdc/verify' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const { productId, txHash, orderId, network, walletAddress } = body;
+
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok) {
+          return new Response(JSON.stringify({
+            error: 'AUTH_REQUIRED',
+            message: 'Valid Telegram initData, session cookie, or Firebase idToken required for XDC entitlement grant.'
+          }), { status: 401, headers: corsHeaders });
+        }
+
+        const xdcLimit = await enforceDualKeyLimit(env, request, 'xdc_verify', {
+          uid: auth.uid, uidPerMinute: 5, ipPerMinute: 20
+        });
+        if (!xdcLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many verification attempts. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...xdcLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+
+        const cleanTxHash = String(txHash || '').trim();
+        const cleanProductId = String(productId || '').trim();
+        const cleanOrderId = String(orderId || '').trim().slice(0, 128);
+
+        if (!cleanTxHash || !cleanProductId) {
+          return new Response(JSON.stringify({ error: 'Missing txHash or productId' }), {
+            status: 400,
+            headers: corsHeaders
+          });
+        }
+
+        const isProd = env.ENVIRONMENT === 'production' || env.NODE_ENV === 'production';
+        const isTestPayment = !isProd && (env.ALLOW_TEST_PAYMENTS === '1' || env.XDC_VERIFY_RELAXED === '1' || cleanTxHash.startsWith('sim_'));
+
+        const callerOrderRef = auth.firebaseUid || (auth.telegramId ? 'tg_' + auth.telegramId : auth.uid);
+
+        if (isProd && !cleanOrderId) {
+          return new Response(JSON.stringify({
+            error: 'ORDER_REQUIRED',
+            message: 'Create a payment order via /api/v1/billing/xdc/order before verifying an XDC transaction.'
+          }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+
+        if (cleanOrderId && env.DB) {
+          await ensureXdcTables(env.DB);
+          const order = await env.DB.prepare(
+            'SELECT order_id, user_id, product_id, status FROM xdc_orders WHERE order_id = ?'
+          ).bind(cleanOrderId).first();
+
+          if (!order) {
+            return new Response(JSON.stringify({
+              error: 'ORDER_NOT_FOUND',
+              message: 'The requested XDC order does not exist.'
+            }), { status: 404, headers: corsHeaders });
+          }
+          if (order.user_id !== callerOrderRef) {
+            return new Response(JSON.stringify({
+              error: 'ORDER_USER_MISMATCH',
+              message: 'This XDC order belongs to a different account.'
+            }), { status: 403, headers: corsHeaders });
+          }
+          if (order.status === 'fulfilled') {
+            return new Response(JSON.stringify({
+              error: 'ORDER_ALREADY_FULFILLED',
+              message: 'This XDC payment has already been redeemed.'
+            }), { status: 409, headers: corsHeaders });
+          }
+        }
+
+        // On-chain JSON-RPC verification
+        if (!isTestPayment) {
+          const expectedMerchant = env.XDC_CONTRACT_ADDRESS || env.XDC_TREASURY_ADDRESS || null;
+          const verification = await verifyXdcReceipt(cleanTxHash, network || 'mainnet', expectedMerchant);
+          if (!verification.ok) {
+            return new Response(JSON.stringify({
+              error: 'ONCHAIN_VERIFY_FAILED',
+              message: verification.error || 'Failed to verify transaction receipt on XDC Network'
+            }), { status: 422, headers: corsHeaders });
+          }
+        }
+
+        // Anti-replay check via KV
+        const replayKey = `xdc_redeemed_${cleanTxHash.toLowerCase()}`;
+        if (env.KV_SESSIONS) {
+          const alreadyUsed = await env.KV_SESSIONS.get(replayKey);
+          if (alreadyUsed) {
+            return new Response(JSON.stringify({
+              error: 'TX_ALREADY_REDEEMED',
+              message: 'This on-chain transaction hash has already been redeemed.'
+            }), { status: 409, headers: corsHeaders });
+          }
+          await env.KV_SESSIONS.put(replayKey, cleanOrderId || 'direct', { expirationTtl: 86400 * 365 });
+        }
+
+        const newTier = cleanProductId === 'lifetime_master' ? 'lifetime' : 'pro';
+        const daysToAdd = cleanProductId === 'daily_unlimited' ? 1 : 30;
+        const grantExpiresAt = cleanProductId === 'lifetime_master'
+          ? null
+          : new Date(Date.now() + daysToAdd * 86400 * 1000).toISOString();
+
+        let effective = { tier: newTier, expiresAt: grantExpiresAt };
+
+        if (env.DB) {
+          const existingUser = await env.DB.prepare(
+            'SELECT id, tier, tier_expires_at FROM auth_accounts WHERE id = ?'
+          ).bind(callerOrderRef).first();
+
+          effective = resolveEffectiveTierUpgrade(existingUser, newTier, grantExpiresAt);
+
+          await env.DB.prepare(
+            'UPDATE auth_accounts SET tier = ?, tier_expires_at = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+          ).bind(effective.tier, effective.expiresAt, callerOrderRef).run();
+
+          if (cleanOrderId) {
+            try {
+              await env.DB.prepare(
+                "UPDATE xdc_orders SET status = 'fulfilled', tx_hash = ?, wallet_address = ?, updated_at = CURRENT_TIMESTAMP WHERE order_id = ? AND user_id = ?"
+              ).bind(cleanTxHash, walletAddress || '', cleanOrderId, callerOrderRef).run();
+            } catch (_) {}
+          }
+        }
+
+        return new Response(JSON.stringify({
+          success: true,
+          tier: effective.tier,
+          expiresAt: effective.expiresAt,
+          onChainConfirmed: true,
+          network: network || 'mainnet',
+          features: featuresForTier(effective.tier),
+          message: 'XDC Network payment verified. Pro tier unlocked on enterprise rails.'
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // AI Attestation Oracle: Signs Proof-of-Competence for XDC (ERC-5192) or TON (TEP-85)
+      if (path === '/api/v1/oracle/attest' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok) {
+          return new Response(JSON.stringify({
+            error: 'AUTH_REQUIRED',
+            message: 'Authentication required to request an AI Proof-of-Competence attestation.'
+          }), { status: 401, headers: corsHeaders });
+        }
+
+        const attestLimit = await enforceDualKeyLimit(env, request, 'oracle_attest', {
+          uid: auth.uid, uidPerMinute: 5, ipPerMinute: 15
+        });
+        if (!attestLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many attestation requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...attestLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+
+        const { examCode, scaledScore, passed, localLedgerHash, chain, walletAddress } = body;
+        if (!examCode || !walletAddress) {
+          return new Response(JSON.stringify({ error: 'Missing examCode or walletAddress' }), {
+            status: 400,
+            headers: corsHeaders
+          });
+        }
+
+        const attestation = await createOracleAttestation({
+          userId: auth.uid,
+          examCode: String(examCode),
+          scaledScore: Number(scaledScore),
+          passed: Boolean(passed),
+          localLedgerRoot: localLedgerHash,
+          chain: String(chain || 'xdc').toLowerCase(),
+          walletAddress: String(walletAddress),
+          env
+        });
+
+        if (!attestation.ok) {
+          return new Response(JSON.stringify({
+            error: 'ATTESTATION_REJECTED',
+            message: attestation.error || 'Mastery criteria not satisfied'
+          }), { status: 422, headers: corsHeaders });
+        }
+
+        return new Response(JSON.stringify(attestation), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }

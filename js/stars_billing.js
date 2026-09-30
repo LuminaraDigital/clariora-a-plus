@@ -447,6 +447,50 @@
     return ent;
   }
 
+  async function purchaseProductWithXdc(productId) {
+    const product = PRODUCTS.find((p) => p.id === productId);
+    if (!product) return { success: false, status: 'unknown_product' };
+
+    if (!window.XDCProvider || typeof window.XDCProvider.connectWallet !== 'function') {
+      alert('XDC Web3 Provider is not loaded. Refresh and try again.');
+      return { success: false, status: 'unavailable' };
+    }
+
+    try {
+      const conn = await window.XDCProvider.connectWallet();
+      if (!conn || !conn.account) {
+        alert('Please connect an EVM wallet (MetaMask or XDC Pay) first.');
+        return { success: false, status: 'wallet_required' };
+      }
+
+      var idToken = null;
+      try {
+        var svc = window.ClarioraFirebaseService;
+        var user = svc && svc.getCurrentUser && svc.getCurrentUser();
+        if (user && user.getIdToken) idToken = await user.getIdToken();
+      } catch (_) {}
+
+      const result = await window.XDCProvider.sendXdcPayment(product.id, {
+        idToken: idToken,
+        network: 'mainnet'
+      });
+
+      if (result && result.success) {
+        alert('Payment Verified! ' + product.title + ' unlocked via XDC Network.');
+        await applyProductGrant(product);
+        const entitlement = await fetchServerEntitlement();
+        if (entitlement) cacheEntitlement(entitlement);
+        closeStarsUpgradeSheet();
+        return { success: true, status: 'paid', entitlement: entitlement || result, rail: 'xdc_network', txHash: result.txHash };
+      }
+      return { success: false, status: 'failed' };
+    } catch (err) {
+      console.warn('[StarsBilling] XDC Payment error:', err && err.message ? err.message : err);
+      alert('XDC Payment error: ' + ((err && err.message) || err));
+      return { success: false, status: 'failed', error: String(err && err.message || err) };
+    }
+  }
+
   function promptDevMockCheckout(product) {
     return new Promise(function (resolve) {
       const confirmPurchase = window.confirm(
@@ -473,14 +517,17 @@
     container.innerHTML = PRODUCTS.map(function (p) {
       var inTma = !!(getTelegramWebApp() && getTelegramWebApp().initData);
       var tonBtn = inTma ? '' : (
-        '<button type="button" class="btn" onclick="StarsBilling.purchaseProductWithTon(\'' + p.id + '\')" style="padding: 8px 12px; margin-top: 6px; font-size: 0.8rem; background: transparent; border: 1px solid rgba(212,175,55,0.45); color: #D4AF37; border-radius: 8px; cursor: pointer;">Unlock with TON</button>'
+        '<button type="button" class="btn" onclick="StarsBilling.purchaseProductWithTon(\'' + p.id + '\')" style="padding: 6px 10px; margin-top: 6px; font-size: 0.78rem; background: transparent; border: 1px solid rgba(212,175,55,0.45); color: #D4AF37; border-radius: 8px; cursor: pointer;">Pay with TON</button>'
+      );
+      var xdcBtn = inTma ? '' : (
+        '<button type="button" class="btn" onclick="StarsBilling.purchaseProductWithXdc(\'' + p.id + '\')" style="padding: 6px 10px; margin-top: 6px; margin-left: 6px; font-size: 0.78rem; background: transparent; border: 1px solid rgba(56,189,248,0.45); color: #38BDF8; border-radius: 8px; cursor: pointer;">Pay with XDC</button>'
       );
       return '' +
       '<div class="stars-card" style="display: flex; justify-content: space-between; align-items: center; background: #131722; border: 1px solid rgba(212, 175, 55, 0.25); border-radius: 12px; padding: 14px; margin-bottom: 10px;">' +
         '<div style="flex: 1; padding-right: 12px;">' +
           '<div style="font-weight: 700; color: #F3F4F6; font-size: 0.95rem; margin-bottom: 3px;">' + p.title + '</div>' +
           '<div style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4;">' + p.description + '</div>' +
-          tonBtn +
+          '<div style="display: flex; flex-wrap: wrap; gap: 4px;">' + tonBtn + xdcBtn + '</div>' +
         '</div>' +
         '<button type="button" class="btn btn-primary" onclick="StarsBilling.purchaseProduct(\'' + p.id + '\')" style="padding: 10px 16px; min-height: 42px; font-weight: 700; background: linear-gradient(135deg, #D4AF37 0%, #F5D061 100%); color: #07090E; border: none; border-radius: 8px; cursor: pointer; white-space: nowrap; font-size: 0.9rem;">' +
           p.stars + ' Stars' +
@@ -641,6 +688,17 @@
     }, { pendingText: 'Verifying...', cooldownMs: 1000 });
   }
 
+  function purchaseProductWithXdcGuarded(productId) {
+    var tg = getTelegramWebApp();
+    if (tg && tg.initData) {
+      alert('Inside Telegram, use Stars checkout for digital unlocks.');
+      return purchaseProductGuarded(productId);
+    }
+    return guardedAction('billing:purchase:xdc:' + productId, function () {
+      return purchaseProductWithXdc(productId);
+    }, { pendingText: 'Connecting XDC...', cooldownMs: 1000 });
+  }
+
   function activateLicenseGuarded() {
     return guardedAction('billing:activate-license', function () {
       return activateLicenseFromSheet();
@@ -653,6 +711,7 @@
     saveEntitlement: saveEntitlement,
     purchaseProduct: purchaseProductGuarded,
     purchaseProductWithTon: purchaseProductWithTonGuarded,
+    purchaseProductWithXdc: purchaseProductWithXdcGuarded,
     openStarsUpgradeSheet: openStarsUpgradeSheet,
     closeStarsUpgradeSheet: closeStarsUpgradeSheet,
     activateLicenseKey: activateLicenseGuarded,

@@ -60,7 +60,7 @@
       lines.push(exam + ' scaled score: ' + score + (passed ? ' (pass line cleared)' : ' (keep drilling)'));
     }
     if (streak > 0) lines.push('Study streak: ' + streak + (streak === 1 ? ' day' : ' days'));
-    lines.push('Free diagnostic, no account: https://clariora.com.au/app');
+    lines.push('Free diagnostic after sign-in: https://clariora.com.au/app');
     lines.push('Why it beats the packs: https://clariora.com.au/landing/compare.html');
     return lines.join('\n');
   }

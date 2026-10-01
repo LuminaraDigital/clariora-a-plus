@@ -838,6 +838,7 @@
     var exam = normExam(profile.exam || payload.examType || 'core1');
     var byObjective = byObjectiveFrom(payload.perQuestion);
     var result = compute({ exam: exam });
+    var a = A();
 
     writeStorage(STORAGE_KEYS.onboarding, {
       exam: exam,
@@ -859,6 +860,14 @@
       totalQuestions: payload.totalQuestions,
       weakest: (result.weakest || []).map(function (w) { return w.code; })
     });
+    try {
+      if (a && a.bus && typeof a.bus.emit === 'function') {
+        a.bus.emit('onboarding:diagnostic_completed', {
+          exam: exam,
+          scaledScore: payload.scaledScore
+        });
+      }
+    } catch (_) {}
     track('onboarding_completed', { exam: exam, readiness: result.readiness });
     clearDraft();
     markFirstValue('diagnostic_completed');
@@ -920,6 +929,34 @@
 
     var result = compute({ exam: exam });
     var weakKeys = (result.weakest || []).map(function (wk) { return statKey(wk.exam, wk.code); });
+
+    // Soft-bias: prepend objective keys that match today's readiness-path domains.
+    try {
+      if (a.readinessPath && typeof a.readinessPath.todayEntry === 'function') {
+        var pathToday = a.readinessPath.todayEntry();
+        var focusDomains = (pathToday && pathToday.focusDomains) || [];
+        if (focusDomains.length) {
+          var stats = readStorage(STORAGE_KEYS.objectiveStats, {}) || {};
+          var pathKeys = [];
+          Object.keys(stats).forEach(function (key) {
+            var s = stats[key];
+            if (!s || !s.domain) return;
+            var dom = String(s.domain).toLowerCase();
+            for (var fi = 0; fi < focusDomains.length; fi++) {
+              if (dom === String(focusDomains[fi]).toLowerCase()) {
+                pathKeys.push(key);
+                break;
+              }
+            }
+          });
+          if (pathKeys.length) {
+            weakKeys = pathKeys.concat(weakKeys.filter(function (k) {
+              return pathKeys.indexOf(k) < 0;
+            }));
+          }
+        }
+      }
+    } catch (_) {}
 
     var count = Math.min(Math.round(mins * 1.1), pool.length);
     var built = buildTodaySet({
@@ -1099,6 +1136,11 @@
         if (p && (p.completedAt || p.skippedAt)) return;
         persistDraft();
         track('funnel_abandon', { funnel: 'onboarding', exam: state.draft.exam });
+        try {
+          if (a && a.bus && typeof a.bus.emit === 'function') {
+            a.bus.emit('funnel:abandon', { funnel: 'onboarding', exam: state.draft.exam });
+          }
+        } catch (_) {}
       });
     } catch (_) {}
 

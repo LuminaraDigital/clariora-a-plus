@@ -42,6 +42,9 @@
       Clariora A+
     </a>
     <nav class="nav-links" aria-label="Site">
+      <a href="#labs">Hardware Labs</a>
+      <a href="#pbq">PBQ Simulators</a>
+      <a href="#innovations">Innovations</a>
       <a href="why.html">Why Clariora</a>
       <a href="compare.html">Compare</a>
       <a href="how.html">How it works</a>
@@ -58,6 +61,9 @@
         <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </summary>
       <div class="nav-menu-panel">
+        <a href="#labs">Hardware Labs</a>
+        <a href="#pbq">PBQ Simulators</a>
+        <a href="#innovations">Innovations</a>
         <a href="why.html">Why Clariora</a>
         <a href="compare.html">Compare</a>
         <a href="how.html">How it works</a>
@@ -108,6 +114,259 @@
         <li><strong>Dual track</strong><span>CompTIA A+ and Microsoft Azure Fundamentals</span></li>
         <li><strong>1</strong><span>sign-in gates the product so progress is yours</span></li>
       </ul>
+    </div>
+  </section>
+
+  <section class="section" id="labs" aria-label="Interactive 3D Hardware Labs">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Interactive 3D Hardware</span>
+        <h2>Inspect physical hardware before you touch customer equipment.</h2>
+        <p>CompTIA A+ Core 1 tests physical assembly, pinouts, and rack ergonomics. Rotate realistic 3D component models, inspect key exam objectives, and practice PBQs in the browser.</p>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Select hardware model">
+        <button class="tab" role="tab" id="tab-hw-mobo" aria-selected="true" data-model="mobo">ATX Motherboard (Obj 3.4)</button>
+        <button class="tab" role="tab" id="tab-hw-rj45" aria-selected="false" tabindex="-1" data-model="rj45">RJ-45 Modular Plug (Obj 2.1)</button>
+        <button class="tab" role="tab" id="tab-hw-rack" aria-selected="false" tabindex="-1" data-model="rack">42U Datacenter Rack (Obj 3.4)</button>
+      </div>
+
+      <div class="labs-stage" id="labs-stage">
+        <div class="labs-stage__canvas-wrap" id="labs-canvas-wrap">
+          <div class="labs-stage__toolbar" id="labs-toolbar" role="toolbar" aria-label="3D Viewport Controls">
+            <div class="labs-toolbar__group">
+              <button type="button" class="labs-tool-btn is-active" id="btn-mode-pbr" data-mode="pbr" title="Studio Photorealistic Shading">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20Z"/></svg>
+                <span>Studio</span>
+              </button>
+              <button type="button" class="labs-tool-btn" id="btn-mode-wire" data-mode="wireframe" title="Holographic Wireframe Blueprint">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m3 3 18 18M21 3 3 21"/></svg>
+                <span>Wireframe</span>
+              </button>
+              <button type="button" class="labs-tool-btn" id="btn-mode-explode" data-mode="explode" title="Exploded Architecture Layering">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="m3 3 6 6M15 15l6 6M21 3l-6 6M9 15l-6 6"/></svg>
+                <span>Explode</span>
+              </button>
+            </div>
+            <div class="labs-toolbar__group">
+              <button type="button" class="labs-tool-btn is-active" id="btn-cam-hero" title="Perspective Hero View">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                <span>Hero</span>
+              </button>
+              <button type="button" class="labs-tool-btn" id="btn-cam-top" title="Top-Down Engineering View">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+                <span>Plan</span>
+              </button>
+              <button type="button" class="labs-tool-btn" id="btn-tool-action" title="Interactive Hardware Operation">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg>
+                <span id="btn-tool-action-label">Operate</span>
+              </button>
+            </div>
+            <div class="labs-toolbar__group">
+              <button type="button" class="labs-tool-btn is-active" id="btn-tool-rotate" title="Toggle 360 Auto-Rotation" aria-pressed="true">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-1.19"/></svg>
+                <span>Rotate</span>
+              </button>
+              <button type="button" class="labs-tool-btn" id="btn-tool-reset" title="Reset Camera to Home Orientation">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                <span>Reset</span>
+              </button>
+              <button type="button" class="labs-tool-btn is-active" id="btn-tool-sound" title="Toggle Tactile Audio Feedback" aria-pressed="true">
+                <svg id="icon-sound-on" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+                <svg id="icon-sound-off" class="is-hidden" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="labs-stage__badge" id="labs-stage-badge">
+            <span class="labs-stage__badge-dot" aria-hidden="true"></span>
+            <span id="labs-badge-text">3D WebGL Engine</span>
+          </div>
+          <div class="labs-stage__viewport" id="labs-viewport">
+            <div class="labs-stage__sheen" id="labs-sheen" aria-hidden="true"></div>
+            <div class="labs-stage__model-container" id="labs-model-container">
+              <img
+                id="labs-img"
+                class="labs-stage__img"
+                src="img/motherboard-1200.webp"
+                srcset="img/motherboard-600.webp 600w, img/motherboard-1200.webp 1200w"
+                sizes="(min-width: 900px) 680px, 100vw"
+                width="1200"
+                height="800"
+                alt="3D ATX Motherboard hardware model with LGA 1700 socket, DDR5 slots, PCIe 4.0 x16, and M.2 NVMe"
+                loading="lazy">
+              <div class="labs-hotspots" id="labs-hotspots" aria-label="Interactive hardware hotspots"></div>
+            </div>
+          </div>
+          <div class="labs-stage__hint">
+            <span>Move cursor or drag to tilt in 3D space. Click hotspots to inspect exam objectives.</span>
+          </div>
+        </div>
+
+        <div class="labs-inspector" id="labs-inspector" aria-live="polite">
+          <div class="labs-inspector__header">
+            <span class="eyebrow" id="labs-obj-tag">CompTIA A+ Core 1 | Obj 3.4</span>
+            <h3 id="labs-comp-title">LGA 1700 CPU Socket and Retention Lever</h3>
+          </div>
+          <p id="labs-comp-desc" class="labs-inspector__desc">
+            Land Grid Array (LGA) packages place contact pins directly on the motherboard socket rather than on the processor. Align the Pin 1 gold triangle indicator to avoid pin damage. The Zero Insertion Force (ZIF) lever secures the Integrated Heat Spreader.
+          </p>
+          <div class="labs-inspector__spec-card">
+            <h4>Key Exam Takeaway</h4>
+            <p id="labs-comp-takeaway">Modern Intel desktop processors and AMD AM5 utilize LGA sockets. Contrast with legacy AMD AM4 Pin Grid Array (PGA) where pins were soldered directly on the CPU.</p>
+          </div>
+          <div class="labs-inspector__nav">
+            <span class="small muted">Hotspot quick-select:</span>
+            <div class="labs-inspector__hotspot-list" id="labs-hotspot-list"></div>
+          </div>
+          <div class="labs-inspector__actions">
+            <a class="btn btn-secondary" href="/app">Launch Interactive PBQs</a>
+            <a class="btn btn-secondary" href="how.html">View exam syllabus</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="pbq" aria-label="Interactive PBQ Simulators">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Performance-Based Questions</span>
+        <h2>Real interactive PBQs. Never freeze on exam day.</h2>
+        <p>CompTIA exams open with 3 to 5 live simulation scenarios that catch test-takers off guard. Clariora includes full hands-on browser simulators modeled directly on blueprint objectives.</p>
+      </div>
+
+      <div class="grid grid-3">
+        <div class="card card-accent">
+          <div class="card-header-icon">
+            <svg class="ic ic-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            <h3>CLI Terminal Simulator</h3>
+          </div>
+          <p>Practice live command prompt isolation: execute ipconfig /all, ping, tracert, nslookup, netstat, sfc /scannow, and chkdsk to diagnose simulated workstation failures under exam time pressure.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header-icon">
+            <svg class="ic ic-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+            <h3>SOHO Wireless Gateway</h3>
+          </div>
+          <p>Configure residential and small office router firewalls, select optimal 2.4 GHz vs 5 GHz non-overlapping channels, implement WPA3 encryption, and assign static DHCP reservations.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header-icon">
+            <svg class="ic ic-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m10 15 5-3-5-3v6z"/></svg>
+            <h3>T568A / T568B Cable Wiring</h3>
+          </div>
+          <p>Drag and pin 8-conductor twisted pair color sequences into RJ-45 modular jacks. Learn the differences between straight-through patch cords and crossover cables for network connections.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header-icon">
+            <svg class="ic ic-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            <h3>Datacenter Rack &amp; RAID Builder</h3>
+          </div>
+          <p>Mount 42U rack servers, patch panels, and UPS units with proper thermal airflow. Construct RAID 0, 1, 5, and 10 disk storage arrays balancing speed and fault tolerance.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header-icon">
+            <svg class="ic ic-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <h3>Windows Recovery Environment</h3>
+          </div>
+          <p>Troubleshoot boot records using bootrec, resolve corrupted system files with DISM and SFC, and configure Safe Mode isolation to isolate driver faults.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header-icon">
+            <svg class="ic ic-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            <h3>Laser Printer 7-Step Process</h3>
+          </div>
+          <p>Sequence the electro-photographic imaging cycle: Processing, Charging, Exposing, Developing, Transferring, Fusing, and Cleaning to solve print defect questions.</p>
+        </div>
+      </div>
+
+      <div class="terminal-card" aria-label="Interactive Command Prompt Diagnostic Sandbox">
+        <div class="terminal-header">
+          <div class="terminal-dots" aria-hidden="true">
+            <span class="terminal-dot terminal-dot-red"></span>
+            <span class="terminal-dot terminal-dot-yellow"></span>
+            <span class="terminal-dot terminal-dot-green"></span>
+          </div>
+          <span class="terminal-title">Windows Terminal : Diagnostic PBQ Sandbox (Obj 1.4 &amp; 1.9)</span>
+          <span class="small muted">Interactive Preview</span>
+        </div>
+        <div class="terminal-chips" role="toolbar" aria-label="Quick diagnostic commands">
+          <button type="button" class="term-chip is-active" data-cmd="ipconfig">ipconfig /all</button>
+          <button type="button" class="term-chip" data-cmd="ping">ping -t gateway</button>
+          <button type="button" class="term-chip" data-cmd="tracert">tracert 8.8.8.8</button>
+          <button type="button" class="term-chip" data-cmd="sfc">sfc /scannow</button>
+          <button type="button" class="term-chip" data-cmd="netstat">netstat -ano</button>
+          <button type="button" class="term-chip" data-cmd="chkdsk">chkdsk C: /f</button>
+        </div>
+        <div class="terminal-body" id="term-screen" role="region" aria-live="polite">
+          <pre class="terminal-pre" id="term-output"></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="innovations" aria-label="Next-Gen Learning Innovations">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Next-Gen Learning Engine</span>
+        <h2>Learn with Socratic AI. Earn your way forward. Prove competence without doubt.</h2>
+        <p>We eliminated braindumps, forged certificates, and wasted retake fees. Clariora turns every minute of study into verified diagnostic troubleshooting ability and tangible career leverage.</p>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card card-accent">
+          <div class="card-header-icon">
+            <svg class="ic ic-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+            <h3>Socratic AI Ghost Coach</h3>
+          </div>
+          <p>Traditional prep tools spoon-feed multiple-choice answers that fail under pressure. Ghost Coach actively probes your troubleshooting rationale, tests your isolation sequence on PBQs, and pinpoints the exact sub-objectives holding your score down.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header-icon">
+            <svg class="ic ic-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <h3>Employer-Verified Digital Credentials</h3>
+          </div>
+          <p>Resumes and paper PDFs can be forged; mathematical proof cannot. Score 800+ on full mocks to receive an immutable, non-transferable Soulbound credential that hiring managers and recruiters verify in one click (anchored to ISO-compliant XDC enterprise rails and Telegram digital badges).</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header-icon">
+            <svg class="ic ic-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="m9 12 2 2 4-4"/></svg>
+            <h3>Earn-While-You-Learn Study Credits</h3>
+          </div>
+          <p>Study effort converts directly into in-app currency. Complete daily crucible drills, maintain 7-day recall streaks, and earn APX Study Credits to unlock extra AI coach bursts, diagnostic deficit scans, and full pro exam passes for $0.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header-icon">
+            <svg class="ic ic-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <h3>7-Day Study Sprints ($5 Accountability Pledge)</h3>
+          </div>
+          <p>Studying alone has a 60% dropout rate. Join a 7-day study sprint with fellow technicians. Complete your daily 3-part review to get 100% of your deposit refunded, plus earn a share of the community finisher bonus.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header-icon">
+            <svg class="ic ic-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            <h3>Employer-Sponsored Exam Vouchers</h3>
+          </div>
+          <p>Corporate IT departments and academies fund apprentice exam vouchers upfront in smart contract escrow. As soon as the AI Coach verifies an 85%+ readiness score, the voucher code releases automatically: zero wasted company budget, 100% merit-based access.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header-icon">
+            <svg class="ic ic-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+            <h3>Multi-Rail Frictionless Checkout</h3>
+          </div>
+          <p>No international card? No problem. Check out with Apple Pay, Google Pay, Telegram Stars, or instant zero-fee settlement with XDC and TON/USDT. 100% accessible to every technician worldwide, with zero crypto knowledge required.</p>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -192,6 +451,9 @@
   <div class="container">
     <p><strong>Clariora A+</strong> by Datacentre Academy / Luminara Digital. CompTIA A+ is a trademark of CompTIA. Clariora is not affiliated with or endorsed by CompTIA.</p>
     <p>
+      <a href="#labs">Hardware Labs</a> ·
+      <a href="#pbq">PBQ Simulators</a> ·
+      <a href="#innovations">Innovations</a> ·
       <a href="why.html">Why</a> ·
       <a href="compare.html">Compare</a> ·
       <a href="how.html">How</a> ·
@@ -204,7 +466,11 @@
     </p>
   </div>
 </footer>
+<script src="vendor/three.min.js" defer></script>
+<script src="vendor/OrbitControls.js" defer></script>
+<script src="vendor/GLTFLoader.js" defer></script>
 <script src="hero-mesh.js" defer></script>
+<script src="labs-3d.js" defer></script>
 <script>
 (function () {
   document.querySelectorAll('[data-busy]').forEach(function (el) {
@@ -225,6 +491,32 @@
       btn.addEventListener('click', function () { select(btn); });
     });
   });
+  (function () {
+    var commands = {
+      ipconfig: "C:\\Users\\technician> ipconfig /all\n\nWindows IP Configuration\n   Host Name . . . . . . . . . . . . : WORKSTATION-04\n   Primary Dns Suffix  . . . . . . . : corp.clariora.local\n   Node Type . . . . . . . . . . . . : Hybrid\n   IP Routing Enabled. . . . . . . . : No\n\nEthernet adapter Local Area Connection:\n   Description . . . . . . . . . . . : Intel(R) Ethernet Connection I219-LM\n   Physical Address. . . . . . . . . : 00-1A-2B-3C-4D-5E\n   DHCP Enabled. . . . . . . . . . . : Yes\n   Autoconfiguration Enabled . . . . : Yes\n   IPv4 Address. . . . . . . . . . . : 169.254.14.88(Preferred)\n   Subnet Mask . . . . . . . . . . . : 255.255.0.0\n   Default Gateway . . . . . . . . . : 0.0.0.0\n   DNS Servers . . . . . . . . . . . : 127.0.0.1\n\n[DIAGNOSTIC]: APIPA address 169.254.x.x indicates DHCP server unreachable (Core 1 Obj 2.4). Check physical link or DHCP scope pool.",
+      ping: "C:\\Users\\technician> ping 192.168.1.1\n\nPinging 192.168.1.1 with 32 bytes of data:\nReply from 192.168.1.1: bytes=32 time<1ms TTL=64\nReply from 192.168.1.1: bytes=32 time=1ms TTL=64\nReply from 192.168.1.1: bytes=32 time<1ms TTL=64\nReply from 192.168.1.1: bytes=32 time<1ms TTL=64\n\nPing statistics for 192.168.1.1:\n    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss),\nApproximate round trip times in milli-seconds:\n    Minimum = 0ms, Maximum = 1ms, Average = 0ms\n\n[DIAGNOSTIC]: Local default gateway is fully responsive. Fault isolated to external WAN or DNS resolver (Core 1 Obj 2.2).",
+      tracert: "C:\\Users\\technician> tracert 8.8.8.8\n\nTracing route to dns.google [8.8.8.8] over a maximum of 30 hops:\n\n  1    <1 ms    <1 ms    <1 ms  192.168.1.1\n  2     8 ms     7 ms     8 ms  10.240.0.1\n  3     9 ms     9 ms    10 ms  core-edge-router.isp.net [203.0.113.1]\n  4     *        *        *     Request timed out.\n  5    14 ms    13 ms    13 ms  dns.google [8.8.8.8]\n\nTrace complete.\n\n[DIAGNOSTIC]: Hop 4 packet drop is an ICMP rate-limit, not a hard disconnect; end-to-end routing to public DNS succeeded.",
+      sfc: "C:\\Windows\\system32> sfc /scannow\n\nBeginning system scan. This process will take some time.\n\nBeginning verification phase of system scan.\nVerification 100% complete.\n\nWindows Resource Protection found corrupt files and successfully repaired them.\nFor online repairs, details are included in the CBS log file located at windir\\Logs\\CBS\\CBS.log.\n\n[DIAGNOSTIC]: Core 2 Obj 1.6 system integrity verified. Corrupted DLLs replaced from SxS store component repository.",
+      netstat: "C:\\Users\\technician> netstat -ano\n\nActive Connections\n\n  Proto  Local Address          Foreign Address        State           PID\n  TCP    0.0.0.0:22             0.0.0.0:0              LISTENING       844\n  TCP    0.0.0.0:80             0.0.0.0:0              LISTENING       4\n  TCP    0.0.0.0:443            0.0.0.0:0              LISTENING       4\n  TCP    0.0.0.0:3389           0.0.0.0:0              LISTENING       1208\n  TCP    192.168.1.45:51234     198.51.100.24:443      ESTABLISHED     3120\n\n[DIAGNOSTIC]: Port 3389 listening indicates Remote Desktop Protocol (RDP) service active. Cross-reference PID 1208 in Task Manager.",
+      chkdsk: "C:\\Windows\\system32> chkdsk C: /f\n\nThe type of the file system is NTFS.\nVolume label is OSDisk.\n\nStage 1: Examining basic file system structure ...\n  256000 file records processed. File verification completed.\nStage 2: Examining file name linkage ...\n  312000 index entries processed. Index verification completed.\nStage 3: Examining security descriptors ...\n  Security descriptor verification completed.\n\nWindows has scanned the file system and found no problems. No further action is required.\n\n[DIAGNOSTIC]: File system metadata and master file table (MFT) integrity verified without bad sectors (Core 2 Obj 3.1)."
+    };
+
+    var termPre = document.getElementById('term-output');
+    if (!termPre) return;
+    termPre.textContent = commands.ipconfig;
+
+    var chips = document.querySelectorAll('.term-chip');
+    chips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        chips.forEach(function (c) { c.classList.remove('is-active'); });
+        chip.classList.add('is-active');
+        var cmd = chip.getAttribute('data-cmd');
+        if (commands[cmd]) {
+          termPre.textContent = commands[cmd];
+        }
+      });
+    });
+  })();
 })();
 </script>
 </body>

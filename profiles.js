@@ -187,6 +187,67 @@
     return { ok: true, profile: meta.profiles[id] };
   }
 
+  function bindAccountProfile(accountId, accountName) {
+    const meta = ensureInitialized();
+    if (!accountId || accountId === "local_technician" || accountId === "offline") {
+      let localProf = meta.profiles[meta.activeProfileId];
+      if (!localProf || localProf.accountId) {
+        localProf = Object.values(meta.profiles).find((p) => !p.accountId);
+        if (!localProf) {
+          localProf = createProfile("Learner 1");
+        }
+        meta.activeProfileId = localProf.id;
+        saveMeta(meta);
+      }
+      return localProf;
+    }
+
+    const sanitized = String(accountId).replace(/[^a-zA-Z0-9_-]/g, "_");
+    const targetId = "acc_" + sanitized;
+
+    if (!meta.profiles[targetId]) {
+      const cleanName = String(accountName || "").trim() || "Technician";
+      meta.profiles[targetId] = {
+        id: targetId,
+        accountId: String(accountId),
+        name: cleanName,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      // Move unassigned guest progress into the new account profile
+      const prevActiveId = meta.activeProfileId;
+      const prevProfile = meta.profiles[prevActiveId];
+      if (prevActiveId && prevActiveId !== targetId && prevProfile && !prevProfile.accountId) {
+        Object.values(DATA_KEYS).forEach((baseKey) => {
+          const guestVal = scopedGet(baseKey, prevActiveId);
+          if (guestVal != null && scopedGet(baseKey, targetId) == null) {
+            scopedSet(baseKey, guestVal, targetId);
+            scopedRemove(baseKey, prevActiveId);
+          }
+        });
+      }
+    } else if (accountName && (!meta.profiles[targetId].name || meta.profiles[targetId].name === "Technician")) {
+      meta.profiles[targetId].name = String(accountName).trim();
+      meta.profiles[targetId].updatedAt = new Date().toISOString();
+    }
+
+    meta.activeProfileId = targetId;
+    saveMeta(meta);
+    return meta.profiles[targetId];
+  }
+
+  function unbindAccountProfile() {
+    const meta = ensureInitialized();
+    let guestProfile = Object.values(meta.profiles).find((p) => !p.accountId);
+    if (!guestProfile) {
+      guestProfile = createProfile("Learner 1");
+    }
+    meta.activeProfileId = guestProfile.id;
+    saveMeta(meta);
+    return guestProfile;
+  }
+
   function exportAllProfileData() {
     const meta = ensureInitialized();
     const data = {};
@@ -302,6 +363,8 @@
     renameProfile,
     deleteProfile,
     switchProfile,
+    bindAccountProfile,
+    unbindAccountProfile,
     scopedKey,
     scopedGet,
     scopedSet,
@@ -314,4 +377,4 @@
     objectivesCompletion,
     wipeProfileData
   };
-})(window);
+})(typeof window !== 'undefined' ? window : (typeof global !== 'undefined' ? global : this));

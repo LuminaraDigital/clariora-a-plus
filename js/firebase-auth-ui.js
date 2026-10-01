@@ -98,6 +98,27 @@
     if (closeBtn) closeBtn.style.display = '';
   }
 
+  /**
+   * The login wall is its own aria-modal dialog. While the email dialog is open
+   * on top of it, leave the wall out of the accessibility tree so the password
+   * field is a named textbox instead of content hidden by the wall.
+   */
+  function suppressLoginWallForModal(suppress) {
+    var wall = document.getElementById('clarioraLoginWall');
+    if (!wall) return;
+    if (suppress) {
+      if (wall.hidden || wall.getAttribute('data-a11y-suppressed') === 'true') return;
+      wall.setAttribute('data-a11y-suppressed', 'true');
+      wall.setAttribute('aria-hidden', 'true');
+      if ('inert' in wall) wall.inert = true;
+      return;
+    }
+    if (wall.getAttribute('data-a11y-suppressed') !== 'true') return;
+    wall.removeAttribute('data-a11y-suppressed');
+    wall.removeAttribute('aria-hidden');
+    if ('inert' in wall) wall.inert = false;
+  }
+
   function onAuthenticated(callback) {
     if (typeof callback === 'function') authState.authListeners.push(callback);
     return function unsubscribe() {
@@ -482,13 +503,13 @@
       '      <input type="email" id="authEmail" class="auth-input" placeholder="you@example.com" required autocomplete="email" inputmode="email" spellcheck="false">',
       '    </div>',
       '    <div class="auth-input-group">',
-      '      <label for="authPassword">Password</label>',
-      '      <input type="password" id="authPassword" class="auth-input" placeholder="Password" required autocomplete="current-password" minlength="8">',
+      '      <label id="authPasswordLabel" for="authPassword">Password</label>',
+      '      <input type="password" id="authPassword" name="password" class="auth-input" placeholder="Password" required autocomplete="current-password" minlength="8" aria-labelledby="authPasswordLabel" aria-describedby="authPasswordHint">',
       '      <p class="auth-password-hint" id="authPasswordHint">At least 8 characters. Use letters and a number.</p>',
       '    </div>',
       '    <div class="auth-input-group" id="authConfirmGroup" hidden>',
-      '      <label for="authPasswordConfirm">Confirm password</label>',
-      '      <input type="password" id="authPasswordConfirm" class="auth-input" placeholder="Confirm password" autocomplete="new-password" minlength="8">',
+      '      <label id="authPasswordConfirmLabel" for="authPasswordConfirm">Confirm password</label>',
+      '      <input type="password" id="authPasswordConfirm" name="password-confirm" class="auth-input" placeholder="Confirm password" autocomplete="new-password" minlength="8" aria-labelledby="authPasswordConfirmLabel">',
       '    </div>',
       '    <button type="submit" id="authSubmitBtn" class="btn-auth-submit">Sign in</button>',
       '  </form>',
@@ -604,6 +625,7 @@
     if (opts.wall) setWallMode(true);
     var desired = opts.mode === 'signup' ? 'signup' : 'signin';
     setMode(desired);
+    suppressLoginWallForModal(true);
     var overlay = document.getElementById('clarioraAuthModalOverlay');
     if (overlay) {
       overlay.classList.add('is-active');
@@ -626,6 +648,7 @@
       authState.modalOpen = false;
       clearError();
     }
+    suppressLoginWallForModal(false);
   }
 
   function setMode(mode) {

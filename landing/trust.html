@@ -53,11 +53,11 @@
       <a class="btn btn-secondary" href="/app?signup=1" data-busy>Create account</a>
       <a class="btn btn-primary" href="/app" data-busy>Sign in</a>
     </div>
-    <details class="nav-menu">
-      <summary aria-label="Open menu">
+    <div class="nav-menu">
+      <button type="button" class="nav-menu-toggle" aria-expanded="false" aria-controls="navMenuPanel" aria-label="Open menu">
         <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      </summary>
-      <div class="nav-menu-panel">
+      </button>
+      <div class="nav-menu-panel" id="navMenuPanel" hidden>
         <a href="why.html">Why Clariora</a>
         <a href="compare.html">Compare</a>
         <a href="how.html">How it works</a>
@@ -69,7 +69,7 @@
         <a href="https://t.me/ClarioraBot/app" target="_blank" rel="noopener">Launch on Telegram</a>
         <a href="https://github.com/LuminaraDigital/clariora-a-plus" rel="noopener">Source on GitHub</a>
       </div>
-    </details>
+    </div>
   </div>
 </header>
 <main id="top">

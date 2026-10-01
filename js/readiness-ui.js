@@ -167,6 +167,19 @@
       '</div>';
   }
 
+  function diagnosticOfferFor(exam) {
+    var honesty = APlus.honesty;
+    if (honesty && typeof honesty.diagnosticOffer === 'function') {
+      return honesty.diagnosticOffer(exam || 'core1');
+    }
+    return {
+      count: 20,
+      minutes: 20,
+      takeLabel: 'Take the 20-question diagnostic',
+      startLabel: 'Start the 20-question diagnostic'
+    };
+  }
+
   /* ------------------------------------------------------------------ *
    * Hero
    * ------------------------------------------------------------------ */
@@ -234,9 +247,11 @@
 
     if (cold) {
       // Cold start: the diagnostic is THE call to action, so it is the one
-      // gold button on the home screen.
+      // gold button on the home screen. The label uses the same length the
+      // session will actually run.
+      var offer = diagnosticOfferFor(result && result.exam);
       html += '<button type="button" class="btn hero-cta hero-cta-gold" id="heroDiagnosticBtn">' +
-        'Take the 20-question diagnostic</button>';
+        esc(offer.takeLabel) + '</button>';
     }
 
     html += '</div>';
@@ -249,6 +264,10 @@
       var btn = document.getElementById('heroDiagnosticBtn');
       if (btn) {
         btn.addEventListener('click', function () {
+          if (typeof window.startPlacementDiagnostic === 'function') {
+            window.startPlacementDiagnostic();
+            return;
+          }
           if (APlus.onboarding && typeof APlus.onboarding.start === 'function') {
             APlus.onboarding.start(true);
           } else {
@@ -388,7 +407,8 @@
       // read was inconsistent, so repaint the last good numbers instead.
       // A genuinely empty history (the learner cleared it, or is new) is real
       // and does go cold, which is the only way "--" is ever shown.
-      if (!sum.hasData && history.length > 0 && lastGood && lastGood.sum.hasData) {
+      if (!sum.hasData && history.length > 0 && lastGood && lastGood.sum.hasData &&
+          lastGood.result && lastGood.result.exam === result.exam) {
         console.warn('[readiness-ui] inconsistent read with ' + history.length +
           ' attempts on record; repainting the last good reading.');
         result = lastGood.result;

@@ -247,6 +247,23 @@
   }
 
   /**
+   * Google redirect returns to this page once. A normal reload returns null.
+   * Callers treat a non-null user as an explicit sign-in so it can replace
+   * a different cookie subject. The result is consumed on first read.
+   */
+  async function consumeRedirectSignIn() {
+    await init();
+    if (!state.auth || !state.modules || !state.modules.auth.getRedirectResult) return null;
+    try {
+      var result = await state.modules.auth.getRedirectResult(state.auth);
+      return result && result.user ? result.user : null;
+    } catch (err) {
+      console.warn('[Firebase] redirect result notice:', err);
+      return null;
+    }
+  }
+
+  /**
    * Sign out current user
    */
   async function signOutUser() {
@@ -399,6 +416,7 @@
   async function syncLocalToFirestore() {
     var user = getCurrentUser();
     if (!user || !state.db || !state.modules || !state.firestoreAvailable) return false;
+    if (!learningSyncAllowed()) return false;
 
     var activePrefix = null;
     if (typeof window !== 'undefined' && window.CompTIAProfiles && typeof window.CompTIAProfiles.getActiveId === 'function') {
@@ -435,7 +453,24 @@
   /**
    * Applies remote Firestore snapshot to local database
    */
+  /**
+   * Cloud learner blobs are per Firebase uid. Refuse the write unless this
+   * browser's storage owner is that same uid. Stops a persisted Google user
+   * from pouring another account's history into the live keys.
+   */
+  function learningSyncAllowed() {
+    var user = getCurrentUser();
+    if (!user || !user.uid) return false;
+    try {
+      if (typeof localStorage === 'undefined') return false;
+      return localStorage.getItem('clariora_storage_owner_uid') === user.uid;
+    } catch (_) {
+      return false;
+    }
+  }
+
   function applyRemoteToLocal(remotePayload) {
+    if (!learningSyncAllowed()) return;
     if (!remotePayload || !remotePayload.data) return;
     var remoteData = remotePayload.data;
     var changed = false;
@@ -524,6 +559,7 @@
     signUpWithEmail: signUpWithEmail,
     sendPasswordReset: sendPasswordReset,
     signOutUser: signOutUser,
+    consumeRedirectSignIn: consumeRedirectSignIn,
     ensureUserProfile: ensureUserProfile,
     saveLearnerProgress: saveLearnerProgress,
     loadLearnerProgress: loadLearnerProgress,

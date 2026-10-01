@@ -153,11 +153,16 @@
    * Global Shims for Complete Backward Compatibility with existing HTML inline handlers
    */
   function registerGlobalShims() {
-    window.startExam = function(type, questionCount, timeMinutes) {
+    window.startExam = function(type, questionCount, timeMinutes, mode) {
+      if (type && typeof type === 'object') {
+        APlus.engine.start(type);
+        return;
+      }
       APlus.engine.start({
         type: type || 'core1',
         questionCount: questionCount || 90,
-        timeMinutes: timeMinutes || 90
+        timeMinutes: timeMinutes || 90,
+        mode: mode
       });
     };
 
@@ -281,6 +286,9 @@
 
     window.clearHistory = function() {
       const wipe = () => {
+        if (APlus.learner && typeof APlus.learner.clearHistory === 'function') {
+          APlus.learner.clearHistory();
+        }
         if (APlus.storage) {
           APlus.storage.remove('history');
           APlus.storage.remove('missed');
@@ -288,6 +296,12 @@
         }
         localStorage.removeItem('comptia_a_plus_history');
         localStorage.removeItem('comptia_a_plus_missed');
+        try {
+          if (window.CompTIAProfiles && typeof CompTIAProfiles.scopedRemove === 'function') {
+            CompTIAProfiles.scopedRemove('comptia_a_plus_history');
+            CompTIAProfiles.scopedRemove('comptia_a_plus_missed');
+          }
+        } catch (_) {}
         renderHistoryTable();
         updateMissedCountDisplay();
         if (APlus.ghostCoach && typeof APlus.ghostCoach.refreshMission === 'function') {
@@ -307,47 +321,28 @@
       if (confirm('Clear exam attempt history and missed question pool?')) wipe();
     };
 
-    window.renderHistoryTable = function() {
-      const records = APlus.storage ? APlus.storage.get('history', []) : [];
-      const container = document.getElementById('historyTableContainer');
-      if (!container) return;
-
-      if (records.length === 0) {
-        container.innerHTML = `<p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">No exam attempts recorded yet. Complete an exam to view your score progression!</p>`;
-        return;
+    function historyRows() {
+      try {
+        if (APlus.learner && typeof APlus.learner.getHistory === 'function') {
+          const rows = APlus.learner.getHistory();
+          if (Array.isArray(rows)) return rows;
+        }
+      } catch (err) {
+        console.warn('[app] history read failed:', err);
       }
+      return APlus.storage ? (APlus.storage.get('history', []) || []) : [];
+    }
 
-      let html = `
-        <table class="history-table">
-          <thead>
-            <tr>
-              <th>Date & Time</th>
-              <th>Exam Mode</th>
-              <th>Score</th>
-              <th>Raw Correct</th>
-              <th>Accuracy</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
-
-      records.forEach(r => {
-        const statusColor = (r.status === 'PASSED') ? 'var(--accent-green)' : 'var(--accent-red)';
-        html += `
-          <tr>
-            <td>${escapeHTML(r.date)}</td>
-            <td><strong>${escapeHTML(r.examType)}</strong></td>
-            <td style="font-family: monospace; font-weight: 700; font-size: 1.05rem;">${escapeHTML(String(r.scaledScore))} / 900</td>
-            <td>${escapeHTML(r.raw)}</td>
-            <td>${escapeHTML(r.percentage)}</td>
-            <td style="color: ${statusColor}; font-weight: 700;">${escapeHTML(r.status)}</td>
-          </tr>
-        `;
+    window.renderHistoryTable = function() {
+      const records = historyRows();
+      const containers = document.querySelectorAll('[data-history-table], #historyTableContainer');
+      if (!containers.length) return;
+      const html = (APlus.learner && typeof APlus.learner.buildHistoryTableHtml === 'function')
+        ? APlus.learner.buildHistoryTableHtml(records)
+        : (APlus.learner && APlus.learner.HISTORY_EMPTY_HTML) || '';
+      containers.forEach(function (container) {
+        container.innerHTML = html;
       });
-
-      html += '</tbody></table>';
-      container.innerHTML = html;
     };
 
     window.updateMissedCountDisplay = function() {
@@ -369,6 +364,12 @@
 
     renderHistoryTable();
     updateMissedCountDisplay();
+
+    if (APlus.bus && typeof APlus.bus.on === 'function') {
+      APlus.bus.on('exam:finished', function () {
+        renderHistoryTable();
+      });
+    }
 
     if (window.CompTIALedgerUI && typeof window.CompTIALedgerUI.init === 'function') {
       window.CompTIALedgerUI.init();

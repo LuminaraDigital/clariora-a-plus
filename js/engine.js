@@ -135,16 +135,39 @@
 
     start(config = {}) {
       if (this.timerInterval) clearInterval(this.timerInterval);
+      // The shell keeps its own interval. If it keeps ticking, the digits
+      // show that clock instead of the session that just started.
+      try {
+        const shell = window.currentExamSession;
+        if (shell && shell.timerInterval) {
+          clearInterval(shell.timerInterval);
+          shell.timerInterval = null;
+        }
+        if (window.__aplusShellTimer) {
+          clearInterval(window.__aplusShellTimer);
+          window.__aplusShellTimer = null;
+        }
+      } catch (_) {}
 
       const type = config.type || 'core1';
-      const questionCount = config.questionCount || 90;
-      const timeMinutes = config.timeMinutes || 90;
+      let questionCount = config.questionCount || 90;
+      let timeMinutes = config.timeMinutes || 90;
+      const diagnosticRequested = config.mode === 'diagnostic' || config.mode === 'placement' || config.diagnostic === true;
 
       let pool = [];
       if (config.customPool && Array.isArray(config.customPool)) {
         pool = [...config.customPool];
       } else if (APlus.data) {
         pool = APlus.data.getQuestions(type === 'both' ? 'both' : (type === 'core2' ? 'core2' : 'core1'));
+      }
+
+      // Diagnostic length is the bank, capped at the target. A button that
+      // still says 20 cannot start 10 when this pool has 20 or more, and it
+      // cannot keep asking for 20 when the pool is shorter.
+      if (diagnosticRequested && !config.customPool && APlus.honesty && typeof APlus.honesty.resolveDiagnosticLength === 'function' && pool.length) {
+        const nonPbq = pool.filter(q => q && q.type !== 'pbq').length;
+        questionCount = APlus.honesty.resolveDiagnosticLength(nonPbq);
+        timeMinutes = questionCount;
       }
 
       let sampled = [];
@@ -164,8 +187,18 @@
       this.userAnswers = {};
       this.eliminatedOptions = {};
       this.flaggedQuestions = new Set();
-      this.totalSeconds = timeMinutes * 60;
-      this.remainingSeconds = timeMinutes * 60;
+      const honesty = APlus.honesty;
+      const clockSeconds = honesty && typeof honesty.sessionClockSeconds === 'function'
+        ? honesty.sessionClockSeconds({
+          mode: examModeForType(type, config),
+          diagnostic: diagnosticRequested,
+          questionCount: config.questionCount || questionCount,
+          timeMinutes: config.timeMinutes || timeMinutes,
+          delivered: preparedQuestions.length
+        })
+        : timeMinutes * 60;
+      this.totalSeconds = clockSeconds;
+      this.remainingSeconds = clockSeconds;
       this.isPaused = false;
       this.domainKey = config.domainKey || null;
       this.coachMissionId = config.coachMissionId || null;
@@ -194,14 +227,20 @@
 
     startTimer() {
       if (this.timerInterval) clearInterval(this.timerInterval);
+      const emitTick = () => {
+        APlus.bus.emit('exam:timer:tick', {
+          remainingSeconds: this.remainingSeconds,
+          totalSeconds: this.totalSeconds,
+          alertLevel: timerAlertLevel(this.remainingSeconds)
+        });
+      };
+      // Paint the real clock immediately. The markup defaults to 90:00, which
+      // is wrong for a shorter diagnostic until the first one-second tick.
+      emitTick();
       this.timerInterval = setInterval(() => {
         if (!this.isPaused) {
           this.remainingSeconds--;
-          APlus.bus.emit('exam:timer:tick', {
-            remainingSeconds: this.remainingSeconds,
-            totalSeconds: this.totalSeconds,
-            alertLevel: timerAlertLevel(this.remainingSeconds)
-          });
+          emitTick();
 
           if (this.remainingSeconds <= 0) {
             clearInterval(this.timerInterval);
@@ -414,38 +453,47 @@
       const secondsSpent = this.totalSeconds - this.remainingSeconds;
       const examTypeForMeta = this.type;
 
-      // Update storage
+      const finishedAt = new Date();
+      const attempt = {
+        // Millisecond timestamp so attempts inside the same minute still
+        // order correctly. The locale date string is display only, and
+        // Date.parse of it is only minute precision.
+        timestamp: finishedAt.getTime(),
+        date: finishedAt.toLocaleDateString() + ' ' + finishedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        examType: this.type.toUpperCase(),
+        mode: this.mode,
+        scaledScore: scaledScore,
+        rawCorrect: rawCorrect,
+        totalQuestions: total,
+        raw: `${rawCorrect}/${total}`,
+        percentage: `${((rawCorrect / (total || 1)) * 100).toFixed(1)}%`,
+        passed: passed,
+        status: passed ? 'PASSED' : 'FAILED',
+        passingScore: this.passingScore,
+        domainStats: domainStats,
+        perQuestion: perQuestion,
+        // Which generation of the question bank scored this attempt. Lets a
+        // future correction invalidate exactly the affected attempts instead
+        // of guessing from timestamps.
+        bankRevision: (APlus.bankIntegrity && APlus.bankIntegrity.BANK_REVISION) || 2
+      };
+
+      // Progress reads the same store as results. Write the attempt even when
+      // the namespaced storage adapter is missing; recordAttempt also mirrors
+      // the profile key and repaints the history table.
+      if (APlus.learner && typeof APlus.learner.recordAttempt === 'function') {
+        APlus.learner.recordAttempt(attempt);
+      } else if (APlus.storage) {
+        const history = APlus.storage.get('history', []);
+        history.unshift(attempt);
+        if (history.length > 25) history.pop();
+        APlus.storage.set('history', history);
+      }
+
       if (APlus.storage) {
         const existingMissed = APlus.storage.get('missed', []);
         const mergedMissed = Array.from(new Set([...existingMissed, ...newlyMissedIds]));
         APlus.storage.set('missed', mergedMissed);
-
-        const history = APlus.storage.get('history', []);
-        const finishedAt = new Date();
-        history.unshift({
-          // Millisecond timestamp so attempts inside the same minute still
-          // order correctly. The locale date string is display only, and
-          // Date.parse of it is only minute precision.
-          timestamp: finishedAt.getTime(),
-          date: finishedAt.toLocaleDateString() + ' ' + finishedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          examType: this.type.toUpperCase(),
-          mode: this.mode,
-          scaledScore: scaledScore,
-          rawCorrect: rawCorrect,
-          totalQuestions: total,
-          raw: `${rawCorrect}/${total}`,
-          percentage: `${((rawCorrect / (total || 1)) * 100).toFixed(1)}%`,
-          passed: passed,
-          status: passed ? 'PASSED' : 'FAILED',
-          passingScore: this.passingScore,
-          domainStats: domainStats,
-          // Which generation of the question bank scored this attempt. Lets a
-          // future correction invalidate exactly the affected attempts instead
-          // of guessing from timestamps.
-          bankRevision: (APlus.bankIntegrity && APlus.bankIntegrity.BANK_REVISION) || 2
-        });
-        if (history.length > 25) history.pop();
-        APlus.storage.set('history', history);
       }
 
       const missedQuestionIds = perQuestion.filter(r => !r.correct && r.id).map(r => r.id);
@@ -483,6 +531,10 @@
       };
 
       APlus.bus.emit('exam:finished', resultsPayload);
+
+      try {
+        if (typeof window.renderHistoryTable === 'function') window.renderHistoryTable();
+      } catch (_) {}
 
       // Finish-path backfill for answered items not already emitted mid-session
       // (e.g. Pearson exam-day mode where answers were locked without mid emit).

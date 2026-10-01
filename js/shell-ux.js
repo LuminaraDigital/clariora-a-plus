@@ -554,6 +554,9 @@
         btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
       }
     }
+    if (tab === 'progress' && typeof window.renderHistoryTable === 'function') {
+      try { window.renderHistoryTable(); } catch (_) {}
+    }
     if (tab === 'progress' && window.APlus && APlus.masteryHeatmap) {
       var mount = byId('masteryHeatmapMount');
       if (mount) {

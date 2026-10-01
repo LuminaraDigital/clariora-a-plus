@@ -115,12 +115,13 @@
   <script src="js/sync-config.js"></script>
   <script src="js/sync.js"></script>
   <script src="js/streak.js"></script>
+  <script src="js/honesty.js"></script>
   <script src="js/readiness-ui.js"></script>
   <script src="js/home-widgets.js"></script>
   <script src="js/readiness2.js"></script>
   <script src="js/onboarding.js?v=4.3.0"></script>
   <script src="js/daily-quest.js"></script>
-    <script src="js/readiness-path.js"></script>
+  <script src="js/readiness-path.js"></script>
   <script src="js/tiny-win.js"></script>
   <script src="js/close-loop-ux.js"></script>
   <script src="js/friction-coach.js"></script>
@@ -132,6 +133,7 @@
   <script src="js/telegram-buddy-client.js"></script>
   <script src="js/pearson-mode.js"></script>
   <script src="js/mastery-heatmap.js"></script>
+  <script src="js/course-switch.js"></script>
   <script src="js/community-benchmarks.js"></script>
   <script src="js/similar-questions.js"></script>
   <script src="js/report-problem-modal.js"></script>
@@ -149,8 +151,9 @@
   <!-- Firebase Authentication & Cloud Learning Backend -->
   <script src="js/firebase-config.js"></script>
   <script src="js/firebase-service.js"></script>
-  <script src="js/firebase-auth-ui.js?v=4.3.7"></script>
-  <script src="js/auth-gate.js?v=4.3.7"></script>
+  <script src="js/session-identity.js?v=4.3.8"></script>
+  <script src="js/firebase-auth-ui.js?v=4.3.8"></script>
+  <script src="js/auth-gate.js?v=4.3.8"></script>
   <!-- Clariora Level 4: The Datacenter Crucible -->
   <script src="js/crucible-engine.js"></script>
   <script src="js/crucible-ui.js"></script>
@@ -296,8 +299,8 @@
             <!-- Readiness mount. Rendered by the onboarding module when present. -->
             <section id="readinessHero" class="hero-card">
               <div class="shell-fallback" data-shell-fallback>
-                <h2>Take the 20-question diagnostic to get your readiness score.</h2>
-                <button type="button" class="btn btn-secondary" onclick="window.APlus &amp;&amp; APlus.onboarding ? APlus.onboarding.start() : startExam('both',20,20)">Start diagnostic</button>
+                <h2 id="shellDiagnosticHeading">Take the 20-question diagnostic to get your readiness score.</h2>
+                <button type="button" class="btn btn-secondary" id="shellDiagnosticBtn" onclick="if (window.startPlacementDiagnostic) startPlacementDiagnostic(); else if (window.APlus &amp;&amp; APlus.onboarding) APlus.onboarding.start(); else startExam('core1',20,20,'diagnostic')">Start the 20-question diagnostic</button>
               </div>
             </section>
 
@@ -340,7 +343,7 @@
                 </button>
               </div>
               <div class="mock-grid">
-                <div class="card">
+                <div class="card" data-course="core1">
                   <div class="card-title">Core 1</div>
                   <div class="card-meta">220-1201. 90 questions, 90 minutes, pass 675.</div>
                   <details class="blueprint">
@@ -355,7 +358,7 @@
                   </details>
                   <button type="button" class="btn btn-secondary card-cta" onclick="startExam('core1', 90, 90)">Start Core 1</button>
                 </div>
-                <div class="card">
+                <div class="card" data-course="core2">
                   <div class="card-title">Core 2</div>
                   <div class="card-meta">220-1202. 90 questions, 90 minutes, pass 700.</div>
                   <details class="blueprint">
@@ -369,7 +372,7 @@
                   </details>
                   <button type="button" class="btn btn-secondary card-cta" onclick="startExam('core2', 90, 90)">Start Core 2</button>
                 </div>
-                <div class="card" style="border-color: rgba(56, 189, 248, 0.35);">
+                <div class="card" data-course="az900" style="border-color: rgba(56, 189, 248, 0.35);">
                   <div class="card-title" style="color: #38bdf8;">Azure AZ-900</div>
                   <div class="card-meta">Microsoft Fundamentals. 45 questions, 50 minutes, pass 700.</div>
                   <details class="blueprint">
@@ -382,7 +385,7 @@
                   </details>
                   <button type="button" class="btn btn-secondary card-cta" style="border-color: rgba(56, 189, 248, 0.5); color: #38bdf8;" onclick="startExam('az900', 45, 50)">Start AZ-900</button>
                 </div>
-                <div class="card" style="border-color: rgba(168, 85, 247, 0.35);">
+                <div class="card" data-course="az500" style="border-color: rgba(168, 85, 247, 0.35);">
                   <div class="card-title" style="color: #c084fc;">Azure AZ-500</div>
                   <div class="card-meta">Microsoft Security Engineer. 50 questions, 100 minutes, pass 700.</div>
                   <details class="blueprint">
@@ -405,7 +408,7 @@
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
                 <button type="button" class="btn btn-secondary" onclick="startExam('both', 20, 25)" style="text-align: left; padding: 10px 12px; display: flex; flex-direction: column; gap: 3px;">
                   <strong style="color: var(--gold-light); font-size: 13px;">20-Question sprint</strong>
-                  <span style="font-size: 11px; color: var(--text-secondary);">Fast-paced mixed diagnostic</span>
+                  <span style="font-size: 11px; color: var(--text-secondary);">Mixed Core 1 and Core 2 practice</span>
                 </button>
                 <button type="button" class="btn btn-secondary" onclick="startExam('az900', 15, 20)" style="text-align: left; padding: 10px 12px; display: flex; flex-direction: column; gap: 3px;">
                   <strong style="color: #38bdf8; font-size: 13px;">Azure 15 sprint</strong>
@@ -542,7 +545,7 @@
               <h3 class="section-heading" style="margin-bottom: 0;">Exam history and trends</h3>
               <button type="button" class="btn btn-secondary" style="font-size: 12px; padding: 4px 10px;" onclick="clearHistory()">Clear history</button>
             </div>
-            <div id="historyTableContainer">
+            <div id="historyTableContainer" data-history-table>
               <p class="more-note">No attempts recorded yet.</p>
             </div>
           </section>
@@ -575,6 +578,7 @@
         </div>
         <div class="exam-toolbar-actions">
           <span id="examExplanationsNote" class="toolbar-note" hidden>Explanations after submit</span>
+          <button type="button" id="flashcardExitBtn" class="btn btn-secondary toolbar-btn" hidden onclick="if (window.CompTIAMemoryMode &amp;&amp; CompTIAMemoryMode.abandonMemorySession) CompTIAMemoryMode.abandonMemorySession();">Exit flashcards</button>
           <button type="button" id="flagBtn" class="flag-btn toolbar-btn" onclick="toggleFlagCurrentQuestion()" aria-pressed="false">Flag</button>
           <button type="button" class="btn btn-secondary toolbar-btn" onclick="openReviewModal()">Review</button>
           <button type="button" id="examScratchpadBtn" class="btn btn-secondary toolbar-btn" onclick="openScratchpadModal()" aria-label="Open exam whiteboard">Whiteboard</button>
@@ -1142,6 +1146,9 @@
         APlus.masteryHeatmap.render(hmMount);
       }
       if (window.CrucibleUI) CrucibleUI.init();
+      if (window.APlus && APlus.courseSwitch && typeof APlus.courseSwitch.remount === 'function') {
+        try { APlus.courseSwitch.remount(); } catch (e) {}
+      }
     }
 
     /* NAVIGATION */
@@ -1170,7 +1177,7 @@
     }
 
     /* EXAM GENERATION AND START */
-    function startExam(type, questionCount, timeMinutes) {
+    function startExam(type, questionCount, timeMinutes, mode) {
       if (!examData) {
         alert("Exam questions data not found!");
         return;
@@ -1200,18 +1207,38 @@
 
       // Shuffle pool
       shuffleArray(pool);
+      var sessionMode = mode || examModeForSessionType(type);
+      if (sessionMode === 'diagnostic' && window.APlus && APlus.honesty && typeof APlus.honesty.resolveDiagnosticLength === 'function' && pool.length) {
+        var nonPbq = 0;
+        for (var qi = 0; qi < pool.length; qi++) {
+          if (pool[qi] && pool[qi].type !== 'pbq') nonPbq++;
+        }
+        questionCount = APlus.honesty.resolveDiagnosticLength(nonPbq);
+      }
       const selected = pool.slice(0, Math.min(questionCount, pool.length));
+      var clockSeconds = timeMinutes * 60;
+      if (window.APlus && APlus.honesty && typeof APlus.honesty.sessionClockSeconds === 'function') {
+        clockSeconds = APlus.honesty.sessionClockSeconds({
+          mode: sessionMode,
+          diagnostic: sessionMode === 'diagnostic',
+          questionCount: questionCount,
+          timeMinutes: timeMinutes,
+          delivered: selected.length
+        });
+      } else if (sessionMode === 'diagnostic' && selected.length) {
+        clockSeconds = selected.length * 60;
+      }
 
       currentExamSession = {
         type: type,
-        mode: examModeForSessionType(type),
+        mode: sessionMode,
         questions: selected,
         currentIndex: 0,
         userAnswers: {},
         eliminatedOptions: {},
         flaggedQuestions: new Set(),
-        totalSeconds: timeMinutes * 60,
-        remainingSeconds: timeMinutes * 60,
+        totalSeconds: clockSeconds,
+        remainingSeconds: clockSeconds,
         timerInterval: null,
         isPaused: false,
         passingScore: passingScore
@@ -1222,6 +1249,15 @@
       renderQuestion();
       renderMatrix();
       syncExamModeUi();
+      if (sessionMode === 'diagnostic' && window.APlus && APlus.honesty && selected.length) {
+        var deliveredLabelCount = selected.length;
+        var heading = document.getElementById('shellDiagnosticHeading');
+        if (heading) heading.textContent = APlus.honesty.diagnosticTakeLabel(deliveredLabelCount) + ' to get your readiness score.';
+        var diagBtn = document.getElementById('shellDiagnosticBtn');
+        if (diagBtn) diagBtn.textContent = APlus.honesty.diagnosticStartLabel(deliveredLabelCount);
+        var heroDiag = document.getElementById('heroDiagnosticBtn');
+        if (heroDiag) heroDiag.textContent = APlus.honesty.diagnosticTakeLabel(deliveredLabelCount);
+      }
     }
 
     /* Show the quiet "explanations after submit" line under exam conditions. */
@@ -1344,24 +1380,38 @@
     /* TIMER */
     function startTimer() {
       if (currentExamSession.timerInterval) clearInterval(currentExamSession.timerInterval);
+      if (window.__aplusShellTimer) clearInterval(window.__aplusShellTimer);
       if (window.CrucibleUI) CrucibleUI.resetMutationTracker();
       updateTimerUI();
 
       currentExamSession.timerInterval = setInterval(() => {
+        if (window.__aplusFlashcardAbandoned && currentExamSession && currentExamSession.type === 'memory') {
+          clearInterval(currentExamSession.timerInterval);
+          return;
+        }
         if (!currentExamSession.isPaused) {
           currentExamSession.remainingSeconds--;
           updateTimerUI();
 
           if (currentExamSession.remainingSeconds <= 0) {
             clearInterval(currentExamSession.timerInterval);
+            if (currentExamSession.memoryAbandoned) return;
             alert("Time has expired! Submitting your exam now.");
             finishExam();
           }
         }
       }, 1000);
+      window.__aplusShellTimer = currentExamSession.timerInterval;
     }
 
     function updateTimerUI() {
+      // Engine sessions paint their own digits. An idle shell clock (the
+      // 90:00 default) must not overwrite a diagnostic that just started.
+      if (window.APlus && APlus.engine && APlus.engine.questions && APlus.engine.questions.length
+          && currentExamSession && currentExamSession.type !== 'memory'
+          && (!currentExamSession.questions || currentExamSession.questions.length === 0)) {
+        return;
+      }
       const s = currentExamSession.remainingSeconds;
       const mins = Math.floor(s / 60);
       const secs = s % 60;
@@ -1627,6 +1677,7 @@
 
     /* EXAM SCORING & RESULTS */
     function finishExam() {
+      if (currentExamSession && currentExamSession.memoryAbandoned) return;
       if (currentExamSession.timerInterval) clearInterval(currentExamSession.timerInterval);
 
       const questions = currentExamSession.questions;
@@ -1963,6 +2014,10 @@
 
     function saveHistoryRecord(record) {
       try {
+        if (window.APlus && APlus.learner && typeof APlus.learner.recordAttempt === 'function') {
+          APlus.learner.recordAttempt(record);
+          return;
+        }
         const list = getHistoryRecords();
         list.unshift(record);
         if (list.length > 20) list.pop();
@@ -1973,46 +2028,16 @@
     }
 
     function renderHistoryTable() {
-      const records = getHistoryRecords();
-      const container = document.getElementById('historyTableContainer');
-      if (!container) return;
-
-      if (records.length === 0) {
-        container.innerHTML = `<p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">No exam attempts recorded yet. Complete an exam to view your score progression!</p>`;
-        return;
-      }
-
-      let html = `
-        <table class="history-table">
-          <thead>
-            <tr>
-              <th>Date & Time</th>
-              <th>Exam Mode</th>
-              <th>Score</th>
-              <th>Raw Correct</th>
-              <th>Accuracy</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
-
-      records.forEach(r => {
-        const statusColor = (r.status === 'PASSED') ? 'var(--accent-green)' : 'var(--accent-red)';
-        html += `
-          <tr>
-            <td>${escapeHTML(r.date)}</td>
-            <td><strong>${escapeHTML(r.examType)}</strong></td>
-            <td style="font-family: monospace; font-weight: 700; font-size: 1.05rem;">${escapeHTML(String(r.scaledScore))} / 900</td>
-            <td>${escapeHTML(r.raw)}</td>
-            <td>${escapeHTML(r.percentage)}</td>
-            <td style="color: ${statusColor}; font-weight: 700;">${escapeHTML(r.status)}</td>
-          </tr>
-        `;
+      const records = (window.APlus && APlus.learner && typeof APlus.learner.getHistory === 'function')
+        ? APlus.learner.getHistory()
+        : getHistoryRecords();
+      const html = (window.APlus && APlus.learner && typeof APlus.learner.buildHistoryTableHtml === 'function')
+        ? APlus.learner.buildHistoryTableHtml(records)
+        : '';
+      const containers = document.querySelectorAll('[data-history-table], #historyTableContainer');
+      containers.forEach(function (container) {
+        container.innerHTML = html;
       });
-
-      html += `</tbody></table>`;
-      container.innerHTML = html;
     }
 
     function clearHistory() {
@@ -2806,7 +2831,7 @@
             <h4 class="label">Attempt history</h4>
             <button type="button" class="btn btn-secondary" onclick="clearHistory()">Clear</button>
           </div>
-          <div id="historyTableContainer">
+          <div id="historyTableDrawer" data-history-table>
             <p class="more-note">No attempts recorded yet.</p>
           </div>
         </div>
@@ -2821,7 +2846,7 @@
         <h3 id="moreGroupData" class="label">Data</h3>
         <nav class="drawer-nav" aria-labelledby="moreGroupData">
           <ul>
-            <li id="drawerAccountItem"><button type="button" class="drawer-item" onclick="closeMoreMenu(); if(window.ClarioraAuthUI){ if(localStorage.getItem('clariora_telegram_auth') || (window.ClarioraFirebaseService && window.ClarioraFirebaseService.getCurrentUser())) { ClarioraAuthUI.openAccountMenu(); } else { ClarioraAuthUI.openModal(); } }" title="Account settings and cloud sync"><svg class="drawer-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="drawer-item-text" id="drawerAccountText">Sign in / Account</span><span class="drawer-item-meta" id="drawerAccountMeta">Cloud Sync</span></button></li>
+            <li id="drawerAccountItem"><button type="button" class="drawer-item" onclick="closeMoreMenu(); if(window.ClarioraAuthUI){ if((window.ClarioraAuthUI.hasBoundSubject && window.ClarioraAuthUI.hasBoundSubject()) || localStorage.getItem('clariora_telegram_auth') || (window.ClarioraFirebaseService && window.ClarioraFirebaseService.getCurrentUser())) { ClarioraAuthUI.openAccountMenu(); } else { ClarioraAuthUI.openModal(); } }" title="Account settings and cloud sync"><svg class="drawer-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="drawer-item-text" id="drawerAccountText">Sign in / Account</span><span class="drawer-item-meta" id="drawerAccountMeta">Cloud Sync</span></button></li>
             <li><button type="button" class="drawer-item" id="dbMemoryStatusChip" onclick="CompTIADatabase.openModal()" title="Local database and PC memory" aria-label="Database status"><svg class="drawer-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/></svg><span class="drawer-item-text">Local database</span><span class="drawer-item-meta"><strong id="dbMemoryStatusBadge">Memory</strong></span></button></li>
             <li><button type="button" class="drawer-item" onclick="CompTIAProductTrust.onExportBackup()"><svg class="drawer-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 4v10M8 11l4 4 4-4M4 19h16"/></svg><span class="drawer-item-text">Export backup</span></button></li>
             <li><button type="button" class="drawer-item" onclick="CompTIAProductTrust.onImportBackup()"><svg class="drawer-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 16V6M8 9l4-4 4 4M4 19h16"/></svg><span class="drawer-item-text">Import backup</span></button></li>

@@ -213,4 +213,5 @@ jobs:
       - name: Verify live TMA production endpoints
         env:
           CLARIORA_BASE_URL: https://clariora.com.au
+          CLARIORA_CHECK_MARKETING_COPY: "1"
         run: node tools/verify_tma_live_production.js

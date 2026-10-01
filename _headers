@@ -57,9 +57,22 @@
   Access-Control-Allow-Origin: https://comptia-a-plus-master.pages.dev
   Cache-Control: public, max-age=604800
 
-# Landing page. The HTML must stay fresh; images are small and rarely change.
-/landing/index.html
-  Cache-Control: no-cache
+# Landing and legal HTML must not stay on the edge. The default asset
+# Cache-Control (public, max-age=0, must-revalidate) still records
+# cf-cache-status HIT for /landing/faq, so a hard refresh can replay the
+# pre-deploy body. no-store applies to the file. The worker also rewrites
+# these responses, including the extensionless html_handling URL.
+/landing/*.html
+  Cache-Control: no-store
+  CDN-Cache-Control: no-store
+
+/privacy.html
+  Cache-Control: no-store
+  CDN-Cache-Control: no-store
+
+/terms.html
+  Cache-Control: no-store
+  CDN-Cache-Control: no-store
 
 /landing/img/*
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800

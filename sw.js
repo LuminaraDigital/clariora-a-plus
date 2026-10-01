@@ -110,6 +110,30 @@ function cacheKeyFor(request) {
   return './' + url.pathname.replace(/^\//, '');
 }
 
+// Privacy and Terms are standalone documents, not app-shell routes.
+// html_handling also serves them at the extensionless path.
+function isLegalDocumentPath(pathname) {
+  return (
+    pathname === '/privacy' ||
+    pathname === '/privacy/' ||
+    pathname === '/privacy.html' ||
+    pathname === '/terms' ||
+    pathname === '/terms/' ||
+    pathname === '/terms.html'
+  );
+}
+
+function isAppShellPath(pathname) {
+  return (
+    pathname === '/' ||
+    pathname === '' ||
+    pathname === '/index.html' ||
+    pathname === '/app' ||
+    pathname === '/app/' ||
+    pathname === '/app/index.html'
+  );
+}
+
 async function cacheFirst(request) {
   const cache = await caches.open(CACHE_NAME);
   const key = cacheKeyFor(request);
@@ -130,10 +154,21 @@ async function navigationHandler(request) {
   const cached = await cache.match(NAV_CACHE_KEY);
 
   // Background revalidate regardless of cache hit/miss.
+  // Only an app-shell response may occupy NAV_CACHE_KEY. Writing the last
+  // navigation here stored privacy.html and terms.html in one slot, so the
+  // next open of either URL rendered the other document.
   const revalidate = fetch(request)
     .then((network) => {
       if (network && network.status === 200) {
-        cache.put(NAV_CACHE_KEY, network.clone());
+        let finalPath = '';
+        try {
+          finalPath = new URL(network.url).pathname;
+        } catch (err) {
+          finalPath = '';
+        }
+        if (isAppShellPath(finalPath)) {
+          cache.put(NAV_CACHE_KEY, network.clone());
+        }
       }
       return network;
     })
@@ -178,6 +213,13 @@ self.addEventListener('fetch', (event) => {
   // to it does not change BUILD_ID; caching it here would leave repeat
   // visitors on a stale copy. Always fetch it from the network.
   if (request.headers.has('range') || url.pathname.includes('/media/') || url.pathname.includes('/landing/')) {
+    event.respondWith(fetch(request));
+    return;
+  }
+
+  // Never answer these from the shared shell cache. A prior navigation used
+  // to leave the other legal document in that slot.
+  if (isLegalDocumentPath(url.pathname)) {
     event.respondWith(fetch(request));
     return;
   }

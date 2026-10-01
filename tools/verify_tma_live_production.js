@@ -79,7 +79,55 @@ async function main() {
   assert(ton.status === 401 || ton.status === 403, 'ton order without auth must reject, got ' + ton.status);
   console.log('  OK ton order auth gate');
 
+  if (process.env.CLARIORA_CHECK_MARKETING_COPY === '1') {
+    await assertMarketingCopy();
+  }
+
   console.log('\nALL LIVE TMA PRODUCTION CHECKS PASSED');
+}
+
+async function assertMarketingCopy() {
+  const pages = [
+    {
+      path: '/landing/faq.html',
+      need: 'Sign in to open the study app',
+      forbid: 'Progress is stored on your device'
+    },
+    {
+      path: '/landing/faq',
+      need: 'Sign in to open the study app',
+      forbid: 'Progress is stored on your device'
+    },
+    {
+      path: '/landing/trust.html',
+      need: 'Sign-in required on the web',
+      forbid: 'No account and no phone-home'
+    },
+    {
+      path: '/privacy.html',
+      need: 'On the web, sign-in is required',
+      forbid: 'You can use Clariora without creating an account'
+    },
+    {
+      path: '/terms.html',
+      need: 'On the web, an account is required',
+      forbid: 'without creating an account'
+    }
+  ];
+  for (const page of pages) {
+    const res = await fetch(BASE + page.path, {
+      method: 'GET',
+      redirect: 'manual',
+      headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' }
+    });
+    const html = await res.text();
+    const cache = res.headers.get('cache-control') || '';
+    assert(res.status === 200, page.path + ' HTTP ' + res.status + ' (expected 200, not a cached redirect)');
+    assert(html.indexOf(page.need) !== -1, page.path + ' missing sign-in copy: ' + page.need);
+    assert(html.indexOf(page.forbid) === -1, page.path + ' still serves retired guest copy');
+    assert(/no-store/i.test(cache), page.path + ' Cache-Control must be no-store, got ' + cache);
+    console.log('  OK marketing copy ' + page.path);
+  }
 }
 
 main().catch((err) => {

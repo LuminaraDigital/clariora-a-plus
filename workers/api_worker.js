@@ -163,7 +163,37 @@ export function resolveEffectiveTierUpgrade(existingUser, newTier, newExpiresAt)
   return { tier: newTier, expiresAt: newExpiresAt };
 }
 
-export { CoachRateLimiter };
+// Landing and legal HTML must come from the current asset manifest with
+// no-store. html_handling 307s /landing/faq.html to /landing/faq, and that
+// extensionless response is an edge HIT under the default asset
+// Cache-Control. A hard refresh then replays the cached body.
+function freshMarketingHtmlAssetPath(pathname) {
+  if (pathname === '/privacy' || pathname === '/privacy/' || pathname === '/privacy.html') return '/privacy';
+  if (pathname === '/terms' || pathname === '/terms/' || pathname === '/terms.html') return '/terms';
+  if (pathname === '/landing' || pathname === '/landing/' || pathname === '/landing/index.html') return '/landing/';
+  let match = pathname.match(/^\/landing\/([a-z0-9-]+)\.html$/i);
+  if (match) return '/landing/' + match[1].toLowerCase();
+  match = pathname.match(/^\/landing\/([a-z0-9-]+)\/?$/i);
+  if (match && match[1].toLowerCase() !== 'img') return '/landing/' + match[1].toLowerCase();
+  return '';
+}
+
+async function readFreshHtmlAsset(request, env, assetPath) {
+  const firstUrl = new URL(assetPath, request.url);
+  let assetRes = await env.ASSETS.fetch(new Request(firstUrl.toString(), request));
+  if (assetRes.status >= 300 && assetRes.status < 400) {
+    const loc = assetRes.headers.get('Location') || '';
+    if (loc) {
+      const follow = new URL(loc, request.url);
+      if (follow.origin === firstUrl.origin) {
+        assetRes = await env.ASSETS.fetch(new Request(follow.toString(), request));
+      }
+    }
+  }
+  return assetRes;
+}
+
+export { CoachRateLimiter, freshMarketingHtmlAssetPath };
 
 export default {
   async scheduled(event, env, ctx) {
@@ -235,15 +265,28 @@ export default {
       }
     }
 
-    // Exact .html URLs that must stay at their canonical path with HTTP 200.
-    // Assets html_handling otherwise 307-redirects to the extensionless path,
-    // which breaks Google Search Console, BotFather privacy/terms links, and
-    // in-app legal deep links that expect the .html form.
-    const exactHtmlPath =
-      path === '/privacy.html' ||
-      path === '/terms.html' ||
-      /^\/google[a-z0-9]+\.html$/i.test(path);
-    if (exactHtmlPath && request.method === 'GET' && env.ASSETS) {
+    // Marketing and legal documents: 200 from the current asset, never an
+    // edge-cached 307 to the extensionless path.
+    const freshAsset = freshMarketingHtmlAssetPath(path);
+    if (freshAsset && request.method === 'GET' && env.ASSETS) {
+      const assetRes = await readFreshHtmlAsset(request, env, freshAsset);
+      if (assetRes.ok) {
+        const body = await assetRes.text();
+        return new Response(body, {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/html; charset=utf-8',
+            'Cache-Control': 'no-store',
+            'CDN-Cache-Control': 'no-store',
+            'X-Content-Type-Options': 'nosniff'
+          }
+        });
+      }
+    }
+
+    // Google Search Console proofs must stay on the .html URL with HTTP 200.
+    // Assets html_handling otherwise 307-redirects to the extensionless path.
+    if (/^\/google[a-z0-9]+\.html$/i.test(path) && request.method === 'GET' && env.ASSETS) {
       const barePath = path.replace(/\.html$/i, '');
       const assetRes = await env.ASSETS.fetch(new Request(new URL(barePath, request.url), request));
       if (assetRes.ok) {
@@ -252,7 +295,8 @@ export default {
           status: 200,
           headers: {
             'Content-Type': 'text/html; charset=utf-8',
-            'Cache-Control': 'public, max-age=0, must-revalidate'
+            'Cache-Control': 'no-store',
+            'CDN-Cache-Control': 'no-store'
           }
         });
       }

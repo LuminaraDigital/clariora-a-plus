@@ -81,6 +81,33 @@ python tools/deploy_cloudflare.py --env staging
 python tools/deploy_cloudflare.py --env production
 ```
 
+## Marketing and legal HTML
+
+Production publishes from GitHub Actions `deploy-web` only. Workers Builds on `main` also used to run `wrangler deploy`. A preview `wrangler versions upload` stores HTML blobs without switching the live manifest, and a later production deploy can skip those files as "already uploaded". The queued Workers Builds run can then finish after a newer commit and roll the live pages back.
+
+`tools/build_web_dist.py` stamps `privacy.html`, `terms.html`, and `landing/*.html` with `clariora-asset release <sha>` on GitHub Actions and `clariora-asset workers-ci <sha>` on Workers Builds, so the production hash is not the preview blob. The worker returns those documents with `Cache-Control: no-store`. `tools/guard_workers_ci_prod_deploy.py` aborts `wrangler deploy` when `WORKERS_CI=1` and `WORKERS_CI_BRANCH=main`.
+
+After the production deploy, the smoke job fetches the pages with `CLARIORA_CHECK_MARKETING_COPY=1`. A hard refresh is enough when the response is `Cache-Control: no-store` and the body contains "Sign in to open the study app".
+
+An extra Cloudflare cache purge is required only if that fetch still returns "Progress is stored on your device". Purge these URLs, then fetch again:
+
+- `https://clariora.com.au/landing/faq`
+- `https://clariora.com.au/landing/faq.html`
+- `https://clariora.com.au/landing/trust`
+- `https://clariora.com.au/landing/trust.html`
+- `https://clariora.com.au/privacy.html`
+- `https://clariora.com.au/privacy`
+- `https://clariora.com.au/terms.html`
+- `https://clariora.com.au/terms`
+
+```bash
+curl -sS -D /tmp/faq.headers -o /tmp/faq.html -H 'Cache-Control: no-cache' https://clariora.com.au/landing/faq.html
+grep -n "Sign in to open the study app" /tmp/faq.html
+grep -i "cache-control" /tmp/faq.headers
+```
+
+`cf-cache-status: HIT` together with the retired sentence means that colo still holds the old object: purge, then repeat the curl.
+
 ## Verification checklist
 
 See the Phase 3 checklist at the bottom of any release PR, or copy:

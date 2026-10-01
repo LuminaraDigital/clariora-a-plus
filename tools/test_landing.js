@@ -138,6 +138,8 @@ for (const page of requiredPages) {
 const faqHtml = fs.readFileSync(path.join(SRC, 'faq.html'), 'utf8');
 const compareHtml = fs.readFileSync(path.join(SRC, 'compare.html'), 'utf8');
 check(/Is Clariora new\?/.test(faqHtml), 'FAQ page answers the early-product question honestly');
+check(/Sign in to open the study app/.test(faqHtml), 'FAQ says the web app requires sign-in');
+check(!/Progress is stored on your device/.test(faqHtml), 'FAQ does not describe device-only progress');
 check(/Competitor chart|side by side/i.test(compareHtml), 'compare page has competitor chart framing');
 check(/CertMaster|Professor Messer|Udemy/i.test(compareHtml), 'compare page names real competitors');
 
@@ -164,12 +166,12 @@ check(lazyMissing.length === 0, 'every image below the hero is lazy loaded', laz
 const pageFiles = ['index.html', ...requiredPages];
 for (const page of pageFiles) {
   const text = fs.readFileSync(path.join(SRC, page), 'utf8');
-  check(!/—|–/.test(text), `no em or en dash in ${page}`);
+  check(!/[\u2014\u2013]/.test(text), `no em or en dash in ${page}`);
   check(!/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(text), `no emoji in ${page}`);
   const hype = text.match(/\b(revolutionary|game-changing|unleash|supercharge|seamless|cutting-edge|world-class|elite)\b/gi) || [];
   check(hype.length === 0, `no hype vocabulary in ${page}`, hype.join(', '));
 }
-check(!/—|–/.test(css), 'no em or en dash in landing.css');
+check(!/[\u2014\u2013]/.test(css), 'no em or en dash in landing.css');
 check(!/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(css), 'no emoji in landing.css');
 
 // ---- Built copy ---------------------------------------------------------

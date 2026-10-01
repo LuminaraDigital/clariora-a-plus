@@ -56,8 +56,10 @@ new_sqlite_classes = ["CoachRateLimiter"]
 ENVIRONMENT = "production"
 
 [build]
-# Local `wrangler deploy` only. Workers Builds ignores this; see package.json postinstall.
-command = "python tools/build_web_dist.py"
+# `wrangler deploy` runs this. The Workers Builds dashboard build command is
+# separate and does not read this key, but its deploy command is
+# `npx wrangler deploy`, so this still runs there.
+command = "python tools/build_web_dist.py && python tools/guard_workers_ci_prod_deploy.py"
 
 # Environment Variables & Secrets (Set via `wrangler secret put <KEY>`):
 # - TELEGRAM_BOT_TOKEN: From @BotFather (for initData HMAC & Stars invoices)

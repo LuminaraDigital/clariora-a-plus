@@ -164,7 +164,7 @@ COMPARE_BODY = r"""
     <div class="container">
       <span class="eyebrow">Why Clariora wins</span>
       <h1>Built to beat the packs people actually buy.</h1>
-      <p class="lead">Most A+ prep either dumps questions or sells a closed portal. Clariora measures you the way the exam reports scores, keeps your data on your machine, and costs a fraction of official tooling.</p>
+      <p class="lead">Most A+ prep either dumps questions or sells a closed portal. Clariora measures you the way the exam reports scores, saves progress to your signed-in account, and costs a fraction of official tooling.</p>
       <div class="page-cta">
         <a class="btn btn-primary btn-lg" href="/app" data-busy>Take the free diagnostic</a>
         <a class="btn btn-secondary btn-lg" href="pricing.html">See pricing</a>
@@ -231,7 +231,7 @@ COMPARE_BODY = r"""
               <td><span class="cell"><svg class="ic ic-danger" aria-hidden="true"><use href="#i-no"/></svg>Yes</span></td>
               <td><span class="cell"><svg class="ic ic-info" aria-hidden="true"><use href="#i-dot"/></svg>Store checkout</span></td>
               <td><span class="cell"><svg class="ic ic-info" aria-hidden="true"><use href="#i-dot"/></svg>Platform account</span></td>
-              <td class="col-us"><span class="cell"><svg class="ic ic-ok" aria-hidden="true"><use href="#i-ok"/></svg>No account for core study</span></td>
+              <td class="col-us"><span class="cell"><svg class="ic ic-info" aria-hidden="true"><use href="#i-dot"/></svg>Yes, to open the web app</span></td>
             </tr>
             <tr>
               <th scope="row">Open source scoring</th>
@@ -289,8 +289,8 @@ WHY_BODY = r"""
           <p>1,130 questions carry explanations and distractor analysis. Review is never paywalled. A wrong answer becomes a concept, not a letter to memorise.</p>
         </div>
         <div class="card">
-          <h3>Offline by default</h3>
-          <p>Browser PWA, Windows installer, Linux builds, and Telegram. Progress stays on device. Sync and telemetry stay off until you turn them on.</p>
+          <h3>Signed-in progress</h3>
+          <p>Browser PWA, Windows installer, Linux builds, and Telegram. On the web, sign in to open the study app. Progress syncs to your account, and a copy can stay on the device. Telemetry upload stays off until you turn it on.</p>
         </div>
         <div class="card">
           <h3>Built for people who must pass</h3>
@@ -413,7 +413,7 @@ TRUST_BODY = r"""
       <div class="grid grid-2 trust-grid">
         <div class="card"><h3>Open source under AGPL-3.0</h3><p>Scoring, validators and daily-plan logic are public on GitHub.</p></div>
         <div class="card"><h3>Tests on every commit</h3><p>Version __APLUS_VERSION__ ships with automated checks on the bank, entitlements and landing pages.</p></div>
-        <div class="card"><h3>No account and no phone-home</h3><p>Progress stays local. Telemetry and sync are off by default.</p></div>
+        <div class="card"><h3>Sign-in required on the web</h3><p>Open the study app with Google, email, or Telegram. Progress syncs to that account, and a copy can stay on the device. Telemetry upload stays off until you turn it on.</p></div>
         <div class="card"><h3>Official pass marks</h3><p>Mocks use 675 for Core 1 and 700 for Core 2 on the 100 to 900 scale. Walkthrough screenshots are from the current Windows build.</p></div>
       </div>
       <div class="trust-actions">
@@ -445,7 +445,7 @@ FAQ_BODY = r"""
         </details>
         <details>
           <summary>Do I need an account?</summary>
-          <div>No. Progress is stored on your device. Cloud sync is optional and off by default.</div>
+          <div>Yes, on the web. Sign in to open the study app. Progress syncs to that account. A copy can also stay on the device after you sign in.</div>
         </details>
         <details>
           <summary>How close is the scoring to the real exam?</summary>

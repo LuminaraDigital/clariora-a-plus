@@ -116,12 +116,30 @@
 
   function setFlashcardChrome(on) {
     const btn = $("flashcardExitBtn");
-    if (btn) btn.hidden = !on;
-    if (document.body) document.body.classList.toggle("flashcard-session", !!on);
-    if (!on) {
-      const pacing = $("cruciblePacingHorizon");
-      if (pacing) pacing.style.display = "none";
+    if (btn) {
+      btn.hidden = !on;
+      btn.style.display = on ? "" : "none";
     }
+    if (document.body) document.body.classList.toggle("flashcard-session", !!on);
+    const pacing = $("cruciblePacingHorizon");
+    if (pacing) {
+      pacing.hidden = true;
+      pacing.style.display = "none";
+      if (!on) pacing.innerHTML = "";
+    }
+  }
+
+  function leaveExamScreen() {
+    const doc = global.document;
+    if (!doc) return;
+    const screens = doc.querySelectorAll(".screen");
+    for (let i = 0; i < screens.length; i++) {
+      const on = screens[i].id === "startScreen";
+      screens[i].classList.toggle("active", on);
+      screens[i].setAttribute("aria-hidden", on ? "false" : "true");
+    }
+    const header = doc.getElementById("examHeaderControls");
+    if (header) header.style.display = "none";
   }
 
   /**
@@ -129,11 +147,21 @@
    * and does not record the sitting as an exam attempt.
    */
   function abandonMemorySession() {
+    global.__aplusFlashcardAbandoned = true;
     try {
-      if (global.currentExamSession && global.currentExamSession.timerInterval) {
-        clearInterval(global.currentExamSession.timerInterval);
-        global.currentExamSession.timerInterval = null;
+      if (global.__aplusShellTimer) {
+        clearInterval(global.__aplusShellTimer);
+        global.__aplusShellTimer = null;
+      }
+    } catch (_) {}
+    try {
+      if (global.currentExamSession) {
+        global.currentExamSession.memoryAbandoned = true;
         global.currentExamSession.isPaused = true;
+        if (global.currentExamSession.timerInterval) {
+          clearInterval(global.currentExamSession.timerInterval);
+          global.currentExamSession.timerInterval = null;
+        }
       }
     } catch (_) {}
     try {
@@ -145,6 +173,7 @@
       }
     } catch (_) {}
     setFlashcardChrome(false);
+    leaveExamScreen();
     if (typeof global.showScreen === "function") {
       try { global.showScreen("startScreen"); } catch (_) {}
     }
@@ -170,6 +199,14 @@
     if (typeof shuffleArray === "function") shuffleArray(pool);
 
     const seconds = Math.max(5 * 60, pool.length * RAID_SECONDS_PER_Q);
+    global.__aplusFlashcardAbandoned = false;
+    try {
+      const engine = global.APlus && global.APlus.engine;
+      if (engine && engine.timerInterval) {
+        clearInterval(engine.timerInterval);
+        engine.timerInterval = null;
+      }
+    } catch (_) {}
     global.currentExamSession = {
       type: "memory",
       questions: pool,
@@ -184,11 +221,11 @@
       passingScore: 675,
       memoryRaid: true
     };
+    setFlashcardChrome(true);
     startTimer();
     showScreen("examScreen");
     renderQuestion();
     renderMatrix();
-    setFlashcardChrome(true);
     if (global.CompTIALedgerUI && CompTIALedgerUI.toast) {
       CompTIALedgerUI.toast(
         `<strong>Memory Raid</strong><br>${pool.length} cards · spaced recall · APX for successes`,
@@ -323,6 +360,14 @@
   }
 
   function init() {
+    const exitBtn = $("flashcardExitBtn");
+    if (exitBtn && exitBtn.getAttribute("data-exit-bound") !== "1") {
+      exitBtn.setAttribute("data-exit-bound", "1");
+      exitBtn.addEventListener("click", function (e) {
+        if (e && e.preventDefault) e.preventDefault();
+        abandonMemorySession();
+      });
+    }
     if (!global.CompTIAMemorySRS) return;
     syncFromMissedBank();
     refreshMemoryHome();

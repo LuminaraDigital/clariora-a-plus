@@ -48,6 +48,57 @@
     return diagnosticMinutes(deliveredCount) * 60;
   }
 
+  /**
+   * One clock for the session that actually started.
+   * A diagnostic uses one minute per delivered question, including when the
+   * bank is shorter than the number the button asked for.
+   * A one-minute-per-question request of at most the diagnostic target does
+   * the same if sampling returns fewer items, so "1 of 10" cannot sit on a
+   * 20:00 clock.
+   * Longer mocks keep the minutes they were given.
+   */
+  function sessionClockSeconds(opts) {
+    var o = opts || {};
+    var delivered = Math.round(Number(o.delivered));
+    if (!isFinite(delivered) || delivered < 0) delivered = 0;
+    var requestedCount = Math.round(Number(o.questionCount));
+    if (!isFinite(requestedCount) || requestedCount < 0) requestedCount = 0;
+    var requestedMinutes = Math.round(Number(o.timeMinutes));
+    if (!isFinite(requestedMinutes) || requestedMinutes < 0) requestedMinutes = 0;
+    var diagnostic = o.diagnostic === true || o.mode === 'diagnostic' || o.mode === 'placement';
+    if (diagnostic) {
+      return delivered > 0 ? diagnosticClockSeconds(delivered) : 0;
+    }
+    if (delivered > 0 && requestedCount > 0 && requestedCount <= DIAGNOSTIC_TARGET
+        && requestedMinutes === requestedCount && delivered < requestedCount) {
+      return diagnosticClockSeconds(delivered);
+    }
+    var mins = requestedMinutes > 0 ? requestedMinutes : 90;
+    return mins * 60;
+  }
+
+  /**
+   * PBQ Reserve is an exam pacing aid. Memory raids have no PBQs, so the
+   * chrome stays hidden for the whole flashcard session.
+   */
+  function shouldShowPbqReserve(session) {
+    if (!session || typeof session !== 'object') return true;
+    if (session.flashcard || session.memoryRaid) return false;
+    var type = String(session.type || '').toLowerCase();
+    if (type === 'memory' || type === 'flashcard' || type === 'raid') return false;
+    return true;
+  }
+
+  /** Exit flashcards returns to Study and does not record an attempt. */
+  function flashcardExitPlan() {
+    return {
+      recordAttempt: false,
+      screen: 'startScreen',
+      tab: 'study',
+      hidePbqReserve: true
+    };
+  }
+
   function diagnosticTakeLabel(questionCount) {
     return 'Take the ' + diagnosticMinutes(questionCount) + '-question diagnostic';
   }
@@ -103,6 +154,9 @@
     resolveDiagnosticLength: resolveDiagnosticLength,
     diagnosticMinutes: diagnosticMinutes,
     diagnosticClockSeconds: diagnosticClockSeconds,
+    sessionClockSeconds: sessionClockSeconds,
+    shouldShowPbqReserve: shouldShowPbqReserve,
+    flashcardExitPlan: flashcardExitPlan,
     diagnosticTakeLabel: diagnosticTakeLabel,
     diagnosticStartLabel: diagnosticStartLabel,
     questionPoolSize: questionPoolSize,

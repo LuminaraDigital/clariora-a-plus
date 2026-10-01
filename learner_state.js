@@ -112,10 +112,83 @@
       totalQuestions: isFinite(totalQuestions) ? totalQuestions : null,
       passingScore: isFinite(passingScore) ? passingScore : null,
       domainStats: record.domainStats && typeof record.domainStats === "object" ? record.domainStats : null,
-      date: record.date || null
+      date: record.date || null,
+      status: passed ? "PASSED" : "FAILED"
     };
+    // Keep the bank stamp. Readiness treats a record with no revision as
+    // pre-correction, which would hide a sitting that was just saved.
+    if (record.bankRevision != null && isFinite(Number(record.bankRevision))) {
+      out.bankRevision = Number(record.bankRevision);
+    }
+    if (record.mode) out.mode = String(record.mode);
+    if (typeof record.raw === "string" && record.raw) out.raw = record.raw;
+    if (typeof record.percentage === "string" && record.percentage) out.percentage = record.percentage;
     if (Array.isArray(record.perQuestion)) out.perQuestion = record.perQuestion;
     return out;
+  }
+
+  function escapeHistoryCell(value) {
+    return String(value == null ? "" : value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function historyExamLabel(exam) {
+    if (exam === "core1") return "Core 1";
+    if (exam === "core2") return "Core 2";
+    if (exam === "both") return "Core 1 + Core 2";
+    return exam || "";
+  }
+
+  var HISTORY_EMPTY_HTML = '<p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">No exam attempts recorded yet. Complete an exam to view your score progression!</p>';
+
+  /**
+   * buildHistoryTableHtml(records) -> markup for every history surface.
+   * Progress and the results analytics both start from getHistory(), and this
+   * is the only table markup those records are painted with.
+   */
+  function buildHistoryTableHtml(records) {
+    const rows = Array.isArray(records) ? records : [];
+    if (!rows.length) return HISTORY_EMPTY_HTML;
+    let html = ''
+      + '<table class="history-table"><thead><tr>'
+      + '<th>Date & Time</th><th>Exam Mode</th><th>Score</th>'
+      + '<th>Raw Correct</th><th>Accuracy</th><th>Status</th>'
+      + '</tr></thead><tbody>';
+    rows.forEach(function (r) {
+      const raw = (r.rawCorrect != null && r.totalQuestions)
+        ? (r.rawCorrect + "/" + r.totalQuestions)
+        : (r.raw || "");
+      let percentage = r.percentage || "";
+      if (!percentage && r.totalQuestions) {
+        percentage = ((Number(r.rawCorrect) / Number(r.totalQuestions)) * 100).toFixed(1) + "%";
+      }
+      const status = r.status != null ? String(r.status) : (r.passed ? "PASSED" : "FAILED");
+      let date = r.date || "";
+      if (!date && r.timestamp) {
+        try { date = new Date(r.timestamp).toLocaleString(); } catch (_) { date = ""; }
+      }
+      const passed = String(status).toUpperCase() === "PASSED" || r.passed === true;
+      const statusColor = passed ? "var(--accent-green)" : "var(--accent-red)";
+      html += "<tr>"
+        + "<td>" + escapeHistoryCell(date) + "</td>"
+        + "<td><strong>" + escapeHistoryCell(historyExamLabel(r.examType)) + "</strong></td>"
+        + '<td style="font-family: monospace; font-weight: 700; font-size: 1.05rem;">' + escapeHistoryCell(String(r.scaledScore)) + " / 900</td>"
+        + "<td>" + escapeHistoryCell(raw) + "</td>"
+        + "<td>" + escapeHistoryCell(percentage) + "</td>"
+        + '<td style="color: ' + statusColor + '; font-weight: 700;">' + escapeHistoryCell(status) + "</td>"
+        + "</tr>";
+    });
+    html += "</tbody></table>";
+    return html;
+  }
+
+  function repaintHistorySurfaces() {
+    try {
+      if (typeof global.renderHistoryTable === "function") global.renderHistoryTable();
+    } catch (_) {}
   }
 
   /**
@@ -311,12 +384,15 @@
     });
     persistHistoryList([stamped].concat(prior));
     resetHistorySourceLog();
-    return getHistory();
+    const rows = getHistory();
+    repaintHistorySurfaces();
+    return rows;
   }
 
   function clearHistory() {
     persistHistoryList([]);
     resetHistorySourceLog();
+    repaintHistorySurfaces();
     return [];
   }
 
@@ -699,6 +775,8 @@
   global.APlus.learner.normalizeHistoryRecords = normalizeHistoryRecords;
   global.APlus.learner.normExamType = normExamType;
   global.APlus.learner.resetHistorySourceLog = resetHistorySourceLog;
+  global.APlus.learner.buildHistoryTableHtml = buildHistoryTableHtml;
+  global.APlus.learner.HISTORY_EMPTY_HTML = HISTORY_EMPTY_HTML;
 
   global.CompTIALearnerState.getHistory = getHistory;
   global.CompTIALearnerState.normalizeHistoryRecords = normalizeHistoryRecords;
@@ -712,6 +790,8 @@
       normalizeHistoryRecords: normalizeHistoryRecords,
       normExamType: normExamType,
       resetHistorySourceLog: resetHistorySourceLog,
+      buildHistoryTableHtml: buildHistoryTableHtml,
+      HISTORY_EMPTY_HTML: HISTORY_EMPTY_HTML,
       CompTIALearnerState: global.CompTIALearnerState
     };
   }

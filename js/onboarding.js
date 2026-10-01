@@ -761,7 +761,7 @@
     }
     if (!started) {
       if (w && typeof w.startExam === 'function') {
-        w.startExam(d.exam, spec.count, spec.minutes);
+        w.startExam(d.exam, spec.count, spec.minutes, 'diagnostic');
         started = true;
       }
     }

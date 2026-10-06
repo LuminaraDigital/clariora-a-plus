@@ -188,6 +188,11 @@ for (const page of pageFiles) {
   const panelHrefs = new Set(panel ? hrefs(panel[1]) : []);
   const unreachable = inlineHrefs.filter((h) => !panelHrefs.has(h));
   check(!!panel && unreachable.length === 0, `${page} menu holds every header link`, unreachable.join(', '));
+  const sectionPrefix = page === 'index.html' ? '' : 'index.html';
+  const missingSections = ['labs', 'pbq', 'innovations']
+    .map((id) => `${sectionPrefix}#${id}`)
+    .filter((h) => !panelHrefs.has(h));
+  check(missingSections.length === 0, `${page} menu links the home-page sections`, missingSections.join(', '));
   check(/<span class="wordmark-text">/.test(text), `${page} wordmark text can collapse to the icon`);
   check(/<script src="nav-fit\.js" defer><\/script>/.test(text), `${page} loads nav-fit.js`);
 }

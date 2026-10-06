@@ -25,11 +25,22 @@ PAGES = [
     ("faq.html", "FAQ", "faq.html"),
 ]
 
+# Home-page sections listed in the menu only; the inline row fits six links.
+SECTIONS = [
+    ("labs", "Hardware Labs"),
+    ("pbq", "PBQ Simulators"),
+    ("innovations", "Innovations"),
+]
+
 
 def nav(active: str) -> str:
     home_href = "#top" if active == "index.html" else "index.html"
+    section_prefix = "" if active == "index.html" else "index.html"
     links = []
-    mobile = []
+    mobile = [
+        f'        <a href="{section_prefix}#{anchor}">{label}</a>'
+        for anchor, label in SECTIONS
+    ]
     for file, label, href in PAGES:
         if file == "index.html":
             continue
@@ -55,6 +66,8 @@ def nav(active: str) -> str:
       </button>
       <div class="nav-menu-panel" id="navMenuPanel" hidden>
 {chr(10).join(mobile)}
+        <a href="/app?signup=1" data-busy>Create account</a>
+        <a href="/app" data-busy>Sign in</a>
         <a href="https://t.me/ClarioraBot/app" target="_blank" rel="noopener">Launch on Telegram</a>
         <a href="https://github.com/LuminaraDigital/clariora-a-plus" rel="noopener">Source on GitHub</a>
       </div>

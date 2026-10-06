@@ -678,7 +678,6 @@ ul {
 }
 
 .nav-menu-toggle:hover,
-.nav-menu-toggle:hover,
 .nav-menu.is-open .nav-menu-toggle {
   background: var(--gold-tint);
   border-color: var(--gold);

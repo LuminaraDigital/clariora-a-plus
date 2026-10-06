@@ -106,6 +106,39 @@ async function main() {
   assert.strictEqual(anonDeleteRes.status, 401, '/api/v1/auth/delete-account must require authentication');
   console.log('   ✔ /api/v1/auth/delete-account rejects unauthenticated requests with HTTP 401.');
 
+  console.log('\n4. Testing marketing and legal HTML keep the _headers security headers...');
+  const CSP = "default-src 'self'; frame-ancestors 'none'";
+  const htmlEnv = {
+    ENVIRONMENT: 'test',
+    ASSETS: {
+      async fetch(req) {
+        const u = new URL(req.url);
+        return new Response(`<!doctype html><title>${u.pathname}</title>`, {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/html',
+            'Cache-Control': 'public, max-age=0, must-revalidate',
+            'Content-Security-Policy': CSP,
+            'X-Frame-Options': 'DENY',
+            'Referrer-Policy': 'strict-origin-when-cross-origin'
+          }
+        });
+      }
+    }
+  };
+  for (const p of ['/landing/', '/landing/pricing.html', '/landing/faq', '/privacy.html', '/terms', '/googlea4923385090ac2c5.html']) {
+    const res = await worker.fetch(new Request('https://clariora.com.au' + p, { method: 'GET' }), htmlEnv);
+    assert.strictEqual(res.status, 200, p + ' must be 200');
+    assert.strictEqual(res.headers.get('Content-Security-Policy'), CSP, p + ' must keep the CSP');
+    assert.strictEqual(res.headers.get('X-Frame-Options'), 'DENY', p + ' must keep X-Frame-Options');
+    assert.strictEqual(res.headers.get('Referrer-Policy'), 'strict-origin-when-cross-origin', p + ' must keep Referrer-Policy');
+    assert.strictEqual(res.headers.get('Cache-Control'), 'no-store', p + ' must be no-store');
+    assert.strictEqual(res.headers.get('CDN-Cache-Control'), 'no-store', p + ' must be CDN no-store');
+    assert.strictEqual(res.headers.get('X-Content-Type-Options'), 'nosniff', p + ' must be nosniff');
+    assert.ok((await res.text()).includes('<title>'), p + ' must keep the body');
+  }
+  console.log('   ✔ Landing, legal and verification HTML keep CSP, frame and referrer policy with no-store.');
+
   console.log('\n================================================================');
   console.log('✅ ALL EDGE PATH NORMALIZATION & QUESTION DEFENSE CHECKS PASSED');
   console.log('================================================================');

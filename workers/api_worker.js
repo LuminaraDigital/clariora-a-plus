@@ -204,7 +204,21 @@ async function readFreshHtmlAsset(request, env, assetPath) {
   return assetRes;
 }
 
-export { CoachRateLimiter, freshMarketingHtmlAssetPath };
+// Starts from the asset's headers: the assets binding applies the _headers
+// rules (CSP, frame and referrer policy), and a fresh Headers object drops them.
+async function noStoreHtmlResponse(assetRes) {
+  const body = await assetRes.text();
+  const headers = new Headers(assetRes.headers);
+  headers.set('Content-Type', 'text/html; charset=utf-8');
+  headers.set('Cache-Control', 'no-store');
+  headers.set('CDN-Cache-Control', 'no-store');
+  headers.set('X-Content-Type-Options', 'nosniff');
+  headers.delete('content-length');
+  headers.delete('location');
+  return new Response(body, { status: 200, headers });
+}
+
+export { CoachRateLimiter, freshMarketingHtmlAssetPath, noStoreHtmlResponse };
 
 export function canonicalizeWorkerPath(rawPath) {
   let decoded = rawPath || '/';
@@ -308,18 +322,7 @@ export default {
     const freshAsset = freshMarketingHtmlAssetPath(path);
     if (freshAsset && request.method === 'GET' && env.ASSETS) {
       const assetRes = await readFreshHtmlAsset(request, env, freshAsset);
-      if (assetRes.ok) {
-        const body = await assetRes.text();
-        return new Response(body, {
-          status: 200,
-          headers: {
-            'Content-Type': 'text/html; charset=utf-8',
-            'Cache-Control': 'no-store',
-            'CDN-Cache-Control': 'no-store',
-            'X-Content-Type-Options': 'nosniff'
-          }
-        });
-      }
+      if (assetRes.ok) return noStoreHtmlResponse(assetRes);
     }
 
     // Google Search Console proofs must stay on the .html URL with HTTP 200.
@@ -327,17 +330,7 @@ export default {
     if (/^\/google[a-z0-9]+\.html$/i.test(path) && request.method === 'GET' && env.ASSETS) {
       const barePath = path.replace(/\.html$/i, '');
       const assetRes = await env.ASSETS.fetch(new Request(new URL(barePath, request.url), request));
-      if (assetRes.ok) {
-        const body = await assetRes.text();
-        return new Response(body, {
-          status: 200,
-          headers: {
-            'Content-Type': 'text/html; charset=utf-8',
-            'Cache-Control': 'no-store',
-            'CDN-Cache-Control': 'no-store'
-          }
-        });
-      }
+      if (assetRes.ok) return noStoreHtmlResponse(assetRes);
     }
 
     // Route root to marketing landing page

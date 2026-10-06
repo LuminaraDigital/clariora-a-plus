@@ -61,10 +61,10 @@
       <header class="legal-masthead">
         <p class="legal-kicker">Web · PWA · Desktop · Telegram Mini App</p>
         <h1>Privacy Policy</h1>
-        <p class="legal-lede">Core study progress stays on your device by default. We do not sell personal information. Optional features (Telegram identity, Stars or TON purchases, Ghost Coach AI, optional cloud sync) process additional data only when you use them.</p>
+        <p class="legal-lede">On the web, sign-in is required to open the study app. Progress syncs to the signed-in account, and a copy can stay on the device after you sign in. We do not sell personal information. Telegram identity, Stars or TON purchases, and Ghost Coach AI process additional data only when you use them.</p>
         <p class="legal-meta">
           <strong>Clariora A+</strong> (also called Clariora)<br>
-          Last updated: 20 September 2026<br>
+          Last updated: 1 October 2026<br>
           Controller: Datacentre Academy / Luminara Digital<br>
           Contact: <a href="mailto:support@datacentre.academy">support@datacentre.academy</a><br>
           Product: <a href="https://clariora.com.au/">clariora.com.au</a>
@@ -122,7 +122,7 @@
                 <td>Study progress (on device)</td>
                 <td>Exam history, missed questions, flashcard / curriculum progress, theme, tutor mode, local profiles, proof-of-mastery ledger</td>
                 <td>Operate the simulator, readiness scores, spaced practice</td>
-                <td>Always for core use (stays local by default)</td>
+                <td>After sign-in: a local copy on the device, and a sync to the account</td>
               </tr>
               <tr>
                 <td>Telegram identity</td>
@@ -143,10 +143,10 @@
                 <td>Only when you invoke Ghost Coach online</td>
               </tr>
               <tr>
-                <td>Optional account sync</td>
-                <td>Email / Google / Firebase uid; learner snapshot you choose to sync; Telegram Login Widget profile if used</td>
-                <td>Optional cross-device restore you explicitly enable</td>
-                <td>Only if you sign in / sync (off by default)</td>
+                <td>Account and progress sync</td>
+                <td>Email / Google / Firebase uid; learner progress synced for that account; Telegram Login Widget profile if used</td>
+                <td>Open the web study app and keep learner progress on that account</td>
+                <td>Required on the web. A local copy can remain on the device.</td>
               </tr>
               <tr>
                 <td>Technical logs</td>
@@ -174,7 +174,7 @@
 
       <section class="legal-section" id="local">
         <h2>5. On-device and Telegram CloudStorage data</h2>
-        <p>Clariora is <strong>local-first</strong>. Core simulator state is stored in browser <code>localStorage</code> (or equivalent desktop storage) on the device you use. Clearing site data, uninstalling, or switching devices without an export will lose that local progress.</p>
+        <p>Clariora keeps a <strong>local copy</strong> of simulator state in browser <code>localStorage</code> (or equivalent desktop storage) on the device you use. After you sign in on the web, Clariora also writes study progress to that account. Clearing site data or uninstalling removes the copy on that device.</p>
         <p>You can export / import a learner backup or sync file from the app when that feature is available. Those files are under your control; if you share them, anyone with the file can read the study data inside.</p>
         <p>Inside Telegram, we may also use Telegram CloudStorage for selected keys so progress survives Mini App reloads. Telegram's handling of CloudStorage is governed by Telegram's own terms and privacy policy.</p>
       </section>
@@ -207,10 +207,10 @@
       </section>
 
       <section class="legal-section" id="accounts">
-        <h2>9. Optional accounts and cloud sync</h2>
-        <p>You can use Clariora without creating an account. Optional sign-in (for example Firebase Authentication with email/password or Google, or Telegram Login) is available so you can sync learning state if you choose.</p>
+        <h2>9. Accounts and progress sync</h2>
+        <p>On the web, sign-in is required to open the study app. Sign in with Firebase Authentication (email and password or Google) or Telegram Login. Progress syncs to that account. A local copy can remain on the device after you sign in. Desktop builds can continue offline on that device without a cloud account.</p>
         <ul>
-          <li><strong>Firebase (Google).</strong> If you sign in, Google Firebase Auth (and Firestore when sync is active) processes your account credentials and the learner documents you sync. The shipped Firebase web config includes a Google Analytics <code>measurementId</code> for the Firebase project; Clariora does not currently initialize the Firebase Analytics SDK in the app shell. In-app analytics screens compute scores locally from your history and are not a third-party ad network.</li>
+          <li><strong>Firebase (Google).</strong> When you sign in with Firebase, Google Firebase Auth processes your account credentials, and Firestore stores the learner progress synced for that account. The shipped Firebase web config includes a Google Analytics <code>measurementId</code> for the Firebase project; Clariora does not currently initialize the Firebase Analytics SDK in the app shell. In-app analytics screens compute scores locally from your history and are not a third-party ad network.</li>
           <li><strong>Supabase sync config.</strong> A separate Supabase cloud-sync path exists in code but is <strong>disabled by default</strong> unless we explicitly enable it with a project URL. If enabled in a future build, synced snapshots would be stored under your signed-in user with row-level security.</li>
           <li><strong>Manual file sync.</strong> Saving or loading a sync file keeps data under your control on disk or cloud folders you choose.</li>
         </ul>

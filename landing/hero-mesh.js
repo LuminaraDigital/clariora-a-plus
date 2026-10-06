@@ -6,6 +6,34 @@
 (function () {
   'use strict';
 
+  function initNavMenu() {
+    var menu = document.querySelector('.nav-menu');
+    if (!menu) return;
+    var btn = menu.querySelector('.nav-menu-toggle');
+    var panel = menu.querySelector('.nav-menu-panel');
+    if (!btn || !panel) return;
+
+    function setOpen(open) {
+      menu.classList.toggle('is-open', open);
+      panel.hidden = !open;
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    }
+
+    btn.addEventListener('click', function () {
+      setOpen(!menu.classList.contains('is-open'));
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && menu.classList.contains('is-open')) {
+        setOpen(false);
+        btn.focus();
+      }
+    });
+  }
+
+  initNavMenu();
+
   if (!window.WebGLRenderingContext) return;
 
   var DARK_PALETTE = ['#07090E', '#111520', '#261C06', '#59410A', '#B8860B', '#F5D061'];

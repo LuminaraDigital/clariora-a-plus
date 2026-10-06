@@ -48,6 +48,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -214,6 +215,48 @@ def clear_dist(path: Path):
         pass
 
 
+def asset_stamp() -> str:
+    """Preview uploads and production deploys must not share an HTML hash."""
+    channel = "workers-ci" if os.environ.get("WORKERS_CI") == "1" else "release"
+    revision = ""
+    for key in ("GITHUB_SHA", "WORKERS_CI_COMMIT_SHA"):
+        revision = os.environ.get(key, "").strip()
+        if revision:
+            break
+    if not revision:
+        try:
+            revision = subprocess.check_output(
+                ["git", "rev-parse", "HEAD"],
+                cwd=ROOT,
+                text=True,
+                stderr=subprocess.DEVNULL,
+            ).strip()
+        except (OSError, subprocess.CalledProcessError):
+            revision = "unknown"
+    return f"<!-- clariora-asset {channel} {revision} -->\n"
+
+
+def stamp_fresh_html(dist: Path) -> None:
+    stamp = asset_stamp()
+    targets = [dist / "privacy.html", dist / "terms.html"]
+    landing = dist / "landing"
+    if landing.is_dir():
+        targets.extend(sorted(landing.glob("*.html")))
+    for path in targets:
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8")
+        marker = "<!-- clariora-asset "
+        if marker in text:
+            text = re.sub(r"<!-- clariora-asset [^>]*-->\n?", "", text)
+        if "</body>" in text:
+            text = text.replace("</body>", stamp + "</body>", 1)
+        else:
+            text = text + "\n" + stamp
+        path.write_text(text, encoding="utf-8")
+        print(f"  asset-rev -> {path.relative_to(dist)}")
+
+
 def load_version() -> str:
     """release.config.json wins; falls back to package.json."""
     release_cfg = ROOT / "release.config.json"
@@ -308,6 +351,13 @@ def main():
                     text.replace("__APLUS_VERSION__", version), encoding="utf-8"
                 )
                 print(f"  version -> {landing_html.relative_to(DIST)}")
+
+    # 4b2. Stamp marketing and legal HTML so a production deploy cannot reuse
+    # a blob uploaded earlier by `wrangler versions upload` on a preview branch.
+    # Those blobs share a hash with an identical file, and the live manifest
+    # then stays on the previous HTML. A release stamp differs from the
+    # workers-ci stamp, so production must upload the new bytes.
+    stamp_fresh_html(DIST)
 
     # 4c. Create /app/index.html as a full app shell copy with <base href="/">
     #     so landing links to /app work even when Assets html_handling would

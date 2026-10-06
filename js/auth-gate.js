@@ -270,7 +270,7 @@
       '<div class="gate-card">',
       '  <p class="gate-eyebrow">Account required</p>',
       '  <h1 id="clarioraGateTitle">Sign in to open Clariora</h1>',
-      '  <p class="gate-lead">Sign in for access. Progress stays device-local unless cloud sync is configured for your account. Free diagnostic remains free after sign-in.</p>',
+      '  <p class="gate-lead">Sign in to open the study app. Progress syncs to your account, and a copy can stay on this device. The free diagnostic stays free after sign-in.</p>',
       '  <div class="gate-actions">',
       '    <button type="button" class="btn-google" id="gateGoogleBtn">Continue with Google</button>',
       '    <button type="button" class="btn-telegram" id="gateTelegramBtn">Continue with Telegram</button>',

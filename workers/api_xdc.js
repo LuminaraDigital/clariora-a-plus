@@ -79,6 +79,20 @@ export async function ensureXdcTables(db) {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `).run();
+
+    await db.prepare(`
+      CREATE TABLE IF NOT EXISTS exam_attempts (
+        attempt_id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        exam_code TEXT NOT NULL,
+        scaled_score INTEGER NOT NULL,
+        passed INTEGER NOT NULL,
+        time_spent_seconds INTEGER DEFAULT 0,
+        raw_correct INTEGER DEFAULT 0,
+        total_questions INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run();
   } catch (err) {
     console.warn('[XDC] ensureXdcTables warning:', err && err.message ? err.message : err);
   }

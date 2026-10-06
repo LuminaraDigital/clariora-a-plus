@@ -228,7 +228,6 @@
         </div>
       `;
     }
-    }
   };
 
   APlus.passGuarantee = PassGuarantee;

@@ -64,8 +64,37 @@
   // TOOLBAR: PACING HORIZON
   // =========================================================================
 
+  function isFlashcardSession() {
+    try {
+      const shell = window.currentExamSession;
+      const eng = window.APlus && window.APlus.engine;
+      const bodyOn = !!(document.body && document.body.classList.contains('flashcard-session'));
+      const honesty = window.APlus && window.APlus.honesty;
+      if (honesty && typeof honesty.shouldShowPbqReserve === 'function') {
+        return !honesty.shouldShowPbqReserve({
+          type: (shell && shell.type) || (eng && eng.type) || '',
+          memoryRaid: !!((shell && shell.memoryRaid) || (eng && eng.memoryRaid)),
+          flashcard: bodyOn
+        });
+      }
+      if (bodyOn) return true;
+      if (shell && (shell.type === 'memory' || shell.memoryRaid)) return true;
+      if (eng && (eng.type === 'memory' || eng.memoryRaid)) return true;
+    } catch (_) {}
+    return false;
+  }
+
   function renderToolbarPacing(currentIndex, remainingSeconds, totalQuestions, totalSeconds) {
     let container = document.getElementById('cruciblePacingHorizon');
+    // PBQ reserve is an exam pacing aid. Flashcards do not have PBQs.
+    if (isFlashcardSession()) {
+      if (container) {
+        container.style.display = 'none';
+        container.hidden = true;
+        container.innerHTML = '';
+      }
+      return;
+    }
     if (!container) {
       const timerDisplay = document.getElementById('timerDisplay');
       if (!timerDisplay || !timerDisplay.parentNode) return;

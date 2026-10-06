@@ -435,7 +435,19 @@
 
   function primaryLabel(status, ctx) {
     ctx = ctx || {};
-    if (ctx.cold) return 'Take the 20-question diagnostic';
+    if (ctx.cold) {
+      try {
+        var honesty = A() && A().honesty;
+        var exam = 'core1';
+        if (A() && A().onboarding && typeof A().onboarding.profileExam === 'function') {
+          exam = A().onboarding.profileExam() || exam;
+        }
+        if (honesty && typeof honesty.diagnosticOffer === 'function') {
+          return honesty.diagnosticOffer(exam).takeLabel;
+        }
+      } catch (_) {}
+      return 'Take the 20-question diagnostic';
+    }
     if (status.claimed) return 'Quest complete. Start another session';
     if (status.claimable) return 'Claim daily quest bonus';
     var leg = nextLeg(status);

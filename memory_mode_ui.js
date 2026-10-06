@@ -114,6 +114,74 @@
     return pool.slice(0, RAID_SIZE);
   }
 
+  function setFlashcardChrome(on) {
+    const btn = $("flashcardExitBtn");
+    if (btn) {
+      btn.hidden = !on;
+      btn.style.display = on ? "" : "none";
+    }
+    if (document.body) document.body.classList.toggle("flashcard-session", !!on);
+    const pacing = $("cruciblePacingHorizon");
+    if (pacing) {
+      pacing.hidden = true;
+      pacing.style.display = "none";
+      if (!on) pacing.innerHTML = "";
+    }
+  }
+
+  function leaveExamScreen() {
+    const doc = global.document;
+    if (!doc) return;
+    const screens = doc.querySelectorAll(".screen");
+    for (let i = 0; i < screens.length; i++) {
+      const on = screens[i].id === "startScreen";
+      screens[i].classList.toggle("active", on);
+      screens[i].setAttribute("aria-hidden", on ? "false" : "true");
+    }
+    const header = doc.getElementById("examHeaderControls");
+    if (header) header.style.display = "none";
+  }
+
+  /**
+   * Leave a flashcard session and return to Study. Does not reload the page
+   * and does not record the sitting as an exam attempt.
+   */
+  function abandonMemorySession() {
+    global.__aplusFlashcardAbandoned = true;
+    try {
+      if (global.__aplusShellTimer) {
+        clearInterval(global.__aplusShellTimer);
+        global.__aplusShellTimer = null;
+      }
+    } catch (_) {}
+    try {
+      if (global.currentExamSession) {
+        global.currentExamSession.memoryAbandoned = true;
+        global.currentExamSession.isPaused = true;
+        if (global.currentExamSession.timerInterval) {
+          clearInterval(global.currentExamSession.timerInterval);
+          global.currentExamSession.timerInterval = null;
+        }
+      }
+    } catch (_) {}
+    try {
+      const engine = global.APlus && global.APlus.engine;
+      if (engine && engine.timerInterval) {
+        clearInterval(engine.timerInterval);
+        engine.timerInterval = null;
+        engine.isPaused = true;
+      }
+    } catch (_) {}
+    setFlashcardChrome(false);
+    leaveExamScreen();
+    if (typeof global.showScreen === "function") {
+      try { global.showScreen("startScreen"); } catch (_) {}
+    }
+    if (typeof global.switchHomeTab === "function") {
+      try { global.switchHomeTab("study"); } catch (_) {}
+    }
+  }
+
   function startMemoryRaid() {
     if (!global.CompTIAMemorySRS) {
       alert("Memory SRS engine not loaded.");
@@ -131,6 +199,14 @@
     if (typeof shuffleArray === "function") shuffleArray(pool);
 
     const seconds = Math.max(5 * 60, pool.length * RAID_SECONDS_PER_Q);
+    global.__aplusFlashcardAbandoned = false;
+    try {
+      const engine = global.APlus && global.APlus.engine;
+      if (engine && engine.timerInterval) {
+        clearInterval(engine.timerInterval);
+        engine.timerInterval = null;
+      }
+    } catch (_) {}
     global.currentExamSession = {
       type: "memory",
       questions: pool,
@@ -145,6 +221,7 @@
       passingScore: 675,
       memoryRaid: true
     };
+    setFlashcardChrome(true);
     startTimer();
     showScreen("examScreen");
     renderQuestion();
@@ -283,9 +360,25 @@
   }
 
   function init() {
+    const exitBtn = $("flashcardExitBtn");
+    if (exitBtn && exitBtn.getAttribute("data-exit-bound") !== "1") {
+      exitBtn.setAttribute("data-exit-bound", "1");
+      exitBtn.addEventListener("click", function (e) {
+        if (e && e.preventDefault) e.preventDefault();
+        abandonMemorySession();
+      });
+    }
     if (!global.CompTIAMemorySRS) return;
     syncFromMissedBank();
     refreshMemoryHome();
+    try {
+      if (global.APlus && global.APlus.bus && typeof global.APlus.bus.on === "function") {
+        global.APlus.bus.on("exam:started", function (payload) {
+          const memory = payload && (payload.type === "memory" || payload.mode === "memory");
+          setFlashcardChrome(!!memory);
+        });
+      }
+    } catch (_) {}
   }
 
   global.CompTIAMemoryMode = {
@@ -294,6 +387,7 @@
     refreshMemoryHome,
     syncFromMissedBank,
     startMemoryRaid,
+    abandonMemorySession,
     startDueReview,
     settleMemorySession,
     openMemoryModal,

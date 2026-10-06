@@ -210,7 +210,9 @@ self.addEventListener('fetch', (event) => {
   var path = url.pathname;
   if (
     path.indexOf('/js/auth-gate.js') !== -1 ||
+    path.indexOf('/js/session-identity.js') !== -1 ||
     path.indexOf('/js/firebase-auth-ui.js') !== -1 ||
+    path.indexOf('/js/database_memory_engine.js') !== -1 ||
     path.indexOf('/js/firebase-service.js') !== -1 ||
     path.indexOf('/js/firebase-config.js') !== -1 ||
     path.indexOf('/js/stars_billing.js') !== -1 ||

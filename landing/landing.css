@@ -593,6 +593,7 @@ ul {
 
 .wordmark {
   display: inline-flex;
+  flex: none;
   align-items: center;
   gap: var(--sp-1);
   font-weight: 700;
@@ -600,6 +601,7 @@ ul {
   color: var(--text-1);
   text-decoration: none;
   letter-spacing: -0.01em;
+  white-space: nowrap;
 }
 
 .wordmark:hover {
@@ -615,6 +617,7 @@ ul {
 
 .nav-links {
   display: flex;
+  flex: none;
   gap: var(--sp-1);
   margin-left: var(--sp-2);
 }
@@ -623,12 +626,13 @@ ul {
   display: inline-flex;
   align-items: center;
   min-height: var(--hit);
-  padding: 0 var(--sp-2);
+  padding: 0 calc(var(--sp-1) * 1.5);
   border-radius: var(--r-control);
   color: var(--text-2);
   text-decoration: none;
   font-size: var(--fs-small);
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .nav-links a:hover {
@@ -644,12 +648,13 @@ ul {
 .nav-actions {
   margin-left: auto;
   display: flex;
+  flex: none;
   gap: var(--sp-1);
 }
 
 .nav-menu {
   display: none;
-  margin-left: auto;
+  flex: none;
 }
 
 .nav-menu summary {
@@ -685,12 +690,16 @@ ul {
   left: 0;
   right: 0;
   top: var(--nav-h);
+  max-height: calc(100svh - var(--nav-h));
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: var(--sp-2) var(--sp-3) var(--sp-3);
-  background: var(--glass-bg-strong);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
+  /* .nav already owns the backdrop filter, so a nested blur sees nothing:
+     the glass tint sits on an opaque base to keep the menu legible. */
+  background: linear-gradient(var(--glass-bg-strong), var(--glass-bg-strong)), var(--surface-0);
   border-bottom: 1px solid var(--glass-border);
   display: grid;
+  align-content: start;
   gap: var(--sp-1);
 }
 
@@ -709,17 +718,61 @@ ul {
   background: var(--surface-2);
 }
 
-@media (max-width: 899px) {
-  .nav-links,
-  .nav-actions .btn-secondary {
+/* The full row (wordmark, six links, two buttons) is about 1040px wide in
+   Sora, so links collapse into the menu until the 1120px container fits it.
+   nav-fit.js applies the same tiers when the row still overflows, for
+   example with a fallback font, browser zoom or a larger default text size. */
+@media (max-width: 1199px) {
+  .nav-links {
     display: none;
   }
   .nav-menu {
     display: block;
   }
-  .nav-actions {
-    margin-left: 0;
+}
+
+@media (max-width: 899px) {
+  .nav .container {
+    gap: var(--sp-2);
   }
+  .nav-actions .btn-secondary {
+    display: none;
+  }
+  .nav-actions .btn {
+    padding: 0 var(--sp-2);
+  }
+}
+
+@media (max-width: 359px) {
+  .wordmark-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+.nav--compact .nav-links {
+  display: none;
+}
+
+.nav--compact .nav-menu {
+  display: block;
+}
+
+.nav--tight .nav-actions .btn-secondary {
+  display: none;
+}
+
+.nav--mini .wordmark-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 /* ============================================================

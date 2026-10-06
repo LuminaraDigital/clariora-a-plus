@@ -40,7 +40,7 @@ def nav(active: str) -> str:
   <div class="container">
     <a class="wordmark" href="{home_href}" aria-label="Clariora A+, home">
       <img class="wordmark-mark" src="../icons/icon-192.png" width="192" height="192" alt="" decoding="async">
-      Clariora A+
+      <span class="wordmark-text">Clariora A+</span>
     </a>
     <nav class="nav-links" aria-label="Site">
 {chr(10).join(links)}
@@ -80,6 +80,7 @@ def footer() -> str:
     </p>
   </div>
 </footer>
+<script src="nav-fit.js" defer></script>
 <script src="hero-mesh.js" defer></script>
 <script>
 (function () {

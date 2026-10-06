@@ -38,6 +38,15 @@ jobs:
       - name: Node self-tests
         run: npm test
 
+      - name: Landing page design and header checks
+        run: node tools/test_landing.js
+
+      - name: APX economy Monte Carlo bands
+        run: python tools/apx_economy_sim.py --ci --n 200
+
+      - name: Coach grounding eval (golden replies)
+        run: node tools/eval_coach.js --ci
+
       - name: Validate exam bank
         run: python tools/validate_bank.py --bank exam_data.json
 

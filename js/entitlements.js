@@ -373,16 +373,20 @@
       if (starsTierIsPro(window.__CLARIORA_SERVER_ENTITLEMENT__)) return true;
     } catch (_) {}
     try {
-      if (typeof window !== 'undefined' && window.CompTIALedger && typeof window.CompTIALedger.checkWalletUnlock === 'function') {
-        var raw = readLedgerRaw();
-        var parsed = raw ? JSON.parse(raw) : null;
-        if (parsed && Array.isArray(parsed.chain)) {
-          var w = window.CompTIALedger.replayWallet ? window.CompTIALedger.replayWallet(parsed.chain) : null;
-          if (w && window.CompTIALedger.checkWalletUnlock(w, 'PRO_PASS_30D')) return true;
-        }
+      if (typeof window !== 'undefined' && window.CompTIALedger && typeof window.CompTIALedger.proPassActiveSync === 'function') {
+        if (window.CompTIALedger.proPassActiveSync()) return true;
       }
     } catch (_) {}
     return false;
+  }
+
+  function ledgerCharges(unlockId) {
+    try {
+      if (typeof window !== 'undefined' && window.CompTIALedger && typeof window.CompTIALedger.consumableChargesSync === 'function') {
+        return window.CompTIALedger.consumableChargesSync(unlockId);
+      }
+    } catch (_) {}
+    return 0;
   }
 
   function limitFor(feature) {
@@ -415,37 +419,8 @@
     return Math.max(0, baseLimit - used) + extraCharges;
   }
 
-  function readLedgerRaw() {
-    if (typeof window === 'undefined') return null;
-    var key = 'comptia_pom_ledger_v1';
-    try {
-      if (window.APlus && window.APlus.utils && typeof window.APlus.utils.scopedGet === 'function') {
-        var scoped = window.APlus.utils.scopedGet(key);
-        if (scoped) return scoped;
-      }
-      if (window.CompTIAProfiles && typeof window.CompTIAProfiles.scopedGet === 'function') {
-        var viaProfiles = window.CompTIAProfiles.scopedGet(key);
-        if (viaProfiles) return viaProfiles;
-      }
-      return window.localStorage ? window.localStorage.getItem(key) : null;
-    } catch (_) {
-      return null;
-    }
-  }
-
   function aiBurstCharges() {
-    var charges = 0;
-    try {
-      var raw = readLedgerRaw();
-      var parsed = raw ? JSON.parse(raw) : null;
-      if (!parsed || !Array.isArray(parsed.chain)) return 0;
-      parsed.chain.forEach(function (b) {
-        if (!b.payload || b.payload.unlockId !== 'AI_BURST') return;
-        if (b.type === 'SPEND_UNLOCK') charges += Number(b.payload.charges) || 5;
-        if (b.type === 'CONSUME_UNLOCK') charges = Math.max(0, charges - (Number(b.payload.amount) || 1));
-      });
-    } catch (_) {}
-    return charges;
+    return ledgerCharges('AI_BURST');
   }
 
   /**
@@ -1138,8 +1113,20 @@
           diagnosticThisSession = false;
         }
 
-        // Full mocks are paid only.
+        // Full mocks are paid only, or one Mock Unlock charge per started exam.
         if (count >= numberOr(cfg.fullMockThreshold, 90)) {
+          if (ledgerCharges('MOCK_UNLOCK') > 0) {
+            var self = this;
+            window.CompTIALedger.consumeUnlock('MOCK_UNLOCK', 1, { examType: String(type || ''), questionCount: count })
+              .then(function (res) {
+                if (res && res.ok) {
+                  original.apply(self, args);
+                } else {
+                  openUpgrade('full_mock');
+                }
+              }, function () { openUpgrade('full_mock'); });
+            return undefined;
+          }
           openUpgrade('full_mock');
           return undefined;
         }

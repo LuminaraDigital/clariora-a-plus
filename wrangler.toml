@@ -54,6 +54,9 @@ new_sqlite_classes = ["CoachRateLimiter"]
 
 [vars]
 ENVIRONMENT = "production"
+# Shared explain cache: "1" only after the staging soak in docs/APX_ECONOMY_OPS.md.
+AI_EXPLAIN_CACHE = "0"
+AI_GUARD_CONSISTENCY = "1"
 
 [build]
 # Local `wrangler deploy` only. Workers Builds ignores this; see package.json postinstall.

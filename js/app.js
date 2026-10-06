@@ -231,6 +231,18 @@
       APlus.engine.toggleFlag();
     };
 
+    window.useHintOnCurrentQuestion = async function() {
+      const ui = window.CompTIALedgerUI;
+      const res = await APlus.engine.useHint();
+      if (!ui || typeof ui.toast !== 'function') return;
+      if (res && res.ok) {
+        ui.toast(`Hint used: one wrong option removed. ${res.remaining} hint${res.remaining === 1 ? '' : 's'} left.`, 'earn');
+        if (typeof ui.refreshWalletBadge === 'function') ui.refreshWalletBadge();
+      } else {
+        ui.toast((res && res.error) || 'Hint unavailable.', 'warn');
+      }
+    };
+
     window.navigateQuestion = function(delta) {
       const session = APlus.engine;
       const moved = session.navigate(delta);

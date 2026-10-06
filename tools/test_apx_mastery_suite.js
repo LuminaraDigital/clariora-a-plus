@@ -308,8 +308,8 @@ async function run() {
       domainPct: 90
     });
     assert.strictEqual(nextDay.stakeBlocks.length, 1, 'Stake must resolve on day 2');
-    // 30 returned + 40% yield (12) = 42 tokenDelta
-    assert.strictEqual(nextDay.stakeBlocks[0].tokenDelta, 42, 'Yield payout must be 30 + 12 = 42 APX');
+    // 30 returned + 15% yield (5) = 35 tokenDelta
+    assert.strictEqual(nextDay.stakeBlocks[0].tokenDelta, 35, 'Yield payout must be 30 + 5 = 35 APX');
     assert.strictEqual(nextDay.wallet.stakes[stakeId].status, 'yielded');
   });
 
@@ -319,7 +319,7 @@ async function run() {
     // Verify catalog entry
     const cat = Ledger.getUnlocksCatalog();
     assert.ok(cat.PRO_PASS_30D, 'PRO_PASS_30D must exist in catalog');
-    assert.strictEqual(cat.PRO_PASS_30D.cost, 2500);
+    assert.strictEqual(cat.PRO_PASS_30D.cost, 3800);
     assert.strictEqual(cat.PRO_PASS_30D.type, 'consumable');
     assert.strictEqual(cat.PRO_PASS_30D.charges, 30);
     assert.strictEqual(cat.PRO_PASS_30D.desc, '30-day Pro Pass unlockable with earned APX');
@@ -327,15 +327,15 @@ async function run() {
     // Reject purchase without sufficient balance
     const reject = await Ledger.spendUnlock('PRO_PASS_30D');
     assert.strictEqual(reject.ok, false);
-    assert.ok(reject.error.includes('Need 2500'));
+    assert.ok(reject.error.includes('Need 3800'));
 
-    // Grant 3000 APX funding
-    await Ledger.appendBlock('TEST_GRANT', { note: 'Fund Pro Pass' }, 3000, 0);
+    // Grant enough APX funding
+    await Ledger.appendBlock('TEST_GRANT', { note: 'Fund Pro Pass' }, 4000, 0);
 
     // Spend unlock
     const unlockRes = await Ledger.spendUnlock('PRO_PASS_30D');
     assert.strictEqual(unlockRes.ok, true, unlockRes.error);
-    assert.strictEqual(unlockRes.wallet.balance, 600); // 100 + 3000 - 2500 = 600
+    assert.strictEqual(unlockRes.wallet.balance, 300); // 100 + 4000 - 3800 = 300
     assert.strictEqual(unlockRes.wallet.unlocks.consumables.PRO_PASS_30D, 30);
     assert.strictEqual(await Ledger.hasActiveUnlock('PRO_PASS_30D'), true);
 

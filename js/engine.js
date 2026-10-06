@@ -97,10 +97,34 @@
     return 'practice';
   }
 
+  /**
+   * A Hint Pack charge may be spent only where it delivers: a practice-mode
+   * single-answer question that is still unanswered and not yet hinted.
+   */
+  function hintAllowed(mode, q, storedAnswer, alreadyHinted) {
+    if (mode === 'mock' || mode === 'diagnostic') return false;
+    if (!q || typeof q.answer !== 'number' || !Array.isArray(q.options)) return false;
+    if (storedAnswer !== undefined && storedAnswer !== null) return false;
+    return !alreadyHinted;
+  }
+
+  /** Lowest-index wrong option not already eliminated, or null when none is left. */
+  function pickHintOption(q, eliminated) {
+    if (!q || !Array.isArray(q.options) || typeof q.answer !== 'number') return null;
+    for (let i = 0; i < q.options.length; i += 1) {
+      if (i === q.answer) continue;
+      if (eliminated && eliminated.has(i)) continue;
+      return i;
+    }
+    return null;
+  }
+
   APlus.modes = {
     MODE_BY_TYPE: MODE_BY_TYPE,
     examModeForType: examModeForType,
     shouldRevealOnSelect: shouldRevealOnSelect,
+    hintAllowed: hintAllowed,
+    pickHintOption: pickHintOption,
     eliminateOption: eliminateOption,
     currentExamMode: currentExamMode,
     timerAlertLevel: timerAlertLevel
@@ -118,6 +142,7 @@
       this.currentIndex = 0;
       this.userAnswers = {};
       this.eliminatedOptions = {};
+      this.hintedQuestions = new Set();
       this.flaggedQuestions = new Set();
       this.totalSeconds = 90 * 60;
       this.remainingSeconds = 90 * 60;
@@ -163,6 +188,7 @@
       this.currentIndex = 0;
       this.userAnswers = {};
       this.eliminatedOptions = {};
+      this.hintedQuestions = new Set();
       this.flaggedQuestions = new Set();
       this.totalSeconds = timeMinutes * 60;
       this.remainingSeconds = timeMinutes * 60;
@@ -322,6 +348,37 @@
         optionIndex: optionIdx,
         eliminated: set
       });
+    }
+
+    canUseHint() {
+      const idx = this.currentIndex;
+      const hinted = this.hintedQuestions ? this.hintedQuestions.has(idx) : false;
+      return hintAllowed(this.mode, this.getCurrentQuestion(), this.userAnswers[idx], hinted) &&
+        pickHintOption(this.getCurrentQuestion(), this.eliminatedOptions[idx]) !== null;
+    }
+
+    async useHint() {
+      if (!this.canUseHint()) return { ok: false, error: 'Hints are not available on this question.' };
+      const ledger = window.CompTIALedger;
+      if (!ledger || typeof ledger.consumeUnlock !== 'function') {
+        return { ok: false, error: 'Wallet unavailable.' };
+      }
+      const idx = this.currentIndex;
+      const q = this.getCurrentQuestion();
+      const pick = pickHintOption(q, this.eliminatedOptions[idx]);
+      const res = await ledger.consumeUnlock('HINT_PACK', 1, { qid: q.id || null });
+      if (!res || !res.ok) return res || { ok: false, error: 'No hint charges left.' };
+      if (!this.hintedQuestions) this.hintedQuestions = new Set();
+      this.hintedQuestions.add(idx);
+      if (!this.eliminatedOptions[idx]) this.eliminatedOptions[idx] = new Set();
+      this.eliminatedOptions[idx].add(pick);
+      APlus.bus.emit('exam:eliminate:toggled', {
+        questionIndex: idx,
+        optionIndex: pick,
+        eliminated: this.eliminatedOptions[idx],
+        hint: true
+      });
+      return { ok: true, eliminated: pick, remaining: res.remaining };
     }
 
     toggleFlag() {

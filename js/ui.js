@@ -503,6 +503,17 @@
         flagBtn.innerText = isFlagged ? 'Flagged for review' : 'Flag for review';
       }
 
+      const hintBtn = document.getElementById('hintBtn');
+      if (hintBtn) {
+        const ledger = window.CompTIALedger;
+        const charges = ledger && typeof ledger.consumableChargesSync === 'function'
+          ? ledger.consumableChargesSync('HINT_PACK')
+          : 0;
+        const show = charges > 0 && typeof session.canUseHint === 'function' && session.canUseHint();
+        hintBtn.hidden = !show;
+        if (show) hintBtn.innerText = `Use hint (${charges})`;
+      }
+
       // Render options via qtypes
       const optContainer = document.getElementById('optionsList');
       if (optContainer) {

@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "note": "Labelled coach replies replayed through runCoachTurns. 'expect' is what the guards must do with the reply.",
+  "cases": [
+    {
+      "id": "agree-plain",
+      "question": { "questionId": "EV-001", "question": "Which tool measures AC line voltage at a wall outlet?", "options": ["Multimeter", "Loopback plug", "Tone generator", "Cable tester"], "correctAnswer": "Multimeter", "chosenAnswer": "Cable tester", "objective": "1201-5.2", "officialExplanation": "A multimeter set to AC volts reads line voltage." },
+      "reply": "Multimeter is the correct answer. A cable tester only checks wire continuity and pinouts, so it cannot read line voltage.",
+      "expect": "pass"
+    },
+    {
+      "id": "agree-with-real-objective",
+      "question": { "questionId": "EV-002", "question": "Which RAID level mirrors two drives?", "options": ["RAID 0", "RAID 1", "RAID 5", "RAID 10"], "correctAnswer": "RAID 1", "chosenAnswer": "RAID 0", "objective": "1201-3.4" },
+      "reply": "RAID 1 is the right answer: it mirrors data across two drives. RAID 0 stripes with no redundancy. Review 220-1201-1.1 style hardware basics alongside storage.",
+      "expect": "pass"
+    },
+    {
+      "id": "rival-claimed",
+      "question": { "questionId": "EV-003", "question": "Which port does HTTPS use by default?", "options": ["80", "443", "8080", "22"], "correctAnswer": "443", "chosenAnswer": "80", "objective": "1201-2.1", "officialExplanation": "HTTPS uses TCP 443." },
+      "reply": "Good instinct. The correct answer is 80, because web traffic uses port 80.",
+      "expect": "fallback"
+    },
+    {
+      "id": "rival-claimed-quoted",
+      "question": { "questionId": "EV-004", "question": "Which Windows tool repairs protected system files?", "options": ["sfc", "chkdsk", "diskpart", "gpupdate"], "correctAnswer": "sfc", "chosenAnswer": "chkdsk", "objective": "1202-1.2", "officialExplanation": "sfc /scannow verifies and repairs protected system files." },
+      "reply": "\"chkdsk\" is the best answer here since it scans the disk.",
+      "expect": "fallback"
+    },
+    {
+      "id": "official-disputed",
+      "question": { "questionId": "EV-005", "question": "Which wireless standard operates only at 5 GHz?", "options": ["802.11a", "802.11b", "802.11g", "802.11n"], "correctAnswer": "802.11a", "chosenAnswer": "802.11n", "objective": "1201-2.3", "officialExplanation": "802.11a is 5 GHz only." },
+      "reply": "Actually you were right, and the official answer is wrong: 802.11n is the better pick.",
+      "expect": "fallback"
+    },
+    {
+      "id": "invented-objective",
+      "question": { "questionId": "EV-006", "question": "Which connector carries both video and USB data over one cable?", "options": ["USB-C", "VGA", "DVI-D", "RJ45"], "correctAnswer": "USB-C", "chosenAnswer": "VGA", "objective": "1201-3.1" },
+      "reply": "USB-C is the correct answer because it supports DisplayPort alternate mode. See objective 1201-4.37 for more.",
+      "expect": "objective_replaced"
+    },
+    {
+      "id": "retired-objective",
+      "question": { "questionId": "EV-007", "question": "Which command shows the IP configuration on Windows?", "options": ["ipconfig", "ifconfig", "netstat", "tracert"], "correctAnswer": "ipconfig", "chosenAnswer": "ifconfig", "objective": "1202-1.2" },
+      "reply": "ipconfig is the right answer on Windows; ifconfig is the legacy Linux tool. This is covered in 220-1102-1.2.",
+      "expect": "objective_replaced"
+    },
+    {
+      "id": "letter-reference",
+      "question": { "questionId": "EV-008", "question": "Which display technology needs a backlight?", "options": ["LCD", "OLED", "MicroLED", "E-ink"], "correctAnswer": "LCD", "chosenAnswer": "OLED", "objective": "1201-1.2" },
+      "reply": "Option A is correct: LCD panels need a backlight, while OLED pixels emit their own light.",
+      "expect": "uncacheable_letters"
+    },
+    {
+      "id": "article-a-not-letter",
+      "question": { "questionId": "EV-009", "question": "What should you use to clean dust from inside a PC?", "options": ["Compressed air", "Wet cloth", "Vacuum with metal nozzle", "Hair dryer"], "correctAnswer": "Compressed air", "chosenAnswer": "Wet cloth", "objective": "1202-4.5" },
+      "reply": "Compressed air is the correct answer. A wet cloth risks shorting components.",
+      "expect": "pass"
+    },
+    {
+      "id": "credential-leak",
+      "question": { "questionId": "EV-010", "question": "Which protocol encrypts remote shell sessions?", "options": ["SSH", "Telnet", "FTP", "TFTP"], "correctAnswer": "SSH", "chosenAnswer": "Telnet", "objective": "1201-2.1" },
+      "reply": "SSH is the correct answer. Example key: AKIAIOSFODNN7EXAMPLE",
+      "expect": "unclean"
+    }
+  ]
+}

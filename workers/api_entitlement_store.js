@@ -36,6 +36,7 @@ export async function resolveUserEntitlement(telegramId, db) {
       trialStartedAt,
       trialDaysRemaining,
       proPreviewTokensRemaining: proPreviewTokens,
+      tierExpiresAt: tier === 'free' ? null : (user.tier_expires_at || null),
       user
     };
   } catch (e) {
@@ -98,6 +99,7 @@ export async function resolveFirebaseEntitlement(uid, db) {
       trialStartedAt: Date.now(),
       trialDaysRemaining: 14,
       proPreviewTokensRemaining: 0,
+      tierExpiresAt: tier === 'free' ? null : (row.tier_expires_at || null),
       user: row
     };
   } catch (_) {

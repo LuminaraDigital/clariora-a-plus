@@ -1,4 +1,14 @@
 /** Upstream AI provider adapters for the coach gateway. */
+
+/** Completion cap sent to each provider; budget reservations are sized from it. */
+export const PROVIDER_MAX_TOKENS = {
+  nvidia: 450,
+  ollama: 450,
+  openrouter: 450,
+  groq: 350,
+  workers_ai: 350
+};
+
 export async function executeNvidiaNim(userMessage, systemPrompt, model, env) {
   if (!env.NVIDIA_API_KEY) return null;
   const targetModel = model || 'meta/llama-3.1-70b-instruct';
@@ -17,7 +27,7 @@ export async function executeNvidiaNim(userMessage, systemPrompt, model, env) {
           { role: 'user', content: userMessage }
         ],
         temperature: 0.2,
-        max_tokens: 450
+        max_tokens: PROVIDER_MAX_TOKENS.nvidia
       })
     });
 
@@ -70,7 +80,7 @@ export async function executeOllama(userMessage, systemPrompt, model, env) {
           { role: 'user', content: userMessage }
         ],
         temperature: 0.3,
-        max_tokens: 450
+        max_tokens: PROVIDER_MAX_TOKENS.ollama
       })
     });
 
@@ -112,7 +122,7 @@ export async function executeOpenRouter(userMessage, systemPrompt, model, env) {
           { role: 'user', content: userMessage }
         ],
         temperature: 0.2,
-        max_tokens: 450
+        max_tokens: PROVIDER_MAX_TOKENS.openrouter
       })
     });
 
@@ -152,7 +162,7 @@ export async function executeGroq(userMessage, systemPrompt, model, env) {
           { role: 'user', content: userMessage }
         ],
         temperature: 0.2,
-        max_tokens: 350
+        max_tokens: PROVIDER_MAX_TOKENS.groq
       })
     });
 
@@ -182,7 +192,7 @@ export async function executeWorkersAi(userMessage, systemPrompt, env) {
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userMessage }
       ],
-      max_tokens: 350
+      max_tokens: PROVIDER_MAX_TOKENS.workers_ai
     });
     return {
       text: response.response,

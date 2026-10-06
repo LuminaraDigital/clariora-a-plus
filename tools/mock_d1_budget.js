@@ -46,13 +46,14 @@ function applyBudgetSql(store, sql, params) {
   }
 
   // --- reserveBudget(): conditional UPDATE, 17 bound params.
-  //     [today, reserve, today, month, reserve, month, today, today,
-  //      id, today, callBudget, today, reserve, dailyBudget,
-  //      month, reserve, monthlyBudget]
+  //     [dayKey, reserve, dayKey, monthKey, reserve, monthKey, today, today,
+  //      id, today, callBudget, dayKey, reserve, dailyBudget,
+  //      monthKey, reserve, monthlyBudget]
   if (sql.includes('UPDATE') && params.length === 17) {
-    const today = params[0];
+    const dayKey = params[0];
     const reserve = num(params[1]);
     const month = params[3];
+    const today = params[6];
     const id = params[8];
     const callBudget = num(params[10]);
     const dailyBudget = num(params[13]);
@@ -62,7 +63,7 @@ function applyBudgetSql(store, sql, params) {
     if (!row) return { handled: true, changes: 0 };
 
     // Window rollover, exactly as the CASE expressions in the SQL do it.
-    const tokensToday = row.ai_tokens_last_date === today ? num(row.ai_tokens_used_today) : 0;
+    const tokensToday = row.ai_tokens_last_date === dayKey ? num(row.ai_tokens_used_today) : 0;
     const tokensMonth = row.ai_tokens_month === month ? num(row.ai_tokens_used_month) : 0;
     const callsToday = row.ai_calls_last_date === today ? num(row.ai_calls_used_today) : 0;
 
@@ -76,7 +77,7 @@ function applyBudgetSql(store, sql, params) {
 
     store.set(id, Object.assign({}, row, {
       ai_tokens_used_today: tokensToday + reserve,
-      ai_tokens_last_date: today,
+      ai_tokens_last_date: dayKey,
       ai_tokens_used_month: tokensMonth + reserve,
       ai_tokens_month: month,
       ai_calls_used_today: callsToday + 1,
@@ -86,7 +87,7 @@ function applyBudgetSql(store, sql, params) {
   }
 
   // --- settleBudget(): relative adjustment, 5 bound params.
-  //     [delta, delta, id, today, month]
+  //     [delta, delta, id, dayKey, monthKey]
   if (sql.includes('UPDATE') && params.length === 5) {
     const delta = num(params[0]);
     const id = params[2];
@@ -109,22 +110,23 @@ function applyBudgetSql(store, sql, params) {
   }
 
   // --- insertReservationRow(): first-use upsert, 6 bound params.
-  //     [id, reserve, today, reserve, month, today]
+  //     [id, reserve, dayKey, reserve, monthKey, today]
   if (sql.includes('INSERT INTO telegram_users') && params.length === 6) {
     const id = params[0];
     const reserve = num(params[1]);
-    const today = params[2];
+    const dayKey = params[2];
     const month = params[4];
+    const today = params[5];
 
     const existing = store.get(id) || { telegram_id: id };
-    const tokensToday = existing.ai_tokens_last_date === today ? num(existing.ai_tokens_used_today) : 0;
+    const tokensToday = existing.ai_tokens_last_date === dayKey ? num(existing.ai_tokens_used_today) : 0;
     const tokensMonth = existing.ai_tokens_month === month ? num(existing.ai_tokens_used_month) : 0;
     const callsToday = existing.ai_calls_last_date === today ? num(existing.ai_calls_used_today) : 0;
 
     store.set(id, Object.assign({}, existing, {
       telegram_id: id,
       ai_tokens_used_today: tokensToday + reserve,
-      ai_tokens_last_date: today,
+      ai_tokens_last_date: dayKey,
       ai_tokens_used_month: tokensMonth + reserve,
       ai_tokens_month: month,
       ai_calls_used_today: callsToday + 1,

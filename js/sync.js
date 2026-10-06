@@ -42,6 +42,7 @@
   var HISTORY_KEY_RE = /comptia_a_plus_history$/;
   var MISSED_KEY_RE = /comptia_a_plus_missed$/;
   var SRS_KEY_RE = /srs/i;
+  var LEDGER_KEY_RE = /comptia_pom_ledger_v1$/;
 
   var KEY_TIMES_STORAGE_KEY = 'sync_key_times';       // -> aplus3_sync_key_times
   var LAST_SYNCED_STORAGE_KEY = 'sync_last_synced_at'; // -> aplus3_sync_last_synced_at
@@ -188,7 +189,42 @@
     if (HISTORY_KEY_RE.test(key)) return 'history';
     if (MISSED_KEY_RE.test(key)) return 'missed';
     if (SRS_KEY_RE.test(key)) return 'srs';
+    if (LEDGER_KEY_RE.test(key)) return 'ledger';
     return 'plain';
+  }
+
+  function normalizeLedgerDevices(raw) {
+    var parsed = typeof raw === 'string' ? safeParse(raw, null) : raw;
+    if (!parsed || typeof parsed !== 'object') return {};
+    if (parsed.format === 'multi_device_v1' && parsed.devices && typeof parsed.devices === 'object') {
+      return parsed.devices;
+    }
+    var id = parsed.deviceId || 'legacy';
+    var out = {};
+    out[id] = {
+      chain: parsed.chain || [],
+      publicKeyFingerprint: parsed.publicKeyFingerprint || null,
+      deviceId: id
+    };
+    return out;
+  }
+
+  function mergeLedgerValue(rawA, rawB) {
+    var devices = {};
+    var a = normalizeLedgerDevices(rawA);
+    var b = normalizeLedgerDevices(rawB);
+    Object.keys(a).forEach(function (id) { devices[id] = a[id]; });
+    Object.keys(b).forEach(function (id) {
+      if (!devices[id]) {
+        devices[id] = b[id];
+        return;
+      }
+      var left = devices[id].chain || [];
+      var right = (b[id] && b[id].chain) || [];
+      // Same device: keep the longer chain (more learning history).
+      devices[id] = right.length > left.length ? b[id] : devices[id];
+    });
+    return JSON.stringify({ format: 'multi_device_v1', devices: devices, updatedAt: nowIso() });
   }
 
   /**
@@ -215,6 +251,9 @@
     }
     if (kind === 'srs') {
       return { v: mergeSrsDeckValue(localEntry.v, remoteEntry.v), u: newestU };
+    }
+    if (kind === 'ledger') {
+      return { v: mergeLedgerValue(localEntry.v, remoteEntry.v), u: newestU };
     }
 
     // Plain per-key newest-wins.
@@ -261,12 +300,14 @@
   APlus.sync = APlus.sync || {};
   APlus.sync.merge = merge;
   APlus.sync.isExcludedKey = isExcludedKey;
+  APlus.sync.mergeLedgerValue = mergeLedgerValue;
   APlus.sync._internal = {
     mergeHistoryArrays: mergeHistoryArrays,
     mergeIdArrays: mergeIdArrays,
     mergeSrsCards: mergeSrsCards,
     mergeSrsDeckValue: mergeSrsDeckValue,
-    keyKind: keyKind
+    keyKind: keyKind,
+    mergeLedgerValue: mergeLedgerValue
   };
 
   var hasDom = (typeof global.document !== 'undefined' && global.document);
@@ -339,6 +380,8 @@
     localSet(DEVICE_ID_STORAGE_KEY, id);
     return id;
   }
+
+  APlus.sync.getDeviceId = getDeviceId;
 
   /* ----------------------------------------------------------------------
    * Key-time tracking: hook APlus.bus 'storage:changed' and also poll

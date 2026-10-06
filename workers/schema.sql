@@ -138,8 +138,25 @@ CREATE TABLE IF NOT EXISTS ai_usage_log (
     latency_ms INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+-- intent, cache_hit, turns, user_ref (and apx_events.arm) are added by
+-- migrations/0004_ai_explain_cache.sql. They stay out of this file because
+-- ALTER TABLE ADD COLUMN fails on a database that already has them.
 
 CREATE INDEX IF NOT EXISTS idx_ai_log_user ON ai_usage_log(telegram_id);
+CREATE INDEX IF NOT EXISTS idx_ai_log_created ON ai_usage_log(created_at);
+
+-- 9a. Shared explanation cache (impersonal explain replies only; see workers/explain_cache.js)
+CREATE TABLE IF NOT EXISTS ai_explain_cache (
+    cache_key TEXT PRIMARY KEY,
+    qid TEXT NOT NULL,
+    model TEXT NOT NULL,
+    prompt_version TEXT NOT NULL,
+    body TEXT NOT NULL,
+    hits INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_explain_cache_created ON ai_explain_cache(created_at);
 
 -- 9b. Provider circuit breaker + async coach jobs / DLQ (AI production)
 CREATE TABLE IF NOT EXISTS provider_circuit_state (
@@ -240,5 +257,39 @@ CREATE TABLE IF NOT EXISTS learner_memories (
 );
 
 CREATE INDEX IF NOT EXISTS idx_learner_memories_user ON learner_memories(user_id, updated_at DESC);
+
+-- 12. APX soft-currency telemetry (not a payment ledger)
+CREATE TABLE IF NOT EXISTS apx_daily_counters (
+    user_id TEXT NOT NULL,
+    day TEXT NOT NULL,
+    minted INTEGER NOT NULL DEFAULT 0,
+    burned INTEGER NOT NULL DEFAULT 0,
+    practice_minted INTEGER NOT NULL DEFAULT 0,
+    side_minted INTEGER NOT NULL DEFAULT 0,
+    cap_hits INTEGER NOT NULL DEFAULT 0,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (user_id, day)
+);
+
+CREATE TABLE IF NOT EXISTS apx_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    day TEXT,
+    source TEXT NOT NULL,
+    amount INTEGER NOT NULL DEFAULT 0,
+    capped INTEGER NOT NULL DEFAULT 0,
+    item TEXT,
+    balance_after INTEGER,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_apx_events_user_day ON apx_events(user_id, day);
+CREATE INDEX IF NOT EXISTS idx_apx_events_created ON apx_events(created_at);
+
+CREATE TABLE IF NOT EXISTS apx_holdout (
+    user_id TEXT PRIMARY KEY,
+    holdout INTEGER NOT NULL DEFAULT 0,
+    assigned_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 
 

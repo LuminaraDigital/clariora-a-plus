@@ -5366,6 +5366,10 @@ header::after {
   white-space: nowrap;
 }
 
+.toolbar-btn[hidden] {
+  display: none !important;
+}
+
 .toolbar-btn:hover {
   border-color: var(--gold-primary);
   color: var(--gold-text);

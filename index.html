@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://telegram.org https://unpkg.com https://www.gstatic.com https://apis.google.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://i.ytimg.com https://*.telegram.org https://lh3.googleusercontent.com https://*.googleusercontent.com; media-src 'self' https://comptia-a-plus-master.pages.dev https://clariora.com.au; connect-src 'self' https://api.telegram.org https://tonconnect.org https://tonapi.io https://*.ton.org https://toncenter.com https://clariora.com.au https://*.supabase.co https://cdn.jsdelivr.net https://unpkg.com https://comptia-a-plus-master.pages.dev https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://clariora.firebaseapp.com https://*.firebasestorage.app https://bridge.tonapi.io https://*.tonconnect.org; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://*.telegram.org https://clariora.firebaseapp.com https://accounts.google.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self' https://accounts.google.com; worker-src 'self'; manifest-src 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://telegram.org https://unpkg.com/@tonconnect/ https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://i.ytimg.com https://*.telegram.org https://lh3.googleusercontent.com https://*.googleusercontent.com; media-src 'self' https://comptia-a-plus-master.pages.dev https://clariora.com.au; connect-src 'self' https://api.telegram.org https://tonconnect.org https://tonapi.io https://*.ton.org https://toncenter.com https://clariora.com.au https://*.supabase.co https://unpkg.com/@tonconnect/ https://comptia-a-plus-master.pages.dev https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://clariora.firebaseapp.com https://*.firebasestorage.app https://bridge.tonapi.io https://*.tonconnect.org; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://*.telegram.org https://clariora.firebaseapp.com https://accounts.google.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self' https://accounts.google.com; worker-src 'self'; manifest-src 'self'">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Clariora A+</title>
   <meta name="robots" content="noindex,nofollow">
@@ -23,7 +23,7 @@
   <meta name="format-detection" content="telephone=no">
   <!-- APLUS_VERSION --><script>window.APLUS_VERSION = "3.1.5";</script><!-- /APLUS_VERSION -->
   <link rel="stylesheet" href="css/app-inline.css">
-  <link rel="stylesheet" href="css/brand-black-gold.css?v=4.3.4">
+  <link rel="stylesheet" href="css/brand-black-gold.css?v=4.3.5">
   <link rel="stylesheet" href="css/made-not-generated.css?v=1">
   <style id="bootIntroCritical">
     /* First paint: hold a black intro stage so the dashboard never flashes first. */
@@ -63,6 +63,8 @@
   <script src="js/core.js"></script>
   <script src="js/request-guard.js"></script>
   <script src="ledger_engine.js"></script>
+  <script src="js/apx_telemetry.js"></script>
+  <script src="js/apx_holdout.js"></script>
   <script src="ledger_ui.js"></script>
   <script src="learner_state.js"></script>
   <script src="study_plan.js"></script>
@@ -576,6 +578,7 @@
         <div class="exam-toolbar-actions">
           <span id="examExplanationsNote" class="toolbar-note" hidden>Explanations after submit</span>
           <button type="button" id="flagBtn" class="flag-btn toolbar-btn" onclick="toggleFlagCurrentQuestion()" aria-pressed="false">Flag</button>
+          <button type="button" id="hintBtn" class="btn btn-secondary toolbar-btn" onclick="useHintOnCurrentQuestion()" hidden>Use hint</button>
           <button type="button" class="btn btn-secondary toolbar-btn" onclick="openReviewModal()">Review</button>
           <button type="button" id="examScratchpadBtn" class="btn btn-secondary toolbar-btn" onclick="openScratchpadModal()" aria-label="Open exam whiteboard">Whiteboard</button>
           <div id="examHeaderControls" style="display: none;" role="group" aria-label="Exam timer and controls">
@@ -2901,7 +2904,7 @@
         <p class="more-note">CompTIA A+ practice for 220-1201 Core 1 and 220-1202 Core 2.</p>
         <p class="more-note">Not affiliated with CompTIA.</p>
         <p class="more-note"><a href="privacy.html" style="color: #38BDF8; text-decoration: underline;">Privacy Policy</a> &bull; <a href="terms.html" style="color: #38BDF8; text-decoration: underline;">Terms of Service</a></p>
-        <p class="more-note about-version" id="aboutVersionLine">Version 3.1.4</p>
+        <p class="more-note about-version" id="aboutVersionLine">Version 3.1.5</p>
         <section id="appUpdateMount" class="app-update" hidden></section>
         <nav class="drawer-nav" aria-label="About actions">
           <ul>

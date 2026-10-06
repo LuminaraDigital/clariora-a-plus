@@ -48,11 +48,33 @@ export function extractUsageTokens(providerPayload, fallbackEstimate) {
   return fallbackEstimate;
 }
 
-export async function readBudgetState(db, userRef) {
+/**
+ * Budget window keys stored in ai_tokens_last_date / ai_tokens_month.
+ *
+ * Monthly windows are scoped per tier, so free usage never eats into a paid
+ * tier bought later the same month. A 24-hour pass keys both windows on the
+ * pass itself: each purchase gets its own budget, and it cannot be doubled by
+ * straddling UTC midnight.
+ */
+export function budgetWindows(tier, opts, now) {
+  const t = normalizeTier(tier);
+  const today = (now || new Date()).toISOString().slice(0, 10);
+  const passExpiresAt = Number(opts && opts.passExpiresAt) || 0;
+  if (t === 'daily_pass' && passExpiresAt > 0) {
+    const key = `pass:${passExpiresAt}`;
+    return { today, dayKey: key, monthKey: key };
+  }
+  // A Pro Preview call is capped as pro_monthly but must stay on the account's own
+  // month key: alternating keys would reset the monthly counter on every switch.
+  const windowTier = opts && opts.windowTier ? normalizeTier(opts.windowTier) : t;
+  return { today, dayKey: today, monthKey: `${today.slice(0, 7)}:${windowTier}` };
+}
+
+export async function readBudgetState(db, userRef, windows) {
   await ensureBudgetColumns(db);
-  const today = new Date().toISOString().slice(0, 10);
-  const month = today.slice(0, 7);
-  const defaultState = { tokensToday: 0, tokensMonth: 0, callsToday: 0, today, month };
+  const w = windows || budgetWindows('free');
+  const today = w.today;
+  const defaultState = { tokensToday: 0, tokensMonth: 0, callsToday: 0, today, dayKey: w.dayKey, monthKey: w.monthKey };
   if (!db || !userRef) return defaultState;
 
   const telegramId = (typeof userRef === 'object' ? userRef.telegramId : (typeof userRef === 'number' || /^\d+$/.test(String(userRef))) ? Number(userRef) : null);
@@ -71,10 +93,10 @@ export async function readBudgetState(db, userRef) {
     }
     if (!user) return defaultState;
 
-    const tokensToday = user.ai_tokens_last_date === today ? (user.ai_tokens_used_today || 0) : 0;
-    const tokensMonth = user.ai_tokens_month === month ? (user.ai_tokens_used_month || 0) : 0;
+    const tokensToday = user.ai_tokens_last_date === w.dayKey ? (user.ai_tokens_used_today || 0) : 0;
+    const tokensMonth = user.ai_tokens_month === w.monthKey ? (user.ai_tokens_used_month || 0) : 0;
     const callsToday = user.ai_calls_last_date === today ? (user.ai_calls_used_today || 0) : 0;
-    return { tokensToday, tokensMonth, callsToday, today, month };
+    return { tokensToday, tokensMonth, callsToday, today, dayKey: w.dayKey, monthKey: w.monthKey };
   } catch (_) {
     return defaultState;
   }
@@ -123,8 +145,9 @@ function splitUserRef(userRef) {
  *
  * Returns { ok, reserved, state, policy, error?, message? }.
  */
-export async function reserveBudget(db, userRef, tier, estimatedTokens) {
+export async function reserveBudget(db, userRef, tier, estimatedTokens, opts) {
   const policy = getTierPolicy(tier);
+  const windows = budgetWindows(tier, opts);
   const reserve = Math.max(1, Math.ceil(Number(estimatedTokens) || 0) || 512);
 
   if (!db || !userRef) {
@@ -142,8 +165,9 @@ export async function reserveBudget(db, userRef, tier, estimatedTokens) {
 
   await ensureBudgetColumns(db);
 
-  const today = new Date().toISOString().slice(0, 10);
-  const month = today.slice(0, 7);
+  const today = windows.today;
+  const dayKey = windows.dayKey;
+  const month = windows.monthKey;
   const { telegramId, firebaseUid } = splitUserRef(userRef);
 
   const table = telegramId ? 'telegram_users' : 'auth_accounts';
@@ -184,8 +208,8 @@ export async function reserveBudget(db, userRef, tier, estimatedTokens) {
   try {
     const res = await db.prepare(sql).bind(
       // SET clause
-      today, reserve,
-      today,
+      dayKey, reserve,
+      dayKey,
       month, reserve,
       month,
       today,
@@ -193,20 +217,20 @@ export async function reserveBudget(db, userRef, tier, estimatedTokens) {
       // WHERE clause
       idValue,
       today, policy.freeCoachCallsPerDay,
-      today, reserve, policy.dailyTokenBudget,
+      dayKey, reserve, policy.dailyTokenBudget,
       month, reserve, policy.monthlyTokenBudget
     ).run();
 
     const changes = res && res.meta && typeof res.meta.changes === 'number' ? res.meta.changes : 0;
 
     if (changes > 0) {
-      const state = await readBudgetState(db, userRef);
+      const state = await readBudgetState(db, userRef, windows);
       return { ok: true, reserved: reserve, state, policy };
     }
 
     // Zero rows changed. Either the caller is over budget, or the row does not
     // exist yet. Read once to tell the two apart and produce an honest error.
-    const state = await readBudgetState(db, userRef);
+    const state = await readBudgetState(db, userRef, windows);
 
     if (state.callsToday >= policy.freeCoachCallsPerDay) {
       return {
@@ -242,10 +266,10 @@ export async function reserveBudget(db, userRef, tier, estimatedTokens) {
     // Under budget but no row matched: the account row is missing. Create it
     // with the reservation already applied, then let the request proceed.
     const inserted = await insertReservationRow(db, { telegramId, firebaseUid }, {
-      reserve, today, month
+      reserve, today, dayKey, month
     });
     if (inserted) {
-      return { ok: true, reserved: reserve, state: await readBudgetState(db, userRef), policy };
+      return { ok: true, reserved: reserve, state: await readBudgetState(db, userRef, windows), policy };
     }
 
     return {
@@ -271,7 +295,51 @@ export async function reserveBudget(db, userRef, tier, estimatedTokens) {
   }
 }
 
-async function insertReservationRow(db, { telegramId, firebaseUid }, { reserve, today, month }) {
+/**
+ * Meters a cached reply: zero tokens, but it still counts as one call against
+ * the daily call allowance, in the same single-statement style as reserveBudget.
+ */
+export async function recordCachedCall(db, userRef, tier, opts) {
+  const policy = getTierPolicy(tier);
+  const windows = budgetWindows(tier, opts);
+  const { telegramId, firebaseUid } = splitUserRef(userRef);
+  const idValue = telegramId || firebaseUid;
+  if (!db || !idValue) {
+    return { ok: false, error: 'BUDGET_IDENTITY_MISSING', message: 'Cannot meter this request: no verified caller identity.' };
+  }
+  await ensureBudgetColumns(db);
+  const table = telegramId ? 'telegram_users' : 'auth_accounts';
+  const idColumn = telegramId ? 'telegram_id' : 'uid';
+  const callsTodayExpr = `(CASE WHEN ai_calls_last_date = ? THEN COALESCE(ai_calls_used_today, 0) ELSE 0 END)`;
+  try {
+    const res = await db.prepare(`
+      UPDATE ${table} SET
+        ai_calls_used_today = ${callsTodayExpr} + 1,
+        ai_calls_last_date = ?,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE ${idColumn} = ? AND ${callsTodayExpr} < ?
+    `).bind(windows.today, windows.today, idValue, windows.today, policy.freeCoachCallsPerDay).run();
+    if (res && res.meta && res.meta.changes > 0) return { ok: true };
+
+    const state = await readBudgetState(db, userRef, windows);
+    if (state.callsToday >= policy.freeCoachCallsPerDay) {
+      return {
+        ok: false,
+        error: 'DAILY_CALL_BUDGET_EXHAUSTED',
+        message: `Daily coach call budget reached (${policy.freeCoachCallsPerDay}). Upgrade via Telegram Stars or TON for a higher hard cap.`
+      };
+    }
+    const inserted = await insertReservationRow(db, { telegramId, firebaseUid }, {
+      reserve: 0, today: windows.today, dayKey: windows.dayKey, month: windows.monthKey
+    });
+    return inserted ? { ok: true } : { ok: false, error: 'BUDGET_RESERVATION_FAILED', message: 'Could not meter this request. Please retry.' };
+  } catch (err) {
+    console.warn('recordCachedCall failed - failing closed:', err && err.message);
+    return { ok: false, error: 'BUDGET_STORE_ERROR', message: 'AI budget accounting is temporarily unavailable. Please retry shortly.' };
+  }
+}
+
+async function insertReservationRow(db, { telegramId, firebaseUid }, { reserve, today, dayKey, month }) {
   try {
     if (telegramId) {
       await db.prepare(`
@@ -288,7 +356,7 @@ async function insertReservationRow(db, { telegramId, firebaseUid }, { reserve, 
           ai_calls_used_today = COALESCE(telegram_users.ai_calls_used_today, 0) + 1,
           ai_calls_last_date = excluded.ai_calls_last_date,
           updated_at = CURRENT_TIMESTAMP
-      `).bind(telegramId, reserve, today, reserve, month, today).run();
+      `).bind(telegramId, reserve, dayKey, reserve, month, today).run();
       return true;
     }
     if (firebaseUid) {
@@ -313,7 +381,7 @@ async function insertReservationRow(db, { telegramId, firebaseUid }, { reserve, 
  * The daily/monthly date guards mean a settlement that lands after midnight is
  * dropped rather than charged against the new day's fresh budget.
  */
-export async function settleBudget(db, userRef, reservedTokens, actualTokens, tier) {
+export async function settleBudget(db, userRef, reservedTokens, actualTokens, tier, opts) {
   const policy = getTierPolicy(tier);
   if (!db || !userRef) return null;
 
@@ -321,8 +389,7 @@ export async function settleBudget(db, userRef, reservedTokens, actualTokens, ti
   const actual = Math.max(0, Number(actualTokens) || 0);
   const delta = actual - reserved;
 
-  const today = new Date().toISOString().slice(0, 10);
-  const month = today.slice(0, 7);
+  const windows = budgetWindows(tier, opts);
   const { telegramId, firebaseUid } = splitUserRef(userRef);
   const table = telegramId ? 'telegram_users' : 'auth_accounts';
   const idColumn = telegramId ? 'telegram_id' : 'uid';
@@ -338,7 +405,7 @@ export async function settleBudget(db, userRef, reservedTokens, actualTokens, ti
         WHERE ${idColumn} = ?
           AND ai_tokens_last_date = ?
           AND ai_tokens_month = ?
-      `).bind(delta, delta, idValue, today, month).run();
+      `).bind(delta, delta, idValue, windows.dayKey, windows.monthKey).run();
     } catch (err) {
       // A failed settlement leaves the reservation standing, which over-counts
       // slightly. That is the correct direction to be wrong in.
@@ -346,7 +413,7 @@ export async function settleBudget(db, userRef, reservedTokens, actualTokens, ti
     }
   }
 
-  const state = await readBudgetState(db, userRef);
+  const state = await readBudgetState(db, userRef, windows);
   return {
     tokensToday: state.tokensToday,
     tokensMonth: state.tokensMonth,
@@ -369,9 +436,9 @@ export async function settleBudget(db, userRef, reservedTokens, actualTokens, ti
  * that spends money. Retained for read-only surfaces (quota badges, upsell
  * copy) that just want to display the current state.
  */
-export async function assertWithinBudget(db, userRef, tier) {
+export async function assertWithinBudget(db, userRef, tier, opts) {
   const policy = getTierPolicy(tier);
-  const state = await readBudgetState(db, userRef);
+  const state = await readBudgetState(db, userRef, budgetWindows(tier, opts));
   if (state.callsToday >= policy.freeCoachCallsPerDay) {
     return {
       ok: false,
@@ -407,11 +474,11 @@ export async function assertWithinBudget(db, userRef, tier) {
  * any caller that still settles without a prior reservation. New code should
  * pair reserveBudget() with settleBudget().
  */
-export async function consumeBudget(db, userRef, tokensUsed, tier) {
+export async function consumeBudget(db, userRef, tokensUsed, tier, opts) {
   await ensureBudgetColumns(db);
   if (!db || !userRef) return null;
   const policy = getTierPolicy(tier);
-  const state = await readBudgetState(db, userRef);
+  const state = await readBudgetState(db, userRef, budgetWindows(tier, opts));
   const nextTokensToday = state.tokensToday + Math.max(0, Number(tokensUsed) || 0);
   const nextTokensMonth = state.tokensMonth + Math.max(0, Number(tokensUsed) || 0);
   const nextCalls = state.callsToday + 1;
@@ -433,9 +500,9 @@ export async function consumeBudget(db, userRef, tokensUsed, tier) {
         WHERE telegram_id = ?
       `).bind(
         nextTokensToday,
-        state.today,
+        state.dayKey,
         nextTokensMonth,
-        state.month,
+        state.monthKey,
         nextCalls,
         state.today,
         telegramId
@@ -462,9 +529,9 @@ export async function consumeBudget(db, userRef, tokensUsed, tier) {
         `).bind(
           telegramId,
           nextTokensToday,
-          state.today,
+          state.dayKey,
           nextTokensMonth,
-          state.month,
+          state.monthKey,
           nextCalls,
           state.today
         ).run();
@@ -482,9 +549,9 @@ export async function consumeBudget(db, userRef, tokensUsed, tier) {
         WHERE uid = ?
       `).bind(
         nextTokensToday,
-        state.today,
+        state.dayKey,
         nextTokensMonth,
-        state.month,
+        state.monthKey,
         nextCalls,
         state.today,
         firebaseUid

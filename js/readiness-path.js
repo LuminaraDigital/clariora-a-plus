@@ -313,6 +313,25 @@
   function render(path) {
     var host = typeof document !== 'undefined' ? document.getElementById(HOST_ID) : null;
     if (!host) return false;
+    try {
+      var ap = typeof window !== 'undefined' ? window.APlus : null;
+      if (
+        ap &&
+        ap.featuredCampaign &&
+        ((typeof ap.featuredCampaign.shouldDemotePathStrip === 'function' &&
+          ap.featuredCampaign.shouldDemotePathStrip()) ||
+          (typeof ap.featuredCampaign.shouldDemotePathStrip !== 'function' &&
+            typeof ap.featuredCampaign.shouldDemoteCompetitors === 'function' &&
+            ap.featuredCampaign.shouldDemoteCompetitors()))
+      ) {
+        host.hidden = true;
+        host.setAttribute('aria-hidden', 'true');
+        host.innerHTML = '';
+        return false;
+      }
+    } catch (_) {}
+    host.hidden = false;
+    host.removeAttribute('aria-hidden');
     path = path || ensurePath(false);
     var today = todayEntry(path);
     var focus = (today && today.focusDomains) || [];

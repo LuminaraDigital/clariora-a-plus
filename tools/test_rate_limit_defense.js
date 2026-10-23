@@ -1010,7 +1010,7 @@ async function coverage() {
   await check('no unguarded fetch remains in any network-touching client module', () => {
     const modules = [
       'ghost-coach.js', 'groq-client.js', 'entitlements.js', 'telemetry.js',
-      'report-problem-modal.js', 'ton_credentials.js', 'stars_billing.js',
+      'report-problem-modal.js', 'ton_comment.js', 'ton_credentials.js', 'stars_billing.js',
       'auth-gate.js', 'tma_ghost_coach.js'
     ];
     const offenders = [];

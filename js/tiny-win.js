@@ -265,6 +265,25 @@
   function mount() {
     var host = typeof document !== 'undefined' ? document.getElementById(HOST_ID) : null;
     if (!host) return false;
+    try {
+      var a = A();
+      if (
+        a &&
+        a.featuredCampaign &&
+        ((typeof a.featuredCampaign.shouldDemoteTinyWin === 'function' &&
+          a.featuredCampaign.shouldDemoteTinyWin()) ||
+          (typeof a.featuredCampaign.shouldDemoteTinyWin !== 'function' &&
+            typeof a.featuredCampaign.shouldDemoteCompetitors === 'function' &&
+            a.featuredCampaign.shouldDemoteCompetitors()))
+      ) {
+        host.hidden = true;
+        host.setAttribute('aria-hidden', 'true');
+        host.innerHTML = '';
+        return false;
+      }
+    } catch (_) {}
+    host.hidden = false;
+    host.removeAttribute('aria-hidden');
     var win = chooseWin();
     render(host, win);
     return true;

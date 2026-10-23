@@ -113,6 +113,54 @@
     const headerBal = $("apxHeaderBalanceBadge");
     if (headerBal) headerBal.textContent = w.balance;
 
+    // Degree + readiness beside APX (Achievement Wallet / L2E rule)
+    try {
+      const awCfg =
+        (global.APLUS_FEATURES_CONFIG && global.APLUS_FEATURES_CONFIG.achievementWallet) || {};
+      const showWallet = awCfg.enabled === true;
+      const degEl = $("apxDegreeBadge");
+      if (degEl) {
+        if (showWallet && awCfg.showDegree !== false && w.rank && w.rank.name) {
+          degEl.style.display = "inline";
+          degEl.textContent = w.rank.name;
+          degEl.title = "Degree from lifetime XP";
+        } else {
+          degEl.style.display = "none";
+          degEl.textContent = "";
+        }
+      }
+      const readyEl = $("apxReadinessNeighbor");
+      if (readyEl) {
+        let readyTxt = "";
+        if (showWallet && awCfg.showReadinessBesideApx !== false) {
+          try {
+            const a = global.APlus;
+            if (a && a.readiness2 && typeof a.readiness2.compute === "function") {
+              let history = [];
+              if (a.learner && typeof a.learner.getHistory === "function") {
+                history = a.learner.getHistory() || [];
+              }
+              const r = a.readiness2.compute({ history: history });
+              if (r && r.predicted != null) {
+                readyTxt =
+                  "Pred " +
+                  Math.round(r.predicted) +
+                  (r.readiness != null ? " · " + Math.round(r.readiness) + "%" : "");
+              }
+            }
+          } catch (_) {}
+        }
+        if (readyTxt) {
+          readyEl.style.display = "inline";
+          readyEl.textContent = readyTxt;
+          readyEl.title = "Predicted score and readiness beside APX";
+        } else {
+          readyEl.style.display = "none";
+          readyEl.textContent = "";
+        }
+      }
+    } catch (_) {}
+
     if (typeof document !== "undefined" && document.body) {
       document.body.classList.toggle("theme-cyber-terminal", CompTIALedger.checkWalletUnlock(w, "CYBER_THEME"));
     }
@@ -178,6 +226,17 @@
 
   function closeLedgerModal() {
     $("ledgerModal").classList.remove("active");
+  }
+
+  /** APX chip router: Reward Center when enabled, else Progress record / store. */
+  function openApxSurface() {
+    try {
+      if (global.APlus && APlus.rewardCenter && typeof APlus.rewardCenter.openApxSurface === "function") {
+        APlus.rewardCenter.openApxSurface();
+        return;
+      }
+    } catch (_) {}
+    openLedgerModal();
   }
 
   async function renderLedgerModal() {
@@ -772,6 +831,8 @@
     refreshWalletBadge,
     openLedgerModal,
     closeLedgerModal,
+    openApxSurface,
+    spawnCoinShower,
     renderLedgerModal,
     onExamComplete,
     onStudyOpen,
@@ -796,6 +857,7 @@
   // Expose for inline onclick handlers
   global.openLedgerModal = openLedgerModal;
   global.closeLedgerModal = closeLedgerModal;
+  global.openApxSurface = openApxSurface;
   global.claimDailyApx = claimDaily;
   global.stakeSelectedDomain = stakeSelectedDomain;
   global.updateDomainDropdown = updateDomainDropdown;

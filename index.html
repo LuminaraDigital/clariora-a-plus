@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="css/app-inline.css">
   <link rel="stylesheet" href="css/brand-black-gold.css?v=4.3.5">
   <link rel="stylesheet" href="css/made-not-generated.css?v=1">
+  <link rel="stylesheet" href="css/featured-campaign.css?v=1.0.0">
   <style id="bootIntroCritical">
     /* First paint: hold a black intro stage so the dashboard never flashes first. */
     html.boot-intro-active,
@@ -125,6 +126,8 @@
   <script src="js/daily-quest.js"></script>
   <script src="js/readiness-path.js"></script>
   <script src="js/tiny-win.js"></script>
+  <script src="js/featured-campaign.js"></script>
+  <script src="js/reward-center.js"></script>
   <script src="js/close-loop-ux.js"></script>
   <script src="js/friction-coach.js"></script>
   <script src="js/jit-survey.js"></script>
@@ -147,6 +150,7 @@
   <script src="js/data_loader_tma.js"></script>
   <script src="js/tma_bridge.js"></script>
   <script src="js/stars_billing.js"></script>
+  <script src="js/ton_comment.js"></script>
   <script src="js/ton_credentials.js"></script>
   <script src="js/xdc_provider.js"></script>
   <script src="js/tma_ghost_coach.js"></script>
@@ -249,12 +253,14 @@
         </select>
       </div>
       <div id="tmaUserPillMount" style="display: inline-flex; align-items: center;"></div>
-      <button type="button" class="streak-chip apx-header-chip" id="apxHeaderChip" onclick="openLedgerModal()" title="APX Balance & Superpowers Store" aria-label="APX Balance & Superpowers Store" style="border-color: rgba(245, 208, 97, 0.4); background: rgba(245, 208, 97, 0.08); cursor: pointer; display: inline-flex; align-items: center;">
+      <button type="button" class="streak-chip apx-header-chip" id="apxHeaderChip" onclick="(typeof openApxSurface==='function'?openApxSurface():openLedgerModal())" title="APX Balance, Achievement Wallet and Superpowers Store" aria-label="APX Balance, Achievement Wallet and Superpowers Store" style="border-color: rgba(245, 208, 97, 0.4); background: rgba(245, 208, 97, 0.08); cursor: pointer; display: inline-flex; align-items: center; flex-wrap: wrap; gap: 2px 4px;">
         <span style="color: #F5D061; display: inline-flex; align-items: center;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M15 9.5a3.5 3.5 0 0 0-7 0c0 2 2 3 3.5 3.5s3.5 1.5 3.5 3.5a3.5 3.5 0 0 1-7 0"/></svg>
         </span>
         <strong id="apxHeaderBalanceBadge" style="color: #F5D061; margin-left: 3px;">0</strong>
         <span class="streak-label" style="color: var(--text-secondary); font-size: 0.72rem; margin-left: 2px;">APX</span>
+        <span id="apxDegreeBadge" class="apx-degree-badge" style="display: none; color: var(--text-secondary); font-size: 0.68rem; margin-left: 4px;"></span>
+        <span id="apxReadinessNeighbor" class="apx-readiness-neighbor" style="display: none; color: var(--accent-cyan, #67e8f9); font-size: 0.68rem; margin-left: 4px;"></span>
       </button>
       <button type="button" class="streak-chip" id="streakChip" onclick="openMoreMenu()" title="Study streak" aria-label="Study streak">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3c.6 3 2.2 4.2 3.6 5.6A6.9 6.9 0 0 1 18 13.5a6 6 0 1 1-12 0c0-2 .9-3.4 2-4.6.3 1 .9 1.7 1.7 2 0-2.6.8-5.5 2.3-7.9Z"></path></svg>
@@ -312,6 +318,9 @@
                 <button type="button" class="btn btn-primary-lg" onclick="window.APlus &amp;&amp; APlus.onboarding ? APlus.onboarding.startToday() : startExam('both',25,25)">Start today's 25 minutes</button>
               </div>
             </section>
+
+            <!-- Featured Learn → Quiz → Claim campaign (primary next action when enabled). -->
+            <section id="featuredCampaignCard" class="featured-campaign-card" aria-label="Today's Mission" hidden></section>
 
             <section id="readinessPathStrip" class="path-strip" aria-label="7-day readiness path"></section>
 
@@ -889,6 +898,20 @@
     </div>
   </div>
 
+  <!-- MODAL: ACHIEVEMENT WALLET (mounted shell; body filled by js/reward-center.js) -->
+  <div id="rewardCenterModal" class="modal-overlay" role="dialog" aria-modal="true" aria-label="Achievement Wallet">
+    <div class="modal-card rc-modal-card">
+      <div class="modal-header">
+        <div>
+          <h3 class="rc-title">Achievement Wallet</h3>
+          <p class="rc-sub">Claims, Degree, and study evidence. Readiness stays the real score.</p>
+        </div>
+        <button type="button" class="rc-x" aria-label="Close Achievement Wallet" onclick="typeof closeRewardCenter==='function'&&closeRewardCenter()">&times;</button>
+      </div>
+      <div id="rewardCenterBody"></div>
+    </div>
+  </div>
+
   <!-- MODAL: PROGRESS RECORD -->
   <div id="ledgerModal" class="modal-overlay">
     <div class="modal-card" style="max-width: 980px;">
@@ -915,6 +938,8 @@
           <option value="PBQ_COMPLETE">PBQ_COMPLETE</option>
           <option value="ACHIEVEMENT_MINT">ACHIEVEMENT_MINT</option>
           <option value="DAILY_CHECKIN">DAILY_CHECKIN</option>
+          <option value="DAILY_QUEST_COMPLETE">DAILY_QUEST_COMPLETE</option>
+          <option value="FEATURED_OBJECTIVE_CLAIM">FEATURED_OBJECTIVE_CLAIM</option>
           <option value="DOMAIN_STAKE_LOCK">DOMAIN_STAKE_LOCK</option>
           <option value="DOMAIN_STAKE_RESOLVE">DOMAIN_STAKE_RESOLVE</option>
           <option value="STUDY_PLAN_TASK">STUDY_PLAN_TASK</option>

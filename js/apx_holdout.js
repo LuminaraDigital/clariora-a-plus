@@ -56,7 +56,15 @@
     if (!isHoldout()) return false;
     try {
       document.documentElement.setAttribute('data-apx-holdout', '1');
-      var hide = ['apxHeaderChip', 'l2eGoalCard', 'ledgerStoreBtn', 'openLedgerBtn'];
+      var hide = [
+        'apxHeaderChip',
+        'l2eGoalCard',
+        'ledgerStoreBtn',
+        'openLedgerBtn',
+        'rewardCenterModal',
+        'apxDegreeBadge',
+        'apxReadinessNeighbor'
+      ];
       hide.forEach(function (id) {
         var el = document.getElementById(id);
         if (el) el.style.display = 'none';

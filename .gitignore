@@ -14,6 +14,8 @@
 .groq_key
 **/groq-secrets.local.js
 **/groq_secrets.local.json
+.secrets/
+**/.secrets/
 users.json
 build/certs/
 credentials/

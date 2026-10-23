@@ -469,6 +469,14 @@
     if (!el) return null;
     ctx = ctx || {};
     if (!isEnabled()) return null;
+    try {
+      var demote =
+        A() &&
+        A().featuredCampaign &&
+        typeof A().featuredCampaign.shouldDemoteCompetitors === 'function' &&
+        A().featuredCampaign.shouldDemoteCompetitors();
+      if (demote) return null;
+    } catch (_) {}
 
     var status = getTodayStatus();
     if (!shownTracked) {

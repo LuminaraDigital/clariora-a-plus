@@ -141,6 +141,7 @@
       "STUDY_PLAN_TASK",
       "DAILY_CHECKIN",
       "DAILY_QUEST_COMPLETE",
+      "FEATURED_OBJECTIVE_CLAIM",
       "MEMORY_RECALL",
       "MEMORY_RAID_COMPLETE"
     ]
@@ -158,7 +159,8 @@
     "DAILY_CHECKIN",
     "MEMORY_RAID_COMPLETE",
     "MEMORY_RECALL",
-    "DAILY_QUEST_COMPLETE"
+    "DAILY_QUEST_COMPLETE",
+    "FEATURED_OBJECTIVE_CLAIM"
   ]);
 
   const keyCache = {};
@@ -1409,6 +1411,88 @@
   }
 
   /**
+   * Once-per-campaignId bonus after Featured Objective quiz qualifies.
+   * Learn/Quiz still earn via STUDY_OPEN / EXAM_COMPLETE; this is a separate claim mint.
+   */
+  async function claimFeaturedObjective(payload) {
+    const day = (payload && payload.day) || localDayKey();
+    const campaignId = payload && payload.campaignId ? String(payload.campaignId) : "";
+    if (!campaignId) {
+      const state = await getState();
+      return { skipped: true, reason: "missing_campaign", day, wallet: state.wallet };
+    }
+    const state = await getState();
+    const already = (state.chain || []).some(
+      (b) =>
+        b.type === "FEATURED_OBJECTIVE_CLAIM" &&
+        b.payload &&
+        String(b.payload.campaignId || "") === campaignId
+    );
+    if (already) {
+      return { skipped: true, reason: "already_claimed", day, campaignId, wallet: state.wallet };
+    }
+    const bestPercent =
+      typeof payload.bestPercent === "number" && isFinite(payload.bestPercent)
+        ? Math.max(0, Math.min(100, payload.bestPercent))
+        : 70;
+    let apx = Math.min(20, 10 + Math.floor(bestPercent / 20));
+    const xp = 12;
+    const clip = clipGlobalBudget(state.chain, day, apx, "FEATURED_OBJECTIVE_CLAIM");
+    if (clip.awarded <= 0) {
+      // Still record a zero-mint claim so the campaign cannot be farmed after the cap.
+      const block = await appendBlock(
+        "FEATURED_OBJECTIVE_CLAIM",
+        {
+          day,
+          campaignId,
+          exam: (payload && payload.exam) || null,
+          objectiveCode: (payload && payload.objectiveCode) || null,
+          bestPercent,
+          attempts: (payload && payload.attempts) || null,
+          budgetExhausted: true
+        },
+        0,
+        xp
+      );
+      const after = await getState();
+      return {
+        skipped: true,
+        reason: "budget",
+        block,
+        apx: 0,
+        xp,
+        day,
+        campaignId,
+        wallet: after.wallet
+      };
+    }
+    const block = await appendBlock(
+      "FEATURED_OBJECTIVE_CLAIM",
+      {
+        day,
+        campaignId,
+        exam: (payload && payload.exam) || null,
+        objectiveCode: (payload && payload.objectiveCode) || null,
+        bestPercent,
+        attempts: (payload && payload.attempts) || null
+      },
+      apx,
+      xp
+    );
+    const after = await getState();
+    if (block && typeof block.tokenDelta === "number") apx = block.tokenDelta;
+    return {
+      skipped: false,
+      block,
+      apx,
+      xp,
+      day,
+      campaignId,
+      wallet: after.wallet
+    };
+  }
+
+  /**
    * The free grace covers one missed day; each STREAK_FREEZE covers one more.
    * Spends the fewest shields that keep the run alive, and none if the run
    * cannot be saved with what the learner owns.
@@ -1710,6 +1794,7 @@
     recordStudyPlanTask,
     claimDailyCheckin,
     claimDailyQuest,
+    claimFeaturedObjective,
     stakeDomain,
     spendForInsight,
     getUnlocksCatalog,

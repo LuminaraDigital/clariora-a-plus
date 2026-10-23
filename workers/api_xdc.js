@@ -259,6 +259,7 @@ export async function createOracleAttestation({
   } else {
     // TON Blockchain (TEP-85 SBT)
     const memo = `APX:C${examCode.replace(/[^0-9]/g, '').slice(-1) || '1'}:${score}:${isPassed ? 'PASS' : 'FAIL'}:${cleanLedgerRoot.slice(0, 16)}`;
+    const collectionAddress = env.TON_SBT_COLLECTION_ADDRESS || null;
     return {
       ok: true,
       attestationId,
@@ -268,7 +269,9 @@ export async function createOracleAttestation({
       certifiedAt,
       memo,
       cellPayload: typeof btoa === 'function' ? btoa(memo) : Buffer.from(memo).toString('base64'),
-      oracleAuthority: env.TON_MERCHANT_WALLET_ADDRESS || 'EQBvW8Z5huBkMJYdn3GuLD5Co_V7bB0N12_RegistryMockTON'
+      oracleAuthority: env.TON_MERCHANT_WALLET_ADDRESS || 'EQBvW8Z5huBkMJYdn3GuLD5Co_V7bB0N12_RegistryMockTON',
+      collectionAddress,
+      mintPath: collectionAddress ? '/api/v1/credentials/ton/mint' : null
     };
   }
 }

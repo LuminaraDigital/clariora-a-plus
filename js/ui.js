@@ -731,12 +731,17 @@
 
       // Render TON Blockchain Credential Card if TONCredentials module is active
       if (window.TONCredentials && document.getElementById('tonCredentialMount')) {
-        window.TONCredentials.renderCredentialCard(document.getElementById('tonCredentialMount'), {
+        const tonExamResult = {
           examCore: payload.examCore || (payload.passingScore === 700 ? '2' : '1'),
           scaledScore: payload.scaledScore,
           passed: isPassed,
           ledgerHash: (payload.ledgerEntry && payload.ledgerEntry.entryHash) || 'APX_' + Date.now().toString(16)
-        });
+        };
+        window.TONCredentials.renderCredentialCard(document.getElementById('tonCredentialMount'), tonExamResult);
+        // Wire mint-after-pass: oracle queue when collection is configured (best-effort).
+        if (isPassed && typeof window.TONCredentials.mintAfterPass === 'function') {
+          Promise.resolve(window.TONCredentials.mintAfterPass(tonExamResult)).catch(function () {});
+        }
       }
 
       // Render XDC Network Soulbound Credential Card if XDCProvider module is active

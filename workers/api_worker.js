@@ -599,7 +599,9 @@ export default {
         if (!merchantWallet) {
           return new Response(JSON.stringify({
             error: 'TON_MERCHANT_UNCONFIGURED',
-            message: 'TON payments require TON_MERCHANT_WALLET_ADDRESS in production.'
+            message: isProd
+              ? 'TON payments require TON_MERCHANT_WALLET_ADDRESS in production.'
+              : 'Staging TON payments require secret TON_MERCHANT_WALLET_ADDRESS (use a testnet wallet).'
           }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
         if (isProd && !env.DB) {
@@ -626,6 +628,11 @@ export default {
           }
         }
 
+        // Staging wrangler sets TON_NETWORK=testnet. Client may also request testnet off production.
+        const tonNetwork = (env.TON_NETWORK === 'testnet' || (!isProd && body.network === 'testnet'))
+          ? 'testnet'
+          : 'mainnet';
+
         return new Response(JSON.stringify({
           success: true,
           orderId,
@@ -633,7 +640,8 @@ export default {
           merchantWallet,
           amountTon: prod.amountTon,
           nanotons: prod.nanotons,
-          productId
+          productId,
+          network: tonNetwork
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
@@ -710,6 +718,7 @@ export default {
 
       // 1. Health / ready probes
       if (path === '/api/v1/health' || path === '/api/v1/live') {
+        const tonNetwork = env.TON_NETWORK === 'testnet' ? 'testnet' : 'mainnet';
         return new Response(JSON.stringify({
           status: 'ok',
           domain: 'clariora.com.au',
@@ -718,6 +727,9 @@ export default {
           aiProviders: ['groq', 'nvidia', 'ollama', 'openrouter', 'workers_ai'],
           freeSurface: FREE_SURFACE,
           payRails: ['telegram_stars', 'ton_onchain', 'xdc_network'],
+          tonNetwork,
+          tonSbtConfigured: Boolean(env.TON_SBT_COLLECTION_ADDRESS),
+          tonSbtCollectionAddress: env.TON_SBT_COLLECTION_ADDRESS || null,
           auth: {
             identityPlane: 'firebase+telegram',
             sessionCookies: true,
@@ -756,6 +768,12 @@ export default {
           db: dbOk,
           rateLimiterBound,
           aiConfigured,
+          tonConfigured: {
+            merchant: Boolean(env.TON_MERCHANT_WALLET_ADDRESS),
+            toncenter: Boolean(env.TONCENTER_API_KEY),
+            sbtCollection: Boolean(env.TON_SBT_COLLECTION_ADDRESS),
+            network: env.TON_NETWORK === 'testnet' ? 'testnet' : 'mainnet'
+          },
           circuits,
           checkedAt: new Date().toISOString()
         }), {
@@ -1710,8 +1728,10 @@ export default {
 
         const cleanTxHash = String(txHash || '').trim();
         const cleanProductId = String(productId || '').trim();
-        if (!cleanTxHash || !cleanProductId) {
-          return new Response(JSON.stringify({ error: 'Missing txHash or productId' }), {
+        const cleanBoc = String((body && body.boc) || '').trim();
+        const hasPendingPlaceholder = /^pending:/i.test(cleanTxHash);
+        if ((!cleanTxHash && !cleanBoc) || !cleanProductId) {
+          return new Response(JSON.stringify({ error: 'Missing txHash/boc or productId' }), {
             status: 400,
             headers: corsHeaders
           });
@@ -1724,7 +1744,8 @@ export default {
         // payment. The order must also belong to the caller, or orderId is an IDOR handle.
         const cleanOrderId = String((body && body.orderId) || '').trim().slice(0, 128);
         const callerOrderRef = auth.firebaseUid || (auth.telegramId ? 'tg_' + auth.telegramId : auth.uid);
-        if (isProd && !cleanOrderId) {
+        // Happy-path TonConnect sends boc + orderId (tx hash resolved server-side via memo).
+        if ((isProd || cleanBoc || hasPendingPlaceholder) && !cleanOrderId) {
           return new Response(JSON.stringify({
             error: 'ORDER_REQUIRED',
             message: 'Create a payment order via /api/v1/billing/ton/order before verifying a transaction.'
@@ -1755,7 +1776,9 @@ export default {
           }
         }
         const isTestPayment = !isProd && (env.ALLOW_TEST_PAYMENTS === '1' || env.TON_VERIFY_RELAXED === '1');
-        const isValidHashFormat = /^[a-fA-F0-9]{64}$/.test(cleanTxHash) || /^[a-zA-Z0-9+/]{42,44}={0,2}$/.test(cleanTxHash);
+        const isValidHashFormat = hasPendingPlaceholder || cleanBoc.length > 20 ||
+          /^[a-fA-F0-9]{64}$/.test(cleanTxHash) ||
+          /^[a-zA-Z0-9+/]{42,88}={0,2}$/.test(cleanTxHash);
         if (!isValidHashFormat && !isTestPayment) {
           return new Response(JSON.stringify({
             error: 'INVALID_TX_HASH_FORMAT',
@@ -1766,7 +1789,7 @@ export default {
           });
         }
 
-        if (env.DB) {
+        if (env.DB && cleanTxHash && !hasPendingPlaceholder) {
           const prior = await env.DB.prepare(
             'SELECT id FROM ton_transactions WHERE id = ? OR LOWER(id) = LOWER(?)'
           ).bind(cleanTxHash, cleanTxHash).first();
@@ -1782,7 +1805,7 @@ export default {
         }
 
         let onChainConfirmed = false;
-        let canonicalTxHash = cleanTxHash.toLowerCase();
+        let canonicalTxHash = hasPendingPlaceholder ? '' : cleanTxHash.toLowerCase();
         const TON_PRICES = {
           daily_unlimited: { nanotons: 1500000000 },
           pro_monthly: { nanotons: 7000000000 },
@@ -1803,71 +1826,108 @@ export default {
           }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
 
+        function tonAddrLooseEqual(a, b) {
+          if (!a || !b) return false;
+          const na = String(a).trim().toLowerCase();
+          const nb = String(b).trim().toLowerCase();
+          if (na === nb) return true;
+          // EQ (bounceable) vs UQ (non-bounceable) share the same payload after the prefix.
+          if (na.length > 4 && nb.length > 4 && na.slice(2) === nb.slice(2)) return true;
+          return false;
+        }
+
+        function extractTonMemo(inMsg) {
+          if (!inMsg || typeof inMsg !== 'object') return '';
+          const parts = [
+            inMsg.message,
+            inMsg.msg_data && inMsg.msg_data.text,
+            inMsg.msg_data && inMsg.msg_data.comment,
+            inMsg.decoded_body && inMsg.decoded_body.text,
+            inMsg.decoded_body && inMsg.decoded_body.comment
+          ];
+          return parts.filter(Boolean).map(String).join(' ');
+        }
+
+        function tonPaymentMatches(t) {
+          const onChainHash = t.transaction_id && (t.transaction_id.hash || t.transaction_id);
+          if (!onChainHash) return false;
+
+          const nowSec = Math.floor(Date.now() / 1000);
+          const txTime = Number(t.utime || 0);
+          if (txTime > 0 && (nowSec - txTime > 7200 || txTime - nowSec > 300)) {
+            return false;
+          }
+
+          const outMsgs = t.out_msgs || [];
+          const destMatch = outMsgs.some((m) => {
+            const dest = m.destination || '';
+            const val = Number(m.value || 0);
+            const validDest = isTestPayment ? true : (merchantWallet && tonAddrLooseEqual(dest, merchantWallet));
+            const validVal = val >= (expectedProduct.nanotons * 0.95);
+            return validDest && validVal;
+          });
+          const inMsg = t.in_msg || {};
+          const inDestMatch = inMsg.destination &&
+            (isTestPayment ? true : (merchantWallet && tonAddrLooseEqual(inMsg.destination, merchantWallet))) &&
+            Number(inMsg.value || 0) >= (expectedProduct.nanotons * 0.95);
+
+          const memoText = extractTonMemo(inMsg);
+          let memoMatch = true;
+          if (cleanOrderId) {
+            memoMatch = isTestPayment || memoText.includes(cleanOrderId);
+          } else if (isProd) {
+            memoMatch = false;
+          }
+
+          const success = !t.compute_ph || t.compute_ph.exit_code === 0;
+          if (!(success && (destMatch || inDestMatch) && memoMatch)) return false;
+
+          canonicalTxHash = String(onChainHash).toLowerCase();
+          return true;
+        }
+
         if (env.TONCENTER_API_KEY && (merchantWallet || walletAddress)) {
           try {
             const targetAddress = merchantWallet || walletAddress;
             const isTonTestnet = !isProd && ((body && body.network === 'testnet') || env.TON_NETWORK === 'testnet');
             const tcBase = isTonTestnet ? 'https://testnet.toncenter.com/api/v2/' : 'https://toncenter.com/api/v2/';
             const tcUrl = tcBase + 'getTransactions?address=' +
-              encodeURIComponent(targetAddress) + '&limit=20';
+              encodeURIComponent(targetAddress) + '&limit=30';
             const tcRes = await fetch(tcUrl, {
               headers: { 'X-API-Key': env.TONCENTER_API_KEY }
             });
             if (tcRes.ok) {
               const tcData = await tcRes.json();
               const txs = (tcData && tcData.result) || [];
-              onChainConfirmed = txs.some((t) => {
-                const onChainHash = t.transaction_id && (t.transaction_id.hash || t.transaction_id);
-                if (!onChainHash) return false;
-                const normOnChain = String(onChainHash).trim().toLowerCase();
-                const normInput = cleanTxHash.toLowerCase();
-                const hashMatch = normOnChain === normInput;
-                if (!hashMatch) return false;
-
-                // Validate recency: transaction must have been created within last 2 hours (7200s)
-                const nowSec = Math.floor(Date.now() / 1000);
-                const txTime = Number(t.utime || 0);
-                if (txTime > 0 && (nowSec - txTime > 7200 || txTime - nowSec > 300)) {
-                  console.warn('[TON] Transaction expired:', txTime, 'now:', nowSec);
-                  return false;
-                }
-
-                canonicalTxHash = (t.transaction_id.hash || onChainHash).toLowerCase();
-
-                // Validate destination wallet matches merchant wallet and payment amount
-                const outMsgs = t.out_msgs || [];
-                const destMatch = outMsgs.some((m) => {
-                  const dest = m.destination || '';
-                  const val = Number(m.value || 0);
-                  const validDest = isTestPayment ? true : (merchantWallet && dest.toLowerCase() === merchantWallet.toLowerCase());
-                  const validVal = val >= (expectedProduct.nanotons * 0.95);
-                  return validDest && validVal;
+              const normInput = cleanTxHash.toLowerCase();
+              // 1) Exact hash match (recovery paste path)
+              if (!hasPendingPlaceholder && cleanTxHash) {
+                onChainConfirmed = txs.some((t) => {
+                  const onChainHash = t.transaction_id && (t.transaction_id.hash || t.transaction_id);
+                  if (!onChainHash) return false;
+                  if (String(onChainHash).trim().toLowerCase() !== normInput) return false;
+                  return tonPaymentMatches(t);
                 });
-                const inMsg = t.in_msg || {};
-                const inDestMatch = inMsg.destination &&
-                  (isTestPayment ? true : (merchantWallet && inMsg.destination.toLowerCase() === merchantWallet.toLowerCase())) &&
-                  Number(inMsg.value || 0) >= (expectedProduct.nanotons * 0.95);
-
-                // Check order memo binding if orderId was provided
-                let memoMatch = !isProd;
-                if (cleanOrderId) {
-                  const memoText = inMsg.message || (inMsg.msg_data && inMsg.msg_data.text) || '';
-                  memoMatch = isTestPayment || memoText.includes(cleanOrderId);
-                }
-
-                const success = !t.compute_ph || t.compute_ph.exit_code === 0;
-                return success && (destMatch || inDestMatch) && memoMatch;
-              });
+              }
+              // 2) Happy path: TonConnect BoC / pending placeholder → match by order memo + amount
+              if (!onChainConfirmed && cleanOrderId) {
+                onChainConfirmed = txs.some((t) => tonPaymentMatches(t));
+              }
             }
           } catch (tcErr) {
             console.debug('TonCenter check notice:', tcErr.message);
           }
         } else if (isTestPayment) {
           // Strictly limited to automated test harnesses passing explicit flag in mockEnv
-          onChainConfirmed = cleanTxHash.length >= 16;
+          onChainConfirmed = (cleanTxHash.length >= 16 || cleanBoc.length > 20);
+          if (onChainConfirmed && !canonicalTxHash) {
+            canonicalTxHash = hasPendingPlaceholder
+              ? ('test_' + cleanOrderId).toLowerCase()
+              : cleanTxHash.toLowerCase();
+          }
         }
 
-        if (onChainConfirmed && env.DB && canonicalTxHash !== cleanTxHash.toLowerCase()) {
+        if (onChainConfirmed && env.DB && canonicalTxHash && canonicalTxHash !== cleanTxHash.toLowerCase()) {
           const priorCanonical = await env.DB.prepare(
             'SELECT id FROM ton_transactions WHERE id = ? OR LOWER(id) = LOWER(?)'
           ).bind(canonicalTxHash, canonicalTxHash).first();
@@ -1944,10 +2004,20 @@ export default {
             try {
               // Scoped to the caller: an order id alone must never mutate another account's row.
               await env.DB.prepare(
-                "UPDATE ton_orders SET status = 'fulfilled', tx_hash = ?, updated_at = CURRENT_TIMESTAMP " +
+                "UPDATE ton_orders SET status = 'fulfilled', tx_hash = ?, fulfilled_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP " +
                 "WHERE order_id = ? AND user_id = ?"
               ).bind(canonicalTxHash, cleanOrderId, callerOrderRef).run();
-            } catch (_) {}
+            } catch (fulfillErr) {
+              // Pre-0005 D1: columns tx_hash/updated_at may be missing; still mark fulfilled.
+              try {
+                await env.DB.prepare(
+                  "UPDATE ton_orders SET status = 'fulfilled', fulfilled_at = CURRENT_TIMESTAMP " +
+                  "WHERE order_id = ? AND user_id = ?"
+                ).bind(cleanOrderId, callerOrderRef).run();
+              } catch (_) {
+                console.warn('[TON] ton_orders fulfill update failed:', fulfillErr && fulfillErr.message);
+              }
+            }
           }
         }
 
@@ -2285,6 +2355,169 @@ export default {
         }
 
         return new Response(JSON.stringify(attestation), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // TON Mastery SBT mint queue (oracle mints; clients request after verified pass)
+      if (path === '/api/v1/credentials/ton/mint' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok) {
+          return new Response(JSON.stringify({
+            error: 'AUTH_REQUIRED',
+            message: 'Authentication required to mint a TON mastery credential.'
+          }), { status: 401, headers: corsHeaders });
+        }
+
+        const mintLimit = await enforceDualKeyLimit(env, request, 'ton_sbt_mint', {
+          uid: auth.uid, uidPerMinute: 5, ipPerMinute: 15
+        });
+        if (!mintLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many mint requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...mintLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+
+        const isProd = env.ENVIRONMENT === 'production' || env.NODE_ENV === 'production';
+        const collectionAddress = String(env.TON_SBT_COLLECTION_ADDRESS || '').trim() || null;
+        if (!collectionAddress) {
+          return new Response(JSON.stringify({
+            error: 'SBT_COLLECTION_UNCONFIGURED',
+            message: 'TON Mastery SBT collection is not deployed for this environment yet.'
+          }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+        // Never allow testnet-form addresses (kQ/0Q) on production.
+        if (isProd && /^[k0]Q/i.test(collectionAddress)) {
+          return new Response(JSON.stringify({
+            error: 'SBT_COLLECTION_NETWORK_MISMATCH',
+            message: 'Production Mastery SBT must use a mainnet collection address.'
+          }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+
+        const examCode = String(body.examCode || '').trim().toUpperCase();
+        const recipientWallet = String(body.walletAddress || body.recipientWallet || '').trim();
+        const ledgerHash = String(body.ledgerHash || body.localLedgerHash || '');
+        const attemptId = body.attemptId ? String(body.attemptId) : null;
+        if (!examCode || !recipientWallet) {
+          return new Response(JSON.stringify({
+            error: 'INVALID_MINT_REQUEST',
+            message: 'examCode and walletAddress are required.'
+          }), { status: 400, headers: corsHeaders });
+        }
+
+        let verifiedScore = Number(body.scaledScore);
+        let verifiedPassed = Boolean(body.passed);
+        if (env.DB) {
+          try {
+            await ensureXdcTables(env.DB);
+            let attemptRow = null;
+            if (attemptId) {
+              attemptRow = await env.DB.prepare(
+                'SELECT scaled_score, passed FROM exam_attempts WHERE attempt_id = ? AND user_id = ?'
+              ).bind(attemptId, auth.uid).first();
+            } else {
+              attemptRow = await env.DB.prepare(
+                'SELECT scaled_score, passed FROM exam_attempts WHERE user_id = ? AND exam_code = ? AND passed = 1 ORDER BY created_at DESC LIMIT 1'
+              ).bind(auth.uid, examCode).first();
+            }
+            if (attemptRow) {
+              verifiedScore = Number(attemptRow.scaled_score);
+              verifiedPassed = Boolean(attemptRow.passed);
+            } else if (isProd) {
+              return new Response(JSON.stringify({
+                error: 'VERIFIED_ATTEMPT_REQUIRED',
+                message: 'No verified passing exam attempt found on record for this account.'
+              }), { status: 403, headers: corsHeaders });
+            }
+          } catch (e) {
+            console.warn('[TON SBT] Attempt verification warning:', e && e.message ? e.message : e);
+            if (isProd) {
+              return new Response(JSON.stringify({
+                error: 'VERIFIED_ATTEMPT_REQUIRED',
+                message: 'Could not verify exam attempt for mint.'
+              }), { status: 403, headers: corsHeaders });
+            }
+          }
+        } else if (isProd) {
+          return new Response(JSON.stringify({
+            error: 'VERIFIED_ATTEMPT_REQUIRED',
+            message: 'Exam attempt verification requires D1 in production.'
+          }), { status: 503, headers: corsHeaders });
+        }
+
+        const isCore2 = /1202|1102|CORE\s*2/.test(examCode) || examCode.endsWith('2');
+        const minPass = isCore2 ? 700 : 675;
+        if (!verifiedPassed || !(Number.isFinite(verifiedScore) && verifiedScore >= minPass)) {
+          return new Response(JSON.stringify({
+            error: 'PASS_REQUIRED',
+            message: `Scaled score must be at least ${minPass} to mint.`
+          }), { status: 422, headers: corsHeaders });
+        }
+
+        const mintId = `sbt_${auth.uid.slice(0, 12)}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+        const network = env.TON_NETWORK === 'testnet' ? 'testnet' : 'mainnet';
+
+        if (env.DB) {
+          try {
+            await env.DB.prepare(`
+              CREATE TABLE IF NOT EXISTS ton_sbt_mints (
+                mint_id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                exam_code TEXT NOT NULL,
+                scaled_score INTEGER NOT NULL,
+                ledger_hash TEXT,
+                recipient_wallet TEXT NOT NULL,
+                attestation_id TEXT,
+                collection_address TEXT,
+                status TEXT NOT NULL DEFAULT 'pending',
+                item_address TEXT,
+                tx_hash TEXT,
+                error_message TEXT,
+                created_at TEXT NOT NULL DEFAULT (datetime('now')),
+                updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+              )
+            `).run();
+            await env.DB.prepare(`
+              INSERT INTO ton_sbt_mints (
+                mint_id, user_id, exam_code, scaled_score, ledger_hash,
+                recipient_wallet, attestation_id, collection_address, status
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+            `).bind(
+              mintId,
+              auth.uid,
+              examCode,
+              verifiedScore,
+              ledgerHash.slice(0, 128),
+              recipientWallet,
+              body.attestationId ? String(body.attestationId) : null,
+              collectionAddress
+            ).run();
+          } catch (e) {
+            console.warn('[TON SBT] mint queue insert failed:', e && e.message ? e.message : e);
+            return new Response(JSON.stringify({
+              error: 'MINT_QUEUE_FAILED',
+              message: 'Could not queue the mastery mint. Try again shortly.'
+            }), { status: 503, headers: corsHeaders });
+          }
+        }
+
+        return new Response(JSON.stringify({
+          success: true,
+          mintId,
+          status: 'pending',
+          network,
+          collectionAddress,
+          attemptId: attemptId || null,
+          explorer: `https://${network === 'testnet' ? 'testnet.' : ''}tonscan.org/address/${collectionAddress}`,
+          message: 'Mint queued for oracle. Credential will appear after the oracle confirms on-chain.'
+        }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }

@@ -1,0 +1,319 @@
+/* Featured Objective Campaign + Reward Center
+   Tokens from brand-black-gold.css. No purple glow. Honour reduced motion. */
+
+.featured-campaign-card {
+  display: block;
+  padding: 1rem 1.05rem;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: 10px;
+  background:
+    linear-gradient(165deg, rgba(212, 175, 55, 0.1) 0%, rgba(11, 11, 15, 0.92) 42%),
+    var(--bg-card, #121218);
+  margin-bottom: 0.85rem;
+}
+
+.featured-campaign-card[hidden] {
+  display: none !important;
+}
+
+.foc-kicker {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gold-light, #f5d061);
+}
+
+.foc-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.35rem 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.foc-meta {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #a8a8b3);
+  font-variant-numeric: tabular-nums;
+}
+
+.foc-title {
+  margin: 0 0 0.2rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary, #f2f2f5);
+  font-style: normal;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.foc-domain {
+  margin: 0 0 0.75rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary, #a8a8b3);
+}
+
+.foc-steps {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.foc-step {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.45rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.25);
+  font-size: 0.78rem;
+  min-width: 0;
+}
+
+.foc-step-n {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary, #a8a8b3);
+}
+
+.foc-step.is-current {
+  border-color: rgba(212, 175, 55, 0.55);
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.foc-step.is-current .foc-step-n {
+  background: var(--gold-primary, #d4af37);
+  color: #0b0b0f;
+}
+
+.foc-step.is-done {
+  border-color: rgba(74, 222, 128, 0.35);
+}
+
+.foc-step.is-done .foc-step-n {
+  background: rgba(74, 222, 128, 0.25);
+  color: #86efac;
+}
+
+.foc-step-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.foc-quest-fold,
+.foc-readiness-fold {
+  margin: 0 0 0.55rem;
+  font-size: 0.76rem;
+  color: var(--text-secondary, #a8a8b3);
+  line-height: 1.35;
+}
+
+.foc-readiness-fold {
+  color: var(--accent-cyan, #67e8f9);
+}
+
+#todayPlanCard.is-mission-demoted .btn-primary,
+#todayPlanCard.is-mission-demoted #todayPlanStartBtn {
+  opacity: 0.55;
+}
+
+.foc-note {
+  margin: 0 0 0.65rem;
+  font-size: 0.78rem;
+  color: var(--accent-cyan, #67e8f9);
+}
+
+.foc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.foc-complete {
+  font-size: 0.85rem;
+  color: #86efac;
+  font-weight: 600;
+}
+
+/* Reward Center */
+.rc-modal-card {
+  max-width: 520px;
+  width: min(96vw, 520px);
+}
+
+.rc-title {
+  font-size: 1.25rem;
+  color: var(--gold-light, #f5d061);
+  margin: 0;
+  font-style: normal;
+}
+
+.rc-sub {
+  color: var(--text-secondary, #a8a8b3);
+  font-size: 0.85rem;
+  margin: 0.25rem 0 0;
+}
+
+.rc-x {
+  background: none;
+  border: none;
+  color: var(--text-secondary, #a8a8b3);
+  font-size: 1.6rem;
+  cursor: pointer;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.rc-section-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--gold-light, #f5d061);
+  margin: 0.85rem 0 0.4rem;
+}
+
+.rc-muted {
+  color: var(--text-secondary, #a8a8b3);
+  font-size: 0.8rem;
+}
+
+.rc-empty {
+  font-size: 0.85rem;
+  color: var(--text-secondary, #a8a8b3);
+  margin: 0.25rem 0 0.5rem;
+}
+
+.rc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rc-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.rc-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.rc-apx {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+  color: var(--gold-primary, #d4af37);
+}
+
+.rc-item.is-claimed {
+  opacity: 0.72;
+}
+
+.rc-footer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  justify-content: flex-end;
+}
+
+.rc-unlock,
+.rc-streak,
+.rc-degree,
+.rc-readiness,
+.rc-faq,
+.rc-achievements {
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  background: rgba(212, 175, 55, 0.05);
+}
+
+.rc-unlock p,
+.rc-streak p,
+.rc-degree p,
+.rc-readiness p {
+  margin: 0.2rem 0 0;
+  font-size: 0.88rem;
+}
+
+.rc-faq-list {
+  margin: 0.35rem 0 0;
+  padding: 0;
+}
+
+.rc-faq-list dt {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--gold-light, #f5d061);
+  margin: 0.45rem 0 0.15rem;
+}
+
+.rc-faq-list dd {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary, #a8a8b3);
+  line-height: 1.4;
+}
+
+.apx-degree-badge,
+.apx-readiness-neighbor {
+  max-width: 9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 414px) {
+  .foc-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .foc-step-label {
+    white-space: normal;
+  }
+
+  .rc-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rc-claim-btn {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .featured-campaign-card,
+  .foc-step,
+  .rc-item {
+    transition: none !important;
+  }
+}

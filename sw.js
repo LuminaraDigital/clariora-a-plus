@@ -258,6 +258,7 @@ self.addEventListener('fetch', (event) => {
     path.indexOf('/js/firebase-service.js') !== -1 ||
     path.indexOf('/js/firebase-config.js') !== -1 ||
     path.indexOf('/js/stars_billing.js') !== -1 ||
+    path.indexOf('/js/ton_comment.js') !== -1 ||
     path.indexOf('/js/ton_credentials.js') !== -1 ||
     path.indexOf('/tonconnect-manifest.json') !== -1
   ) {

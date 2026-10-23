@@ -3,7 +3,28 @@ import "@stdlib/deploy";
 /**
  * TEP-85: Soulbound Tokens (SBT) implementation for Clariora A+ on TON Blockchain.
  * Non-transferable digital credentials proving certified exam mastery.
+ * Oracle or owner may mint; transfers are forbidden.
  */
+
+struct CollectionData {
+    nextItemIndex: Int as uint64;
+    collectionContent: Cell;
+    ownerAddress: Address;
+}
+
+struct NftData {
+    isActive: Bool;
+    index: Int as uint64;
+    collectionAddress: Address;
+    ownerAddress: Address;
+    individualContent: Cell;
+}
+
+struct MasteryRecord {
+    examCode: String;
+    scaledScore: Int as uint16;
+    ledgerHash: Int as uint256;
+}
 
 message MintMasterySBT {
     queryId: Int as uint64;
@@ -75,11 +96,17 @@ contract ClarioraMasterySBTCollection with Deployable {
         self.nextItemIndex = self.nextItemIndex + 1;
     }
 
-    get fun get_collection_data(): (Int, Cell, Address) {
-        return (self.nextItemIndex, self.collectionContent, self.owner);
+    get fun get_collection_data(): CollectionData {
+        return CollectionData{
+            nextItemIndex: self.nextItemIndex,
+            collectionContent: self.collectionContent,
+            ownerAddress: self.owner
+        };
     }
 
     get fun get_nft_address_by_index(index: Int): Address {
+        // Placeholder init fields are only used for address derivation of undeployed items
+        // with unknown owner; production clients should track minted item addresses from mint events.
         let itemInit: StateInit = initOf ClarioraMasterySBTItem(
             myAddress(),
             index,
@@ -90,6 +117,10 @@ contract ClarioraMasterySBTCollection with Deployable {
             0
         );
         return contractAddress(itemInit);
+    }
+
+    get fun get_oracle_address(): Address {
+        return self.oracle;
     }
 }
 
@@ -115,7 +146,7 @@ contract ClarioraMasterySBTItem {
 
     // TEP-85 Requirement: Non-transferability
     receive("transfer") {
-        revert(1001); // Transfers strictly forbidden for Soulbound credentials
+        nativeThrow(1001); // Transfers strictly forbidden for Soulbound credentials
     }
 
     receive(msg: ProveOwnership) {
@@ -156,8 +187,14 @@ contract ClarioraMasterySBTItem {
         });
     }
 
-    get fun get_nft_data(): (Bool, Int, Address, Address, Cell) {
-        return (self.revokedAt == 0, self.index, self.collection, self.owner, emptyCell());
+    get fun get_nft_data(): NftData {
+        return NftData{
+            isActive: self.revokedAt == 0,
+            index: self.index,
+            collectionAddress: self.collection,
+            ownerAddress: self.owner,
+            individualContent: emptyCell()
+        };
     }
 
     get fun get_authority_address(): Address {
@@ -168,7 +205,11 @@ contract ClarioraMasterySBTItem {
         return self.revokedAt;
     }
 
-    get fun get_mastery_record(): (String, Int, Int) {
-        return (self.examCode, self.scaledScore, self.ledgerHash);
+    get fun get_mastery_record(): MasteryRecord {
+        return MasteryRecord{
+            examCode: self.examCode,
+            scaledScore: self.scaledScore,
+            ledgerHash: self.ledgerHash
+        };
     }
 }

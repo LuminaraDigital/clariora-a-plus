@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "electron": "44.4.5",
-    "electron-builder": "^26.0.12"
+    "electron-builder": "^26.18.0"
   },
   "homepage": "https://github.com/LuminaraDigital/clariora-a-plus#readme",
   "repository": {

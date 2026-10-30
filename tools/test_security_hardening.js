@@ -223,14 +223,18 @@ check('main.js validates database:saveAll and database:saveAllAsync against malf
 });
 
 check('main.js groq:chat enforces payload structure, bounds, and origin protections', () => {
-  const code = fs.readFileSync(mainPath, 'utf8');
-  assert.ok(code.includes("ipcMain.handle('groq:chat'"), 'groq:chat handler missing');
-  assert.ok(code.includes('missing_api_key'), 'missing_api_key check missing');
-  assert.ok(code.includes('invalid_api_key'), 'invalid_api_key check missing');
-  assert.ok(code.includes('blocked_endpoint'), 'blocked_endpoint check missing');
-  assert.ok(code.includes('invalid_messages'), 'invalid_messages check missing');
-  assert.ok(code.includes('invalid_model'), 'invalid_model check missing');
-  assert.ok(code.includes('message_too_large'), 'message_too_large check missing');
+  const mainCode = fs.readFileSync(mainPath, 'utf8');
+  const aiGatewayPath = path.join(ROOT, 'electron', 'ai_gateway.js');
+  const aiGatewayCode = fs.existsSync(aiGatewayPath) ? fs.readFileSync(aiGatewayPath, 'utf8') : '';
+  const combinedCode = mainCode + '\n' + aiGatewayCode;
+
+  assert.ok(mainCode.includes("ipcMain.handle('groq:chat'"), 'groq:chat handler missing');
+  assert.ok(combinedCode.includes('missing_api_key'), 'missing_api_key check missing');
+  assert.ok(combinedCode.includes('invalid_api_key'), 'invalid_api_key check missing');
+  assert.ok(combinedCode.includes('blocked_endpoint'), 'blocked_endpoint check missing');
+  assert.ok(combinedCode.includes('invalid_messages'), 'invalid_messages check missing');
+  assert.ok(combinedCode.includes('invalid_model'), 'invalid_model check missing');
+  assert.ok(combinedCode.includes('message_too_large'), 'message_too_large check missing');
 });
 
 // ============================================================================

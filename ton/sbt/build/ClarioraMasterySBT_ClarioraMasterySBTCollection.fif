@@ -1,0 +1,476 @@
+// automatically generated from `@stdlib/std/stdlib.fc` `C:/Users/lumin/Desktop/CompTia_A+_TMA/ton/sbt/build/ClarioraMasterySBT_ClarioraMasterySBTCollection.fc` 
+PROGRAM{
+  DECLPROC __tact_context_get
+  DECLPROC __tact_context_get_sender
+  DECLPROC $DeployOk$_store
+  DECLPROC $DeployOk$_store_cell
+  DECLPROC $ClarioraMasterySBTCollection$_store
+  DECLPROC $ClarioraMasterySBTCollection$_load
+  DECLPROC $Context$_get_value
+  DECLPROC $CollectionData$_to_external
+  DECLPROC $ClarioraMasterySBTCollection$init$_load
+  DECLPROC $ClarioraMasterySBTItem$init$_store
+  DECLPROC $ClarioraMasterySBTCollection$_contract_init
+  DECLPROC $ClarioraMasterySBTCollection$_contract_load
+  DECLPROC $ClarioraMasterySBTCollection$_contract_store
+  DECLPROC $Cell$_fun_asSlice
+  DECLPROC $global_newAddress
+  DECLPROC $global_contractAddressExt
+  DECLPROC $global_contractAddress
+  DECLPROC $CollectionData$_constructor_nextItemIndex_collectionContent_ownerAddress
+  DECLPROC $ClarioraMasterySBTCollection$_fun_get_collection_data
+  DECLPROC $ClarioraMasterySBTItem$_init_child
+  DECLPROC $ClarioraMasterySBTCollection$_fun_get_nft_address_by_index
+  DECLPROC $ClarioraMasterySBTCollection$_fun_get_oracle_address
+  DECLPROC $MessageParameters$_constructor_bounce_to_value_mode_body
+  DECLPROC $ClarioraMasterySBTCollection$_fun_notify
+  DECLPROC $SendParameters$_constructor_to_value_mode_bounce_code_data_body
+  DECLPROC $DeployOk$_constructor_queryId
+  102491 DECLMETHOD %get_collection_data
+  92067 DECLMETHOD %get_nft_address_by_index
+  91165 DECLMETHOD %get_oracle_address
+  DECLPROC recv_internal
+  65535 DECLMETHOD __tact_selector_hack
+  DECLGLOBVAR __tact_context
+  DECLGLOBVAR __tact_context_sender
+  DECLGLOBVAR __tact_child_contract_codes
+  DECLGLOBVAR __tact_randomized
+  __tact_context_get PROCINLINE:<{
+    __tact_context GETGLOB
+    4 UNTUPLE
+  }>
+  __tact_context_get_sender PROCINLINE:<{
+    __tact_context_sender GETGLOB
+  }>
+  $DeployOk$_store PROCINLINE:<{
+    2952335191 PUSHINT
+    ROT
+    32 STU
+    64 STU
+  }>
+  $DeployOk$_store_cell PROCINLINE:<{
+    SWAP
+    $DeployOk$_store INLINECALLDICT
+    ENDC
+  }>
+  $ClarioraMasterySBTCollection$_store PROCINLINE:<{
+    s3 s4 XCHG2
+    STSLICE
+    STSLICE
+    64 STU
+    STREF
+  }>
+  $ClarioraMasterySBTCollection$_load PROCINLINE:<{
+    LDMSGADDR
+    LDMSGADDR
+    64 LDU
+    LDREF
+    4 -ROLL
+  }>
+  $Context$_get_value PROCINLINE:<{
+    s1 s3 XCHG
+    3 BLKDROP
+  }>
+  $CollectionData$_to_external PROCINLINE:<{
+  }>
+  $ClarioraMasterySBTCollection$init$_load PROCINLINE:<{
+    LDMSGADDR
+    LDMSGADDR
+    LDREF
+    3 -ROLL
+  }>
+  $ClarioraMasterySBTItem$init$_store PROCINLINE:<{
+    s6 s7 XCHG2
+    STSLICE
+    s1 s4 XCHG
+    64 STU
+    s1 s2 XCHG
+    STSLICE
+    STSLICE
+    SWAP
+    NEWC
+    STSLICE
+    STBREFR
+    16 STU
+    SWAP
+    NEWC
+    256 STU
+    STBREFR
+  }>
+  $ClarioraMasterySBTCollection$_contract_init PROCINLINE:<{
+    0 PUSHINT
+    SWAP
+  }>
+  $ClarioraMasterySBTCollection$_contract_load PROCINLINE:<{
+    c4 PUSH
+    CTOS
+    1 LDI
+    SWAP
+    IF:<{
+      $ClarioraMasterySBTCollection$_load INLINECALLDICT
+      1 4 BLKDROP2
+    }>ELSE<{
+      $ClarioraMasterySBTCollection$init$_load INLINECALLDICT
+      s0 s3 XCHG
+      ENDS
+      ROT
+      $ClarioraMasterySBTCollection$_contract_init INLINECALLDICT
+    }>
+  }>
+  $ClarioraMasterySBTCollection$_contract_store PROCINLINE:<{
+    NEWC
+    TRUE
+    SWAP
+    1 STI
+    4 -ROLL
+    $ClarioraMasterySBTCollection$_store INLINECALLDICT
+    ENDC
+    c4 POP
+  }>
+  $Cell$_fun_asSlice PROCINLINE:<{
+        CTOS
+  }>
+  $global_newAddress PROCINLINE:<{
+        NEWC
+    4 PUSHINT
+    SWAP
+    3 STU
+    s1 s2 XCHG
+    8 STI
+    256 STU
+        ENDC
+    $Cell$_fun_asSlice INLINECALLDICT
+  }>
+  $global_contractAddressExt PROCINLINE:<{
+        s0 PUSH HASHCU // `data` hash
+        s2 PUSH HASHCU // `code` hash
+        SWAP2
+        CDEPTH         // `data` depth
+        SWAP
+        CDEPTH         // `code` depth
+        131380 INT     // (2 << 16) | (1 << 8) | 0x34
+        // Group 2: Composition of the Builder
+        NEWC
+        24 STU  // store refs_descriptor | bits_descriptor | data
+        16 STU  // store depth_descriptor for `code`
+        16 STU  // store depth_descriptor for `data`
+        256 STU // store `code` hash
+        256 STU // store `data` hash
+        // Group 3: SHA256 hash of the resulting Builder
+        ONE HASHEXT_SHA256
+    $global_newAddress INLINECALLDICT
+  }>
+  $global_contractAddress PROCINLINE:<{
+    0 PUSHINT
+    -ROT
+    $global_contractAddressExt INLINECALLDICT
+  }>
+  $CollectionData$_constructor_nextItemIndex_collectionContent_ownerAddress PROCINLINE:<{
+  }>
+  $ClarioraMasterySBTCollection$_fun_get_collection_data PROCREF:<{
+    s1 s0 s3 PUSH3
+    $CollectionData$_constructor_nextItemIndex_collectionContent_ownerAddress INLINECALLDICT
+  }>
+  $ClarioraMasterySBTItem$_init_child PROCREF:<{
+        B{b5ee9c720102140100041f000228ff008e88f4a413f4bcf2c80bed5320e303ed43d90102020271030402f430eda2edfb01d072d721d200d200fa4021103450666f04f86102f862ed44d0d200018e24fa40d33ffa40fa40d401d001d30fd401d0d3ffd33f301028102710261025102410236c188e1ffa40d33ffa40fa40d401d001d30fd401d0d3ff3017161514433007d1550570e209925f09e027d749c21fe30007f901200d0e0201580506020162090a01a9b5631da89a1a400031c49f481a67ff481f481a803a003a61fa803a1a7ffa67e602050204e204c204a20482046d8311c3ff481a67ff481f481a803a003a61fa803a1a7fe602e2c2a2886600fa2aa0ae1c5b678d90300701a9b7b07da89a1a400031c49f481a67ff481f481a803a003a61fa803a1a7ffa67e602050204e204c204a20482046d8311c3ff481a67ff481f481a803a003a61fa803a1a7fe602e2c2a2886600fa2aa0ae1c5b678d90300800022400022001a9b3f3fb513434800063893e9034cffe903e903500740074c3f5007434fff4cfcc040a0409c409840944090408db062387fe9034cffe903e903500740074c3f5007434ffcc05c5854510cc01f455415c38b6cf1b21600b01a9b1c23b513434800063893e9034cffe903e903500740074c3f5007434fff4cfcc040a0409c409840944090408db062387fe9034cffe903e903500740074c3f5007434ffcc05c5854510cc01f455415c38b6cf1b20e00c011220c000885468a0529010000654732101be07d31f218209c90965bae302018210d99e1ccaba8e4730f8416f245b8200e7c53224c705f2f4812aee08c00018f2f4f823105710461035443012c87f01ca0055705078ce15cb3f13cece01c8cecdcb0f01c8cbff12cb3fcdc9ed54db31e0070f01f282f07e2b1709e6236d745f5a973c89c690596a88dc4b5b35dd228d71a642a8291ff6ba8e2930f2c3e910575514c87f01ca0055705078ce15cb3f13cece01c8cecdcb0f01c8cbff12cb3fcdc9ed54e082f0bb82cd86b73dd91b29db6719d7f385bc87f9ca3e3c933ba0c3ddf37418ad8874bae3025f08f2c0821202ee31d33ffa4030f8416f245b82008c9e3227c705f2f470804088146d2a544a3052f0c85550821045a5a4db5007cb1f15cb3f13cb3fcecccb3ff400c941305a6d6d40037fc8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb0010575514101100000046c87f01ca0055705078ce15cb3f13cece01c8cecdcb0f01c8cbff12cb3fcdc9ed54db3101e2f8416f245b8108773225c705f2f4708100a0882655205a6d6d40037fc8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb0010575514c87f01ca0055705078ce15cb3f13cece01c8cecdcb0f01c8cbff12cb3fcdc9ed5413001a0000000064657374726f796564} B>boc PUSHREF
+    NEWC
+    FALSE
+    SWAP
+    1 STI
+    7 2 BLKSWAP
+    $ClarioraMasterySBTItem$init$_store INLINECALLDICT
+    ENDC
+  }>
+  $ClarioraMasterySBTCollection$_fun_get_nft_address_by_index PROCREF:<{
+        MYADDR
+        MYADDR
+        B{b5ee9c724101010100020000004cacb9cd} B>boc <s PUSHSLICE
+    0 PUSHINT
+    s0 s7 PUSH2
+    s5 s6 XCHG
+    3 -ROLL
+    $ClarioraMasterySBTItem$_init_child INLINECALLDICT
+    $global_contractAddress INLINECALLDICT
+  }>
+  $ClarioraMasterySBTCollection$_fun_get_oracle_address PROCREF:<{
+    s2 PUSH
+  }>
+  $MessageParameters$_constructor_bounce_to_value_mode_body PROCINLINE:<{
+    s3 s3 XCHG2
+    s0 s4 XCHG
+  }>
+  $ClarioraMasterySBTCollection$_fun_notify PROCINLINE:<{
+    __tact_context_get_sender INLINECALLDICT
+    FALSE
+    0 PUSHINT
+    s0 s3 XCHG2
+    66 PUSHINT
+    SWAP
+    $MessageParameters$_constructor_bounce_to_value_mode_body INLINECALLDICT
+        NEWC
+        b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+        1 STI               // store `bounce`
+        b{000} STSLICECONST // store bounced = false and src = addr_none
+        STSLICE             // store `to`
+        SWAP
+        STGRAMS             // store `value`
+        106 PUSHINT         // 1 + 4 + 4 + 64 + 32 + 1
+        STZEROES
+        // → Stack state
+        // s0: Builder
+        // s1: `body`
+        // s2: `mode`
+        STDICT
+        ENDC
+        SWAP
+        SENDRAWMSG
+  }>
+  $SendParameters$_constructor_to_value_mode_bounce_code_data_body PROCINLINE:<{
+    s4 s6 XCHG
+    s5 s1 s5 XCHG3
+    s4 s4 XCHG2
+    s0 s3 XCHG
+  }>
+  $DeployOk$_constructor_queryId PROCINLINE:<{
+  }>
+  %get_collection_data PROC:<{
+    $ClarioraMasterySBTCollection$_contract_load INLINECALLDICT
+    $ClarioraMasterySBTCollection$_fun_get_collection_data INLINECALLDICT
+    4 3 BLKDROP2
+    $CollectionData$_to_external INLINECALLDICT
+  }>
+  %get_nft_address_by_index PROC:<{
+    $ClarioraMasterySBTCollection$_contract_load INLINECALLDICT
+    4 ROLL
+    $ClarioraMasterySBTCollection$_fun_get_nft_address_by_index INLINECALLDICT
+    4 1 BLKDROP2
+  }>
+  %get_oracle_address PROC:<{
+    $ClarioraMasterySBTCollection$_contract_load INLINECALLDICT
+    $ClarioraMasterySBTCollection$_fun_get_oracle_address INLINECALLDICT
+    4 1 BLKDROP2
+  }>
+  recv_internal PROC:<{
+    SWAP
+    CTOS
+    2 PUSHINT
+    SDSKIPFIRST
+    1 LDI
+    1 LDI
+    LDMSGADDR
+    OVER
+    s3 s4 XCHG
+    s6 s6 XCHG2
+    4 TUPLE
+    __tact_context SETGLOB
+    s0 s2 XCHG
+    __tact_context_sender SETGLOB
+    $ClarioraMasterySBTCollection$_contract_load INLINECALLDICT
+    s0 s5 XCHG
+    IFJMP:<{
+      5 BLKDROP
+    }>
+    s0 s3 XCHG
+    32 LDUQ 130 THROWIFNOT
+    OVER
+    2281128699 PUSHINT
+    EQUAL
+    IFJMP:<{
+      NIP
+      64 LDU
+      NIP
+      LDMSGADDR
+      LDREF
+      SWAP
+      CTOS
+      SWAP
+      16 LDU
+      256 LDU
+      DROP
+      __tact_context_get INLINECALLDICT
+      s2 s3 XCHG
+      3 BLKDROP
+      39925 PUSHINT
+      s1 s6 PUSH2
+      SDEQ
+      IF:<{
+        NIP
+        TRUE
+      }>ELSE<{
+        s1 s7 XCPU
+        SDEQ
+      }>
+      THROWANYIFNOT
+          MYADDR
+      s4 s7 XCPU
+      s3 s4 s6 XC2PU
+      s2 s3 XCHG2
+      $ClarioraMasterySBTItem$_init_child INLINECALLDICT
+      2DUP
+      $global_contractAddress INLINECALLDICT
+      50000000 PUSHINT
+      2 PUSHINT
+      FALSE
+          B{b5ee9c7241010101000a00001000000000696e69748005f29f} B>boc PUSHREF
+      s4 s6 XCHG
+      s3 s5 XCHG
+      s4 s3 s0 XCHG3
+      $SendParameters$_constructor_to_value_mode_bounce_code_data_body INLINECALLDICT
+          NEWC
+          b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+          1 STI               // store `bounce`
+          b{000} STSLICECONST // store bounced = false and src = addr_none
+          STSLICE             // store `to`
+          SWAP
+          STGRAMS             // store `value`
+          105 PUSHINT         // 1 + 4 + 4 + 64 + 32
+          STZEROES            // store currency_collection, ihr_fee, fwd_fee, created_lt and created_at
+          // → Stack state
+          // s0: Builder
+          // s1: `data`
+          // s2: `code`
+          // s3: `body`
+          // s4: `mode`
+          // Group 2: Placing the Builder after code and data, then checking those for nullability
+          s2 XCHG0
+          DUP2
+          ISNULL
+          SWAP
+          ISNULL
+          AND
+          // → Stack state
+          // s0: -1 (true) if `data` and `code` are both null, 0 (false) otherwise
+          // s1: `code`
+          // s2: `data`
+          // s3: Builder
+          // s4: `body`
+          // s5: `mode`
+          // Group 3: Left branch of the IFELSE, executed if s0 is -1 (true)
+          <{
+              DROP2 // drop `data` and `code`, since either of those is null
+              b{0} STSLICECONST
+          }> PUSHCONT
+          // Group 3: Right branch of the IFELSE, executed if s0 is 0 (false)
+          <{
+              // _ split_depth:(Maybe (## 5))
+              //   special:(Maybe TickTock)
+              //   code:(Maybe ^Cell)
+              //   data:(Maybe ^Cell)
+              //   library:(Maybe ^Cell)
+              // = StateInit;
+              ROT                // place message Builder on top
+              b{10} STSLICECONST // store Maybe = true, Either = false
+              // Start composing inlined StateInit
+              b{00} STSLICECONST // store split_depth and special first
+              STDICT             // store code
+              STDICT             // store data
+              b{0} STSLICECONST  // store library
+          }> PUSHCONT
+          // Group 3: IFELSE that does the branching shown above
+          IFELSE
+          // → Stack state
+          // s0: Builder
+          // s1: null or StateInit
+          // s2: `body`
+          // s3: `mode`
+          // Group 4: Finalizing the message
+          STDICT // store `body` as ref with an extra Maybe bit, since `body` might be null
+          ENDC
+          // → Stack state
+          // s0: Cell
+          // s1: `mode`
+          // Group 5: Sending the message, with `mode` on top
+          SWAP
+          SENDRAWMSG // https://github.com/tact-lang/tact/issues/1558
+      s0 s2 XCHG
+      INC
+      s0 s3 XCHG2
+      $ClarioraMasterySBTCollection$_contract_store INLINECALLDICT
+    }>
+    SWAP
+    2490013878 PUSHINT
+    EQUAL
+    IFJMP:<{
+      64 LDU
+      DROP
+      $DeployOk$_constructor_queryId INLINECALLDICT
+      NEWC
+      $DeployOk$_store_cell INLINECALLDICT
+      s4 s3 s0 XCHG3
+      s1 s2 XCHG
+      $ClarioraMasterySBTCollection$_fun_notify INLINECALLDICT
+      $ClarioraMasterySBTCollection$_contract_store INLINECALLDICT
+    }>
+    5 BLKDROP
+    130 THROW
+  }>
+  __tact_selector_hack PROC:<{
+    @atend @ 1 {
+            execute current@ context@ current!
+            {
+                // The core idea of this function is to save gas by avoiding unnecessary dict jump, when recv_internal/recv_external is called
+                // We want to extract recv_internal/recv_external from the dict and select needed function
+                // not by jumping to the needed function by it's index, but by using usual IF statements.
+                }END> b> // Close previous builder, now we have a cell of previous code on top of the stack
+                <{ // Start of the new code builder
+                    SETCP0
+                    // Swap the new code builder with the previous code, now we have previous code on top of the stack
+                    swap
+                    // Transform cell to slice and load first ref from the previous code, now we have the dict on top of the stack
+                    <s ref@
+                    // Extract the recv_internal from the dict
+                    dup 0 swap @procdictkeylen idict@ { "internal shortcut error" abort } ifnot
+                    swap
+                    // Delete the recv_internal from the dict
+                    0 swap @procdictkeylen idict- drop
+                    // Delete the recv_external from the dict (it's okay if it's not there)
+                    -1 swap @procdictkeylen idict- drop
+                    // Delete the __tact_selector_hack from the dict
+                    65535 swap @procdictkeylen idict- drop
+                    // Bring the code builder from the bottom of the stack
+                    // because if recv_external extraction is optional, and the number of elements on the stack is not fixed
+                    depth 1- roll
+                    // Swap with the dict from which we extracted recv_internal and (maybe) recv_external
+                    swap
+                    // Check if the dict is empty
+                    dup null?
+                    // Store a copy of this flag in the bottom of the stack
+                    dup depth 1- -roll
+                    {
+                        // If the dict is empty, just drop it (it will be null if it's empty)
+                        drop
+                    }
+                    {
+                        // If the dict is not empty, prepare continuation to be stored in c3
+                        <{
+                            // Save this dict as first ref in this continuation, it will be pushed in runtime by DICTPUSHCONST
+                            swap @procdictkeylen DICTPUSHCONST
+                            // Jump to the needed function by it's index
+                            DICTIGETJMPZ
+                            // If such key is not found, throw 11 along with the key as an argument
+                            11 THROWARG
+                        }> PUSHCONT
+                        // Store the continuation in c3
+                        c3 POP
+                    } cond
+                    // Function id is on top of the (runtime) stack
+                    DUP IFNOTJMP:<{
+                        // place recv_internal here
+                        DROP swap @addop
+                    }>
+                    // Bring back the flag, indicating if the dict is empty or not from the bottom of the stack
+                    depth 1- roll
+                    {
+                        // If the dict is empty, throw 11
+                        11 THROWARG
+                    }
+                    {
+                        // If the dict is not empty, jump to continuation from c3
+                        c3 PUSH JMPX
+                    } cond
+                }> b>
+            } : }END>c
+            current@ context! current!
+        } does @atend !
+  }>
+}END>c

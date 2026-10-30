@@ -117,6 +117,65 @@
       return stats;
     },
 
+    /**
+     * Ranked weak objectives across both exams, keyed by exam so Core 1 1.1 and Core 2 1.1 stay separate.
+     * Reads readiness2's objective_stats (lifetime counts plus recency-weighted accuracy); older history
+     * sessions often carry no perQuestion detail, so history is only a fallback.
+     */
+    buildDeficitReport(options) {
+      const minAttempts = (options && options.minAttempts) || 3;
+      const weakThreshold = (options && options.weakThreshold) || 70;
+      const byKey = {};
+      const objectiveStats = (APlus.storage ? APlus.storage.get('objective_stats', null) : null) || null;
+      if (objectiveStats && typeof objectiveStats === 'object' && Object.keys(objectiveStats).length) {
+        Object.keys(objectiveStats).forEach((key) => {
+          const rec = objectiveStats[key] || {};
+          if (!rec.rawTotal) return;
+          const weighted = rec.wTotal > 0 ? rec.wCorrect / rec.wTotal : rec.rawCorrect / rec.rawTotal;
+          byKey[key] = { attempts: rec.rawTotal, correct: rec.rawCorrect, accuracy: weighted };
+        });
+      } else {
+        const history = (APlus.storage ? APlus.storage.get('history', []) : []) || [];
+        history.forEach((session) => {
+          (Array.isArray(session.perQuestion) ? session.perQuestion : []).forEach((pq) => {
+            if (!pq.objective || (pq.exam !== 'core1' && pq.exam !== 'core2')) return;
+            const key = pq.exam + '|' + pq.objective;
+            if (!byKey[key]) byKey[key] = { attempts: 0, correct: 0 };
+            byKey[key].attempts++;
+            if (pq.correct) byKey[key].correct++;
+          });
+        });
+      }
+
+      const rows = [];
+      const untested = [];
+      ['core1', 'core2'].forEach((exam) => {
+        OBJECTIVES_MAP[exam].forEach((obj) => {
+          const s = byKey[exam + '|' + obj.code];
+          if (!s || s.attempts < minAttempts) {
+            untested.push({ exam, code: obj.code, title: obj.title });
+            return;
+          }
+          rows.push({
+            exam,
+            code: obj.code,
+            title: obj.title,
+            attempts: s.attempts,
+            correct: s.correct,
+            pct: Math.round((s.accuracy != null ? s.accuracy : s.correct / s.attempts) * 100)
+          });
+        });
+      });
+      rows.sort((a, b) => a.pct - b.pct || b.attempts - a.attempts);
+      return {
+        minAttempts,
+        weakThreshold,
+        weakest: rows.filter((r) => r.pct < weakThreshold).slice(0, 8),
+        ranked: rows,
+        untested
+      };
+    },
+
     getTileColor(stat) {
       if (!stat || stat.attempts === 0) return { bg: '#1e293b', border: '#334155', text: '#94a3b8', label: 'Untested' };
       const pct = Math.round((stat.correct / stat.attempts) * 100);
@@ -193,13 +252,15 @@
       });
     },
 
-    launchTargetedDrill(objectiveCode) {
+    launchTargetedDrill(objectiveCode, exam) {
       if (!window.COMPTIA_EXAM_DATA) {
         alert('Question bank is still loading. Please try again in a moment.');
         return;
       }
 
-      const all = [...(COMPTIA_EXAM_DATA.core1 || []), ...(COMPTIA_EXAM_DATA.core2 || [])];
+      const all = exam === 'core1' || exam === 'core2'
+        ? [...(COMPTIA_EXAM_DATA[exam] || [])]
+        : [...(COMPTIA_EXAM_DATA.core1 || []), ...(COMPTIA_EXAM_DATA.core2 || [])];
       const matched = all.filter(q => q.objective === objectiveCode);
 
       if (matched.length === 0) {

@@ -47,6 +47,12 @@
     '4.0 Operational Procedures'
   ];
 
+  /**
+   * A domain may say Pass or Fail only after this many answered questions.
+   * 0/2 (and any other tiny sample) stays unlabeled.
+   */
+  const MIN_DOMAIN_SAMPLE = 5;
+
   /** Pass mark expressed as a percentage of the 100-900 scale. 675 -> 71.875 */
   function passLinePercent(passingScore) {
     const p = Number(passingScore);
@@ -100,6 +106,23 @@
   }
 
   /**
+   * domainResultLabel({ correct, total, passPercent, minSample }) -> '' | 'Pass' | 'Fail'
+   * Pass and Fail both require a large enough sample and a comparison to the
+   * pass line. A thin sample returns '' so the row cannot say Pass at 0/2.
+   */
+  function domainResultLabel(spec) {
+    const s = spec || {};
+    const total = Number(s.total) || 0;
+    const correct = Number(s.correct) || 0;
+    const minSample = (s.minSample != null) ? Number(s.minSample) : MIN_DOMAIN_SAMPLE;
+    if (!(total >= minSample)) return '';
+    const percent = (correct / total) * 100;
+    const threshold = Number(s.passPercent);
+    if (!isFinite(threshold)) return '';
+    return percent >= threshold ? 'Pass' : 'Fail';
+  }
+
+  /**
    * One domain result row.
    * spec: { name, correct, total, passingScore } or { name, percent, passPercent }
    */
@@ -116,11 +139,23 @@
 
     const width = Math.max(0, Math.min(100, percent));
     const linePos = Math.max(0, Math.min(100, passPercent));
-    const isOk = percent >= passPercent;
+    const verdict = total > 0
+      ? domainResultLabel({
+          correct: correct,
+          total: total,
+          passPercent: passPercent
+        })
+      : '';
+    // A counted sample can look like a pass only when the label says Pass.
+    // Percent-only rows (no sample) keep the geometric pass-line test.
+    const isOk = total > 0 ? (verdict === 'Pass') : (percent >= passPercent && percent > 0);
     const fillClass = isOk ? 'fill ok' : 'fill';
     const readout = total
       ? (correct + ' / ' + total + ', ' + percent + '%')
       : (percent + '%');
+    const verdictHtml = verdict
+      ? '<span class="domain-verdict">' + verdict + '</span>'
+      : '';
 
     return '<div class="domain-bar">' +
       '<span class="name">' + escapeHTML(s.name || '') + '</span>' +
@@ -128,6 +163,7 @@
         '<div class="' + fillClass + '" style="width:' + width + '%"></div>' +
         '<div class="passline" style="left:' + round1(linePos) + '%"></div>' +
       '</div>' +
+      verdictHtml +
       '<span class="pct tnum">' + escapeHTML(readout) + '</span>' +
     '</div>';
   }
@@ -352,16 +388,69 @@
         }
       });
 
-      APlus.bus.on('exam:finished', (payload) => {
+      APlus.bus.on('exam:finished', async (payload) => {
         this.renderResults(payload);
         this.showScreen('resultsScreen');
+
+        // Universal Ledger Ingestion Bridge: reward modular engine sessions (Adaptive, Similar, Coach, Heatmap, Cram Sheet)
+        if (window.CompTIALedgerUI && typeof window.CompTIALedgerUI.onExamComplete === 'function') {
+          try {
+            const track = (window.APlus && window.APlus.trackRegistry && window.APlus.trackRegistry.getActiveTrack()) || null;
+            const examType = payload.examType || (track ? track.id : 'core1');
+            let domainKey = payload.domainKey || null;
+            let domainPct = 0;
+            if (payload.domainStats) {
+              if (domainKey && payload.domainStats[domainKey]) {
+                const s = payload.domainStats[domainKey];
+                domainPct = s.total ? (s.correct / s.total) * 100 : 0;
+              } else if (payload.examType === 'domain' || payload.examType === 'drill') {
+                const keys = Object.keys(payload.domainStats);
+                if (keys.length === 1) {
+                  domainKey = keys[0];
+                  const s = payload.domainStats[domainKey];
+                  domainPct = s.total ? (s.correct / s.total) * 100 : 0;
+                }
+              }
+            }
+
+            let crucibleAudit = null;
+            try {
+              if (window.CrucibleUI && typeof window.CrucibleUI.getMutationTracker === 'function') {
+                const mt = window.CrucibleUI.getMutationTracker();
+                if (mt && typeof mt.getAuditSummary === 'function') crucibleAudit = mt.getAuditSummary();
+              }
+            } catch (_) {}
+
+            await window.CompTIALedgerUI.onExamComplete({
+              sessionId: payload.timestamp || String(Date.now()),
+              examType: examType,
+              scaledScore: payload.scaledScore,
+              rawCorrect: payload.rawCorrect,
+              total: payload.totalQuestions || payload.total || (payload.perQuestion && payload.perQuestion.length) || 1,
+              passed: payload.passed,
+              passingScore: payload.passingScore,
+              domainStats: payload.domainStats || {},
+              domainKey: domainKey,
+              domainPct: domainPct,
+              crucibleAudit: crucibleAudit
+            });
+          } catch (bridgeErr) {
+            console.warn('[UI] Ledger ingestion bridge notice:', bridgeErr);
+          }
+        }
       });
     }
 
     showScreen(screenId) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      const target = document.getElementById(screenId);
-      if (target) target.classList.add('active');
+      document.querySelectorAll('.screen').forEach(s => {
+        const active = s.id === screenId;
+        s.classList.toggle('active', active);
+        s.setAttribute('aria-hidden', active ? 'false' : 'true');
+        if ('inert' in s) {
+          if (active) s.removeAttribute('inert');
+          else s.inert = true;
+        }
+      });
 
       const headerControls = document.getElementById('examHeaderControls');
       if (headerControls) {
@@ -448,6 +537,17 @@
         flagBtn.classList.toggle('flagged', isFlagged);
         flagBtn.setAttribute('aria-pressed', isFlagged ? 'true' : 'false');
         flagBtn.innerText = isFlagged ? 'Flagged for review' : 'Flag for review';
+      }
+
+      const hintBtn = document.getElementById('hintBtn');
+      if (hintBtn) {
+        const ledger = window.CompTIALedger;
+        const charges = ledger && typeof ledger.consumableChargesSync === 'function'
+          ? ledger.consumableChargesSync('HINT_PACK')
+          : 0;
+        const show = charges > 0 && typeof session.canUseHint === 'function' && session.canUseHint();
+        hintBtn.hidden = !show;
+        if (show) hintBtn.innerText = `Use hint (${charges})`;
       }
 
       // Render options via qtypes
@@ -631,12 +731,177 @@
 
       // Render TON Blockchain Credential Card if TONCredentials module is active
       if (window.TONCredentials && document.getElementById('tonCredentialMount')) {
-        window.TONCredentials.renderCredentialCard(document.getElementById('tonCredentialMount'), {
+        const tonExamResult = {
           examCore: payload.examCore || (payload.passingScore === 700 ? '2' : '1'),
           scaledScore: payload.scaledScore,
           passed: isPassed,
           ledgerHash: (payload.ledgerEntry && payload.ledgerEntry.entryHash) || 'APX_' + Date.now().toString(16)
-        });
+        };
+        window.TONCredentials.renderCredentialCard(document.getElementById('tonCredentialMount'), tonExamResult);
+        // Wire mint-after-pass: oracle queue when collection is configured (best-effort).
+        if (isPassed && typeof window.TONCredentials.mintAfterPass === 'function') {
+          Promise.resolve(window.TONCredentials.mintAfterPass(tonExamResult)).catch(function () {});
+        }
+      }
+
+      // Render XDC Network Soulbound Credential Card if XDCProvider module is active
+      if (window.XDCProvider && document.getElementById('xdcCredentialMount')) {
+        const xdcMount = document.getElementById('xdcCredentialMount');
+        const examCore = payload.examCore || (payload.passingScore === 700 ? '2' : '1');
+        const examCode = examCore === '2' ? '220-1202' : '220-1201';
+        xdcMount.innerHTML = `
+          <div style="margin: 12px 0; padding: 14px; background: #0c1524; border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-weight: 700; color: #F1F5F9; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #38BDF8;"></span>
+                XDC Enterprise Credential
+              </span>
+              <span style="font-size: 0.72rem; padding: 2px 8px; background: rgba(56, 189, 248, 0.15); border-radius: 99px; color: #38BDF8; font-weight: 600;">
+                ERC-5192 SBT
+              </span>
+            </div>
+            <p style="font-size: 0.8rem; color: #94A3B8; margin: 0 0 12px 0;">
+              ${isPassed 
+                ? 'AI-Attested Proof of Competence. Mint an ISO-compliant, non-transferable Soulbound credential on XDC Network.' 
+                : 'Pass this exam to request an enterprise Soulbound attestation on XDC Network.'}
+            </p>
+            ${isPassed ? `
+              <button id="mint-xdc-btn" class="btn" style="width: 100%; padding: 10px; font-weight: 700; font-size: 0.85rem; border-radius: 8px; background: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%); color: #07090E; border: none; cursor: pointer;">
+                Mint Enterprise SBT on XDC
+              </button>
+            ` : `
+              <button disabled class="btn" style="width: 100%; padding: 10px; font-size: 0.85rem; border-radius: 8px; opacity: 0.5; cursor: not-allowed; background: #1e293b; color: #64748b; border: 1px solid rgba(255,255,255,0.1);">
+                Score below passing mark (Need ${payload.passingScore || 675})
+              </button>
+            `}
+          </div>
+        `;
+        const xdcMintBtn = xdcMount.querySelector('#mint-xdc-btn');
+        if (xdcMintBtn) {
+          xdcMintBtn.onclick = async () => {
+            xdcMintBtn.disabled = true;
+            xdcMintBtn.innerText = 'Connecting to XDC Network...';
+            try {
+              const res = await window.XDCProvider.requestAiAttestation({
+                examCode: examCode,
+                scaledScore: payload.scaledScore,
+                passed: isPassed,
+                localLedgerHash: (payload.ledgerEntry && payload.ledgerEntry.entryHash) || 'APX_' + Date.now().toString(16)
+              });
+              xdcMintBtn.innerText = 'AI Attestation Verified (SBT Ready)';
+              xdcMintBtn.style.background = '#10B981';
+              alert('AI Oracle Attestation Issued!\nAttestation ID: ' + res.attestationId + '\nChain: XDC Network (Chain ID: 50)\nStatus: Ready for on-chain anchoring.');
+            } catch (err) {
+              xdcMintBtn.disabled = false;
+              xdcMintBtn.innerText = 'Mint Enterprise SBT on XDC';
+              alert('XDC Attestation: ' + ((err && err.message) || err));
+            }
+          };
+        }
+      }
+
+      this.renderGhostCoachAutopsy(payload);
+    }
+
+    renderGhostCoachAutopsy(payload) {
+      if (!hasDoc) return;
+      const mount = document.getElementById('coachAutopsyMount');
+      if (!mount) return;
+
+      const perQuestion = payload.perQuestion || [];
+      const missed = perQuestion.filter(p => !p.correct);
+
+      if (missed.length === 0) {
+        mount.innerHTML = `
+          <div class="card" style="margin: 1.5rem 0; padding: 1.25rem; background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="16 10 11 15 8 12"/></svg>
+              <div>
+                <h4 style="margin: 0; color: #22C55E; font-size: 1rem;">Ghost Coach Mastery Clearance</h4>
+                <p style="margin: 4px 0 0; color: var(--text-secondary, #A39E93); font-size: 0.85rem;">Flawless performance: Zero missed questions on this session. Spaced repetition memory scores reinforced.</p>
+              </div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // Find weakest domain among misses
+      const domainMissCounts = {};
+      missed.forEach(m => {
+        const d = m.domain || 'General';
+        domainMissCounts[d] = (domainMissCounts[d] || 0) + 1;
+      });
+      let weakestDomain = Object.keys(domainMissCounts).sort((a, b) => domainMissCounts[b] - domainMissCounts[a])[0] || 'Technical Objectives';
+      const topMissObj = missed[0];
+
+      mount.innerHTML = `
+        <div class="card" style="margin: 1.5rem 0; padding: 1.35rem; background: var(--bg-card, #121212); border: 1px solid var(--border-gold, #C9A227); border-radius: 12px; position: relative; overflow: hidden;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold-primary, #C9A227)" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9 10h.01M15 10h.01"/><path d="M9.5 15a3.5 3.5 0 0 0 5 0"/></svg>
+              <h4 style="margin: 0; color: var(--gold-primary, #C9A227); font-size: 1.05rem;">Ghost Coach Autopsy &amp; Recovery</h4>
+            </div>
+            <span style="font-size: 0.75rem; font-weight: 700; color: #EF4444; background: rgba(239, 68, 68, 0.12); padding: 3px 8px; border-radius: 99px; border: 1px solid rgba(239, 68, 68, 0.3);">
+              ${missed.length} Misses Detected
+            </span>
+          </div>
+          <p style="margin: 0 0 1rem; color: var(--text-secondary, #A39E93); font-size: 0.88rem; line-height: 1.5;">
+            Autopsy identified concentrated failure points in <strong>${escapeHTML(weakestDomain)}</strong> (${domainMissCounts[weakestDomain]} misses). All missed concepts have been queued into your Spaced Repetition deck.
+          </p>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button type="button" class="btn btn-primary" id="btnLaunchRecoveryDrill" style="padding: 10px 18px; font-weight: 700; font-size: 0.88rem; border-radius: 8px; background: var(--gold-primary, #C9A227); color: #07090E; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Launch Exam Recovery Drill (${missed.length} Questions)
+            </button>
+            <button type="button" class="btn btn-secondary" id="btnConsultGhostCoach" style="padding: 10px 18px; font-weight: 600; font-size: 0.88rem; border-radius: 8px; background: rgba(255,255,255,0.06); color: var(--text-primary, #F5F2EA); border: 1px solid var(--border-light, rgba(255,255,255,0.15)); cursor: pointer; display: flex; align-items: center; gap: 6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              Consult Coach on Top Miss
+            </button>
+          </div>
+        </div>
+      `;
+
+      const drillBtn = document.getElementById('btnLaunchRecoveryDrill');
+      if (drillBtn) {
+        drillBtn.onclick = () => {
+          if (!(window.APlus && window.APlus.engine && typeof window.APlus.engine.start === 'function')) {
+            console.warn('[UI] Recovery drill unavailable: exam engine not ready');
+            return;
+          }
+          const pool = missed.map(m => {
+            if (window.APlus.data && typeof window.APlus.data.getQuestionById === 'function') {
+              return window.APlus.data.getQuestionById(m.id);
+            }
+            return null;
+          }).filter(Boolean);
+          if (!pool.length) {
+            console.warn('[UI] Recovery drill unavailable: missed questions not found in bank');
+            return;
+          }
+          window.APlus.engine.start({
+            type: 'missed',
+            customPool: pool,
+            questionCount: pool.length,
+            timeMinutes: Math.max(10, Math.ceil(pool.length * 1.5)),
+            domainKey: 'Exam Recovery Drill'
+          });
+        };
+      }
+
+      const consultBtn = document.getElementById('btnConsultGhostCoach');
+      if (consultBtn && topMissObj) {
+        consultBtn.onclick = () => {
+          if (!(window.TMAGhostCoach && typeof window.TMAGhostCoach.openCoachSheet === 'function')) {
+            console.warn('[UI] Ghost Coach unavailable');
+            return;
+          }
+          let fullQ = topMissObj;
+          if (window.APlus && window.APlus.data && typeof window.APlus.data.getQuestionById === 'function') {
+            fullQ = window.APlus.data.getQuestionById(topMissObj.id) || topMissObj;
+          }
+          window.TMAGhostCoach.openCoachSheet(fullQ, topMissObj.userAnswerText || 'Incorrect');
+        };
       }
     }
 
@@ -777,7 +1042,7 @@
         const statusText = isCorrect ? 'Correct' : 'Incorrect';
 
         card.innerHTML = `
-          <div class="review-item-header" onclick="APlus.ui.toggleReviewBody(${idx})">
+          <button type="button" class="review-item-header" onclick="APlus.ui.toggleReviewBody(${idx})" aria-expanded="false">
             <div class="review-item-stem" style="font-size: 15px; display: flex; align-items: baseline; gap: 0.6rem;">
               <span class="${dotClass}" aria-hidden="true"></span>
               <span class="qnum tnum">Q${idx + 1}</span>
@@ -785,9 +1050,10 @@
             </div>
             <div class="review-item-status" style="display: flex; align-items: center; gap: 0.75rem;">
               ${isFlagged ? '<span class="label">Flagged</span>' : ''}
+              ${window.APlus && APlus.notes && APlus.notes.hasNote(q.id) ? '<span class="label" style="color: var(--gold-primary); border-color: var(--gold-primary);">Note</span>' : ''}
               <span class="label">${statusText}</span>
             </div>
-          </div>
+          </button>
           <div class="review-body" id="reviewBody_${idx}">
             <p class="review-stem-full" style="font-size: 15px; margin-bottom: 1rem;">${escapeHTML(q.question)}</p>
             ${q.exhibit ? `
@@ -802,7 +1068,9 @@
             ` : ''}
             <div id="reviewOptionMount_${idx}"></div>
             ${this.buildExplanationHtml(q)}
+            ${window.APlus && APlus.notesUI ? APlus.notesUI.renderReviewNoteHtml(q) : ''}
             ${window.APlus && APlus.communityBenchmarks ? APlus.communityBenchmarks.renderBadge(q) : ''}
+            ${window.APlus && APlus.similarQuestions ? APlus.similarQuestions.renderPanel(q) : ''}
             ${q.video_reference ? `
               <div class="review-video">
                 <span class="label">Video reference</span>
@@ -1106,6 +1374,8 @@
     buildDomainBarRow: buildDomainBarRow,
     buildDomainBars: buildDomainBars,
     buildScoreCopy: buildScoreCopy,
+    domainResultLabel: domainResultLabel,
+    MIN_DOMAIN_SAMPLE: MIN_DOMAIN_SAMPLE,
     passLinePercent: passLinePercent,
     sortDomainsByBlueprint: sortDomainsByBlueprint,
     BLUEPRINT_ORDER: BLUEPRINT_ORDER
@@ -1116,3 +1386,4 @@
   }
 
 })(typeof window !== 'undefined' ? window : this);
+// a11y-hard-20260911

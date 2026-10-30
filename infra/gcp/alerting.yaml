@@ -1,0 +1,140 @@
+# Tier 3 observability — log-based metrics and alert policies
+#
+# functions/src/index.ts and workers/coach_handler.js already emit structured
+# records on every rate-limit breach and every budget denial. Nothing consumed
+# them, which means a sustained attack or a runaway client produced perfect
+# evidence that no one ever saw. These definitions close that loop.
+#
+# Deploy with: node infra/gcp/deploy-alerting.mjs --project clariora --dry-run
+#
+# Only the Cloud Functions tier emits into Cloud Logging. The Cloudflare Worker
+# writes the same JSON shapes to `wrangler tail` / Logpush; if you enable
+# Logpush to Cloud Logging the same metrics pick those up unchanged, because
+# both tiers use the identical `event` field names.
+
+metrics:
+  - name: rate_limit_exceeded
+    description: >-
+      Count of rate-limit breaches, labelled by endpoint and by which dimension
+      tripped. A rising UID series is one abusive account; a rising IP series is
+      a flood or a NAT under pressure.
+    filter: |
+      resource.type="cloud_run_revision"
+      jsonPayload.event="rate_limit_exceeded"
+    labels:
+      - key: action
+        value_extractor: EXTRACT(jsonPayload.action)
+      - key: dimension
+        value_extractor: EXTRACT(jsonPayload.dimension)
+      - key: reason
+        value_extractor: EXTRACT(jsonPayload.reason)
+
+  - name: ai_budget_denied
+    description: >-
+      Count of AI requests refused by the pre-flight credit reservation, split
+      by reason. Distinguishes a genuine quota wall from an accounting outage.
+    filter: |
+      resource.type="cloud_run_revision"
+      jsonPayload.event="ai_budget_denied"
+    labels:
+      - key: reason
+        value_extractor: EXTRACT(jsonPayload.reason)
+      - key: tier
+        value_extractor: EXTRACT(jsonPayload.tier)
+
+  - name: limiter_degraded
+    description: >-
+      The limiter itself failed and the request was denied fail-closed. This is
+      an availability incident, not an abuse signal: real users are being turned
+      away because our own store is unreachable.
+    filter: |
+      resource.type="cloud_run_revision"
+      jsonPayload.event="rate_limit_exceeded"
+      (jsonPayload.reason="LIMITER_ERROR" OR
+       jsonPayload.reason="QUOTA_STORE_ERROR" OR
+       jsonPayload.reason="RATE_LIMITER_UNBOUND")
+
+policies:
+  # --- Abuse signals ------------------------------------------------------
+  - display_name: "Sustained rate-limit breaches on a high-cost endpoint"
+    severity: WARNING
+    documentation: >-
+      More than 50 breaches per minute for 5 minutes on an LLM, auth or billing
+      endpoint. First check whether the Cloudflare edge ruleset is deployed: if
+      these are arriving at the Worker or Function at all, the edge is not
+      dropping them and every one is being billed.
+      Runbook: infra/cloudflare/README.md
+    metric: rate_limit_exceeded
+    filter_labels:
+      action: "coach|auth_telegram|auth_session|stars_invoice|ton_verify"
+    condition:
+      comparison: COMPARISON_GT
+      threshold: 50
+      duration: 300s
+      aligner: ALIGN_RATE
+      reducer: REDUCE_SUM
+
+  - display_name: "One account is hitting its tier ceiling repeatedly"
+    severity: INFO
+    documentation: >-
+      Sustained UID-dimension breaches. Usually a looping client rather than an
+      attacker, since an attacker would rotate accounts and show up on the IP
+      series instead. Worth checking before it becomes a support ticket.
+    metric: rate_limit_exceeded
+    filter_labels:
+      dimension: "uid|UID"
+    condition:
+      comparison: COMPARISON_GT
+      threshold: 20
+      duration: 600s
+      aligner: ALIGN_RATE
+      reducer: REDUCE_SUM
+
+  # --- Spend signals ------------------------------------------------------
+  - display_name: "AI budget exhaustion spike"
+    severity: WARNING
+    documentation: >-
+      Many callers hitting their token or call ceiling at once. Either the tier
+      allowances in workers/tier_policy.js are set too low for real usage, or
+      something is burning budget on users' behalf. Check the split between
+      DAILY_TOKEN_BUDGET_EXHAUSTED and DAILY_CALL_BUDGET_EXHAUSTED.
+    metric: ai_budget_denied
+    filter_labels:
+      reason: "DAILY_TOKEN_BUDGET_EXHAUSTED|DAILY_CALL_BUDGET_EXHAUSTED|MONTHLY_TOKEN_BUDGET_EXHAUSTED"
+    condition:
+      comparison: COMPARISON_GT
+      threshold: 10
+      duration: 300s
+      aligner: ALIGN_RATE
+      reducer: REDUCE_SUM
+
+  # --- Availability signals ----------------------------------------------
+  - display_name: "Rate limiter is failing closed (PAGE)"
+    severity: CRITICAL
+    documentation: >-
+      The limiter or the budget store is erroring and requests are being denied
+      as a result. Fail-closed is the correct behaviour, but it means paying
+      users are being turned away. Check Firestore / D1 / Durable Object health.
+      This is the one alert here that is an outage rather than an attack.
+    metric: limiter_degraded
+    condition:
+      comparison: COMPARISON_GT
+      threshold: 1
+      duration: 120s
+      aligner: ALIGN_RATE
+      reducer: REDUCE_SUM
+
+  - display_name: "Budget accounting unavailable (PAGE)"
+    severity: CRITICAL
+    documentation: >-
+      reserveBudget cannot reach its store, so every AI request is being refused
+      with 503. Users see the coach as broken. Check D1 availability.
+    metric: ai_budget_denied
+    filter_labels:
+      reason: "BUDGET_STORE_ERROR|BUDGET_STORE_UNAVAILABLE|BUDGET_RESERVATION_FAILED"
+    condition:
+      comparison: COMPARISON_GT
+      threshold: 1
+      duration: 120s
+      aligner: ALIGN_RATE
+      reducer: REDUCE_SUM

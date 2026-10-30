@@ -1,0 +1,31 @@
+{
+  "_comment": [
+    "Tier 2 edge defense for Free/Pro plans: Cloudflare allows only ONE rule in",
+    "http_ratelimit on non-Enterprise zones (error 50001: N out of 1).",
+    "This single expression protects all /api/ paths except the Telegram webhook,",
+    "so Stars payment callbacks are never starved by the volumetric ceiling.",
+    "",
+    "Full multi-rule design (coach/auth/billing split) lives in",
+    "rate-limit-ruleset.full.json for Business/Enterprise upgrades.",
+    "",
+    "DEPLOY: node infra/cloudflare/run_deploy_rate_limits.mjs"
+  ],
+  "name": "clariora-edge-rate-limits",
+  "kind": "zone",
+  "phase": "http_ratelimit",
+  "description": "Volumetric IP rate limiting in front of Clariora Worker APIs (Free/Pro single-rule)",
+  "rules": [
+    {
+      "description": "API volumetric ceiling excluding Telegram webhook",
+      "expression": "(starts_with(http.request.uri.path, \"/api/\") and not http.request.uri.path eq \"/api/v1/telegram/webhook\")",
+      "action": "block",
+      "ratelimit": {
+        "characteristics": ["cf.colo.id", "ip.src"],
+        "period": 10,
+        "requests_per_period": 40,
+        "mitigation_timeout": 10
+      },
+      "_rationale": "Free plan: 1 rule, period 10, mitigation_timeout 10. 40 req / 10s stops floods before Worker billing; Telegram webhook excluded. Upgrade plan for multi-rule / longer blocks (see rate-limit-ruleset.full.json)."
+    }
+  ]
+}

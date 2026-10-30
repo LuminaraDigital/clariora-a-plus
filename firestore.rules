@@ -1,0 +1,200 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // =========================================================================
+    // CORE SECURITY & ZERO-TRUST HELPER FUNCTIONS
+    // =========================================================================
+
+    function isAuthenticated() {
+      return request.auth != null && request.auth.uid != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function hasOnlyAllowedFields(allowedFields) {
+      return request.resource.data.keys().hasOnly(allowedFields);
+    }
+
+    // Prevents client tampering with server-owned privileges, roles, and balances.
+    // Guarded for creates, where `resource` is null and diff() would abort the rule.
+    function serverPrivilegesUnchanged() {
+      return resource == null
+        || !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+             'role', 'isAdmin', 'is_verified', 'wallet_balance',
+             'tier', 'plan', 'credits', 'entitlement', 'stripeCustomerId'
+           ]);
+    }
+
+    // Server-anchored write clock. Clients MUST send serverTimestamp() for updatedAt,
+    // so the stored value cannot be backdated to defeat the throttle below.
+    function serverStampedUpdatedAt() {
+      return request.resource.data.updatedAt == request.time;
+    }
+
+    // Time-differential throttle. Because updatedAt is pinned to request.time on every
+    // write, resource.data.updatedAt is a trustworthy server clock, not client input.
+    // Legacy docs holding a non-timestamp updatedAt get exactly one write, which
+    // re-stamps them as a real timestamp.
+    function obeysRateLimit(minSeconds) {
+      return resource == null
+        || !('updatedAt' in resource.data)
+        || !(resource.data.updatedAt is timestamp)
+        || request.time >= resource.data.updatedAt + duration.value(minSeconds, 's');
+    }
+
+    // Default deny-all across all collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // =========================================================================
+    // USER DOCUMENT & ISOLATED SUBCOLLECTIONS (IDOR & PII DEFENSE)
+    // =========================================================================
+
+    match /users/{userId} {
+      // Direct root read/write is strictly restricted to the verified token owner
+      allow get: if isOwner(userId);
+      allow list: if false; // Forbid enumeration
+
+      allow create: if isOwner(userId)
+        && hasOnlyAllowedFields(['uid', 'displayName', 'photoURL', 'provider', 'createdAt', 'updatedAt', 'lastSignInAt'])
+        && request.resource.data.uid == userId
+        && serverStampedUpdatedAt()
+        && (!('displayName' in request.resource.data) || (request.resource.data.displayName is string && request.resource.data.displayName.size() <= 100))
+        && (!('photoURL' in request.resource.data) || (request.resource.data.photoURL is string && request.resource.data.photoURL.size() <= 500));
+
+      allow update: if isOwner(userId)
+        && hasOnlyAllowedFields(['uid', 'displayName', 'photoURL', 'provider', 'createdAt', 'updatedAt', 'lastSignInAt'])
+        && request.resource.data.uid == resource.data.uid
+        && serverPrivilegesUnchanged()
+        && serverStampedUpdatedAt()
+        && obeysRateLimit(5);
+
+      allow delete: if false;
+
+      // 1. PUBLIC PROFILE (Safe, non-sensitive projection)
+      // Reads are owner-only. A cross-user profile view must go through the Cloud
+      // Function projection, never a direct client read: `allow list` here would also
+      // authorize a collectionGroup('public_profile') query enumerating every learner.
+      match /public_profile/{profileId} {
+        allow get: if isOwner(userId);
+        allow list: if false;
+
+        allow create: if isOwner(userId)
+          && hasOnlyAllowedFields(['displayName', 'photoURL', 'handle', 'bio', 'createdAt', 'updatedAt'])
+          && serverStampedUpdatedAt()
+          && request.resource.data.displayName is string
+          && request.resource.data.displayName.size() <= 100
+          && (!('handle' in request.resource.data) || (request.resource.data.handle is string && request.resource.data.handle.size() <= 32))
+          && (!('bio' in request.resource.data) || (request.resource.data.bio is string && request.resource.data.bio.size() <= 500));
+
+        allow update: if isOwner(userId)
+          && hasOnlyAllowedFields(['displayName', 'photoURL', 'handle', 'bio', 'createdAt', 'updatedAt'])
+          && serverStampedUpdatedAt()
+          && obeysRateLimit(5);
+
+        allow delete: if false;
+      }
+
+      // 2. PRIVATE PII (Zero Public Leakage - Forbid List / Enumeration)
+      match /private_data/{docId} {
+        // Strictly single-document get by verified owner only. List/query is completely banned.
+        allow get: if isOwner(userId);
+        allow list: if false;
+
+        function privateDataShapeValid() {
+          return (!('email' in request.resource.data) || (request.resource.data.email is string && request.resource.data.email.size() <= 120))
+            && (!('phone' in request.resource.data) || (request.resource.data.phone is string && request.resource.data.phone.size() <= 32))
+            && (!('bvn' in request.resource.data) || (request.resource.data.bvn is string && request.resource.data.bvn.size() <= 32))
+            && (!('date_of_birth' in request.resource.data) || (request.resource.data.date_of_birth is string && request.resource.data.date_of_birth.size() <= 32))
+            && (!('billingAddress' in request.resource.data) || (request.resource.data.billingAddress is string && request.resource.data.billingAddress.size() <= 250));
+        }
+
+        // stripeCustomerId is a server-owned billing identifier written only by the Admin
+        // SDK: a client-writable one would let a learner point their own record at another
+        // customer's Stripe object. It must stay in the allow-list, because a merge write
+        // evaluates the MERGED document -- excluding the key would lock the owner out of
+        // their own record the moment the server wrote it. Immutability, not absence, is
+        // the control: serverPrivilegesUnchanged() rejects any write that alters it.
+        allow create: if isOwner(userId)
+          && hasOnlyAllowedFields(['email', 'phone', 'bvn', 'date_of_birth', 'billingAddress', 'createdAt', 'updatedAt'])
+          && privateDataShapeValid()
+          && serverStampedUpdatedAt()
+          && obeysRateLimit(5);
+
+        allow update: if isOwner(userId)
+          && hasOnlyAllowedFields(['email', 'phone', 'bvn', 'date_of_birth', 'billingAddress', 'stripeCustomerId', 'createdAt', 'updatedAt'])
+          && privateDataShapeValid()
+          && serverPrivilegesUnchanged()
+          && serverStampedUpdatedAt()
+          && obeysRateLimit(5);
+
+        allow delete: if false;
+      }
+
+      // 3. LEARNING STATE & PROGRESS (Owner-scoped, Schema Whitelisted)
+      // No PII keys here: email and displayName belong in private_data / public_profile.
+      match /learning/{docId} {
+        allow get: if isOwner(userId);
+        allow list: if false;
+
+        allow create, update: if isOwner(userId)
+          && hasOnlyAllowedFields(['data', 'revision', 'deviceName', 'syncedAt', 'lastSyncedAt', 'updatedAt'])
+          && serverPrivilegesUnchanged()
+          && serverStampedUpdatedAt()
+          && (!('deviceName' in request.resource.data) || (request.resource.data.deviceName is string && request.resource.data.deviceName.size() <= 64))
+          && obeysRateLimit(5);
+
+        allow delete: if false;
+      }
+
+      // 4. LEARNER RECORDS & EXAM ATTEMPTS (immutable, scaled-score bounded)
+      match /records/{recordId} {
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId)
+          && hasOnlyAllowedFields(['examId', 'score', 'passed', 'totalQuestions', 'completedAt', 'updatedAt'])
+          && request.resource.data.examId in ['core1', 'core2']
+          && request.resource.data.score is int
+          && request.resource.data.score >= 100
+          && request.resource.data.score <= 900
+          && request.resource.data.passed is bool
+          && request.resource.data.totalQuestions is int
+          && request.resource.data.totalQuestions >= 1
+          && request.resource.data.totalQuestions <= 120
+          && serverStampedUpdatedAt();
+        allow update, delete: if false; // Exam records are immutable
+      }
+    }
+
+    // =========================================================================
+    // SERVER-OWNED COLLECTIONS (ADMIN SDK / CLOUD FUNCTIONS ONLY)
+    // =========================================================================
+
+    // Entitlements are the paywall source of truth: never client readable or writable.
+    match /entitlements/{entitlementId} {
+      allow read, write: if false;
+    }
+
+    // Gated question bank. Clients must go through getGatedExamContent, which redacts
+    // premium fields server-side; a direct read would hand over the unredacted document.
+    match /questions/{questionId} {
+      allow read, write: if false;
+    }
+
+    match /rate_limits/{limitId} {
+      allow read, write: if false;
+    }
+
+    match /audit_logs/{logId} {
+      allow read, write: if false;
+    }
+
+    match /system/{configId} {
+      allow read, write: if false;
+    }
+  }
+}

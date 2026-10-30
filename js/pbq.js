@@ -12,13 +12,37 @@
 
   const escapeHTML = (window.APlus.utils && window.APlus.utils.escapeHTML) || ((s) => String(s || ''));
 
+  /**
+   * Prefer pbq-engine catalog (SSOT) for shared labs; keep local definitions as fallback
+   * for file:// load-order edge cases and Node tests that only require pbq.js.
+   */
+  function catalogLab(key) {
+    try {
+      if (APlus.pbqEngine && APlus.pbqEngine.catalog && APlus.pbqEngine.catalog[key]) {
+        return APlus.pbqEngine.catalog[key];
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  const _portFromCatalog = catalogLab('portMatcher');
+  const _printerFromCatalog = catalogLab('printerOrder');
+  const _cliFromCatalog = catalogLab('cliTerminal');
+  const _rackFromCatalog = catalogLab('datacenterRack');
+
   const PBQ_LABS = {
+    datacenterRack: {
+      id: (_rackFromCatalog && _rackFromCatalog.id) || 'pbq-datacenter-rack',
+      title: 'Lab 8: 42U Datacenter Rack Lab',
+      objective: (_rackFromCatalog && _rackFromCatalog.objective) || '3.3',
+      domain: (_rackFromCatalog && _rackFromCatalog.domain) || '3.0 Hardware'
+    },
     portMatcher: {
-      id: 'pbq-port-matcher',
+      id: (_portFromCatalog && _portFromCatalog.id) || 'pbq-port-matcher',
       title: 'Lab 1: Ticket DC-4471, port assignments for the new rack switch',
-      objective: '2.1',
-      domain: '2.0 Networking',
-      pairs: [
+      objective: (_portFromCatalog && _portFromCatalog.objective) || '2.1',
+      domain: (_portFromCatalog && _portFromCatalog.domain) || '2.0 Networking',
+      pairs: (_portFromCatalog && _portFromCatalog.pairs) || [
         { name: 'SSH (Secure Shell)', port: '22' },
         { name: 'DNS (Domain Name System)', port: '53' },
         { name: 'DHCP Server', port: '67' },
@@ -31,11 +55,11 @@
     },
 
     printerOrder: {
-      id: 'pbq-laser-printer',
+      id: (_printerFromCatalog && _printerFromCatalog.id) || 'pbq-laser-printer',
       title: 'Lab 2: Ticket DC-4488, laser printer in Building B print room',
-      objective: '3.4',
-      domain: '3.0 Hardware',
-      steps: [
+      objective: (_printerFromCatalog && _printerFromCatalog.objective) || '3.4',
+      domain: (_printerFromCatalog && _printerFromCatalog.domain) || '3.0 Hardware',
+      steps: (_printerFromCatalog && _printerFromCatalog.steps) || [
         '1. Processing / Raster Image Generation',
         '2. Charging (-600V Primary Corona / Conditioning Roller)',
         '3. Exposing (Laser Discharging Latent Electrostatic Image)',
@@ -47,11 +71,11 @@
     },
 
     cliTerminal: {
-      id: 'pbq-cli-terminal',
+      id: (_cliFromCatalog && _cliFromCatalog.id) || 'pbq-cli-terminal',
       title: 'Lab 3: Ticket DC-4502, console session on DC-NODE-01 in rack A14',
-      objective: '3.1',
-      domain: '3.0 Software Troubleshooting',
-      commands: {
+      objective: (_cliFromCatalog && _cliFromCatalog.objective) || '3.1',
+      domain: (_cliFromCatalog && _cliFromCatalog.domain) || '3.0 Software Troubleshooting',
+      commands: (_cliFromCatalog && _cliFromCatalog.commands) || {
         'sfc /scannow': 'Beginning system scan. This process will take some time.\nVerification 100% complete.\nWindows Resource Protection found corrupt files and successfully repaired them.',
         'dism /online /cleanup-image /restorehealth': 'Deployment Image Servicing and Management tool\n[==========================100.0%==========================]\nThe restore operation completed successfully. The component store corruption was repaired.',
         'ipconfig /all': 'Windows IP Configuration\n   Host Name . . . . . . . . . . . . : DC-NODE-01\n   Primary Dns Suffix  . . . . . . . : corp.datacenter.local\n\nEthernet adapter Ethernet 1:\n   IPv4 Address. . . . . . . . . . . : 192.168.10.45(Preferred)\n   Subnet Mask . . . . . . . . . . . : 255.255.255.0\n   Default Gateway . . . . . . . . . : 192.168.10.1\n   DHCP Server . . . . . . . . . . . : 192.168.10.2\n   DNS Servers . . . . . . . . . . . : 192.168.10.2, 1.1.1.1',
@@ -82,6 +106,36 @@
       where: 'Rack A14, host DC-NODE-01',
       report: 'Overnight patching left the host booting slowly with intermittent name resolution failures.',
       task: 'Run the diagnostic commands from the console. Type help to list what this console accepts.'
+    },
+    4: {
+      ticket: 'Ticket DC-5102',
+      where: 'Branch Office SOHO Gateway',
+      report: 'A branch office requires immediate network hardening to comply with enterprise security standards.',
+      task: 'Set SSID to Corp-Secure, WPA3-Personal, 80 MHz channel width, DHCP starting at 192.168.1.100, and forward HTTPS (TCP 443) to 192.168.1.50.'
+    },
+    5: {
+      ticket: 'Ticket DC-5120',
+      where: 'Server Room Patch Panel',
+      report: 'A replacement Category 6 UTP patch cord is being terminated according to T568B cabling standards.',
+      task: 'Arrange the 8 colored wire conductors from left to right (Pin 1 to Pin 8) to match the T568B standard sequence.'
+    },
+    6: {
+      ticket: 'Ticket DC-5109',
+      where: 'Engineering Workstation Bench',
+      report: 'A custom CAD workstation is being assembled from bare components.',
+      task: 'Mount the CPU in the socket, install DDR5 RAM, PCIe GPU, M.2 NVMe SSD, and attach the 24-pin ATX power connector.'
+    },
+    7: {
+      ticket: 'Ticket DC-5115',
+      where: 'Windows Storage Console',
+      report: 'A new 2 TB NVMe drive has been installed and must be initialized with GPT and formatted with NTFS.',
+      task: 'Initialize Disk 1 as GPT, create a New Simple Volume across full capacity, format as NTFS, and assign drive letter D:.'
+    },
+    8: {
+      ticket: 'Ticket DC-5130',
+      where: 'Datacenter Row B, Rack 04 (42U EIA-310 Enclosure)',
+      report: 'Deploy core networking, storage, compute, and backup power into an empty 42U enclosure following ASHRAE thermal standards and Datacentre Academy safety protocols.',
+      task: '1. Place 3U Smart-UPS at rack base (U1-U3) to maintain a low center of gravity.\n2. Install 1U ToR switch and Cat6A patch panel at top of rack (U40-U42) for short patch leads.\n3. Mount 2U compute server at U36-U37 and 1U NVMe storage at U34.'
     }
   };
 
@@ -106,15 +160,28 @@
 
     closeModal() {
       const modal = document.getElementById('pbqModal');
+      const wasOpen = !!(modal && modal.classList.contains('active'));
       if (modal) modal.classList.remove('active');
+      if (wasOpen && window.APlus && window.APlus.bus && typeof window.APlus.bus.emit === 'function') {
+        try {
+          window.APlus.bus.emit('pbq:abandoned', { source: 'closeModal' });
+        } catch (_) {}
+      }
     },
 
     /** Put the ticket brief at the top of each lab pane. Idempotent. */
     renderLabBriefs() {
-      [1, 2, 3].forEach((n) => {
+      [1, 2, 3, 4, 5, 6, 7, 8].forEach((n) => {
         const pane = document.getElementById(`pbqContent${n}`);
         const brief = LAB_BRIEFS[n];
         if (!pane || !brief) return;
+
+        // If the lab already renders its own pbq-sim-header (labs 4-8), hide legacy brief box to prevent duplication
+        if (n >= 4 && pane.querySelector('.pbq-sim-header')) {
+          const oldBox = document.getElementById(`pbqBrief${n}`);
+          if (oldBox) oldBox.style.display = 'none';
+          return;
+        }
 
         let box = document.getElementById(`pbqBrief${n}`);
         if (!box) {
@@ -143,7 +210,7 @@
 
     switchLab(labNum) {
       this.renderLabBriefs();
-      [1, 2, 3].forEach(n => {
+      [1, 2, 3, 4, 5, 6, 7, 8].forEach(n => {
         const content = document.getElementById(`pbqContent${n}`);
         const tab = document.getElementById(`pbqTab${n}`);
         if (content) content.style.display = (n === labNum) ? 'block' : 'none';
@@ -167,6 +234,33 @@
           const inp = document.getElementById('terminalInput');
           if (inp) inp.focus();
         }, 100);
+      }
+      if (labNum >= 4 && window.APlus && window.APlus.pbqEngine) {
+        const labKeys = { 4: 'sohoRouter', 5: 'cablePinout', 6: 'motherboardAssembly', 7: 'windowsConsole', 8: 'datacenterRack' };
+        const labKey = labKeys[labNum];
+        const cont = document.getElementById(`pbqContent${labNum}`);
+        if (cont && labKey) {
+          // Remove old sim body if re-rendered
+          const existingBody = cont.querySelector('.pbq-sim-body');
+          if (!existingBody) {
+            window.APlus.pbqEngine.render({ pbqType: labKey }, null, cont, {
+              onSelect: (state) => {
+                cont._pbqState = state;
+              },
+              onSubmit: (res) => {
+                if (res && res.passed) {
+                  if (window.APlus && window.APlus.bus && typeof window.APlus.bus.emit === 'function') {
+                    window.APlus.bus.emit('pbq:completed', { lab: labKey, correct: true, score: 100 });
+                  }
+                  if (window.CompTIALedgerUI && typeof window.CompTIALedgerUI.onPbqComplete === 'function') {
+                    const labTitle = (labKey === 'datacenterRack') ? '42U Datacenter Rack Lab' : ((window.APlus.pbqEngine && window.APlus.pbqEngine.getLab(labKey) && window.APlus.pbqEngine.getLab(labKey).title) || labKey);
+                    window.CompTIALedgerUI.onPbqComplete(labTitle);
+                  }
+                }
+              }
+            });
+          }
+        }
       }
     },
 

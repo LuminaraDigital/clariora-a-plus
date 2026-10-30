@@ -4,23 +4,35 @@
  * Route: /api/v1/*
  *
  * Edge services provided:
- * 1. /api/v1/auth/magic           - Passwordless Magic-Link authentication
- * 2. /api/v1/auth/telegram        - Telegram Login Widget verification
- * 3. /api/v1/auth/session         - Record signup / sign-in events (Firebase + Telegram)
- * 4. /api/v1/auth/accounts        - Admin list of accounts and recent auth events
- * 5. /api/v1/sync                 - Cross-device learner state delta sync
- * 6. /api/v1/items/report         - Question problem & ambiguity reporting
- * 7. /api/v1/items/stats          - Community item difficulty & discrimination stats
- * 8. /api/v1/coach                - Gated multi-provider AI gateway (budgets, triage, tools)
- * 8b. /api/v1/coach/stream        - SSE streaming coach (paid tiers)
- * 8c. /api/v1/coach/jobs          - Pro async exam review packs + DLQ
- * 9. /api/v1/billing/stars/invoice- Telegram Stars (XTR) Invoice generation
- * 10. /api/v1/billing/entitlement - Resolve paid tier from verified Telegram identity
- * 11. /api/v1/telegram/webhook    - Telegram Bot Webhook (Commands, Pre-checkout, Successful payment)
- * 12. /api/v1/health|/ready       - Liveness and readiness probes
+ * 1. /api/v1/auth/telegram        - Telegram Login Widget verification (+ HttpOnly session cookie)
+ * 2. /api/v1/auth/session         - Record signup / sign-in (Firebase + Telegram) + session cookie
+ * 2b. /api/v1/auth/me|/logout     - Session introspection and teardown
+ * 2c. /api/v1/auth/admin/session  - Exchange ADMIN_API_KEY for short-lived admin cookie
+ * 3. /api/v1/auth/accounts        - Admin list of accounts and recent auth events
+ * 4. /api/v1/sync                 - Cross-device learner state delta sync
+ * 4b. /api/v1/apx/events          - Soft APX earn/spend telemetry mirror
+ * 5. /api/v1/items/report         - Question problem & ambiguity reporting
+ * 6. /api/v1/items/stats          - Community item difficulty & discrimination stats
+ * 6b. /api/v1/items/telemetry     - Anonymous item outcome ingest (upserts item_stats_cache)
+ * 6c. /api/v1/items/similar       - Semantic / neighbor similar questions
+ * 6d. Cron: item discrimination recompute (point-biserial)
+ * 7. /api/v1/coach                - Gated multi-provider AI gateway (budgets, triage, tools)
+ * 7b. /api/v1/coach/stream        - SSE streaming coach (paid tiers)
+ * 7c. /api/v1/coach/jobs          - Pro async exam review packs + DLQ
+ * 7d. /api/v1/memory/promote      - Promote Ghost Coach confusion pairs / weak objectives to D1
+ * 8. /api/v1/billing/stars/invoice- Telegram Stars (XTR) Invoice generation
+ * 9. /api/v1/billing/entitlement - Resolve paid tier from verified identity
+ * 10. /api/v1/telegram/webhook    - Telegram Bot Webhook (Commands, Pre-checkout, Successful payment)
+ * 11. /api/v1/health|/ready       - Liveness and readiness probes
+ *
+ * Identity plane: Firebase Auth (web) + Telegram HMAC (TMA/widget). Custom magic-link auth is retired.
  */
 
-import { CoachRateLimiter, enforceCoachRateLimit } from './coach_rate_limiter.js';
+import {
+  CoachRateLimiter,
+  enforceDualKeyLimit,
+  rateLimitHeaders
+} from './coach_rate_limiter.js';
 import { listCircuits } from './circuit_breaker.js';
 import {
   featuresForTier,
@@ -36,10 +48,214 @@ import {
   ensureJobTables
 } from './coach_jobs.js';
 import { handleCoachRequest } from './coach_handler.js';
+import { promoteGhostCoachTelemetry } from './agent_memory.js';
+import { ingestItemTelemetryBatch } from './item_stats.js';
+import { recomputeItemDiscrimination } from './item_discrimination.js';
+import { findSimilarQuestionIds, upsertQuestionVectors } from './question_vectors.js';
+import { purgeExpiredExplainCache } from './explain_cache.js';
+import { buildAiCostReport } from './ai_pricing.js';
+import { buildApxAnomalyReport, buildHoldoutReport } from './apx_integrity.js';
 
-export { CoachRateLimiter };
+import {
+  withAppBase,
+  isAdminAuthorized,
+  verifyFirebaseIdToken,
+  recordAuthSession,
+  listAuthAccounts,
+  issueAdminSession,
+  clearUserSessionCookie,
+  clearAdminSessionCookie,
+  mintUserSessionToken,
+  userSessionCookieHeader
+} from './api_auth.js';
+import {
+  STARS_PRODUCTS,
+  getStarsProduct,
+  parseStarsInvoicePayload,
+  resolveStarsGrant,
+  validateStarsPreCheckout,
+  validateStarsSuccessfulPayment
+} from './api_stars.js';
+import { timingSafeEqualStr } from './api_crypto.js';
+import { verifyTelegramInitData, verifyTelegramLoginWidget } from './api_telegram.js';
+import { resolveRequestAuth, getSessionSecret } from './api_session.js';
+import {
+  resolveUserEntitlement,
+  incrementFreeAiUsage,
+  ensureAuthAccountAiColumns,
+  resolveFirebaseEntitlement,
+  incrementFirebaseFreeAiUsage,
+  decrementProPreviewTokens
+} from './api_entitlement_store.js';
+import {
+  executeNvidiaNim,
+  executeOllama,
+  executeOpenRouter,
+  executeGroq,
+  executeWorkersAi
+} from './api_ai_providers.js';
+import {
+  XDC_PRODUCTS,
+  XDC_NETWORKS,
+  ensureXdcTables,
+  verifyXdcReceipt,
+  createOracleAttestation
+} from './api_xdc.js';
+
+/** Explicit public API routes. Everything else under /api/v1 requires auth or is admin/webhook gated. */
+const PUBLIC_API_ROUTES = [
+  { method: 'GET', path: '/api/v1/health' },
+  { method: 'GET', path: '/api/v1/live' },
+  { method: 'GET', path: '/api/v1/ready' },
+  { method: 'GET', path: '/api/v1/items/stats' },
+  { method: 'GET', path: '/api/v1/items/similar' },
+  { method: 'POST', path: '/api/v1/items/telemetry' },
+  { method: 'POST', path: '/api/v1/auth/session' },
+  { method: 'POST', path: '/api/v1/auth/telegram' },
+  { method: 'POST', path: '/api/v1/auth/admin/session' },
+  { method: 'POST', path: '/api/v1/auth/logout' },
+  { method: 'POST', path: '/api/v1/auth/admin/logout' },
+  { method: 'GET', path: '/api/v1/auth/me' },
+  { method: 'POST', path: '/api/v1/items/report' },
+  { method: 'POST', path: '/api/v1/telegram/webhook' }
+];
+
+function isPublicApiRoute(method, path) {
+  return PUBLIC_API_ROUTES.some((r) => r.method === method && r.path === path);
+}
+
+function withSetCookies(response, cookies) {
+  if (!cookies || !cookies.length) return response;
+  const headers = new Headers(response.headers);
+  for (let i = 0; i < cookies.length; i++) {
+    if (cookies[i]) headers.append('Set-Cookie', cookies[i]);
+  }
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers
+  });
+}
+export function resolveEffectiveTierUpgrade(existingUser, newTier, newExpiresAt) {
+  const currentTier = existingUser ? (existingUser.tier || 'free') : 'free';
+  const currentExpiresAt = existingUser ? (existingUser.tier_expires_at || null) : null;
+  const now = Date.now();
+
+  // Lifetime is forever - never downgrade
+  if (currentTier === 'lifetime') {
+    return { tier: 'lifetime', expiresAt: null };
+  }
+
+  // If new purchase is lifetime, grant lifetime
+  if (newTier === 'lifetime') {
+    return { tier: 'lifetime', expiresAt: null };
+  }
+
+  // Check if current subscription is still active
+  const currentIsActive = currentTier !== 'free' && (currentExpiresAt === null || currentExpiresAt > now);
+
+  if (currentIsActive) {
+    // If user currently has active pro_monthly and buys daily_pass, keep pro_monthly
+    if (currentTier === 'pro_monthly' && newTier === 'daily_pass') {
+      return { tier: 'pro_monthly', expiresAt: currentExpiresAt };
+    }
+    // If extending same tier
+    if (currentTier === newTier && currentExpiresAt && newExpiresAt) {
+      const remainingMs = Math.max(0, currentExpiresAt - now);
+      const addedMs = newExpiresAt - now;
+      return { tier: newTier, expiresAt: now + remainingMs + addedMs };
+    }
+    // If upgrading from daily_pass to pro_monthly
+    if (currentTier === 'daily_pass' && newTier === 'pro_monthly') {
+      return { tier: 'pro_monthly', expiresAt: newExpiresAt };
+    }
+  }
+
+  return { tier: newTier, expiresAt: newExpiresAt };
+}
+
+// Landing and legal HTML must come from the current asset manifest with
+// no-store. html_handling 307s /landing/faq.html to /landing/faq, and that
+// extensionless response is an edge HIT under the default asset
+// Cache-Control. A hard refresh then replays the cached body.
+function freshMarketingHtmlAssetPath(pathname) {
+  if (pathname === '/privacy' || pathname === '/privacy/' || pathname === '/privacy.html') return '/privacy';
+  if (pathname === '/terms' || pathname === '/terms/' || pathname === '/terms.html') return '/terms';
+  if (pathname === '/landing' || pathname === '/landing/' || pathname === '/landing/index.html') return '/landing/';
+  let match = pathname.match(/^\/landing\/([a-z0-9-]+)\.html$/i);
+  if (match) return '/landing/' + match[1].toLowerCase();
+  match = pathname.match(/^\/landing\/([a-z0-9-]+)\/?$/i);
+  if (match && match[1].toLowerCase() !== 'img') return '/landing/' + match[1].toLowerCase();
+  return '';
+}
+
+async function readFreshHtmlAsset(request, env, assetPath) {
+  const firstUrl = new URL(assetPath, request.url);
+  let assetRes = await env.ASSETS.fetch(new Request(firstUrl.toString(), request));
+  if (assetRes.status >= 300 && assetRes.status < 400) {
+    const loc = assetRes.headers.get('Location') || '';
+    if (loc) {
+      const follow = new URL(loc, request.url);
+      if (follow.origin === firstUrl.origin) {
+        assetRes = await env.ASSETS.fetch(new Request(follow.toString(), request));
+      }
+    }
+  }
+  return assetRes;
+}
+
+// Starts from the asset's headers: the assets binding applies the _headers
+// rules (CSP, frame and referrer policy), and a fresh Headers object drops them.
+async function noStoreHtmlResponse(assetRes) {
+  const body = await assetRes.text();
+  const headers = new Headers(assetRes.headers);
+  headers.set('Content-Type', 'text/html; charset=utf-8');
+  headers.set('Cache-Control', 'no-store');
+  headers.set('CDN-Cache-Control', 'no-store');
+  headers.set('X-Content-Type-Options', 'nosniff');
+  headers.delete('content-length');
+  headers.delete('location');
+  return new Response(body, { status: 200, headers });
+}
+
+export { CoachRateLimiter, freshMarketingHtmlAssetPath, noStoreHtmlResponse };
+
+export function canonicalizeWorkerPath(rawPath) {
+  let decoded = rawPath || '/';
+  for (let i = 0; i < 3; i++) {
+    try {
+      const next = decodeURIComponent(decoded);
+      if (next === decoded) break;
+      decoded = next;
+    } catch (_) {
+      break;
+    }
+  }
+  decoded = decoded.replace(/\/+/g, '/');
+  try {
+    const dummy = new URL(decoded, 'http://localhost');
+    decoded = dummy.pathname;
+  } catch (_) {}
+  return decoded.replace(/\/+/g, '/');
+}
 
 export default {
+  async scheduled(event, env, ctx) {
+    // Nightly (and any configured cron): recompute point-biserial + quality flags.
+    try {
+      const result = await recomputeItemDiscrimination(env.DB, { limit: 300 });
+      console.log('item_discrimination cron', JSON.stringify(result));
+    } catch (err) {
+      console.warn('item_discrimination cron failed:', err && err.message);
+    }
+    try {
+      const purged = await purgeExpiredExplainCache(env.DB);
+      console.log('explain_cache purge', JSON.stringify({ purged }));
+    } catch (err) {
+      console.warn('explain_cache purge failed:', err && err.message);
+    }
+  },
+
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const origin = request.headers.get('Origin') || '';
@@ -51,12 +267,15 @@ export default {
       'https://comptia-a-plus-master.pages.dev',
       'https://web.telegram.org'
     ];
+    // Loopback origins are echoed back with Allow-Credentials only outside production.
+    // In production any page a victim loads from a local dev server or a localhost-bound
+    // desktop app would otherwise be a fully credentialed cross-origin caller.
+    const allowLoopbackOrigins = !(env && (env.ENVIRONMENT === 'production' || env.NODE_ENV === 'production'));
     let resolvedOrigin = 'https://clariora.com.au';
     if (origin) {
       const isAllowed = ALLOWED_ORIGINS.includes(origin) ||
         /^https:\/\/([a-zA-Z0-9-]+\.)?telegram\.org$/.test(origin) ||
-        origin.startsWith('http://localhost:') ||
-        origin.startsWith('http://127.0.0.1:');
+        (allowLoopbackOrigins && (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')));
       if (isAllowed) {
         resolvedOrigin = origin;
       }
@@ -64,8 +283,9 @@ export default {
 
     const corsHeaders = {
       'Access-Control-Allow-Origin': resolvedOrigin,
+      'Access-Control-Allow-Credentials': 'true',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-User-Id, X-Telegram-Init-Data, X-Admin-Key',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Telegram-Init-Data, X-Admin-Key',
       'Access-Control-Max-Age': '86400',
       'Vary': 'Origin'
     };
@@ -74,7 +294,44 @@ export default {
       return new Response(null, { status: 204, headers: corsHeaders });
     }
 
-    const path = url.pathname;
+    const rawPath = url.pathname;
+    const path = canonicalizeWorkerPath(rawPath);
+    const normPath = path.toLowerCase();
+
+    // Crawl files: force correct Content-Type so SPA fallback never indexes as HTML.
+    if ((path === '/robots.txt' || path === '/sitemap.xml') && request.method === 'GET' && env.ASSETS) {
+      const assetRes = await env.ASSETS.fetch(request);
+      if (assetRes.ok) {
+        const body = await assetRes.arrayBuffer();
+        const contentType =
+          path === '/robots.txt'
+            ? 'text/plain; charset=utf-8'
+            : 'application/xml; charset=utf-8';
+        return new Response(body, {
+          status: 200,
+          headers: {
+            'Content-Type': contentType,
+            'Cache-Control': 'public, max-age=3600, must-revalidate'
+          }
+        });
+      }
+    }
+
+    // Marketing and legal documents: 200 from the current asset, never an
+    // edge-cached 307 to the extensionless path.
+    const freshAsset = freshMarketingHtmlAssetPath(path);
+    if (freshAsset && request.method === 'GET' && env.ASSETS) {
+      const assetRes = await readFreshHtmlAsset(request, env, freshAsset);
+      if (assetRes.ok) return noStoreHtmlResponse(assetRes);
+    }
+
+    // Google Search Console proofs must stay on the .html URL with HTTP 200.
+    // Assets html_handling otherwise 307-redirects to the extensionless path.
+    if (/^\/google[a-z0-9]+\.html$/i.test(path) && request.method === 'GET' && env.ASSETS) {
+      const barePath = path.replace(/\.html$/i, '');
+      const assetRes = await env.ASSETS.fetch(new Request(new URL(barePath, request.url), request));
+      if (assetRes.ok) return noStoreHtmlResponse(assetRes);
+    }
 
     // Route root to marketing landing page
     if (path === '/' || path === '') {
@@ -113,8 +370,355 @@ export default {
     }
 
     try {
+      // Question bank gating: full questions require Pro; free visitors receive free diagnostic pack
+      if ((normPath === '/exam_data.js' || normPath === '/az900_exam_data.js' || normPath === '/az500_exam_data.js') && request.method === 'GET') {
+        let isProUser = false;
+        try {
+          const auth = await resolveRequestAuth(
+            request, env, {}, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+          );
+          if (auth && auth.ok) {
+            let ent = null;
+            if (auth.telegramId) ent = await resolveUserEntitlement(auth.telegramId, env.DB);
+            else if (auth.firebaseUid) ent = await resolveFirebaseEntitlement(auth.firebaseUid, env.DB);
+            if (ent && ent.tier && ent.tier !== 'free') isProUser = true;
+          }
+        } catch (_) {}
+
+        if (isProUser && env.ASSETS) {
+          return await env.ASSETS.fetch(request);
+        }
+
+        if (normPath === '/exam_data.js') {
+          if (env.ASSETS) {
+            const freeReq = new Request(new URL('/exam_data_free.js', request.url), request);
+            const freeRes = await env.ASSETS.fetch(freeReq);
+            if (freeRes.ok) return freeRes;
+          }
+          return new Response('/* Free Tier Question Bank */ window.COMPTIA_EXAM_DATA = window.COMPTIA_EXAM_DATA || { core1: [], core2: [] };', {
+            headers: { ...corsHeaders, 'Content-Type': 'application/javascript; charset=utf-8' }
+          });
+        }
+
+        // Azure AZ-900 / AZ-500: return minimal empty/pro-required stub for free visitors so UI doesn't crash
+        const isAz900 = normPath === '/az900_exam_data.js';
+        const stubVar = isAz900 ? 'AZ900_EXAM_DATA' : 'AZ500_EXAM_DATA';
+        const stubKey = isAz900 ? 'az900' : 'az500';
+        return new Response(`/* Free Tier / Pro Pass Required */ window.${stubVar} = window.${stubVar} || { version: "1.0.0", ${stubKey}: [], proRequired: true };`, {
+          headers: { ...corsHeaders, 'Content-Type': 'application/javascript; charset=utf-8' }
+        });
+      }
+
+      // Raw question bank JSON gating: prevent unauthenticated bypass for raw data files
+      if ((normPath === '/exam_data.json' || normPath === '/az900_exam_data.json' || normPath === '/az500_exam_data.json') && request.method === 'GET') {
+        let isProUser = false;
+        try {
+          const auth = await resolveRequestAuth(
+            request, env, {}, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+          );
+          if (auth && auth.ok) {
+            let ent = null;
+            if (auth.telegramId) ent = await resolveUserEntitlement(auth.telegramId, env.DB);
+            else if (auth.firebaseUid) ent = await resolveFirebaseEntitlement(auth.firebaseUid, env.DB);
+            if (ent && ent.tier && ent.tier !== 'free') isProUser = true;
+          }
+        } catch (_) {}
+
+        if (isProUser && env.ASSETS) {
+          return await env.ASSETS.fetch(request);
+        }
+        return new Response(JSON.stringify({
+          error: 'PRO_REQUIRED',
+          message: 'A paid pass is required to access question bank JSON files.'
+        }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // Shard gating: full domain shards require Pro; only diagnostic pack & manifest are public
+      if (normPath.startsWith('/shards/') && request.method === 'GET') {
+        const isPublicShard = normPath === '/shards/diagnostic_pack.json' ||
+                              normPath === '/shards/meta.json' ||
+                              normPath === '/shards/manifest.js';
+        if (!isPublicShard) {
+          // Gated shards are the question bank in slices. Walking every shard
+          // is the cheapest way to export the paid product, and the entitlement
+          // check below does nothing to slow that down.
+          const shardLimit = await enforceDualKeyLimit(env, request, 'shards', {
+            ipPerMinute: 30
+          });
+          if (!shardLimit.allowed) {
+            return new Response(JSON.stringify({
+              error: 'RATE_LIMITED',
+              message: 'Too many shard requests. Please wait a moment.'
+            }), {
+              status: 429,
+              headers: { ...corsHeaders, ...shardLimit.headers, 'Content-Type': 'application/json' }
+            });
+          }
+
+          let isProUser = false;
+          try {
+            const auth = await resolveRequestAuth(
+              request, env, {}, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+            );
+            if (auth && auth.ok) {
+              let ent = null;
+              if (auth.telegramId) ent = await resolveUserEntitlement(auth.telegramId, env.DB);
+              else if (auth.firebaseUid) ent = await resolveFirebaseEntitlement(auth.firebaseUid, env.DB);
+              if (ent && ent.tier && ent.tier !== 'free') isProUser = true;
+            }
+          } catch (_) {}
+
+          if (!isProUser) {
+            return new Response(JSON.stringify({
+              error: 'PRO_REQUIRED',
+              message: 'A paid pass is required to access full domain question shards.',
+              payRails: ['telegram_stars', 'ton_onchain']
+            }), {
+              status: 403,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+          }
+        }
+        if (env.ASSETS) {
+          return await env.ASSETS.fetch(request);
+        }
+      }
+
+      // Full question bank API (authenticated Pro users only)
+      if (path === '/api/v1/bank/full' && request.method === 'GET') {
+        // This path returns the paid asset itself (~2MB). An entitled account
+        // looping it is both an egress bill and a clean export of the product,
+        // so entitlement alone is not a sufficient gate.
+        const bankIpLimit = await enforceDualKeyLimit(env, request, 'bank_full', {
+          ipPerMinute: 10
+        });
+        if (!bankIpLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many bank downloads. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...bankIpLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+
+        const auth = await resolveRequestAuth(
+          request, env, {}, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok) {
+          return new Response(JSON.stringify({ error: 'AUTH_REQUIRED' }), {
+            status: 401,
+            headers: { ...corsHeaders, ...bankIpLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+
+        // Now that identity is proven, meter the caller as well: IP rotation
+        // must not buy a fresh bank-download allowance.
+        const bankUidLimit = await enforceDualKeyLimit(env, request, 'bank_full_uid', {
+          uid: auth.uid,
+          uidPerMinute: 5,
+          ipPerMinute: 20
+        });
+        if (!bankUidLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many bank downloads for this account. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...bankUidLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+        let ent = null;
+        if (auth.telegramId) ent = await resolveUserEntitlement(auth.telegramId, env.DB);
+        else if (auth.firebaseUid) ent = await resolveFirebaseEntitlement(auth.firebaseUid, env.DB);
+        if (!ent || !ent.tier || ent.tier === 'free') {
+          return new Response(JSON.stringify({
+            error: 'PRO_REQUIRED',
+            message: 'Pro subscription required for complete 1,130+ question bank.'
+          }), {
+            status: 403,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        if (env.ASSETS) {
+          const bankReq = new Request(new URL('/exam_data.json', request.url), request);
+          const bankRes = await env.ASSETS.fetch(bankReq);
+          if (bankRes.ok) return bankRes;
+        }
+        return new Response(JSON.stringify({ error: 'BANK_UNAVAILABLE' }), {
+          status: 503,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // TON Pre-payment Order Generation (links on-chain payment to authenticated account)
+      if (path === '/api/v1/billing/ton/order' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok) {
+          return new Response(JSON.stringify({
+            error: 'AUTH_REQUIRED',
+            message: 'Authentication required to create a TON payment order.'
+          }), { status: 401, headers: corsHeaders });
+        }
+        const clientIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
+        const orderLimit = await enforceDualKeyLimit(env, request, 'ton_order', {
+          uid: auth.uid, uidPerMinute: 10, ipPerMinute: 20
+        });
+        if (!orderLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many order requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...orderLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+        const productId = String(body.productId || 'pro_monthly').trim();
+        const TON_PRICES = {
+          daily_unlimited: { nanotons: 1500000000, amountTon: '1.5' },
+          pro_monthly: { nanotons: 7000000000, amountTon: '7.0' },
+          lifetime_master: { nanotons: 35000000000, amountTon: '35.0' }
+        };
+        const prod = TON_PRICES[productId];
+        if (!prod) {
+          return new Response(JSON.stringify({
+            error: 'UNKNOWN_PRODUCT',
+            message: 'Unknown TON product. Use daily_unlimited, pro_monthly, or lifetime_master.'
+          }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+        // Match verify path: ENVIRONMENT or NODE_ENV. Never serve RegistryMockTON when either is production.
+        const isProd = env.ENVIRONMENT === 'production' || env.NODE_ENV === 'production';
+        const isTestPayment = !isProd && (env.ALLOW_TEST_PAYMENTS === '1' || env.TON_VERIFY_RELAXED === '1');
+        const merchantWallet = env.TON_MERCHANT_WALLET_ADDRESS || (isTestPayment ? 'EQBvW8Z5huBkMJYdn3GuLD5Co_V7bB0N12_RegistryMockTON' : '');
+        if (!merchantWallet) {
+          return new Response(JSON.stringify({
+            error: 'TON_MERCHANT_UNCONFIGURED',
+            message: isProd
+              ? 'TON payments require TON_MERCHANT_WALLET_ADDRESS in production.'
+              : 'Staging TON payments require secret TON_MERCHANT_WALLET_ADDRESS (use a testnet wallet).'
+          }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+        if (isProd && !env.DB) {
+          return new Response(JSON.stringify({
+            error: 'TON_ORDERS_UNAVAILABLE',
+            message: 'TON orders require D1 in production so payments can be bound to an account.'
+          }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+        const userId = auth.firebaseUid || (auth.telegramId ? 'tg_' + auth.telegramId : auth.uid);
+        const orderId = `clar_${auth.telegramId || auth.firebaseUid}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+
+        if (env.DB) {
+          try {
+            await env.DB.prepare(`
+              INSERT INTO ton_orders (order_id, user_id, telegram_id, product_id, amount_nanotons, status)
+              VALUES (?, ?, ?, ?, ?, 'pending')
+            `).bind(orderId, userId, auth.telegramId || 0, productId, String(prod.nanotons)).run();
+          } catch (e) {
+            console.warn('[TON] ton_orders insert failed:', e && e.message ? e.message : e);
+            return new Response(JSON.stringify({
+              error: 'TON_ORDER_PERSIST_FAILED',
+              message: 'Could not create a payment order. Try again shortly.'
+            }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+          }
+        }
+
+        // Staging wrangler sets TON_NETWORK=testnet. Client may also request testnet off production.
+        const tonNetwork = (env.TON_NETWORK === 'testnet' || (!isProd && body.network === 'testnet'))
+          ? 'testnet'
+          : 'mainnet';
+
+        return new Response(JSON.stringify({
+          success: true,
+          orderId,
+          memo: orderId,
+          merchantWallet,
+          amountTon: prod.amountTon,
+          nanotons: prod.nanotons,
+          productId,
+          network: tonNetwork
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // XDC Network Pre-payment Order Generation (links on-chain payment to authenticated account)
+      if (path === '/api/v1/billing/xdc/order' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok) {
+          return new Response(JSON.stringify({
+            error: 'AUTH_REQUIRED',
+            message: 'Authentication required to create an XDC payment order.'
+          }), { status: 401, headers: corsHeaders });
+        }
+        const orderLimit = await enforceDualKeyLimit(env, request, 'xdc_order', {
+          uid: auth.uid, uidPerMinute: 10, ipPerMinute: 20
+        });
+        if (!orderLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many order requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...orderLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+        const productId = String(body.productId || 'pro_monthly').trim();
+        const prod = XDC_PRODUCTS[productId];
+        if (!prod) {
+          return new Response(JSON.stringify({
+            error: 'UNKNOWN_PRODUCT',
+            message: 'Unknown XDC product. Use daily_unlimited, pro_monthly, or lifetime_master.'
+          }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+        const network = String(body.network || 'mainnet').trim();
+        const netConfig = XDC_NETWORKS[network] || XDC_NETWORKS.mainnet;
+        const merchantAddress = env.XDC_TREASURY_ADDRESS || '0x2542f888B57d413b8655E3858022aF3e3eE72667';
+        const contractAddress = env.XDC_CONTRACT_ADDRESS || merchantAddress;
+        const userId = auth.firebaseUid || (auth.telegramId ? 'tg_' + auth.telegramId : auth.uid);
+        const orderId = `clar_xdc_${auth.telegramId || auth.firebaseUid}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+
+        if (env.DB) {
+          await ensureXdcTables(env.DB);
+          try {
+            await env.DB.prepare(`
+              INSERT INTO xdc_orders (order_id, user_id, telegram_id, product_id, amount_wei, wallet_address, status)
+              VALUES (?, ?, ?, ?, ?, ?, 'pending')
+            `).bind(orderId, userId, auth.telegramId || 0, productId, prod.amountWei, String(body.walletAddress || '')).run();
+          } catch (e) {
+            console.warn('[XDC] xdc_orders insert failed:', e && e.message ? e.message : e);
+          }
+        }
+
+        return new Response(JSON.stringify({
+          success: true,
+          orderId,
+          memo: orderId,
+          merchantAddress,
+          contractAddress,
+          amountXdc: prod.amountXdc,
+          amountWei: prod.amountWei,
+          productId,
+          network: netConfig.name,
+          chainId: netConfig.chainId,
+          hexChainId: netConfig.hexChainId,
+          rpcUrl: netConfig.rpcUrls[0]
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
       // 1. Health / ready probes
       if (path === '/api/v1/health' || path === '/api/v1/live') {
+        const tonNetwork = env.TON_NETWORK === 'testnet' ? 'testnet' : 'mainnet';
         return new Response(JSON.stringify({
           status: 'ok',
           domain: 'clariora.com.au',
@@ -122,7 +726,15 @@ export default {
           tmaSupported: true,
           aiProviders: ['groq', 'nvidia', 'ollama', 'openrouter', 'workers_ai'],
           freeSurface: FREE_SURFACE,
-          payRails: ['telegram_stars', 'ton_onchain']
+          payRails: ['telegram_stars', 'ton_onchain', 'xdc_network'],
+          tonNetwork,
+          tonSbtConfigured: Boolean(env.TON_SBT_COLLECTION_ADDRESS),
+          tonSbtCollectionAddress: env.TON_SBT_COLLECTION_ADDRESS || null,
+          auth: {
+            identityPlane: 'firebase+telegram',
+            sessionCookies: true,
+            publicApiRouteCount: PUBLIC_API_ROUTES.filter((r) => isPublicApiRoute(r.method, r.path)).length
+          }
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
@@ -130,23 +742,38 @@ export default {
 
       if (path === '/api/v1/ready') {
         let dbOk = false;
-        let dbError = null;
         if (env.DB) {
           try {
             await env.DB.prepare('SELECT 1 AS ok').first();
             dbOk = true;
           } catch (e) {
-            dbError = e && e.message ? e.message : 'db_error';
+            console.error('[ReadyProbe] DB check failed:', e && e.message ? e.message : e);
           }
         }
         const circuits = dbOk ? await listCircuits(env.DB) : [];
         const rateLimiterBound = !!(env.COACH_RATE_LIMITER);
         const ready = dbOk;
+        // Booleans only: never echo secret values. Used to confirm wrangler secrets landed.
+        const aiConfigured = {
+          groq: Boolean(env.GROQ_API_KEY),
+          nvidia: Boolean(env.NVIDIA_API_KEY),
+          openrouter: Boolean(env.OPENROUTER_API_KEY),
+          ollama: Boolean(env.OLLAMA_ENDPOINT) &&
+            !String(env.OLLAMA_ENDPOINT).toLowerCase().includes('127.0.0.1') &&
+            !String(env.OLLAMA_ENDPOINT).toLowerCase().includes('localhost'),
+          workersAi: Boolean(env.AI)
+        };
         return new Response(JSON.stringify({
           status: ready ? 'ready' : 'not_ready',
           db: dbOk,
-          dbError,
           rateLimiterBound,
+          aiConfigured,
+          tonConfigured: {
+            merchant: Boolean(env.TON_MERCHANT_WALLET_ADDRESS),
+            toncenter: Boolean(env.TONCENTER_API_KEY),
+            sbtCollection: Boolean(env.TON_SBT_COLLECTION_ADDRESS),
+            network: env.TON_NETWORK === 'testnet' ? 'testnet' : 'mainnet'
+          },
           circuits,
           checkedAt: new Date().toISOString()
         }), {
@@ -155,87 +782,37 @@ export default {
         });
       }
 
-      // 2. Auth: Magic Link Request
-      if (path === '/api/v1/auth/magic' && request.method === 'POST') {
-        const clientIp = request.headers.get('cf-connecting-ip') || 'unknown';
-        const rateCheck = await enforceCoachRateLimit(env, `magic:${clientIp}`, 5);
-        if (!rateCheck.allowed) {
-          return new Response(JSON.stringify({ error: 'Too many requests. Please wait a moment.' }), {
-            status: 429,
-            headers: { ...corsHeaders, 'Retry-After': '60' }
-          });
-        }
-
-        const { email } = await request.json();
-        if (!email || !email.includes('@')) {
-          return new Response(JSON.stringify({ error: 'Valid email required' }), { status: 400, headers: corsHeaders });
-        }
-
-        const token = crypto.randomUUID();
-        const expiresAt = Date.now() + 15 * 60 * 1000; // 15 mins
-
-        if (env.DB) {
-          await env.DB.prepare(
-            'INSERT OR REPLACE INTO users (id, email, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)'
-          ).bind(crypto.randomUUID(), email).run();
-
-          await env.DB.prepare(
-            'INSERT INTO magic_links (token, email, expires_at) VALUES (?, ?, ?)'
-          ).bind(token, email, expiresAt).run();
-        }
-
-        // Security: Never leak the raw authentication token in the HTTP API response.
+      // Custom magic-link auth retired. Firebase Auth owns email identity.
+      if ((path === '/api/v1/auth/magic' || path === '/api/v1/auth/magic/verify') &&
+          (request.method === 'POST' || request.method === 'GET')) {
         return new Response(JSON.stringify({
-          success: true,
-          message: 'If an account exists for this email address, a secure sign-in link has been sent.'
+          error: 'GONE',
+          message: 'Custom magic-link auth is retired. Sign in with Firebase (Google or email) or Telegram.'
         }), {
+          status: 410,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }
 
-      // 2a. Auth: Magic Link Token Verification
-      if (path === '/api/v1/auth/magic/verify' && request.method === 'GET') {
-        const tokenParam = url.searchParams.get('token') || '';
-        if (!tokenParam || tokenParam.length < 16) {
-          return new Response(JSON.stringify({ error: 'Invalid or missing verification token' }), {
-            status: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          });
-        }
-        if (!env.DB) {
-          return new Response(JSON.stringify({ error: 'Database unavailable' }), {
-            status: 503,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          });
-        }
-        const record = await env.DB.prepare(
-          'SELECT token, email, expires_at FROM magic_links WHERE token = ?'
-        ).bind(tokenParam).first();
-
-        if (!record || Number(record.expires_at) < Date.now()) {
-          return new Response(JSON.stringify({ error: 'Magic link has expired or is invalid' }), {
-            status: 401,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          });
-        }
-
-        // Single-use token consumption
-        await env.DB.prepare('DELETE FROM magic_links WHERE token = ?').bind(tokenParam).run();
-
-        const user = await env.DB.prepare('SELECT id, email FROM users WHERE email = ?').bind(record.email).first();
-        return new Response(JSON.stringify({
-          success: true,
-          verified: true,
-          email: record.email,
-          userId: user ? user.id : null,
-          message: 'Authentication successful'
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
-      }
-
-      // 2b. Auth: Telegram Web Login Widget verification
+      // Auth: Telegram Web Login Widget verification + HttpOnly session cookie
       if (path === '/api/v1/auth/telegram' && request.method === 'POST') {
+        // Unauthenticated entry point: every call runs an HMAC verification and
+        // a D1 upsert, and there is no caller identity to meter against, so IP
+        // is the only key available. Left unlimited this is a free D1 write
+        // amplifier and a signature-brute-force surface.
+        const tgLoginLimit = await enforceDualKeyLimit(env, request, 'auth_telegram', {
+          ipPerMinute: 15
+        });
+        if (!tgLoginLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many Telegram sign-in attempts. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...tgLoginLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+
         const body = await request.json();
         const verifiedUser = await verifyTelegramLoginWidget(body, env.TELEGRAM_BOT_TOKEN);
         if (!verifiedUser) {
@@ -258,50 +835,232 @@ export default {
         }
 
         const entitlement = await resolveUserEntitlement(verifiedUser.id, env.DB);
+        const cookies = [];
+        if (getSessionSecret(env)) {
+          try {
+            const token = await mintUserSessionToken(env, {
+              uid: 'tg_' + verifiedUser.id,
+              provider: 'telegram',
+              email: verifiedUser.username ? '@' + verifiedUser.username : '',
+              displayName: ((verifiedUser.first_name || '') + (verifiedUser.last_name ? ' ' + verifiedUser.last_name : '')).trim(),
+              photoURL: verifiedUser.photo_url || '',
+              telegramId: verifiedUser.id
+            });
+            cookies.push(userSessionCookieHeader(token, request));
+          } catch (err) {
+            console.warn('[Auth] telegram session cookie mint failed:', err && err.message ? err.message : err);
+          }
+        }
 
-        return new Response(JSON.stringify({
+        return withSetCookies(new Response(JSON.stringify({
           success: true,
           user: verifiedUser,
           entitlement: entitlement
         }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
+          headers: { ...corsHeaders, ...tgLoginLimit.headers, 'Content-Type': 'application/json' }
+        }), cookies);
       }
 
-      // 2c. Auth: record signup / sign-in for Firebase + Telegram (audit + account memory key)
+      // Auth: record signup / sign-in for Firebase + Telegram (audit + HttpOnly session)
       if (path === '/api/v1/auth/session' && request.method === 'POST') {
+        const clientIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
+        const sessionLimit = await enforceDualKeyLimit(env, request, 'auth_session', {
+          ipPerMinute: 20
+        });
+        if (!sessionLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many authentication requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...sessionLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
         const body = await request.json();
-        const recorded = await recordAuthSession(body, env);
+        const recorded = await recordAuthSession(body, env, request);
         if (!recorded.ok) {
           return new Response(JSON.stringify({ error: recorded.error || 'Auth session rejected' }), {
             status: recorded.status || 401,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           });
         }
-        return new Response(JSON.stringify({
+        return withSetCookies(new Response(JSON.stringify({
           success: true,
           account: recorded.account,
           event: recorded.event
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }), recorded.sessionCookie ? [recorded.sessionCookie] : []);
+      }
+
+      // Auth: session introspection (cookie)
+      if (path === '/api/v1/auth/me' && request.method === 'GET') {
+        // Cheap-looking but not free: resolveRequestAuth verifies a Firebase ID
+        // token against JWKS. Metered on IP first because the caller has no
+        // proven identity until that verification succeeds.
+        const meIpLimit = await enforceDualKeyLimit(env, request, 'auth_me', {
+          ipPerMinute: 60
+        });
+        if (!meIpLimit.allowed) {
+          return new Response(JSON.stringify({ authenticated: false, error: 'RATE_LIMITED' }), {
+            status: 429,
+            headers: { ...corsHeaders, ...meIpLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+
+        const auth = await resolveRequestAuth(
+          request, env, {}, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok) {
+          return new Response(JSON.stringify({ authenticated: false }), {
+            status: 401,
+            headers: { ...corsHeaders, ...meIpLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+        return new Response(JSON.stringify({
+          authenticated: true,
+          uid: auth.uid,
+          provider: auth.provider,
+          email: auth.email,
+          displayName: auth.displayName,
+          photoURL: auth.photoURL,
+          telegramId: auth.telegramId,
+          source: auth.source
+        }), {
+          headers: { ...corsHeaders, ...meIpLimit.headers, 'Content-Type': 'application/json' }
         });
       }
 
-      // 2c2. Billing: resolve entitlement for verified Telegram identity
+      // Auth: logout clears user session cookie
+      if (path === '/api/v1/auth/logout' && request.method === 'POST') {
+        return withSetCookies(new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }), [clearUserSessionCookie(request)]);
+      }
+
+      // Auth: account deletion (GDPR / Privacy right-to-be-forgotten)
+      if (path === '/api/v1/auth/delete-account' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok || !auth.uid) {
+          return new Response(JSON.stringify({
+            error: 'AUTH_REQUIRED',
+            message: 'Authentication required to delete account.'
+          }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+
+        const deleteLimit = await enforceDualKeyLimit(env, request, 'delete_account', {
+          uid: auth.uid, uidPerMinute: 2, ipPerMinute: 5
+        });
+        if (!deleteLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many account deletion requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...deleteLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+
+        if (env.DB) {
+          try {
+            await env.DB.prepare('DELETE FROM telegram_users WHERE id = ? OR firebase_uid = ?').bind(auth.telegramId || 0, auth.uid).run();
+            await env.DB.prepare('DELETE FROM auth_accounts WHERE id = ?').bind(auth.uid).run();
+            await env.DB.prepare('DELETE FROM learner_sync_state WHERE user_id = ?').bind(auth.uid).run();
+            await env.DB.prepare('DELETE FROM ton_orders WHERE user_id = ?').bind(auth.uid).run();
+            await env.DB.prepare('DELETE FROM xdc_orders WHERE user_id = ?').bind(auth.uid).run();
+            await env.DB.prepare('DELETE FROM oracle_attestations WHERE user_id = ?').bind(auth.uid).run();
+            await env.DB.prepare('DELETE FROM exam_attempts WHERE user_id = ?').bind(auth.uid).run();
+            await env.DB.prepare('DELETE FROM learner_memories WHERE user_id = ?').bind(auth.uid).run();
+          } catch (dbErr) {
+            console.warn('[Auth] Database record purge warning:', dbErr && dbErr.message ? dbErr.message : dbErr);
+          }
+        }
+
+        const cookiesToClear = [clearUserSessionCookie(request), clearAdminSessionCookie(request)];
+        return withSetCookies(new Response(JSON.stringify({
+          success: true,
+          message: 'Account and associated records successfully purged.'
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }), cookiesToClear);
+      }
+
+      // Auth: admin cookie exchange (one-time key -> HttpOnly admin session)
+      if (path === '/api/v1/auth/admin/session' && request.method === 'POST') {
+        // The admin key is a single shared secret guarding every admin route, so this
+        // exchange is the one endpoint where unthrottled guessing is worth the most.
+        const adminIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
+        const adminLimit = await enforceDualKeyLimit(env, request, 'admin_session', {
+          ipPerMinute: 5
+        });
+        if (!adminLimit.allowed) {
+          console.warn('[Security] Admin session exchange throttled', { ip: adminIp, retryAfter: adminLimit.retryAfter });
+          return new Response(JSON.stringify({ error: 'Too many admin authentication attempts.' }), {
+            status: 429,
+            headers: { ...corsHeaders, ...adminLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+        const issued = await issueAdminSession(request, env);
+        if (!issued.ok) {
+          return new Response(JSON.stringify({ error: issued.error || 'Unauthorized' }), {
+            status: issued.status || 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        return withSetCookies(new Response(JSON.stringify({
+          success: true,
+          expiresIn: issued.expiresIn
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }), [issued.cookie]);
+      }
+
+      if (path === '/api/v1/auth/admin/logout' && request.method === 'POST') {
+        return withSetCookies(new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }), [clearAdminSessionCookie(request)]);
+      }
+
+      // Billing: resolve entitlement for verified Telegram or session identity
       if (path === '/api/v1/billing/entitlement' && request.method === 'POST') {
         const body = await request.json().catch(() => ({}));
-        const initDataRaw = request.headers.get('X-Telegram-Init-Data') || body.initData || '';
-        const tgUser = await verifyTelegramInitData(initDataRaw, env.TELEGRAM_BOT_TOKEN);
-        if (!tgUser || !tgUser.id) {
-          return new Response(JSON.stringify({ error: 'Valid Telegram initData required' }), {
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok) {
+          return new Response(JSON.stringify({ error: 'Valid Telegram initData or signed session required' }), {
             status: 401,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           });
         }
-        const entitlement = await resolveUserEntitlement(tgUser.id, env.DB);
+        const entIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
+        const entLimit = await enforceDualKeyLimit(env, request, 'entitlement', {
+          uid: auth.uid, uidPerMinute: 30, ipPerMinute: 120
+        });
+        if (!entLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many entitlement checks. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...entLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+        let entitlement;
+        if (auth.telegramId) {
+          entitlement = await resolveUserEntitlement(auth.telegramId, env.DB);
+        } else if (auth.firebaseUid) {
+          entitlement = await resolveFirebaseEntitlement(auth.firebaseUid, env.DB);
+        } else {
+          entitlement = await resolveUserEntitlement(null, env.DB);
+        }
         return new Response(JSON.stringify({
           success: true,
-          telegramId: tgUser.id,
+          telegramId: auth.telegramId,
+          uid: auth.uid,
           entitlement: {
             tier: entitlement.tier,
             expiresAt: entitlement.user && entitlement.user.tier_expires_at != null
@@ -319,9 +1078,9 @@ export default {
         });
       }
 
-      // 2d. Auth: admin visibility of who signed up / signed in
+      // Auth: admin visibility of who signed up / signed in
       if (path === '/api/v1/auth/accounts' && request.method === 'GET') {
-        if (!isAdminAuthorized(request, env)) {
+        if (!(await isAdminAuthorized(request, env))) {
           return new Response(JSON.stringify({ error: 'Unauthorized' }), {
             status: 401,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -334,41 +1093,195 @@ export default {
         });
       }
 
-      // 3. Sync: Get or Save Learner State
-      if (path === '/api/v1/sync') {
-        const initDataRaw = request.headers.get('X-Telegram-Init-Data') || '';
-        const authHeader = request.headers.get('Authorization') || '';
-        const bearerToken = authHeader.toLowerCase().startsWith('bearer ') ? authHeader.slice(7).trim() : '';
+      // Admin: AI spend, cache effectiveness, and per-user usage outliers
+      if (path === '/api/v1/admin/ai-cost' && request.method === 'GET') {
+        if (!(await isAdminAuthorized(request, env))) {
+          return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        try {
+          const report = await buildAiCostReport(env.DB, env, { days: url.searchParams.get('days') });
+          return new Response(JSON.stringify(report), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
+          });
+        } catch (err) {
+          return new Response(JSON.stringify({
+            error: 'AI_COST_REPORT_FAILED',
+            message: String(err && err.message || err).slice(0, 200)
+          }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+      }
 
-        let verifiedUserId = null;
-        if (initDataRaw && env.TELEGRAM_BOT_TOKEN) {
-          const tgUser = await verifyTelegramInitData(initDataRaw, env.TELEGRAM_BOT_TOKEN);
-          if (tgUser && tgUser.id) {
-            verifiedUserId = 'tg_' + tgUser.id;
+      // Admin: APX telemetry integrity flags (read-only; accounts are never modified)
+      if (path === '/api/v1/admin/apx-anomalies' && request.method === 'GET') {
+        if (!(await isAdminAuthorized(request, env))) {
+          return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        try {
+          const report = await buildApxAnomalyReport(env.DB, { days: url.searchParams.get('days') });
+          try {
+            report.holdout = await buildHoldoutReport(env.DB);
+          } catch (holdoutErr) {
+            report.holdout = { verdict: 'unavailable', reason: String(holdoutErr && holdoutErr.message || holdoutErr).slice(0, 120) };
           }
+          return new Response(JSON.stringify(report), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
+          });
+        } catch (err) {
+          const missing = /no such table/i.test(String(err && err.message));
+          return new Response(JSON.stringify({
+            error: missing ? 'APX_TELEMETRY_NOT_INITIALISED' : 'APX_ANOMALY_REPORT_FAILED',
+            message: String(err && err.message || err).slice(0, 200)
+          }), { status: missing ? 404 : 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
-        if (!verifiedUserId && bearerToken) {
-          const apiKey = env.FIREBASE_WEB_API_KEY || 'AIzaSyAt5MnWAXJcL84vG6gxRoIksJL2bcfr4y8';
-          const fbUser = await verifyFirebaseIdToken(bearerToken, apiKey);
-          if (fbUser && (fbUser.localId || fbUser.user_id || fbUser.uid)) {
-            verifiedUserId = fbUser.localId || fbUser.user_id || fbUser.uid;
-          }
-        }
+      }
 
-        // Support explicit test token / localhost development environments
-        const headerUserId = request.headers.get('X-User-Id');
-        if (!verifiedUserId && headerUserId && (env.ALLOW_TEST_AUTH === '1' || url.hostname === 'localhost' || url.hostname === '127.0.0.1')) {
-          verifiedUserId = headerUserId;
-        }
-
-        if (!verifiedUserId) {
+      // APX soft-currency telemetry mirror (client events; not payment authority)
+      if (path === '/api/v1/apx/events' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok || !auth.uid) {
           return new Response(JSON.stringify({
             error: 'AUTH_REQUIRED',
-            message: 'Valid Telegram initData or Firebase ID token required for cloud sync.'
+            message: 'Sign in before syncing APX events.'
+          }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+        const userId = auth.uid;
+        const apxLimit = await enforceDualKeyLimit(env, request, 'apx_events', {
+          uid: userId, uidPerMinute: 60, ipPerMinute: 120
+        });
+        if (!apxLimit.allowed) {
+          return new Response(JSON.stringify({ error: 'RATE_LIMITED' }), {
+            status: 429,
+            headers: { ...corsHeaders, ...apxLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+        if (!env.DB) {
+          return new Response(JSON.stringify({ ok: true, stored: 0, note: 'DB unbound' }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        await env.DB.prepare(`
+          CREATE TABLE IF NOT EXISTS apx_events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT NOT NULL,
+            day TEXT,
+            source TEXT NOT NULL,
+            amount INTEGER NOT NULL DEFAULT 0,
+            capped INTEGER NOT NULL DEFAULT 0,
+            item TEXT,
+            balance_after INTEGER,
+            created_at TEXT NOT NULL DEFAULT (datetime('now'))
+          )
+        `).run();
+        await env.DB.prepare(`
+          CREATE TABLE IF NOT EXISTS apx_daily_counters (
+            user_id TEXT NOT NULL,
+            day TEXT NOT NULL,
+            minted INTEGER NOT NULL DEFAULT 0,
+            burned INTEGER NOT NULL DEFAULT 0,
+            practice_minted INTEGER NOT NULL DEFAULT 0,
+            side_minted INTEGER NOT NULL DEFAULT 0,
+            cap_hits INTEGER NOT NULL DEFAULT 0,
+            updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+            PRIMARY KEY (user_id, day)
+          )
+        `).run();
+        const events = Array.isArray(body.events) ? body.events.slice(0, 50) : [];
+        const arm = body.arm === 'holdout' || body.arm === 'apx' ? body.arm : null;
+        let withArm = true;
+        let stored = 0;
+        for (const evt of events) {
+          if (!evt || typeof evt !== 'object') continue;
+          const source = String(evt.source || 'UNKNOWN').slice(0, 64);
+          const amount = Number(evt.amount) || 0;
+          const day = evt.day ? String(evt.day).slice(0, 16) : null;
+          const capped = evt.capped ? 1 : 0;
+          const item = evt.item != null ? String(evt.item).slice(0, 64) : null;
+          const balanceAfter = evt.balance_after == null ? null : Number(evt.balance_after);
+          const createdAt = evt.created_at ? String(evt.created_at) : new Date().toISOString();
+          const row = [userId, day, source, amount, capped, item, balanceAfter, createdAt];
+          let storedWithArm = false;
+          if (withArm) {
+            try {
+              await env.DB.prepare(
+                'INSERT INTO apx_events (user_id, day, source, amount, capped, item, balance_after, created_at, arm) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+              ).bind(...row, arm).run();
+              storedWithArm = true;
+            } catch (armErr) {
+              // Before migration 0004 there is no arm column; anything else is a real failure.
+              if (!/no column named arm|no such column/i.test(String(armErr && armErr.message))) throw armErr;
+              withArm = false;
+            }
+          }
+          if (!storedWithArm) {
+            await env.DB.prepare(
+              'INSERT INTO apx_events (user_id, day, source, amount, capped, item, balance_after, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+            ).bind(...row).run();
+          }
+          stored += 1;
+          if (day) {
+            const minted = amount > 0 ? amount : 0;
+            const burned = amount < 0 ? -amount : 0;
+            const practice = source === 'EXAM_COMPLETE' && amount > 0 ? amount : 0;
+            const side = amount > 0 && source !== 'EXAM_COMPLETE' && source !== 'ACHIEVEMENT_MINT' ? amount : 0;
+            const capHit = capped ? 1 : 0;
+            await env.DB.prepare(`
+              INSERT INTO apx_daily_counters (user_id, day, minted, burned, practice_minted, side_minted, cap_hits, updated_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+              ON CONFLICT(user_id, day) DO UPDATE SET
+                minted = minted + excluded.minted,
+                burned = burned + excluded.burned,
+                practice_minted = practice_minted + excluded.practice_minted,
+                side_minted = side_minted + excluded.side_minted,
+                cap_hits = cap_hits + excluded.cap_hits,
+                updated_at = datetime('now')
+            `).bind(userId, day, minted, burned, practice, side, capHit).run();
+          }
+        }
+        return new Response(JSON.stringify({ ok: true, stored }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // Sync: Get or Save Learner State
+      if (path === '/api/v1/sync') {
+        const bodyForAuth = request.method === 'POST' ? await request.clone().json().catch(() => ({})) : {};
+        const auth = await resolveRequestAuth(
+          request, env, bodyForAuth, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+
+        // ZERO-TRUST IDENTITY: Derive UID solely from verified cryptographic token/session
+        if (!auth.ok || !auth.uid) {
+          return new Response(JSON.stringify({
+            error: 'AUTH_REQUIRED',
+            message: 'Valid Telegram initData, session cookie, or Firebase ID token required for cloud sync.'
           }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
 
-        const userId = verifiedUserId;
+        const userId = auth.uid;
+
+        // DUAL-KEY RATE LIMITING (UID + IP)
+        const clientIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
+        const syncLimit = await enforceDualKeyLimit(env, request, 'sync', {
+          uid: userId, uidPerMinute: 30, ipPerMinute: 60
+        });
+        if (!syncLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many sync requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...syncLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
 
         if (request.method === 'GET') {
           if (!env.DB) {
@@ -429,16 +1342,21 @@ export default {
       // 4. Problem Reporting
       if (path === '/api/v1/items/report' && request.method === 'POST') {
         const clientIp = request.headers.get('cf-connecting-ip') || 'unknown';
-        const rateCheck = await enforceCoachRateLimit(env, `report:${clientIp}`, 10);
-        if (!rateCheck.allowed) {
-          return new Response(JSON.stringify({ error: 'Too many reports submitted. Please wait a moment.' }), {
+        const reportLimit = await enforceDualKeyLimit(env, request, 'item_report', {
+          ipPerMinute: 10
+        });
+        if (!reportLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many reports submitted. Please wait a moment.'
+          }), {
             status: 429,
-            headers: { ...corsHeaders, 'Retry-After': '60' }
+            headers: { ...corsHeaders, ...reportLimit.headers, 'Content-Type': 'application/json' }
           });
         }
 
         const body = await request.json().catch(() => ({}));
-        const { questionId, category, details, userEmail } = body || {};
+        const { questionId, category, details } = body || {};
         if (!questionId || !category || typeof questionId !== 'string' || typeof category !== 'string') {
           return new Response(JSON.stringify({ error: 'Missing or invalid questionId or category' }), {
             status: 400,
@@ -448,7 +1366,16 @@ export default {
         const safeQid = questionId.slice(0, 64);
         const safeCat = category.slice(0, 64);
         const safeDetails = String(details || '').slice(0, 1000);
-        const safeEmail = String(userEmail || 'anon').slice(0, 128);
+
+        // Reporter identity is derived from the verified session, never from body.userEmail.
+        // Accepting it from the client let an anonymous caller write an arbitrary third
+        // party's address into item_reports, both spoofing reports and seeding PII.
+        const reportAuth = await resolveRequestAuth(
+          request, env, {}, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        const safeEmail = (reportAuth.ok && reportAuth.email)
+          ? String(reportAuth.email).slice(0, 128)
+          : 'anon';
 
         if (env.DB) {
           await env.DB.prepare(
@@ -463,31 +1390,126 @@ export default {
 
       // 5. Community Stats & Item Benchmarks
       if (path === '/api/v1/items/stats' && request.method === 'GET') {
-        const questionId = url.searchParams.get('qid');
+        const questionId = String(url.searchParams.get('qid') || '').slice(0, 64);
+        const statsLimit = await enforceDualKeyLimit(env, request, 'item_stats', {
+          ipPerMinute: 120
+        });
+        if (!statsLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many stats requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...statsLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
         if (env.DB && questionId) {
-          const row = await env.DB.prepare('SELECT * FROM item_stats_cache WHERE question_id = ?').bind(questionId).first();
+          // Explicit column projection: this route is public, so `SELECT *` would publish
+          // any column later added to item_stats_cache without a second look.
+          const row = await env.DB.prepare(
+            'SELECT question_id, sample_size, p_value, point_biserial, distractor_spread, flagged_miskey ' +
+            'FROM item_stats_cache WHERE question_id = ?'
+          ).bind(questionId).first();
           if (row) {
-            return new Response(JSON.stringify(row), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+            return new Response(JSON.stringify({
+              question_id: row.question_id,
+              sample_size: row.sample_size,
+              p_value: row.p_value,
+              point_biserial: row.point_biserial,
+              distractor_spread: row.distractor_spread,
+              flagged_miskey: row.flagged_miskey || 0
+            }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
           }
         }
-        return new Response(JSON.stringify({ p_value: 0.72, sample_size: 100 }), {
+        // No fabricated crowd size. Clients treat sample_size 0 as "no data yet".
+        return new Response(JSON.stringify({
+          question_id: questionId || null,
+          p_value: null,
+          sample_size: 0,
+          provisional: true
+        }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }
 
-      // 6. Multi-Provider AI Gateway (rate limits, budgets, triage, tools)
+      // 5c. Similar questions (Vectorize when bound, else D1 neighbor cache)
+      if (path === '/api/v1/items/similar' && request.method === 'GET') {
+        const questionId = String(url.searchParams.get('qid') || '').slice(0, 64);
+        const k = Math.min(10, Math.max(1, Number(url.searchParams.get('k')) || 5));
+        const text = String(url.searchParams.get('q') || '').slice(0, 500);
+        const simLimit = await enforceDualKeyLimit(env, request, 'item_similar', {
+          ipPerMinute: 60
+        });
+        if (!simLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many similar-item requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...simLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+        const result = await findSimilarQuestionIds(env, { qid: questionId, text, k });
+        return new Response(JSON.stringify({
+          question_id: questionId || null,
+          ids: result.ids || [],
+          source: result.source || 'none'
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // 5b. Anonymous item outcome ingest (feeds item_stats_cache)
+      if (path === '/api/v1/items/telemetry' && request.method === 'POST') {
+        const telLimit = await enforceDualKeyLimit(env, request, 'item_telemetry', {
+          ipPerMinute: 60
+        });
+        if (!telLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many telemetry uploads. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...telLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+        if (!env.DB) {
+          return new Response(JSON.stringify({
+            error: 'TELEMETRY_UNAVAILABLE',
+            message: 'Item telemetry requires D1.'
+          }), {
+            status: 503,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        let body = {};
+        try {
+          body = await request.json();
+        } catch (_) {
+          body = {};
+        }
+        // Ignore installId and any other identity fields. Only events are processed.
+        const rawEvents = Array.isArray(body.events) ? body.events : [];
+        const result = await ingestItemTelemetryBatch(env.DB, rawEvents);
+        return new Response(JSON.stringify({
+          success: true,
+          inserted: result.inserted,
+          upserted: result.upserted,
+          skipped: result.skipped
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // Multi-Provider AI Gateway (rate limits, budgets, triage, tools)
       if ((path === '/api/v1/coach' || path === '/api/v1/coach/stream') && request.method === 'POST') {
         const body = await request.json();
         const stream = path === '/api/v1/coach/stream' || body.stream === true;
 
-        const initDataRaw = request.headers.get('X-Telegram-Init-Data') || body.initData || '';
-        const tgUser = await verifyTelegramInitData(initDataRaw, env.TELEGRAM_BOT_TOKEN);
-        let firebaseUser = null;
-        if (!tgUser && body.idToken) {
-          const apiKey = env.FIREBASE_WEB_API_KEY || 'AIzaSyAt5MnWAXJcL84vG6gxRoIksJL2bcfr4y8';
-          firebaseUser = await verifyFirebaseIdToken(body.idToken, apiKey);
-        }
-        if (!tgUser && !firebaseUser) {
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok) {
           return new Response(JSON.stringify({
             error: 'AUTH_REQUIRED',
             message: 'Sign in with Telegram or Google before using Ghost Coach.'
@@ -497,8 +1519,8 @@ export default {
           });
         }
 
-        const telegramId = tgUser ? tgUser.id : null;
-        const firebaseUid = firebaseUser ? (firebaseUser.localId || null) : null;
+        const telegramId = auth.telegramId;
+        const firebaseUid = auth.firebaseUid;
         let entitlement = await resolveUserEntitlement(telegramId, env.DB);
         if (!telegramId && firebaseUid) {
           entitlement = await resolveFirebaseEntitlement(firebaseUid, env.DB);
@@ -507,6 +1529,7 @@ export default {
         return await handleCoachRequest({
           request,
           env,
+          ctx,
           body,
           corsHeaders,
           stream,
@@ -525,18 +1548,22 @@ export default {
         });
       }
 
-      // 6b. Pro async exam review packs (queue + DLQ)
+      // Pro async exam review packs (queue + DLQ)
       if (path === '/api/v1/coach/jobs' && request.method === 'POST') {
         const body = await request.json();
-        const initDataRaw = request.headers.get('X-Telegram-Init-Data') || body.initData || '';
-        const tgUser = await verifyTelegramInitData(initDataRaw, env.TELEGRAM_BOT_TOKEN);
-        if (!tgUser) {
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok || (!auth.telegramId && !auth.firebaseUid)) {
           return new Response(JSON.stringify({ error: 'AUTH_REQUIRED' }), {
             status: 401,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           });
         }
-        const entitlement = await resolveUserEntitlement(tgUser.id, env.DB);
+        const userId = auth.firebaseUid ? ('fb:' + auth.firebaseUid) : ('tg:' + auth.telegramId);
+        const entitlement = auth.firebaseUid
+          ? await resolveFirebaseEntitlement(auth.firebaseUid, env.DB)
+          : await resolveUserEntitlement(auth.telegramId, env.DB);
         const policy = getTierPolicy(entitlement.tier);
         if (!policy.asyncJobs) {
           return new Response(JSON.stringify({
@@ -549,9 +1576,23 @@ export default {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           });
         }
+        const jobsIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
+        const jobsLimit = await enforceDualKeyLimit(env, request, 'coach_jobs', {
+          uid: userId, uidPerMinute: 10, ipPerMinute: 40
+        });
+        if (!jobsLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many review pack requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...jobsLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
         await ensureJobTables(env.DB);
         const job = await enqueueCoachJob(env.DB, {
-          telegramId: tgUser.id,
+          userId: userId,
+          telegramId: auth.telegramId != null ? auth.telegramId : null,
           tier: normalizeTier(entitlement.tier),
           jobType: body.jobType || 'exam_review_pack',
           payload: {
@@ -559,7 +1600,7 @@ export default {
             exam: body.exam || 'core1'
           }
         });
-        const processed = await processNextCoachJob(env.DB, tgUser.id, async (jobType, payload) => {
+        const processed = await processNextCoachJob(env.DB, userId, async (jobType, payload) => {
           if (jobType === 'exam_review_pack') return buildExamReviewPack(payload);
           throw new Error('unknown_job_type');
         });
@@ -570,15 +1611,17 @@ export default {
 
       if (path.startsWith('/api/v1/coach/jobs/') && request.method === 'GET') {
         const jobId = path.split('/').pop();
-        const initDataRaw = request.headers.get('X-Telegram-Init-Data') || '';
-        const tgUser = await verifyTelegramInitData(initDataRaw, env.TELEGRAM_BOT_TOKEN);
-        if (!tgUser) {
+        const auth = await resolveRequestAuth(
+          request, env, {}, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok || (!auth.telegramId && !auth.firebaseUid)) {
           return new Response(JSON.stringify({ error: 'AUTH_REQUIRED' }), {
             status: 401,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           });
         }
-        const job = await getCoachJob(env.DB, jobId, tgUser.id);
+        const userRef = auth.firebaseUid ? ('fb:' + auth.firebaseUid) : ('tg:' + auth.telegramId);
+        const job = await getCoachJob(env.DB, jobId, userRef);
         if (!job) {
           return new Response(JSON.stringify({ error: 'NOT_FOUND' }), {
             status: 404,
@@ -590,44 +1633,152 @@ export default {
         });
       }
 
-      // 7. TON Blockchain Transaction Verification & Activation
+      // Promote local Ghost Coach telemetry (confusion pairs + weak objectives) into D1
+      if (path === '/api/v1/memory/promote' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok) {
+          return new Response(JSON.stringify({
+            error: 'AUTH_REQUIRED',
+            message: 'Sign in before syncing Ghost Coach memory.'
+          }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        if (!env.DB) {
+          return new Response(JSON.stringify({
+            success: false,
+            error: 'DB_UNAVAILABLE',
+            message: 'Memory store is temporarily unavailable.'
+          }), {
+            status: 503,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        const memIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
+        const memLimit = await enforceDualKeyLimit(env, request, 'memory_promote', {
+          uid: auth.uid, uidPerMinute: 20, ipPerMinute: 60
+        });
+        if (!memLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many memory sync requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...memLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+        const result = await promoteGhostCoachTelemetry(env.DB, {
+          telegramId: auth.telegramId,
+          firebaseUid: auth.firebaseUid
+        }, {
+          confusionPairs: body.confusionPairs || [],
+          weakObjectives: body.weakObjectives || []
+        });
+        return new Response(JSON.stringify({
+          success: Boolean(result && result.ok),
+          stored: result ? result.stored : 0,
+          updated: result ? result.updated : 0,
+          pairs: result ? result.pairs : 0,
+          weaks: result ? result.weaks : 0
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // TON Blockchain Transaction Verification & Activation
       // Parallel unlock rail (Stars remain required for in-Telegram digital goods).
       // @see https://docs.ton.org/
       if (path === '/api/v1/billing/ton/verify' && request.method === 'POST') {
         const body = await request.json();
-        const { productId, txHash, amountTon, walletAddress, initData, idToken } = body;
+        const { productId, txHash, amountTon, walletAddress } = body;
 
-        const tgUser = await verifyTelegramInitData(
-          initData || request.headers.get('X-Telegram-Init-Data') || '',
-          env.TELEGRAM_BOT_TOKEN
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
         );
-        let firebaseUser = null;
-        if (!tgUser && idToken) {
-          const apiKey = env.FIREBASE_WEB_API_KEY || '';
-          firebaseUser = apiKey ? await verifyFirebaseIdToken(idToken, apiKey) : null;
-        }
-        if (!tgUser && !firebaseUser) {
+        if (!auth.ok) {
           return new Response(JSON.stringify({
             error: 'AUTH_REQUIRED',
-            message: 'Valid Telegram initData or Firebase idToken required before TON entitlement grant.'
+            message: 'Valid Telegram initData, session cookie, or Firebase idToken required before TON entitlement grant.'
           }), {
             status: 401,
             headers: corsHeaders
           });
         }
-        const resolvedId = tgUser ? tgUser.id : null;
-        const firebaseUid = firebaseUser ? firebaseUser.localId || firebaseUser.user_id || firebaseUser.uid : null;
+        const resolvedId = auth.telegramId;
+        const firebaseUid = auth.firebaseUid;
+
+        const tonIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
+        const tonLimit = await enforceDualKeyLimit(env, request, 'ton_verify', {
+          uid: auth.uid, uidPerMinute: 5, ipPerMinute: 20
+        });
+        if (!tonLimit.allowed) {
+          console.warn('[Security] TON verification throttled', { uid: auth.uid, ip: tonIp });
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many verification attempts. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...tonLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
 
         const cleanTxHash = String(txHash || '').trim();
         const cleanProductId = String(productId || '').trim();
-        if (!cleanTxHash || !cleanProductId) {
-          return new Response(JSON.stringify({ error: 'Missing txHash or productId' }), {
+        const cleanBoc = String((body && body.boc) || '').trim();
+        const hasPendingPlaceholder = /^pending:/i.test(cleanTxHash);
+        if ((!cleanTxHash && !cleanBoc) || !cleanProductId) {
+          return new Response(JSON.stringify({ error: 'Missing txHash/boc or productId' }), {
             status: 400,
             headers: corsHeaders
           });
         }
-        const isTestPayment = env.ALLOW_TEST_PAYMENTS === '1' || env.TON_VERIFY_RELAXED === '1';
-        const isValidHashFormat = /^[a-fA-F0-9]{64}$/.test(cleanTxHash) || /^[a-zA-Z0-9+/]{42,44}={0,2}$/.test(cleanTxHash);
+        const isProd = env.ENVIRONMENT === 'production' || env.NODE_ENV === 'production';
+
+        // Bind the redemption to an order this caller created. Without it, memo matching is
+        // skipped and ANY unredeemed inbound transfer to the merchant wallet can be claimed
+        // by whoever quotes its hash first, letting an on-chain observer steal a stranger's
+        // payment. The order must also belong to the caller, or orderId is an IDOR handle.
+        const cleanOrderId = String((body && body.orderId) || '').trim().slice(0, 128);
+        const callerOrderRef = auth.firebaseUid || (auth.telegramId ? 'tg_' + auth.telegramId : auth.uid);
+        // Happy-path TonConnect sends boc + orderId (tx hash resolved server-side via memo).
+        if ((isProd || cleanBoc || hasPendingPlaceholder) && !cleanOrderId) {
+          return new Response(JSON.stringify({
+            error: 'ORDER_REQUIRED',
+            message: 'Create a payment order via /api/v1/billing/ton/order before verifying a transaction.'
+          }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+        if (cleanOrderId && env.DB) {
+          const order = await env.DB.prepare(
+            'SELECT order_id, user_id, product_id, status FROM ton_orders WHERE order_id = ?'
+          ).bind(cleanOrderId).first();
+          if (!order || order.user_id !== callerOrderRef) {
+            console.warn('[Security] TON order ownership mismatch', { uid: auth.uid, orderId: cleanOrderId });
+            return new Response(JSON.stringify({
+              error: 'ORDER_NOT_FOUND',
+              message: 'No pending payment order matches this account.'
+            }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+          }
+          if (order.status === 'fulfilled') {
+            return new Response(JSON.stringify({
+              error: 'ORDER_ALREADY_FULFILLED',
+              message: 'This payment order was already redeemed.'
+            }), { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+          }
+          if (order.product_id !== cleanProductId) {
+            return new Response(JSON.stringify({
+              error: 'ORDER_PRODUCT_MISMATCH',
+              message: 'The requested product does not match this payment order.'
+            }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+          }
+        }
+        const isTestPayment = !isProd && (env.ALLOW_TEST_PAYMENTS === '1' || env.TON_VERIFY_RELAXED === '1');
+        const isValidHashFormat = hasPendingPlaceholder || cleanBoc.length > 20 ||
+          /^[a-fA-F0-9]{64}$/.test(cleanTxHash) ||
+          /^[a-zA-Z0-9+/]{42,88}={0,2}$/.test(cleanTxHash);
         if (!isValidHashFormat && !isTestPayment) {
           return new Response(JSON.stringify({
             error: 'INVALID_TX_HASH_FORMAT',
@@ -638,10 +1789,10 @@ export default {
           });
         }
 
-        if (env.DB) {
+        if (env.DB && cleanTxHash && !hasPendingPlaceholder) {
           const prior = await env.DB.prepare(
-            'SELECT id FROM ton_transactions WHERE id = ?'
-          ).bind(cleanTxHash).first();
+            'SELECT id FROM ton_transactions WHERE id = ? OR LOWER(id) = LOWER(?)'
+          ).bind(cleanTxHash, cleanTxHash).first();
           if (prior) {
             return new Response(JSON.stringify({
               error: 'TX_ALREADY_USED',
@@ -654,73 +1805,132 @@ export default {
         }
 
         let onChainConfirmed = false;
-        let canonicalTxHash = cleanTxHash;
+        let canonicalTxHash = hasPendingPlaceholder ? '' : cleanTxHash.toLowerCase();
         const TON_PRICES = {
           daily_unlimited: { nanotons: 1500000000 },
           pro_monthly: { nanotons: 7000000000 },
           lifetime_master: { nanotons: 35000000000 }
         };
-        const expectedProduct = TON_PRICES[cleanProductId] || TON_PRICES.daily_unlimited;
+        const expectedProduct = TON_PRICES[cleanProductId];
+        if (!expectedProduct) {
+          return new Response(JSON.stringify({
+            error: 'UNKNOWN_PRODUCT',
+            message: 'Unknown TON product. Use daily_unlimited, pro_monthly, or lifetime_master.'
+          }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
         const merchantWallet = env.TON_MERCHANT_WALLET_ADDRESS || (isTestPayment ? 'EQBvW8Z5huBkMJYdn3GuLD5Co_V7bB0N12_RegistryMockTON' : '');
+        if (!merchantWallet && !isTestPayment) {
+          return new Response(JSON.stringify({
+            error: 'TON_MERCHANT_UNCONFIGURED',
+            message: 'TON verification requires TON_MERCHANT_WALLET_ADDRESS in production.'
+          }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
 
-        if (env.TONCENTER_API_KEY && walletAddress) {
+        function tonAddrLooseEqual(a, b) {
+          if (!a || !b) return false;
+          const na = String(a).trim().toLowerCase();
+          const nb = String(b).trim().toLowerCase();
+          if (na === nb) return true;
+          // EQ (bounceable) vs UQ (non-bounceable) share the same payload after the prefix.
+          if (na.length > 4 && nb.length > 4 && na.slice(2) === nb.slice(2)) return true;
+          return false;
+        }
+
+        function extractTonMemo(inMsg) {
+          if (!inMsg || typeof inMsg !== 'object') return '';
+          const parts = [
+            inMsg.message,
+            inMsg.msg_data && inMsg.msg_data.text,
+            inMsg.msg_data && inMsg.msg_data.comment,
+            inMsg.decoded_body && inMsg.decoded_body.text,
+            inMsg.decoded_body && inMsg.decoded_body.comment
+          ];
+          return parts.filter(Boolean).map(String).join(' ');
+        }
+
+        function tonPaymentMatches(t) {
+          const onChainHash = t.transaction_id && (t.transaction_id.hash || t.transaction_id);
+          if (!onChainHash) return false;
+
+          const nowSec = Math.floor(Date.now() / 1000);
+          const txTime = Number(t.utime || 0);
+          if (txTime > 0 && (nowSec - txTime > 7200 || txTime - nowSec > 300)) {
+            return false;
+          }
+
+          const outMsgs = t.out_msgs || [];
+          const destMatch = outMsgs.some((m) => {
+            const dest = m.destination || '';
+            const val = Number(m.value || 0);
+            const validDest = isTestPayment ? true : (merchantWallet && tonAddrLooseEqual(dest, merchantWallet));
+            const validVal = val >= (expectedProduct.nanotons * 0.95);
+            return validDest && validVal;
+          });
+          const inMsg = t.in_msg || {};
+          const inDestMatch = inMsg.destination &&
+            (isTestPayment ? true : (merchantWallet && tonAddrLooseEqual(inMsg.destination, merchantWallet))) &&
+            Number(inMsg.value || 0) >= (expectedProduct.nanotons * 0.95);
+
+          const memoText = extractTonMemo(inMsg);
+          let memoMatch = true;
+          if (cleanOrderId) {
+            memoMatch = isTestPayment || memoText.includes(cleanOrderId);
+          } else if (isProd) {
+            memoMatch = false;
+          }
+
+          const success = !t.compute_ph || t.compute_ph.exit_code === 0;
+          if (!(success && (destMatch || inDestMatch) && memoMatch)) return false;
+
+          canonicalTxHash = String(onChainHash).toLowerCase();
+          return true;
+        }
+
+        if (env.TONCENTER_API_KEY && (merchantWallet || walletAddress)) {
           try {
-            const tcUrl = 'https://toncenter.com/api/v2/getTransactions?address=' +
-              encodeURIComponent(walletAddress) + '&limit=20';
+            const targetAddress = merchantWallet || walletAddress;
+            const isTonTestnet = !isProd && ((body && body.network === 'testnet') || env.TON_NETWORK === 'testnet');
+            const tcBase = isTonTestnet ? 'https://testnet.toncenter.com/api/v2/' : 'https://toncenter.com/api/v2/';
+            const tcUrl = tcBase + 'getTransactions?address=' +
+              encodeURIComponent(targetAddress) + '&limit=30';
             const tcRes = await fetch(tcUrl, {
               headers: { 'X-API-Key': env.TONCENTER_API_KEY }
             });
             if (tcRes.ok) {
               const tcData = await tcRes.json();
               const txs = (tcData && tcData.result) || [];
-              onChainConfirmed = txs.some((t) => {
-                const onChainHash = t.transaction_id && (t.transaction_id.hash || t.transaction_id);
-                if (!onChainHash) return false;
-                const normOnChain = String(onChainHash).trim().toLowerCase();
-                const normInput = cleanTxHash.toLowerCase();
-                const hashMatch = normOnChain === normInput;
-                if (!hashMatch) return false;
-
-                // Validate recency: transaction must have been created within last 2 hours (7200s)
-                const nowSec = Math.floor(Date.now() / 1000);
-                const txTime = Number(t.utime || 0);
-                if (txTime > 0 && (nowSec - txTime > 7200 || txTime - nowSec > 300)) {
-                  console.warn('[TON] Transaction expired:', txTime, 'now:', nowSec);
-                  return false;
-                }
-
-                canonicalTxHash = t.transaction_id.hash || onChainHash;
-
-                // Validate destination wallet matches merchant wallet and payment amount
-                const outMsgs = t.out_msgs || [];
-                const destMatch = outMsgs.some((m) => {
-                  const dest = m.destination || '';
-                  const val = Number(m.value || 0);
-                  const validDest = isTestPayment ? true : (merchantWallet && dest.toLowerCase() === merchantWallet.toLowerCase());
-                  const validVal = val >= (expectedProduct.nanotons * 0.95);
-                  return validDest && validVal;
+              const normInput = cleanTxHash.toLowerCase();
+              // 1) Exact hash match (recovery paste path)
+              if (!hasPendingPlaceholder && cleanTxHash) {
+                onChainConfirmed = txs.some((t) => {
+                  const onChainHash = t.transaction_id && (t.transaction_id.hash || t.transaction_id);
+                  if (!onChainHash) return false;
+                  if (String(onChainHash).trim().toLowerCase() !== normInput) return false;
+                  return tonPaymentMatches(t);
                 });
-                const inMsg = t.in_msg || {};
-                const inDestMatch = inMsg.destination &&
-                  (isTestPayment ? true : (merchantWallet && inMsg.destination.toLowerCase() === merchantWallet.toLowerCase())) &&
-                  Number(inMsg.value || 0) >= (expectedProduct.nanotons * 0.95);
-
-                const success = !t.compute_ph || t.compute_ph.exit_code === 0;
-                return success && (destMatch || inDestMatch);
-              });
+              }
+              // 2) Happy path: TonConnect BoC / pending placeholder → match by order memo + amount
+              if (!onChainConfirmed && cleanOrderId) {
+                onChainConfirmed = txs.some((t) => tonPaymentMatches(t));
+              }
             }
           } catch (tcErr) {
             console.debug('TonCenter check notice:', tcErr.message);
           }
         } else if (isTestPayment) {
           // Strictly limited to automated test harnesses passing explicit flag in mockEnv
-          onChainConfirmed = cleanTxHash.length >= 16;
+          onChainConfirmed = (cleanTxHash.length >= 16 || cleanBoc.length > 20);
+          if (onChainConfirmed && !canonicalTxHash) {
+            canonicalTxHash = hasPendingPlaceholder
+              ? ('test_' + cleanOrderId).toLowerCase()
+              : cleanTxHash.toLowerCase();
+          }
         }
 
-        if (onChainConfirmed && env.DB && canonicalTxHash !== cleanTxHash) {
+        if (onChainConfirmed && env.DB && canonicalTxHash && canonicalTxHash !== cleanTxHash.toLowerCase()) {
           const priorCanonical = await env.DB.prepare(
-            'SELECT id FROM ton_transactions WHERE id = ?'
-          ).bind(canonicalTxHash).first();
+            'SELECT id FROM ton_transactions WHERE id = ? OR LOWER(id) = LOWER(?)'
+          ).bind(canonicalTxHash, canonicalTxHash).first();
           if (priorCanonical) {
             return new Response(JSON.stringify({
               error: 'TX_ALREADY_USED',
@@ -742,25 +1952,32 @@ export default {
           });
         }
 
-        let tier = 'daily_pass';
-        let expiresAt = Date.now() + 24 * 60 * 60 * 1000;
+        let newTier = 'daily_pass';
+        let newExpiresAt = Date.now() + 24 * 60 * 60 * 1000;
         if (cleanProductId === 'pro_monthly') {
-          tier = 'pro_monthly';
-          expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
+          newTier = 'pro_monthly';
+          newExpiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
         } else if (cleanProductId === 'lifetime_master') {
-          tier = 'lifetime';
-          expiresAt = null;
+          newTier = 'lifetime';
+          newExpiresAt = null;
         }
+
+        let effective = { tier: newTier, expiresAt: newExpiresAt };
 
         if (env.DB) {
           if (resolvedId) {
+            const existingUser = await env.DB.prepare(
+              'SELECT tier, tier_expires_at FROM telegram_users WHERE telegram_id = ?'
+            ).bind(resolvedId).first();
+            effective = resolveEffectiveTierUpgrade(existingUser, newTier, newExpiresAt);
+
             await env.DB.prepare(
               'INSERT INTO telegram_users (telegram_id, tier, tier_expires_at, ton_wallet_address, updated_at) ' +
               'VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP) ' +
               'ON CONFLICT(telegram_id) DO UPDATE SET ' +
               'tier = excluded.tier, tier_expires_at = excluded.tier_expires_at, ' +
               'ton_wallet_address = excluded.ton_wallet_address, updated_at = CURRENT_TIMESTAMP'
-            ).bind(resolvedId, tier, expiresAt, walletAddress || '').run();
+            ).bind(resolvedId, effective.tier, effective.expiresAt, walletAddress || '').run();
 
             await env.DB.prepare(
               'INSERT INTO ton_transactions (id, telegram_id, product_id, amount_ton, wallet_address, status) ' +
@@ -768,39 +1985,538 @@ export default {
             ).bind(canonicalTxHash, resolvedId, cleanProductId, String(amountTon || '0'), walletAddress || '').run();
           }
           if (firebaseUid) {
-            await env.DB.prepare(`
-              CREATE TABLE IF NOT EXISTS auth_accounts (
-                uid TEXT PRIMARY KEY,
-                email TEXT,
-                display_name TEXT,
-                photo_url TEXT,
-                provider TEXT,
-                signup_at INTEGER,
-                last_signin_at INTEGER,
-                signin_count INTEGER DEFAULT 0,
-                free_ai_used_today INTEGER DEFAULT 0,
-                free_ai_last_date TEXT,
-                tier TEXT DEFAULT 'free',
-                tier_expires_at INTEGER
-              )
-            `).run();
+            await ensureAuthAccountAiColumns(env.DB);
+            const existingAccount = await env.DB.prepare(
+              'SELECT tier, tier_expires_at FROM auth_accounts WHERE uid = ?'
+            ).bind(firebaseUid).first();
+            effective = resolveEffectiveTierUpgrade(existingAccount, newTier, newExpiresAt);
+
             await env.DB.prepare(
               'UPDATE auth_accounts SET tier = ?, tier_expires_at = ? WHERE uid = ?'
-            ).bind(tier, expiresAt, firebaseUid).run();
+            ).bind(effective.tier, effective.expiresAt, firebaseUid).run();
             await env.DB.prepare(
               'INSERT INTO ton_transactions (id, telegram_id, product_id, amount_ton, wallet_address, status) ' +
               "VALUES (?, ?, ?, ?, ?, 'confirmed') ON CONFLICT(id) DO NOTHING"
-            ).bind(String(txHash), 0, productId, String(amountTon || '0'), walletAddress || '').run();
+            ).bind(canonicalTxHash, 0, cleanProductId, String(amountTon || '0'), walletAddress || '').run();
+          }
+
+          if (cleanOrderId) {
+            try {
+              // Scoped to the caller: an order id alone must never mutate another account's row.
+              await env.DB.prepare(
+                "UPDATE ton_orders SET status = 'fulfilled', tx_hash = ?, fulfilled_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP " +
+                "WHERE order_id = ? AND user_id = ?"
+              ).bind(canonicalTxHash, cleanOrderId, callerOrderRef).run();
+            } catch (fulfillErr) {
+              // Pre-0005 D1: columns tx_hash/updated_at may be missing; still mark fulfilled.
+              try {
+                await env.DB.prepare(
+                  "UPDATE ton_orders SET status = 'fulfilled', fulfilled_at = CURRENT_TIMESTAMP " +
+                  "WHERE order_id = ? AND user_id = ?"
+                ).bind(cleanOrderId, callerOrderRef).run();
+              } catch (_) {
+                console.warn('[TON] ton_orders fulfill update failed:', fulfillErr && fulfillErr.message);
+              }
+            }
           }
         }
 
         return new Response(JSON.stringify({
           success: true,
-          tier: tier,
-          expiresAt: expiresAt,
+          tier: effective.tier,
+          expiresAt: effective.expiresAt,
           onChainConfirmed: true,
-          features: featuresForTier(tier),
+          features: featuresForTier(effective.tier),
           message: 'TON transaction confirmed. Paid tier unlocked with hard AI budgets.'
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // XDC Network On-Chain Payment Verification & Entitlement Activation
+      // @see https://docs.xdc.network/api/
+      if (path === '/api/v1/billing/xdc/verify' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const { productId, txHash, orderId, network, walletAddress } = body;
+
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok) {
+          return new Response(JSON.stringify({
+            error: 'AUTH_REQUIRED',
+            message: 'Valid Telegram initData, session cookie, or Firebase idToken required for XDC entitlement grant.'
+          }), { status: 401, headers: corsHeaders });
+        }
+
+        const xdcLimit = await enforceDualKeyLimit(env, request, 'xdc_verify', {
+          uid: auth.uid, uidPerMinute: 5, ipPerMinute: 20
+        });
+        if (!xdcLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many verification attempts. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...xdcLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+
+        const cleanTxHash = String(txHash || '').trim();
+        const cleanProductId = String(productId || '').trim();
+        const cleanOrderId = String(orderId || '').trim().slice(0, 128);
+
+        if (!cleanTxHash || !cleanProductId) {
+          return new Response(JSON.stringify({ error: 'Missing txHash or productId' }), {
+            status: 400,
+            headers: corsHeaders
+          });
+        }
+
+        const isProd = env.ENVIRONMENT === 'production' || env.NODE_ENV === 'production';
+        const isTestPayment = !isProd && (env.ALLOW_TEST_PAYMENTS === '1' || env.XDC_VERIFY_RELAXED === '1' || cleanTxHash.startsWith('sim_'));
+
+        const firebaseUid = auth.firebaseUid || (!auth.telegramId ? auth.uid : null);
+        const resolvedId = auth.telegramId || null;
+        const callerOrderRef = firebaseUid || (resolvedId ? 'tg_' + resolvedId : auth.uid);
+
+        if (isProd && !cleanOrderId) {
+          return new Response(JSON.stringify({
+            error: 'ORDER_REQUIRED',
+            message: 'Create a payment order via /api/v1/billing/xdc/order before verifying an XDC transaction.'
+          }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+
+        if (cleanOrderId && env.DB) {
+          await ensureXdcTables(env.DB);
+          const order = await env.DB.prepare(
+            'SELECT order_id, user_id, product_id, status FROM xdc_orders WHERE order_id = ?'
+          ).bind(cleanOrderId).first();
+
+          if (!order) {
+            return new Response(JSON.stringify({
+              error: 'ORDER_NOT_FOUND',
+              message: 'The requested XDC order does not exist.'
+            }), { status: 404, headers: corsHeaders });
+          }
+          if (order.user_id !== callerOrderRef) {
+            return new Response(JSON.stringify({
+              error: 'ORDER_USER_MISMATCH',
+              message: 'This XDC order belongs to a different account.'
+            }), { status: 403, headers: corsHeaders });
+          }
+          if (order.status === 'fulfilled') {
+            return new Response(JSON.stringify({
+              error: 'ORDER_ALREADY_FULFILLED',
+              message: 'This XDC payment has already been redeemed.'
+            }), { status: 409, headers: corsHeaders });
+          }
+        }
+
+        const targetNetwork = (!isProd && network === 'apothem') ? 'apothem' : 'mainnet';
+        const expectedProduct = XDC_PRODUCTS[cleanProductId];
+
+        // On-chain JSON-RPC verification
+        if (!isTestPayment) {
+          const expectedMerchant = env.XDC_CONTRACT_ADDRESS || env.XDC_TREASURY_ADDRESS || null;
+          const verification = await verifyXdcReceipt(
+            cleanTxHash,
+            targetNetwork,
+            expectedMerchant,
+            expectedProduct ? expectedProduct.amountWei : null
+          );
+          if (!verification.ok) {
+            return new Response(JSON.stringify({
+              error: 'ONCHAIN_VERIFY_FAILED',
+              message: verification.error || 'Failed to verify transaction receipt on XDC Network'
+            }), { status: 422, headers: corsHeaders });
+          }
+        }
+
+        // Anti-replay check via KV (normalized hash format)
+        const normTxHash = cleanTxHash.startsWith('xdc') ? '0x' + cleanTxHash.slice(3) : cleanTxHash;
+        const replayKey = `xdc_redeemed_${normTxHash.toLowerCase()}`;
+        if (env.KV_SESSIONS) {
+          const alreadyUsed = await env.KV_SESSIONS.get(replayKey);
+          if (alreadyUsed) {
+            return new Response(JSON.stringify({
+              error: 'TX_ALREADY_REDEEMED',
+              message: 'This on-chain transaction hash has already been redeemed.'
+            }), { status: 409, headers: corsHeaders });
+          }
+          await env.KV_SESSIONS.put(replayKey, cleanOrderId || 'direct', { expirationTtl: 86400 * 365 });
+        }
+
+        const newTier = cleanProductId === 'lifetime_master' ? 'lifetime' : 'pro';
+        const daysToAdd = cleanProductId === 'daily_unlimited' ? 1 : 30;
+        const grantExpiresAt = cleanProductId === 'lifetime_master'
+          ? null
+          : new Date(Date.now() + daysToAdd * 86400 * 1000).toISOString();
+
+        let effective = { tier: newTier, expiresAt: grantExpiresAt };
+
+        if (env.DB) {
+          if (resolvedId) {
+            const existingUser = await env.DB.prepare(
+              'SELECT tier, tier_expires_at FROM telegram_users WHERE telegram_id = ?'
+            ).bind(resolvedId).first();
+            effective = resolveEffectiveTierUpgrade(existingUser, newTier, grantExpiresAt);
+
+            await env.DB.prepare(
+              'INSERT INTO telegram_users (telegram_id, tier, tier_expires_at, updated_at) ' +
+              'VALUES (?, ?, ?, CURRENT_TIMESTAMP) ' +
+              'ON CONFLICT(telegram_id) DO UPDATE SET ' +
+              'tier = excluded.tier, tier_expires_at = excluded.tier_expires_at, updated_at = CURRENT_TIMESTAMP'
+            ).bind(resolvedId, effective.tier, effective.expiresAt).run();
+          }
+          if (firebaseUid) {
+            await ensureAuthAccountAiColumns(env.DB);
+            const existingAccount = await env.DB.prepare(
+              'SELECT tier, tier_expires_at FROM auth_accounts WHERE uid = ?'
+            ).bind(firebaseUid).first();
+            effective = resolveEffectiveTierUpgrade(existingAccount, newTier, grantExpiresAt);
+
+            await env.DB.prepare(
+              'UPDATE auth_accounts SET tier = ?, tier_expires_at = ? WHERE uid = ?'
+            ).bind(effective.tier, effective.expiresAt, firebaseUid).run();
+          }
+
+          if (cleanOrderId) {
+            try {
+              await env.DB.prepare(
+                "UPDATE xdc_orders SET status = 'fulfilled', tx_hash = ?, wallet_address = ?, updated_at = CURRENT_TIMESTAMP WHERE order_id = ? AND user_id = ?"
+              ).bind(normTxHash, walletAddress || '', cleanOrderId, callerOrderRef).run();
+            } catch (_) {}
+          }
+        }
+
+        return new Response(JSON.stringify({
+          success: true,
+          tier: effective.tier,
+          expiresAt: effective.expiresAt,
+          onChainConfirmed: true,
+          network: targetNetwork,
+          features: featuresForTier(effective.tier),
+          message: 'XDC Network payment verified. Pro tier unlocked on enterprise rails.'
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // Authenticated Exam Submission: records verified exam score and passing status in D1
+      if (path === '/api/v1/exam/submit' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok || !auth.uid) {
+          return new Response(JSON.stringify({
+            error: 'AUTH_REQUIRED',
+            message: 'Authentication required to submit exam results.'
+          }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+
+        const examLimit = await enforceDualKeyLimit(env, request, 'exam_submit', {
+          uid: auth.uid, uidPerMinute: 10, ipPerMinute: 30
+        });
+        if (!examLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many exam submissions. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...examLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+
+        const { examCode, scaledScore, passed, timeSpentSeconds, rawCorrect, totalQuestions } = body;
+        if (!examCode || typeof scaledScore !== 'number') {
+          return new Response(JSON.stringify({ error: 'Missing examCode or valid scaledScore' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+
+        const cleanCode = String(examCode).trim().toUpperCase();
+        const score = Math.max(100, Math.min(1000, Number(scaledScore) || 100));
+        const isCore2OrCloud = cleanCode.endsWith('2') || cleanCode.includes('1102') || cleanCode.includes('1202') || cleanCode.includes('AZ-900') || cleanCode.includes('AZ900');
+        const minPassScore = isCore2OrCloud ? 700 : 675;
+        const verifiedPassed = score >= minPassScore && Boolean(passed);
+        const attemptId = `attempt_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+        const safeTimeSpent = Math.max(0, Math.min(10800, Number(timeSpentSeconds) || 0));
+        const safeRaw = Math.max(0, Number(rawCorrect) || 0);
+        const safeTotal = Math.max(1, Number(totalQuestions) || 1);
+
+        if (env && env.DB) {
+          try {
+            await ensureXdcTables(env.DB);
+            await env.DB.prepare(`
+              INSERT INTO exam_attempts (attempt_id, user_id, exam_code, scaled_score, passed, time_spent_seconds, raw_correct, total_questions)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            `).bind(attemptId, auth.uid, cleanCode, score, verifiedPassed ? 1 : 0, safeTimeSpent, safeRaw, safeTotal).run();
+          } catch (e) {
+            console.warn('[Exam] Submission recording warning:', e && e.message ? e.message : e);
+          }
+        }
+
+        return new Response(JSON.stringify({
+          success: true,
+          attemptId,
+          examCode: cleanCode,
+          scaledScore: score,
+          passed: verifiedPassed,
+          certifiedAt: Math.floor(Date.now() / 1000)
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // AI Attestation Oracle: Signs Proof-of-Competence for XDC (ERC-5192) or TON (TEP-85)
+      if (path === '/api/v1/oracle/attest' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok) {
+          return new Response(JSON.stringify({
+            error: 'AUTH_REQUIRED',
+            message: 'Authentication required to request an AI Proof-of-Competence attestation.'
+          }), { status: 401, headers: corsHeaders });
+        }
+
+        const attestLimit = await enforceDualKeyLimit(env, request, 'oracle_attest', {
+          uid: auth.uid, uidPerMinute: 5, ipPerMinute: 15
+        });
+        if (!attestLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many attestation requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...attestLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+
+        const { examCode, scaledScore, passed, localLedgerHash, chain, walletAddress, attemptId } = body;
+        if (!examCode || !walletAddress) {
+          return new Response(JSON.stringify({ error: 'Missing examCode or walletAddress' }), {
+            status: 400,
+            headers: corsHeaders
+          });
+        }
+
+        let verifiedScore = Number(scaledScore);
+        let verifiedPassed = Boolean(passed);
+
+        // Server-side attestation verification: Check database for recorded passing attempt
+        if (env && env.DB) {
+          try {
+            await ensureXdcTables(env.DB);
+            let attemptRow = null;
+            if (attemptId) {
+              attemptRow = await env.DB.prepare(
+                'SELECT scaled_score, passed FROM exam_attempts WHERE attempt_id = ? AND user_id = ?'
+              ).bind(String(attemptId), auth.uid).first();
+            } else {
+              attemptRow = await env.DB.prepare(
+                'SELECT scaled_score, passed FROM exam_attempts WHERE user_id = ? AND exam_code = ? AND passed = 1 ORDER BY created_at DESC LIMIT 1'
+              ).bind(auth.uid, String(examCode).trim().toUpperCase()).first();
+            }
+            if (attemptRow) {
+              verifiedScore = Number(attemptRow.scaled_score);
+              verifiedPassed = Boolean(attemptRow.passed);
+            } else if (env.ENVIRONMENT === 'production') {
+              return new Response(JSON.stringify({
+                error: 'VERIFIED_ATTEMPT_REQUIRED',
+                message: 'No verified passing exam attempt found on record for this account.'
+              }), { status: 403, headers: corsHeaders });
+            }
+          } catch (e) {
+            console.warn('[Oracle] Attempt verification warning:', e && e.message ? e.message : e);
+          }
+        }
+
+        const attestation = await createOracleAttestation({
+          userId: auth.uid,
+          examCode: String(examCode),
+          scaledScore: verifiedScore,
+          passed: verifiedPassed,
+          localLedgerRoot: localLedgerHash,
+          chain: String(chain || 'xdc').toLowerCase(),
+          walletAddress: String(walletAddress),
+          env
+        });
+
+        if (!attestation.ok) {
+          return new Response(JSON.stringify({
+            error: 'ATTESTATION_REJECTED',
+            message: attestation.error || 'Mastery criteria not satisfied'
+          }), { status: 422, headers: corsHeaders });
+        }
+
+        return new Response(JSON.stringify(attestation), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // TON Mastery SBT mint queue (oracle mints; clients request after verified pass)
+      if (path === '/api/v1/credentials/ton/mint' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok) {
+          return new Response(JSON.stringify({
+            error: 'AUTH_REQUIRED',
+            message: 'Authentication required to mint a TON mastery credential.'
+          }), { status: 401, headers: corsHeaders });
+        }
+
+        const mintLimit = await enforceDualKeyLimit(env, request, 'ton_sbt_mint', {
+          uid: auth.uid, uidPerMinute: 5, ipPerMinute: 15
+        });
+        if (!mintLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many mint requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...mintLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+
+        const isProd = env.ENVIRONMENT === 'production' || env.NODE_ENV === 'production';
+        const collectionAddress = String(env.TON_SBT_COLLECTION_ADDRESS || '').trim() || null;
+        if (!collectionAddress) {
+          return new Response(JSON.stringify({
+            error: 'SBT_COLLECTION_UNCONFIGURED',
+            message: 'TON Mastery SBT collection is not deployed for this environment yet.'
+          }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+        // Never allow testnet-form addresses (kQ/0Q) on production.
+        if (isProd && /^[k0]Q/i.test(collectionAddress)) {
+          return new Response(JSON.stringify({
+            error: 'SBT_COLLECTION_NETWORK_MISMATCH',
+            message: 'Production Mastery SBT must use a mainnet collection address.'
+          }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+
+        const examCode = String(body.examCode || '').trim().toUpperCase();
+        const recipientWallet = String(body.walletAddress || body.recipientWallet || '').trim();
+        const ledgerHash = String(body.ledgerHash || body.localLedgerHash || '');
+        const attemptId = body.attemptId ? String(body.attemptId) : null;
+        if (!examCode || !recipientWallet) {
+          return new Response(JSON.stringify({
+            error: 'INVALID_MINT_REQUEST',
+            message: 'examCode and walletAddress are required.'
+          }), { status: 400, headers: corsHeaders });
+        }
+
+        let verifiedScore = Number(body.scaledScore);
+        let verifiedPassed = Boolean(body.passed);
+        if (env.DB) {
+          try {
+            await ensureXdcTables(env.DB);
+            let attemptRow = null;
+            if (attemptId) {
+              attemptRow = await env.DB.prepare(
+                'SELECT scaled_score, passed FROM exam_attempts WHERE attempt_id = ? AND user_id = ?'
+              ).bind(attemptId, auth.uid).first();
+            } else {
+              attemptRow = await env.DB.prepare(
+                'SELECT scaled_score, passed FROM exam_attempts WHERE user_id = ? AND exam_code = ? AND passed = 1 ORDER BY created_at DESC LIMIT 1'
+              ).bind(auth.uid, examCode).first();
+            }
+            if (attemptRow) {
+              verifiedScore = Number(attemptRow.scaled_score);
+              verifiedPassed = Boolean(attemptRow.passed);
+            } else if (isProd) {
+              return new Response(JSON.stringify({
+                error: 'VERIFIED_ATTEMPT_REQUIRED',
+                message: 'No verified passing exam attempt found on record for this account.'
+              }), { status: 403, headers: corsHeaders });
+            }
+          } catch (e) {
+            console.warn('[TON SBT] Attempt verification warning:', e && e.message ? e.message : e);
+            if (isProd) {
+              return new Response(JSON.stringify({
+                error: 'VERIFIED_ATTEMPT_REQUIRED',
+                message: 'Could not verify exam attempt for mint.'
+              }), { status: 403, headers: corsHeaders });
+            }
+          }
+        } else if (isProd) {
+          return new Response(JSON.stringify({
+            error: 'VERIFIED_ATTEMPT_REQUIRED',
+            message: 'Exam attempt verification requires D1 in production.'
+          }), { status: 503, headers: corsHeaders });
+        }
+
+        const isCore2 = /1202|1102|CORE\s*2/.test(examCode) || examCode.endsWith('2');
+        const minPass = isCore2 ? 700 : 675;
+        if (!verifiedPassed || !(Number.isFinite(verifiedScore) && verifiedScore >= minPass)) {
+          return new Response(JSON.stringify({
+            error: 'PASS_REQUIRED',
+            message: `Scaled score must be at least ${minPass} to mint.`
+          }), { status: 422, headers: corsHeaders });
+        }
+
+        const mintId = `sbt_${auth.uid.slice(0, 12)}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+        const network = env.TON_NETWORK === 'testnet' ? 'testnet' : 'mainnet';
+
+        if (env.DB) {
+          try {
+            await env.DB.prepare(`
+              CREATE TABLE IF NOT EXISTS ton_sbt_mints (
+                mint_id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                exam_code TEXT NOT NULL,
+                scaled_score INTEGER NOT NULL,
+                ledger_hash TEXT,
+                recipient_wallet TEXT NOT NULL,
+                attestation_id TEXT,
+                collection_address TEXT,
+                status TEXT NOT NULL DEFAULT 'pending',
+                item_address TEXT,
+                tx_hash TEXT,
+                error_message TEXT,
+                created_at TEXT NOT NULL DEFAULT (datetime('now')),
+                updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+              )
+            `).run();
+            await env.DB.prepare(`
+              INSERT INTO ton_sbt_mints (
+                mint_id, user_id, exam_code, scaled_score, ledger_hash,
+                recipient_wallet, attestation_id, collection_address, status
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+            `).bind(
+              mintId,
+              auth.uid,
+              examCode,
+              verifiedScore,
+              ledgerHash.slice(0, 128),
+              recipientWallet,
+              body.attestationId ? String(body.attestationId) : null,
+              collectionAddress
+            ).run();
+          } catch (e) {
+            console.warn('[TON SBT] mint queue insert failed:', e && e.message ? e.message : e);
+            return new Response(JSON.stringify({
+              error: 'MINT_QUEUE_FAILED',
+              message: 'Could not queue the mastery mint. Try again shortly.'
+            }), { status: 503, headers: corsHeaders });
+          }
+        }
+
+        return new Response(JSON.stringify({
+          success: true,
+          mintId,
+          status: 'pending',
+          network,
+          collectionAddress,
+          attemptId: attemptId || null,
+          explorer: `https://${network === 'testnet' ? 'testnet.' : ''}tonscan.org/address/${collectionAddress}`,
+          message: 'Mint queued for oracle. Credential will appear after the oracle confirms on-chain.'
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
@@ -811,7 +2527,7 @@ export default {
       // @see https://core.telegram.org/bots/payments-stars
       if (path === '/api/v1/billing/stars/invoice' && request.method === 'POST') {
         const body = await request.json();
-        const { productId, initData } = body;
+        const { productId } = body;
         const catalogProduct = getStarsProduct(productId);
         if (!catalogProduct) {
           return new Response(JSON.stringify({ error: 'Unknown Stars product' }), {
@@ -820,16 +2536,40 @@ export default {
           });
         }
 
-        const tgUser = await verifyTelegramInitData(initData, env.TELEGRAM_BOT_TOKEN);
-        if (env.TELEGRAM_BOT_TOKEN && !tgUser) {
-          return new Response(JSON.stringify({ error: 'Valid Telegram WebApp initData required' }), {
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok || !auth.telegramId) {
+          return new Response(JSON.stringify({ error: 'Valid Telegram WebApp initData or session required' }), {
             status: 401,
             headers: corsHeaders
           });
         }
-        const telegramId = tgUser ? tgUser.id : Number(body.telegramId || 0);
+        const telegramId = auth.telegramId;
+        const clientIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
+        const invoiceLimit = await enforceDualKeyLimit(env, request, 'stars_invoice', {
+          uid: telegramId, uidPerMinute: 10, ipPerMinute: 20
+        });
+        if (!invoiceLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many invoice requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...invoiceLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
 
         if (!env.TELEGRAM_BOT_TOKEN) {
+          if (env.ENVIRONMENT === 'production') {
+            return new Response(JSON.stringify({
+              error: 'TELEGRAM_BOT_TOKEN_REQUIRED',
+              message: 'Stars invoices require TELEGRAM_BOT_TOKEN in production.'
+            }), {
+              status: 503,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+          }
           return new Response(JSON.stringify({
             success: true,
             sandbox: true,
@@ -910,6 +2650,30 @@ export default {
         } else if (env.ENVIRONMENT === 'production' || env.NODE_ENV === 'production') {
           console.error('Telegram webhook rejected: TELEGRAM_WEBHOOK_SECRET / EDGE_WEBHOOK_SECRET is not configured in production');
           return new Response('Webhook secret not configured', { status: 503, headers: corsHeaders });
+        }
+
+        // Backstop behind the edge rule. An attacker who learns the secret, or
+        // any Telegram-side retry storm, still cannot drive unbounded D1 writes
+        // and Bot API calls. Sits after the secret check on purpose: a spoofed
+        // request is already rejected above and must not consume the budget
+        // that real payment callbacks depend on.
+        const hookLimit = await enforceDualKeyLimit(env, request, 'telegram_webhook', {
+          ipPerMinute: 600
+        });
+        if (!hookLimit.allowed) {
+          console.warn(JSON.stringify({
+            event: 'rate_limit_exceeded',
+            action: 'telegram_webhook',
+            dimension: hookLimit.dimension,
+            ip: hookLimit.ip,
+            ts: new Date().toISOString()
+          }));
+          // 429 tells Telegram to retry with backoff; it will redeliver, so a
+          // throttled payment callback is delayed rather than lost.
+          return new Response('Too Many Requests', {
+            status: 429,
+            headers: { ...corsHeaders, ...hookLimit.headers }
+          });
         }
 
         const update = await request.json().catch(() => ({}));
@@ -997,44 +2761,81 @@ export default {
           const telegramId = update.message.from.id;
           const chargeId = payment.telegram_payment_charge_id;
           const amount = payment.total_amount;
-          const parsed = parseStarsInvoicePayload(payment.invoice_payload);
-          const productId = parsed.productId || 'daily_unlimited';
-          const grant = resolveStarsGrant(productId);
+          const validation = validateStarsSuccessfulPayment(payment, telegramId);
 
-          if (payment.currency !== 'XTR') {
-            console.warn('Ignoring non-XTR successful_payment', payment.currency);
+          if (!validation.ok) {
+            console.warn('Ignoring invalid successful_payment', validation.error, {
+              chargeId: chargeId || null,
+              telegramId
+            });
+            // Ask Telegram to retry when we cannot persist a grant that should have succeeded.
+            if (validation.error === 'unknown_product' || validation.error === 'amount_mismatch' ||
+                validation.error === 'payer_mismatch') {
+              return new Response(JSON.stringify({ ok: false, error: validation.error }), {
+                status: 400,
+                headers: corsHeaders
+              });
+            }
             return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
           }
 
-          if (env.DB && chargeId) {
-            const existing = await env.DB.prepare(
-              'SELECT id FROM stars_transactions WHERE id = ?'
-            ).bind(chargeId).first();
+          const productId = validation.product.id;
+          const grant = validation.grant;
 
-            if (!existing) {
-              await env.DB.prepare(`
-                INSERT INTO stars_transactions (id, telegram_id, product_id, stars_amount, status, invoice_payload)
-                VALUES (?, ?, ?, ?, 'paid', ?)
-              `).bind(chargeId, telegramId, productId, amount, payment.invoice_payload || '').run();
+          if (!env.DB || !chargeId) {
+            console.error('Stars grant cannot persist: missing DB or chargeId', {
+              hasDb: !!env.DB,
+              chargeId: chargeId || null
+            });
+            return new Response(JSON.stringify({ ok: false, error: 'GRANT_PERSIST_UNAVAILABLE' }), {
+              status: 500,
+              headers: corsHeaders
+            });
+          }
 
-              await env.DB.prepare(`
-                INSERT INTO telegram_users (telegram_id, username, first_name, last_name, tier, tier_expires_at, stars_spent, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-                ON CONFLICT(telegram_id) DO UPDATE SET
-                  tier = excluded.tier,
-                  tier_expires_at = excluded.tier_expires_at,
-                  stars_spent = telegram_users.stars_spent + excluded.stars_spent,
-                  updated_at = CURRENT_TIMESTAMP
-              `).bind(
-                telegramId,
-                update.message.from.username || '',
-                update.message.from.first_name || '',
-                update.message.from.last_name || '',
-                grant.tier,
-                grant.expiresAt,
-                amount
-              ).run();
-            }
+          // Atomic-ish idempotency: insert charge with ON CONFLICT DO NOTHING, then
+          // always re-apply the tier upsert so a post-insert user-write failure recovers
+          // on Telegram redelivery. stars_spent is derived from the charge ledger.
+          try {
+            await env.DB.prepare(`
+              INSERT INTO stars_transactions (id, telegram_id, product_id, stars_amount, status, invoice_payload)
+              VALUES (?, ?, ?, ?, 'paid', ?)
+              ON CONFLICT(id) DO NOTHING
+            `).bind(chargeId, telegramId, productId, amount, payment.invoice_payload || '').run();
+
+            const existingUser = await env.DB.prepare(
+              'SELECT tier, tier_expires_at FROM telegram_users WHERE telegram_id = ?'
+            ).bind(telegramId).first();
+            const effective = resolveEffectiveTierUpgrade(existingUser, grant.tier, grant.expiresAt);
+
+            const spentRow = await env.DB.prepare(
+              'SELECT COALESCE(SUM(stars_amount), 0) AS total FROM stars_transactions WHERE telegram_id = ?'
+            ).bind(telegramId).first();
+            const starsSpentTotal = spentRow && spentRow.total != null ? Number(spentRow.total) : Number(amount);
+
+            await env.DB.prepare(`
+              INSERT INTO telegram_users (telegram_id, username, first_name, last_name, tier, tier_expires_at, stars_spent, updated_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+              ON CONFLICT(telegram_id) DO UPDATE SET
+                tier = excluded.tier,
+                tier_expires_at = excluded.tier_expires_at,
+                stars_spent = excluded.stars_spent,
+                updated_at = CURRENT_TIMESTAMP
+            `).bind(
+              telegramId,
+              update.message.from.username || '',
+              update.message.from.first_name || '',
+              update.message.from.last_name || '',
+              effective.tier,
+              effective.expiresAt,
+              starsSpentTotal
+            ).run();
+          } catch (grantErr) {
+            console.error('Stars grant persistence failed', grantErr);
+            return new Response(JSON.stringify({ ok: false, error: 'GRANT_PERSIST_FAILED' }), {
+              status: 500,
+              headers: corsHeaders
+            });
           }
 
           if (env.TELEGRAM_BOT_TOKEN) {
@@ -1066,7 +2867,11 @@ export default {
 
       return new Response('Not found', { status: 404, headers: corsHeaders });
     } catch (err) {
-      return new Response(JSON.stringify({ error: err.message || 'Internal Edge Error' }), {
+      const isProd = env.ENVIRONMENT === 'production' || env.NODE_ENV === 'production';
+      console.error('[API Error]', err);
+      return new Response(JSON.stringify({
+        error: isProd ? 'Internal Server Error' : (err.message || 'Internal Edge Error')
+      }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
@@ -1077,797 +2882,3 @@ export default {
 // =========================================================================
 // Helper Functions: App shell, Auth audit, Telegram Cryptographic Auth
 // =========================================================================
-
-/**
- * Ensure HTML served under /app resolves relative assets against site root.
- */
-function withAppBase(response) {
-  if (!response || !response.ok) return response;
-  const ct = (response.headers.get('Content-Type') || '').toLowerCase();
-  if (!ct.includes('text/html')) return response;
-  return response.text().then((html) => {
-    let out = html;
-    if (!/<base\s/i.test(out)) {
-      out = out.replace(/<head([^>]*)>/i, '<head$1><base href="/">');
-    }
-    const headers = new Headers(response.headers);
-    headers.set('Content-Type', 'text/html; charset=utf-8');
-    headers.set('X-Content-Type-Options', 'nosniff');
-    headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-    headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-    headers.delete('content-length');
-    return new Response(out, { status: response.status, statusText: response.statusText, headers });
-  });
-}
-
-function isAdminAuthorized(request, env) {
-  const key = env.ADMIN_API_KEY || env.AUTH_ADMIN_KEY || '';
-  if (!key) return false;
-  const headerKey = request.headers.get('X-Admin-Key') || '';
-  const auth = request.headers.get('Authorization') || '';
-  const bearer = auth.toLowerCase().startsWith('bearer ') ? auth.slice(7).trim() : '';
-  return timingSafeEqualStr(headerKey, key) || timingSafeEqualStr(bearer, key);
-}
-
-async function verifyFirebaseIdToken(idToken, apiKey) {
-  if (!idToken || !apiKey) return null;
-  try {
-    const res = await fetch(
-      `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${encodeURIComponent(apiKey)}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken })
-      }
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.users && data.users[0] ? data.users[0] : null;
-  } catch (_) {
-    return null;
-  }
-}
-
-async function recordAuthSession(body, env) {
-  const eventType = (body && body.event === 'signup') ? 'signup' : 'signin';
-  let provider = (body && body.provider) || 'unknown';
-  let uid = (body && body.uid) || '';
-  let email = (body && body.email) || '';
-  let displayName = (body && body.displayName) || '';
-  let photoURL = (body && body.photoURL) || '';
-  let telegramId = body && body.telegramId != null ? Number(body.telegramId) : null;
-
-  if (body && body.initData && env.TELEGRAM_BOT_TOKEN) {
-    const tgUser = await verifyTelegramInitData(body.initData, env.TELEGRAM_BOT_TOKEN);
-    if (!tgUser) return { ok: false, status: 401, error: 'Invalid Telegram initData' };
-    provider = provider === 'telegram_tma' ? 'telegram_tma' : 'telegram';
-    telegramId = tgUser.id;
-    uid = 'tg_' + tgUser.id;
-    displayName = (tgUser.first_name || '') + (tgUser.last_name ? ' ' + tgUser.last_name : '');
-    email = tgUser.username ? '@' + tgUser.username : email;
-    photoURL = tgUser.photo_url || photoURL;
-  } else if (body && body.telegramLogin) {
-    const tgUser = await verifyTelegramLoginWidget(body.telegramLogin, env.TELEGRAM_BOT_TOKEN);
-    if (!tgUser) return { ok: false, status: 401, error: 'Invalid or expired Telegram login signature' };
-    provider = 'telegram';
-    telegramId = tgUser.id;
-    uid = 'tg_' + tgUser.id;
-    displayName = (tgUser.first_name || '') + (tgUser.last_name ? ' ' + tgUser.last_name : '');
-    email = tgUser.username ? '@' + tgUser.username : email;
-    photoURL = tgUser.photo_url || photoURL;
-  } else if (body && body.idToken) {
-    const apiKey = env.FIREBASE_WEB_API_KEY || 'AIzaSyAt5MnWAXJcL84vG6gxRoIksJL2bcfr4y8';
-    const fbUser = await verifyFirebaseIdToken(body.idToken, apiKey);
-    if (!fbUser) return { ok: false, status: 401, error: 'Invalid Firebase ID token' };
-    uid = fbUser.localId || uid;
-    email = fbUser.email || email;
-    displayName = fbUser.displayName || displayName;
-    photoURL = fbUser.photoUrl || photoURL;
-    if (!provider || provider === 'unknown') {
-      provider = (fbUser.providerUserInfo && fbUser.providerUserInfo[0] && fbUser.providerUserInfo[0].providerId === 'google.com')
-        ? 'google'
-        : 'email';
-    }
-  } else {
-    return {
-      ok: false,
-      status: 401,
-      error: 'Firebase idToken, Telegram initData, or Telegram login payload required'
-    };
-  }
-
-  if (!env.DB) {
-    return { ok: true, account: { uid, email, displayName, provider }, event: eventType };
-  }
-
-  await env.DB.prepare(`
-    CREATE TABLE IF NOT EXISTS auth_accounts (
-      uid TEXT PRIMARY KEY,
-      provider TEXT NOT NULL,
-      email TEXT,
-      display_name TEXT,
-      photo_url TEXT,
-      telegram_id INTEGER,
-      signup_at TIMESTAMP,
-      last_signin_at TIMESTAMP,
-      signin_count INTEGER NOT NULL DEFAULT 0,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `).run();
-
-  await env.DB.prepare(`
-    CREATE TABLE IF NOT EXISTS auth_events (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      uid TEXT NOT NULL,
-      event TEXT NOT NULL,
-      provider TEXT NOT NULL,
-      email TEXT,
-      display_name TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `).run();
-
-  const existing = await env.DB.prepare('SELECT uid, signup_at, signin_count FROM auth_accounts WHERE uid = ?')
-    .bind(uid).first();
-
-  const resolvedEvent = (!existing && eventType === 'signin') ? 'signup' : eventType;
-
-  if (!existing) {
-    await env.DB.prepare(`
-      INSERT INTO auth_accounts (
-        uid, provider, email, display_name, photo_url, telegram_id,
-        signup_at, last_signin_at, signin_count, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP)
-    `).bind(uid, provider, email, displayName, photoURL, telegramId).run();
-  } else {
-    await env.DB.prepare(`
-      UPDATE auth_accounts SET
-        provider = ?,
-        email = COALESCE(NULLIF(?, ''), email),
-        display_name = COALESCE(NULLIF(?, ''), display_name),
-        photo_url = COALESCE(NULLIF(?, ''), photo_url),
-        telegram_id = COALESCE(?, telegram_id),
-        last_signin_at = CURRENT_TIMESTAMP,
-        signin_count = signin_count + 1,
-        updated_at = CURRENT_TIMESTAMP
-      WHERE uid = ?
-    `).bind(provider, email, displayName, photoURL, telegramId, uid).run();
-  }
-
-  if (telegramId && Number.isFinite(telegramId)) {
-    await env.DB.prepare(`
-      INSERT INTO telegram_users (telegram_id, username, first_name, last_name, updated_at)
-      VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-      ON CONFLICT(telegram_id) DO UPDATE SET
-        username = excluded.username,
-        first_name = excluded.first_name,
-        last_name = excluded.last_name,
-        updated_at = CURRENT_TIMESTAMP
-    `).bind(
-      telegramId,
-      (email && email.startsWith('@')) ? email.slice(1) : '',
-      (displayName || '').split(' ')[0] || '',
-      (displayName || '').split(' ').slice(1).join(' ') || ''
-    ).run();
-  }
-
-  if (email && !email.startsWith('@')) {
-    await env.DB.prepare(`
-      INSERT INTO users (id, email, updated_at)
-      VALUES (?, ?, CURRENT_TIMESTAMP)
-      ON CONFLICT(email) DO UPDATE SET updated_at = CURRENT_TIMESTAMP
-    `).bind(uid, email).run().catch(() => {});
-  }
-
-  await env.DB.prepare(`
-    INSERT INTO auth_events (uid, event, provider, email, display_name)
-    VALUES (?, ?, ?, ?, ?)
-  `).bind(uid, resolvedEvent, provider, email, displayName).run();
-
-  const account = await env.DB.prepare('SELECT * FROM auth_accounts WHERE uid = ?').bind(uid).first();
-  return { ok: true, account, event: resolvedEvent };
-}
-
-async function listAuthAccounts(db, limit) {
-  if (!db) return { accounts: [], events: [] };
-  await db.prepare(`
-    CREATE TABLE IF NOT EXISTS auth_accounts (
-      uid TEXT PRIMARY KEY,
-      provider TEXT NOT NULL,
-      email TEXT,
-      display_name TEXT,
-      photo_url TEXT,
-      telegram_id INTEGER,
-      signup_at TIMESTAMP,
-      last_signin_at TIMESTAMP,
-      signin_count INTEGER NOT NULL DEFAULT 0,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `).run();
-  await db.prepare(`
-    CREATE TABLE IF NOT EXISTS auth_events (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      uid TEXT NOT NULL,
-      event TEXT NOT NULL,
-      provider TEXT NOT NULL,
-      email TEXT,
-      display_name TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `).run();
-
-  const accounts = await db.prepare(`
-    SELECT uid, provider, email, display_name, photo_url, telegram_id,
-           signup_at, last_signin_at, signin_count, created_at, updated_at
-    FROM auth_accounts
-    ORDER BY COALESCE(last_signin_at, created_at) DESC
-    LIMIT ?
-  `).bind(limit).all();
-
-  const events = await db.prepare(`
-    SELECT id, uid, event, provider, email, display_name, created_at
-    FROM auth_events
-    ORDER BY id DESC
-    LIMIT ?
-  `).bind(limit).all();
-
-  return {
-    accounts: (accounts && accounts.results) || [],
-    events: (events && events.results) || []
-  };
-}
-
-/**
- * Canonical Stars (XTR) catalog. Amounts are whole Stars; invoice titles <= 32 chars.
- * @see https://core.telegram.org/bots/payments-stars
- */
-const STARS_PRODUCTS = {
-  daily_unlimited: {
-    id: 'daily_unlimited',
-    stars: 50,
-    tier: 'daily_pass',
-    title: '24-Hour Study Pass',
-    description: 'Higher hard AI budgets, streaming coach, Core 1+networking specialists for 24 hours.'
-  },
-  pro_monthly: {
-    id: 'pro_monthly',
-    stars: 250,
-    tier: 'pro_monthly',
-    title: 'Monthly Pro Pass',
-    description: 'Multi-specialist handoffs, tools, NVIDIA/OpenRouter, hard daily/monthly AI caps for 30 days.'
-  },
-  lifetime_master: {
-    id: 'lifetime_master',
-    stars: 1500,
-    tier: 'lifetime',
-    title: 'Lifetime Master Pass',
-    description: 'Highest hard AI budgets, war-room plans, priority models, and full Core 1+2 forever.'
-  }
-};
-
-function getStarsProduct(productId) {
-  if (!productId) return null;
-  return STARS_PRODUCTS[String(productId)] || null;
-}
-
-function parseStarsInvoicePayload(raw) {
-  let data = {};
-  try {
-    data = typeof raw === 'string' ? JSON.parse(raw || '{}') : (raw || {});
-  } catch (e) {
-    return { productId: null, telegramId: null, stars: null };
-  }
-  return {
-    productId: data.p || data.productId || null,
-    telegramId: data.u != null ? data.u : (data.telegramId != null ? data.telegramId : null),
-    stars: data.s != null ? data.s : (data.stars != null ? data.stars : null)
-  };
-}
-
-function resolveStarsGrant(productId) {
-  const product = getStarsProduct(productId) || STARS_PRODUCTS.daily_unlimited;
-  let expiresAt = Date.now() + 24 * 60 * 60 * 1000;
-  if (product.id === 'pro_monthly') {
-    expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
-  } else if (product.id === 'lifetime_master') {
-    expiresAt = null;
-  }
-  return { tier: product.tier, expiresAt, product };
-}
-
-function validateStarsPreCheckout(pcq) {
-  if (!pcq) {
-    return { ok: false, error_message: 'Missing checkout details. Please try again.' };
-  }
-  if (pcq.currency !== 'XTR') {
-    return {
-      ok: false,
-      error_message: 'Digital goods must be paid in Telegram Stars (XTR) only.'
-    };
-  }
-  const parsed = parseStarsInvoicePayload(pcq.invoice_payload);
-  const product = getStarsProduct(parsed.productId);
-  if (!product) {
-    return {
-      ok: false,
-      error_message: 'This product is no longer available. Open the Mini App for current passes.'
-    };
-  }
-  if (Number(pcq.total_amount) !== Number(product.stars)) {
-    return {
-      ok: false,
-      error_message: 'Price mismatch. Please reopen checkout from the Mini App.'
-    };
-  }
-  return { ok: true };
-}
-
-/**
- * Constant-time string comparison to prevent timing side-channel attacks
- */
-function timingSafeEqualStr(a, b) {
-  if (typeof a !== 'string' || typeof b !== 'string') return false;
-  if (a.length !== b.length) return false;
-  let mismatch = 0;
-  for (let i = 0; i < a.length; i++) {
-    mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-  return mismatch === 0;
-}
-
-/**
- * Validates Telegram WebApp initData HMAC-SHA256 signature
- */
-async function verifyTelegramInitData(initData, botToken) {
-  if (!initData) return null;
-  const params = new URLSearchParams(initData);
-  const hash = params.get('hash');
-  if (!hash) return null;
-
-  // Replay Protection: Validate auth_date freshness
-  const authDateStr = params.get('auth_date');
-  if (authDateStr) {
-    const authDate = parseInt(authDateStr, 10);
-    const nowSeconds = Math.floor(Date.now() / 1000);
-    // Reject if expired (> 24 hours / 86400s) or clock-skewed into future (> 300s)
-    if (isNaN(authDate) || (nowSeconds - authDate) > 86400 || (authDate - nowSeconds) > 300) {
-      console.warn('initData rejected: auth_date expired or invalid timestamp');
-      return null;
-    }
-  }
-
-  params.delete('hash');
-  const pairs = [];
-  for (const [k, v] of params.entries()) {
-    pairs.push(`${k}=${v}`);
-  }
-  pairs.sort();
-  const dataCheckString = pairs.join('\n');
-
-  // Production: never trust initData without HMAC verification.
-  if (!botToken) {
-    console.warn('initData rejected: TELEGRAM_BOT_TOKEN not configured');
-    return null;
-  }
-
-  // WebAppData HMAC validation
-  try {
-    const enc = new TextEncoder();
-    const keySecret = await crypto.subtle.importKey(
-      'raw',
-      enc.encode('WebAppData'),
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['sign']
-    );
-    const secretKeyBuf = await crypto.subtle.sign('HMAC', keySecret, enc.encode(botToken));
-    const signingKey = await crypto.subtle.importKey(
-      'raw',
-      secretKeyBuf,
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['sign']
-    );
-    const signature = await crypto.subtle.sign('HMAC', signingKey, enc.encode(dataCheckString));
-    const hex = Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
-
-    if (timingSafeEqualStr(hex, hash)) {
-      const userRaw = params.get('user');
-      return userRaw ? JSON.parse(userRaw) : null;
-    }
-  } catch (e) {
-    console.debug('HMAC verification failure:', e);
-  }
-
-  return null;
-}
-
-/**
- * Validates Telegram Web Login Widget authorization data
- * https://core.telegram.org/widgets/login#checking-authorization
- */
-async function verifyTelegramLoginWidget(data, botToken) {
-  if (!data || !data.hash) return null;
-  const hash = data.hash;
-
-  // Validate auth_date freshness (within 24 hours)
-  const authDate = parseInt(data.auth_date, 10);
-  const now = Math.floor(Date.now() / 1000);
-  if (isNaN(authDate) || (now - authDate) > 86400 || (authDate - now) > 300) {
-    return null;
-  }
-
-  // Collect and sort data check string
-  const pairs = [];
-  for (const [k, v] of Object.entries(data)) {
-    if (k !== 'hash' && v !== undefined && v !== null && v !== '') {
-      pairs.push(`${k}=${v}`);
-    }
-  }
-  pairs.sort();
-  const dataCheckString = pairs.join('\n');
-
-  if (!botToken) {
-    console.warn('Telegram login widget rejected: TELEGRAM_BOT_TOKEN not configured');
-    return null;
-  }
-
-  try {
-    const enc = new TextEncoder();
-    const secretKeyBuf = await crypto.subtle.digest('SHA-256', enc.encode(botToken));
-    const signingKey = await crypto.subtle.importKey(
-      'raw',
-      secretKeyBuf,
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['sign']
-    );
-    const signature = await crypto.subtle.sign('HMAC', signingKey, enc.encode(dataCheckString));
-    const hex = Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
-
-    if (timingSafeEqualStr(hex, hash)) {
-      return {
-        id: data.id,
-        first_name: data.first_name,
-        last_name: data.last_name,
-        username: data.username,
-        photo_url: data.photo_url
-      };
-    }
-  } catch (e) {
-    console.debug('Telegram login widget HMAC error:', e);
-  }
-  return null;
-}
-
-/**
- * Resolves user entitlement, 14-day trial status, and daily quota usage from D1
- */
-async function resolveUserEntitlement(telegramId, db) {
-  const defaultEntitlement = {
-    tier: 'free',
-    freeUsedToday: 0,
-    trialStartedAt: Date.now(),
-    trialDaysRemaining: 14,
-    proPreviewTokensRemaining: 3
-  };
-
-  if (!telegramId || !db) {
-    return defaultEntitlement;
-  }
-
-  try {
-    const user = await db.prepare('SELECT * FROM telegram_users WHERE telegram_id = ?').bind(telegramId).first();
-    if (!user) {
-      return defaultEntitlement;
-    }
-
-    // Check expiry
-    let tier = user.tier || 'free';
-    if (user.tier_expires_at && user.tier_expires_at < Date.now()) {
-      tier = 'free';
-    }
-
-    const todayStr = new Date().toISOString().slice(0, 10);
-    const freeUsed = user.free_ai_last_date === todayStr ? (user.free_ai_used_today || 0) : 0;
-    const trialStartedAt = user.trial_started_at || (user.created_at ? new Date(user.created_at).getTime() : Date.now());
-    const trialDaysRemaining = Math.max(0, Math.ceil((trialStartedAt + 14 * 86400000 - Date.now()) / 86400000));
-    const proPreviewTokens = typeof user.pro_preview_tokens_remaining === 'number' ? user.pro_preview_tokens_remaining : 3;
-
-    return {
-      tier,
-      freeUsedToday: freeUsed,
-      trialStartedAt,
-      trialDaysRemaining,
-      proPreviewTokensRemaining: proPreviewTokens,
-      user
-    };
-  } catch (e) {
-    return defaultEntitlement;
-  }
-}
-
-/**
- * Updates daily AI quota counter
- */
-async function incrementFreeAiUsage(telegramId, newCount, todayStr, db) {
-  if (!telegramId || !db) return;
-  try {
-    await db.prepare(`
-      INSERT INTO telegram_users (telegram_id, free_ai_used_today, free_ai_last_date, updated_at)
-      VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-      ON CONFLICT(telegram_id) DO UPDATE SET
-        free_ai_used_today = excluded.free_ai_used_today,
-        free_ai_last_date = excluded.free_ai_last_date,
-        updated_at = CURRENT_TIMESTAMP
-    `).bind(telegramId, newCount, todayStr).run();
-  } catch (e) {
-    console.debug('Failed to update free quota:', e);
-  }
-}
-
-async function ensureAuthAccountAiColumns(db) {
-  if (!db) return;
-  const alters = [
-    'ALTER TABLE auth_accounts ADD COLUMN free_ai_used_today INTEGER DEFAULT 0',
-    'ALTER TABLE auth_accounts ADD COLUMN free_ai_last_date TEXT',
-    'ALTER TABLE auth_accounts ADD COLUMN tier TEXT DEFAULT \'free\'',
-    'ALTER TABLE auth_accounts ADD COLUMN tier_expires_at INTEGER'
-  ];
-  for (const sql of alters) {
-    try { await db.prepare(sql).run(); } catch (_) {}
-  }
-}
-
-async function resolveFirebaseEntitlement(uid, db) {
-  const defaultEntitlement = {
-    tier: 'free',
-    freeUsedToday: 0,
-    trialStartedAt: Date.now(),
-    trialDaysRemaining: 14,
-    proPreviewTokensRemaining: 0
-  };
-  if (!uid || !db) return defaultEntitlement;
-  try {
-    await ensureAuthAccountAiColumns(db);
-    const row = await db.prepare('SELECT * FROM auth_accounts WHERE uid = ?').bind(uid).first();
-    if (!row) return defaultEntitlement;
-    let tier = row.tier || 'free';
-    if (row.tier_expires_at && row.tier_expires_at < Date.now()) tier = 'free';
-    const todayStr = new Date().toISOString().slice(0, 10);
-    const freeUsed = row.free_ai_last_date === todayStr ? (row.free_ai_used_today || 0) : 0;
-    return {
-      tier,
-      freeUsedToday: freeUsed,
-      trialStartedAt: Date.now(),
-      trialDaysRemaining: 14,
-      proPreviewTokensRemaining: 0,
-      user: row
-    };
-  } catch (_) {
-    return defaultEntitlement;
-  }
-}
-
-async function incrementFirebaseFreeAiUsage(uid, newCount, todayStr, db) {
-  if (!uid || !db) return;
-  try {
-    await ensureAuthAccountAiColumns(db);
-    await db.prepare(`
-      UPDATE auth_accounts
-      SET free_ai_used_today = ?, free_ai_last_date = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE uid = ?
-    `).bind(newCount, todayStr, uid).run();
-  } catch (e) {
-    console.debug('Failed to update Firebase free quota:', e);
-  }
-}
-
-/**
- * Decrements complimentary Pro preview token count
- */
-async function decrementProPreviewTokens(telegramId, currentCount, db) {
-  if (!telegramId || !db || currentCount <= 0) return;
-  try {
-    const nextCount = Math.max(0, currentCount - 1);
-    await db.prepare(`
-      UPDATE telegram_users SET pro_preview_tokens_remaining = ?, updated_at = CURRENT_TIMESTAMP WHERE telegram_id = ?
-    `).bind(nextCount, telegramId).run();
-  } catch (e) {
-    console.debug('Failed to decrement pro preview tokens:', e);
-  }
-}
-
-// =========================================================================
-// AI Provider Implementations (NVIDIA NIM, Ollama, OpenRouter, Groq, Workers AI)
-// =========================================================================
-
-/**
- * NVIDIA NIM Inference Provider
- */
-async function executeNvidiaNim(userMessage, systemPrompt, model, env) {
-  if (!env.NVIDIA_API_KEY) return null;
-  const targetModel = model || 'meta/llama-3.1-70b-instruct';
-
-  try {
-    const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${env.NVIDIA_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: targetModel,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userMessage }
-        ],
-        temperature: 0.2,
-        max_tokens: 450
-      })
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      return {
-        text: data.choices?.[0]?.message?.content || '',
-        model: targetModel,
-        provider: 'nvidia',
-        raw: data
-      };
-    }
-  } catch (e) {
-    console.warn('NVIDIA NIM call failed:', e.message);
-  }
-  return null;
-}
-
-/**
- * Private Self-Hosted Ollama Provider
- */
-async function executeOllama(userMessage, systemPrompt, model, env) {
-  const endpoint = env.OLLAMA_ENDPOINT || 'http://127.0.0.1:11434';
-  const targetModel = model || env.OLLAMA_MODEL || 'deepseek-r1:8b';
-
-  const headers = { 'Content-Type': 'application/json' };
-  if (env.OLLAMA_AUTH_TOKEN) {
-    headers['Authorization'] = `Bearer ${env.OLLAMA_AUTH_TOKEN}`;
-  }
-
-  try {
-    const res = await fetch(`${endpoint.replace(/\/$/, '')}/v1/chat/completions`, {
-      method: 'POST',
-      headers: headers,
-      body: JSON.stringify({
-        model: targetModel,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userMessage }
-        ],
-        temperature: 0.3,
-        max_tokens: 450
-      })
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      return {
-        text: data.choices?.[0]?.message?.content || '',
-        model: targetModel,
-        provider: 'ollama',
-        raw: data
-      };
-    }
-  } catch (e) {
-    console.warn('Ollama call failed:', e.message);
-  }
-  return null;
-}
-
-/**
- * OpenRouter Multi-Model Provider
- */
-async function executeOpenRouter(userMessage, systemPrompt, model, env) {
-  if (!env.OPENROUTER_API_KEY) return null;
-  const targetModel = model || 'anthropic/claude-3.5-sonnet';
-
-  try {
-    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${env.OPENROUTER_API_KEY}`,
-        'HTTP-Referer': 'https://clariora.com.au',
-        'X-Title': 'Clariora A+'
-      },
-      body: JSON.stringify({
-        model: targetModel,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userMessage }
-        ],
-        temperature: 0.2,
-        max_tokens: 450
-      })
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      return {
-        text: data.choices?.[0]?.message?.content || '',
-        model: targetModel,
-        provider: 'openrouter',
-        raw: data
-      };
-    }
-  } catch (e) {
-    console.warn('OpenRouter call failed:', e.message);
-  }
-  return null;
-}
-
-/**
- * Groq Cloud Free Tier Provider
- */
-async function executeGroq(userMessage, systemPrompt, model, env) {
-  if (!env.GROQ_API_KEY) return null;
-  const targetModel = model || 'llama-3.1-8b-instant';
-
-  try {
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${env.GROQ_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: targetModel,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userMessage }
-        ],
-        temperature: 0.2,
-        max_tokens: 350
-      })
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      return {
-        text: data.choices?.[0]?.message?.content || '',
-        model: targetModel,
-        provider: 'groq',
-        raw: data
-      };
-    }
-  } catch (e) {
-    console.warn('Groq call failed:', e.message);
-  }
-  return null;
-}
-
-/**
- * Cloudflare Workers AI Native Edge Fallback
- */
-async function executeWorkersAi(userMessage, systemPrompt, env) {
-  if (!env.AI) return null;
-  try {
-    const response = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userMessage }
-      ],
-      max_tokens: 350
-    });
-    return {
-      text: response.response,
-      model: '@cf/meta/llama-3.1-8b-instruct',
-      provider: 'workers_ai'
-    };
-  } catch (e) {
-    console.warn('Workers AI call failed:', e.message);
-  }
-  return null;
-}

@@ -106,7 +106,7 @@ def main() -> int:
         print(f"Signing: using Developer ID certificate from {cert_link}")
     elif mac_p12.is_file():
         env["CSC_LINK"] = str(mac_p12)
-        env["CSC_KEY_PASSWORD"] = env.get("MAC_CSC_KEY_PASSWORD") or env.get("CSC_KEY_PASSWORD") or "ClarioraCodeSign2026!Enterprise"
+        env["CSC_KEY_PASSWORD"] = env.get("MAC_CSC_KEY_PASSWORD") or env.get("CSC_KEY_PASSWORD") or ""
         env.pop("CSC_IDENTITY_AUTO_DISCOVERY", None)
         print(f"Signing: using local Developer ID certificate {mac_p12}")
     elif env.get("CSC_NAME"):

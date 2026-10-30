@@ -18,6 +18,7 @@ global.window = {
       ready: () => {},
       expand: () => {},
       enableClosingConfirmation: () => {},
+      initData: 'query_id=AAHdF6IQAAAAAN0XohD4v98L&user=%7B%22id%22%3A12345678%2C%22first_name%22%3A%22Alex%22%7D',
       initDataUnsafe: {
         user: { id: 12345678, first_name: 'Alex', username: 'alex_tech' }
       },
@@ -41,14 +42,16 @@ global.window = {
     getItem(k) { return this._data[k] || null; },
     setItem(k, v) { this._data[k] = String(v); },
     removeItem(k) { delete this._data[k]; }
-  }
+  },
+  addEventListener: () => {}
 };
 global.localStorage = global.window.localStorage;
 
 global.document = {
   documentElement: {
     style: { setProperty: () => {} },
-    setAttribute: () => {}
+    setAttribute: () => {},
+    classList: { add: () => {}, remove: () => {}, contains: () => false }
   },
   querySelectorAll: () => []
 };
@@ -104,8 +107,9 @@ async function runTests() {
     scaledScore: 820,
     passed: true,
     ledgerHash: 'c9f0a28b1234567890abcdef'
-  });
+  }, { simulate: true });
   assert.strictEqual(mintRes.success, true, 'Minting should succeed');
+  assert.ok(mintRes.simulated, 'Test mint must be simulated');
   assert.ok(mintRes.record.explorerUrl.includes('tonscan.org'), 'Must generate tonscan explorer URL');
   console.log('  ✔ TONCredentials payload & verification passed.');
 

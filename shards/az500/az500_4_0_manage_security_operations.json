@@ -1,0 +1,451 @@
+[
+  {
+    "id": "AZ500-050",
+    "exam": "az500",
+    "domain": "4.0 Manage security operations",
+    "objective": "4.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A security operations team uses Microsoft Sentinel. They need to automatically trigger an incident remediation workflow that blocks a compromised IP address on the enterprise Azure Firewall whenever a high-severity alert is detected. What Sentinel component executes this automation?",
+    "options": [
+      "Automation rules linked to a Sentinel Playbook (Azure Logic App)",
+      "Data Connectors using CEF streams",
+      "Watchlists with static CSV files",
+      "Kusto Query Language (KQL) summarize operator"
+    ],
+    "answer": 0,
+    "explanation": "Microsoft Sentinel uses Automation Rules to trigger SOAR (Security Orchestration, Automation, and Response) workflows known as Playbooks. Playbooks are built on Azure Logic Apps and can automate remediation steps such as blocking IP addresses or disabling user accounts.",
+    "distractor_analysis": {
+      "1": "Data connectors ingest log telemetry into Sentinel; they do not execute active remediation tasks.",
+      "2": "Watchlists store reference data (e.g. terminated employee IDs or VIP IP lists) for query correlation.",
+      "3": "KQL is the query language used to analyze logs, not the execution runtime for SOAR workflows."
+    },
+    "tags": [
+      "sentinel",
+      "soar",
+      "playbooks",
+      "logic-apps",
+      "secops"
+    ]
+  },
+  {
+    "id": "AZ500-051",
+    "exam": "az500",
+    "domain": "4.0 Manage security operations",
+    "objective": "4.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "What is the primary architectural difference between Azure Key Vault 'Access Policies' and 'Azure Role-Based Access Control (Azure RBAC)' permission models?",
+    "options": [
+      "Access Policies grant vault-wide permissions across all keys/secrets; Azure RBAC allows granular, object-level role assignments and unified management via Microsoft Entra ID",
+      "Access Policies support hardware HSM keys; Azure RBAC only supports software keys",
+      "Access Policies are evaluated at the network layer; Azure RBAC is evaluated in DNS",
+      "Azure RBAC requires disabling Soft Delete on the Key Vault"
+    ],
+    "answer": 0,
+    "explanation": "Key Vault Access Policies are legacy, coarse-grained policies that apply to all objects of a type across the entire vault. Azure RBAC for Key Vault provides unified, granular authorization at individual key, secret, and certificate levels (e.g. 'Key Vault Secrets User' scoped to a single secret).",
+    "distractor_analysis": {
+      "1": "Both permission models fully support both software and hardware HSM keys.",
+      "2": "Both access policies and Azure RBAC are application and control plane authorization mechanisms, not network/DNS filters.",
+      "3": "Soft Delete is mandatory on Key Vaults and is completely independent of the authorization permission model."
+    },
+    "tags": [
+      "key-vault",
+      "rbac",
+      "access-policies",
+      "authorization"
+    ]
+  },
+  {
+    "id": "AZ500-052",
+    "exam": "az500",
+    "domain": "4.0 Manage security operations",
+    "objective": "4.2",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "An attacker gains unauthorized Contributor access to a subscription and attempts to delete an Azure Key Vault containing master database encryption keys. Which Key Vault features prevent accidental or malicious irreversible loss of these cryptographic keys?",
+    "options": [
+      "Soft Delete and Purge Protection enabled together",
+      "ReadOnly Resource Lock and Storage Service Encryption",
+      "Microsoft Defender for Key Vault alerts only",
+      "Azure Backup with 30-day snapshot vault"
+    ],
+    "answer": 0,
+    "explanation": "Soft Delete ensures that deleted vaults or vault objects are retained for a configurable period (7 to 90 days). Purge Protection enforces that even a subscription Owner or Contributor cannot permanently destroy or purge the vault until the retention period has completely elapsed.",
+    "distractor_analysis": {
+      "1": "A user with Contributor/Owner rights on the resource group can delete a resource lock before deleting the vault.",
+      "2": "Defender alerts generate notifications of suspicious activity but do not physically block deletion without purge protection.",
+      "3": "Key Vaults do not rely on standard Azure Backup snapshots for cryptographic material recovery."
+    },
+    "tags": [
+      "key-vault",
+      "soft-delete",
+      "purge-protection",
+      "data-loss-prevention"
+    ]
+  },
+  {
+    "id": "AZ500-053",
+    "exam": "az500",
+    "domain": "4.0 Manage security operations",
+    "objective": "4.3",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A Chief Information Security Officer (CISO) wants to evaluate the organization's cloud environment against the CIS Microsoft Azure Foundations Benchmark and identify gaps. Which Microsoft Defender for Cloud dashboard provides this evaluation?",
+    "options": [
+      "Regulatory Compliance dashboard",
+      "Security Alerts dashboard",
+      "Workload Protections overview",
+      "Azure Monitor Workbooks"
+    ],
+    "answer": 0,
+    "explanation": "The Regulatory Compliance dashboard in Microsoft Defender for Cloud maps security assessments directly against industry standards (including CIS Azure Foundations, NIST SP 800-53, PCI DSS, and ISO 27001), showing passed controls, failed controls, and automated remediation steps.",
+    "distractor_analysis": {
+      "1": "Security Alerts display active threat detections and anomalous incidents, not baseline regulatory compliance scoring.",
+      "2": "Workload Protections monitor runtime CWPP telemetry across servers, containers, and databases.",
+      "3": "Azure Monitor Workbooks are customizable reporting canvases, not the native compliance assessment engine."
+    },
+    "tags": [
+      "defender-for-cloud",
+      "regulatory-compliance",
+      "cis-benchmark",
+      "cspm"
+    ]
+  },
+  {
+    "id": "AZ500-054",
+    "exam": "az500",
+    "domain": "4.0 Manage security operations",
+    "objective": "4.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A security analyst is writing a Kusto Query Language (KQL) query in Microsoft Sentinel to detect brute-force login attempts. The query needs to identify user accounts that generated more than 10 failed login events within a 1-hour window. Which KQL query structure achieves this?",
+    "options": [
+      "SigninLogs | where ResultType != \"0\" | summarize FailedCount = count() by UserPrincipalName, bin(TimeGenerated, 1h) | where FailedCount > 10",
+      "SigninLogs | where ResultType == \"0\" | project UserPrincipalName, TimeGenerated | take 10",
+      "SecurityAlert | where Severity == \"High\" | summarize by AlertName",
+      "AuditLogs | extend Result = tostring(ResultType) | top 10 by TimeGenerated desc"
+    ],
+    "answer": 0,
+    "explanation": "In Microsoft Entra `SigninLogs`, a `ResultType` of '0' indicates success, whereas non-zero values denote failure. Grouping with `summarize count() by UserPrincipalName, bin(TimeGenerated, 1h)` aggregates counts across 1-hour time slices, and `where FailedCount > 10` filters for brute-force thresholds.",
+    "distractor_analysis": {
+      "1": "ResultType == 0 filters for successful logins, not failed attempts.",
+      "2": "SecurityAlert does not count raw sign-in attempts by user.",
+      "3": "AuditLogs tracks directory administrative changes (e.g. user creation), not interactive user authentication attempts."
+    },
+    "tags": [
+      "kql",
+      "sentinel",
+      "brute-force",
+      "hunting"
+    ]
+  },
+  {
+    "id": "AZ500-055",
+    "exam": "az500",
+    "domain": "4.0 Manage security operations",
+    "objective": "4.3",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "In Microsoft Defender for Cloud, what metric quantifies an organization's overall security posture across subscriptions and helps prioritize recommendations based on risk impact?",
+    "options": [
+      "Secure Score",
+      "Exposure Index",
+      "Severity Coefficient",
+      "Compliance Parity"
+    ],
+    "answer": 0,
+    "explanation": "Secure Score is a core CSPM metric in Defender for Cloud that aggregates security findings into a numerical percentage score. Completing prioritized security recommendations increases the Secure Score and strengthens posture.",
+    "distractor_analysis": {
+      "1": "Exposure Index is not the primary scoring metric in Defender for Cloud.",
+      "2": "Severity Coefficient is a fictional term.",
+      "3": "Compliance Parity is not an Azure metric."
+    },
+    "tags": [
+      "secure-score",
+      "defender-for-cloud",
+      "cspm",
+      "posture"
+    ]
+  },
+  {
+    "id": "AZ500-056",
+    "exam": "az500",
+    "domain": "4.0 Manage security operations",
+    "objective": "4.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "To ingest security events from on-premises Linux firewalls and appliances into Microsoft Sentinel, which protocol and agent configuration is standard?",
+    "options": [
+      "Syslog or Common Event Format (CEF) forwarded to a dedicated Linux Log Analytics forwarder gateway",
+      "Direct HTTPS REST calls from firewall firmware without an agent",
+      "SNMP v1 traps forwarded directly to Azure Active Directory",
+      "Azure Arc Connected Machine agent running in Docker on Windows"
+    ],
+    "answer": 0,
+    "explanation": "Microsoft Sentinel ingests Linux and appliance security events via Syslog or CEF (Common Event Format). An on-premises or cloud Linux machine hosts the Azure Monitor Agent (AMA) / forwarder daemon that receives Syslog on UDP/TCP port 514 and streams events securely to the Log Analytics workspace.",
+    "distractor_analysis": {
+      "1": "Most legacy firewalls cannot execute custom Azure REST API client calls.",
+      "2": "Entra ID does not ingest or process SNMP traps.",
+      "3": "Azure Arc on Windows does not serve as a standard Syslog daemon listener for Linux appliances."
+    },
+    "tags": [
+      "syslog",
+      "cef",
+      "sentinel",
+      "log-analytics"
+    ]
+  },
+  {
+    "id": "AZ500-057",
+    "exam": "az500",
+    "domain": "4.0 Manage security operations",
+    "objective": "4.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "An application uses an TLS certificate stored in Azure Key Vault. What Key Vault capability ensures the certificate is automatically reissued and rotated before expiration without human intervention?",
+    "options": [
+      "Key Vault Certificate Auto-Renewal through an integrated Certificate Authority (DigiCert or GlobalSign)",
+      "Creating a Logic App that generates self-signed certificates daily",
+      "Manual export of PFX files into Azure Blob Storage",
+      "Enabling Azure Bastion certificate forwarder"
+    ],
+    "answer": 0,
+    "explanation": "Azure Key Vault supports direct integration with partner Certificate Authorities (such as DigiCert and GlobalSign). Key Vault automatically contacts the CA, requests a renewed certificate before the lifetime expiration percentage is reached, and updates the certificate object seamlessly.",
+    "distractor_analysis": {
+      "1": "Daily self-signed certificates break trust chains in enterprise web browsers.",
+      "2": "Manual export violates automation requirements and introduces credential exposure.",
+      "3": "Azure Bastion does not manage or rotate web application certificates."
+    },
+    "tags": [
+      "key-vault",
+      "certificates",
+      "auto-renewal",
+      "pki"
+    ]
+  },
+  {
+    "id": "AZ500-058",
+    "exam": "az500",
+    "domain": "4.0 Manage security operations",
+    "objective": "4.3",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "How can an enterprise automatically remediate non-compliant Azure resources\u2014such as automatically installing the Microsoft Defender for Endpoint extension whenever a new Virtual Machine is provisioned?",
+    "options": [
+      "Assign an Azure Policy with the 'DeployIfNotExists' effect and configure a Managed Identity for the policy remediation task",
+      "Deploy an Azure Monitor Metric Alert that calls an email webhook",
+      "Configure an NSG rule with priority 100",
+      "Schedule a manual PowerShell script in Windows Task Scheduler"
+    ],
+    "answer": 0,
+    "explanation": "Azure Policy with the 'DeployIfNotExists' effect automatically triggers an ARM template deployment when a newly created or evaluated resource lacks a required component (like an endpoint protection extension). The policy uses a system-assigned managed identity to perform the deployment remediation.",
+    "distractor_analysis": {
+      "1": "Metric alerts notify operators but do not automatically provision VM extensions into ARM resources.",
+      "2": "NSG rules filter network traffic and cannot install software extensions on VMs.",
+      "3": "Manual scheduled scripts lack cloud-native governance, scale, and immediate provisioning hooks."
+    },
+    "tags": [
+      "azure-policy",
+      "deployifnotexists",
+      "automated-remediation",
+      "governance"
+    ]
+  },
+  {
+    "id": "AZ500-059",
+    "exam": "az500",
+    "domain": "4.0 Manage security operations",
+    "objective": "4.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "In Microsoft Sentinel, what is the purpose of 'Entity Mapping' in scheduled analytics rules?",
+    "options": [
+      "It maps query output fields (e.g. Account, IP, Host) to standardized Sentinel entities so analysts can investigate incidents with graph correlation",
+      "It translates KQL into Transact-SQL for relational databases",
+      "It assigns an Azure subscription to a geographical physical datacenter",
+      "It creates DNS reverse lookup pointer records for all virtual machines"
+    ],
+    "answer": 0,
+    "explanation": "Entity mapping maps columns from KQL query results to standard Sentinel entities (User, Host, IP, URL, FileHash). This allows Sentinel to correlate alerts across multiple data sources into unified incidents and construct interactive investigation graphs.",
+    "distractor_analysis": {
+      "1": "Sentinel uses KQL natively and does not translate queries to T-SQL.",
+      "2": "Entity mapping does not manage Azure physical geography or subscriptions.",
+      "3": "DNS pointer records are managed in Azure DNS zones, not Sentinel analytics rules."
+    },
+    "tags": [
+      "sentinel",
+      "entity-mapping",
+      "incident-investigation",
+      "secops"
+    ]
+  },
+  {
+    "id": "AZ500-060",
+    "exam": "az500",
+    "domain": "4.0 Manage security operations",
+    "objective": "4.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Which Azure Key Vault pricing tier is required if an organization's compliance standard mandates that encryption keys must be protected by Hardware Security Modules (HSM) validated to FIPS 140-2 Level 2 or Level 3?",
+    "options": [
+      "Azure Key Vault Premium (or Managed HSM)",
+      "Azure Key Vault Standard",
+      "Azure Storage Standard LRS",
+      "Azure App Configuration Standard"
+    ],
+    "answer": 0,
+    "explanation": "Azure Key Vault Standard protects keys using software in multi-tenant cloud hardware. Azure Key Vault Premium and Managed HSM protect keys within dedicated, FIPS 140-2 Level 2 and Level 3 validated Hardware Security Modules (HSM).",
+    "distractor_analysis": {
+      "1": "Standard tier provides software-protected keys and secrets only, not HSM validation.",
+      "2": "Storage Standard is a data storage service, not a cryptographic key vault.",
+      "3": "App Configuration manages feature flags and app settings, not FIPS-validated HSM cryptographic keys."
+    },
+    "tags": [
+      "key-vault",
+      "hsm",
+      "fips-140",
+      "cryptography"
+    ]
+  },
+  {
+    "id": "AZ500-061",
+    "exam": "az500",
+    "domain": "4.0 Manage security operations",
+    "objective": "4.1",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "A SOC team wants to implement continuous threat hunting in Microsoft Sentinel without generating active incidents until anomalous behavior is verified. Which feature allows analysts to run and bookmark queries during active investigations?",
+    "options": [
+      "Sentinel Hunting queries and Bookmarks",
+      "Sentinel Automation Rules",
+      "Azure Policy Compliance scan",
+      "Defender for Cloud Secure Score recalculation"
+    ],
+    "answer": 0,
+    "explanation": "Microsoft Sentinel provides built-in and custom Hunting queries that allow proactive threat hunting across ingested tables. Analysts can tag and bookmark notable findings to investigate later or promote to full incidents.",
+    "distractor_analysis": {
+      "1": "Automation rules run automatically upon incident generation, rather than supporting exploratory manual hunting.",
+      "2": "Azure Policy audits resource definitions, not threat actor behavior in telemetry logs.",
+      "3": "Secure score calculates configuration posture, not threat hunting queries."
+    },
+    "tags": [
+      "sentinel",
+      "threat-hunting",
+      "hunting-queries",
+      "bookmarks"
+    ]
+  },
+  {
+    "id": "AZ500-062",
+    "exam": "az500",
+    "domain": "4.0 Manage security operations",
+    "objective": "4.3",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "What is the primary difference between Microsoft Defender for Cloud's CSPM and CWPP capabilities?",
+    "options": [
+      "CSPM assesses security posture, configurations, and compliance; CWPP delivers runtime threat protection and workload defense for servers, containers, and databases",
+      "CSPM is for on-premises servers only; CWPP is for cloud only",
+      "CSPM replaces firewalls; CWPP replaces identity providers",
+      "CSPM requires hardware HSMs; CWPP does not"
+    ],
+    "answer": 0,
+    "explanation": "Cloud Security Posture Management (CSPM) evaluates cloud hygiene, configuration drift, and regulatory compliance. Cloud Workload Protection Platform (CWPP - Defender plans) provides real-time threat detection, antimalware, and behavioral analytics across servers, containers, and data services.",
+    "distractor_analysis": {
+      "1": "Both CSPM and CWPP support multi-cloud and hybrid on-premises environments via Azure Arc.",
+      "2": "Neither replaces firewalls or identity providers.",
+      "3": "HSM requirements are independent of CSPM or CWPP capabilities."
+    },
+    "tags": [
+      "cspm",
+      "cwpp",
+      "defender-for-cloud",
+      "secops"
+    ]
+  },
+  {
+    "id": "AZ500-063",
+    "exam": "az500",
+    "domain": "4.0 Manage security operations",
+    "objective": "4.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Which service acts as the underlying centralized log repository where Microsoft Sentinel, Azure Monitor, and Defender for Cloud store and query security event telemetry?",
+    "options": [
+      "Azure Log Analytics Workspace",
+      "Azure Data Factory Pipeline",
+      "Azure Cosmos DB Mongo API",
+      "Azure Blob Storage Cool Tier"
+    ],
+    "answer": 0,
+    "explanation": "Azure Log Analytics Workspace is the fundamental telemetry store. It provides fast indexing, large-scale KQL query capabilities, retention management, and serves as the data foundation for Microsoft Sentinel and Defender for Cloud.",
+    "distractor_analysis": {
+      "1": "Azure Data Factory is an ETL orchestration tool, not a real-time security log analytics engine.",
+      "2": "Cosmos DB is a NoSQL application database, not the native store for Azure Monitor and Sentinel.",
+      "3": "Blob storage can be used for long-term archive, but does not provide real-time interactive KQL querying required by Sentinel."
+    },
+    "tags": [
+      "log-analytics",
+      "sentinel",
+      "kql",
+      "telemetry"
+    ]
+  },
+  {
+    "id": "AZ500-064",
+    "exam": "az500",
+    "domain": "4.0 Manage security operations",
+    "objective": "4.2",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "An enterprise requires all changes to Azure Key Vault secrets to trigger an automated notification to a Microsoft Teams channel immediately. What event-driven architecture fulfills this with lowest latency and minimal code?",
+    "options": [
+      "Azure Event Grid subscription on Key Vault events (e.g., SecretNewVersionCreated) triggering an Azure Logic App",
+      "A scheduled PowerShell script running every 5 minutes querying Key Vault logs in Azure Storage",
+      "Azure Monitor metric alert configured on CPU utilization of the Key Vault",
+      "Manual review of Key Vault diagnostic logs once a week"
+    ],
+    "answer": 0,
+    "explanation": "Azure Key Vault integrates natively with Azure Event Grid. When an event occurs (such as `Microsoft.KeyVault.SecretNewVersionCreated` or `SecretNearExpiry`), Event Grid instantly pushes the event to an Azure Logic App or webhook, posting an alert to Teams with near-zero latency.",
+    "distractor_analysis": {
+      "1": "Polling scripts introduce latency, consume compute cycles, and risk hitting Key Vault API throttling limits.",
+      "2": "Key Vault is a PaaS service with no CPU utilization metric exposed.",
+      "3": "Weekly manual reviews fail to provide real-time security operational alerts."
+    },
+    "tags": [
+      "event-grid",
+      "key-vault",
+      "automation",
+      "secops"
+    ]
+  },
+  {
+    "id": "AZ500-065",
+    "exam": "az500",
+    "domain": "4.0 Manage security operations",
+    "objective": "4.3",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A security auditor notices that critical production Virtual Machines are missing required security baseline configurations. Which Microsoft Defender for Cloud feature continuously audits operating system security baselines against recommendations?",
+    "options": [
+      "Azure Machine Configuration (formerly Azure Policy Guest Configuration)",
+      "Network Security Group flow analytics",
+      "Azure Bastion session recording",
+      "Azure DNS private resolver"
+    ],
+    "answer": 0,
+    "explanation": "Azure Machine Configuration (part of Azure Policy and Defender for Cloud) audits inside virtual machines to ensure OS settings, password policies, audit settings, and software baselines match organizational compliance benchmarks.",
+    "distractor_analysis": {
+      "1": "NSG flow analytics tracks network connection flows, not in-guest operating system settings.",
+      "2": "Azure Bastion connects administrators to VMs over TLS but does not evaluate OS baseline compliance.",
+      "3": "DNS Private Resolver routes private DNS queries across VNets."
+    },
+    "tags": [
+      "guest-configuration",
+      "machine-configuration",
+      "defender-for-cloud",
+      "baseline"
+    ]
+  }
+]

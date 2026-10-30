@@ -30,24 +30,249 @@
   ];
 
   const ACHIEVEMENTS = {
-    FIRST_EXAM: { id: "FIRST_EXAM", name: "First Block Mined", desc: "Complete your first scored exam", xp: 50, apx: 20 },
+    FIRST_EXAM: { id: "FIRST_EXAM", name: "First Exam Logged", desc: "Complete your first scored exam", xp: 50, apx: 20 },
     PASS_CORE1: { id: "PASS_CORE1", name: "Core 1 Cleared", desc: "Pass a Core 1 full exam", xp: 120, apx: 60 },
     PASS_CORE2: { id: "PASS_CORE2", name: "Core 2 Cleared", desc: "Pass a Core 2 full exam", xp: 120, apx: 60 },
+    PASS_AZ900: { id: "PASS_AZ900", name: "Azure Fundamentals Cleared", desc: "Pass an AZ-900 full exam", xp: 120, apx: 60 },
+    PASS_AZ500: { id: "PASS_AZ500", name: "Azure Security Cleared", desc: "Pass an AZ-500 full exam", xp: 150, apx: 80 },
+    CRUCIBLE_SURVIVOR: { id: "CRUCIBLE_SURVIVOR", name: "Crucible Survivor", desc: "Survive and pass a Datacenter Crucible exam", xp: 200, apx: 100 },
     SCORE_850: { id: "SCORE_850", name: "Elite 850+", desc: "Score 850 or higher on a full exam", xp: 150, apx: 80 },
     PERFECT_DRILL: { id: "PERFECT_DRILL", name: "Domain Laser", desc: "Score 100% on a domain drill", xp: 80, apx: 40 },
     STREAK_3: { id: "STREAK_3", name: "3-Day Chain", desc: "Study or exam on 3 consecutive days", xp: 60, apx: 30 },
-    STREAK_7: { id: "STREAK_7", name: "7-Day Hashrate", desc: "7 consecutive active days", xp: 140, apx: 70 },
+    STREAK_7: { id: "STREAK_7", name: "7-Day Streak", desc: "7 consecutive active days", xp: 140, apx: 70 },
     STUDY_10: { id: "STUDY_10", name: "Knowledge Validator", desc: "Open 10 unique study documents", xp: 90, apx: 45 },
     PBQ_COMPLETE: { id: "PBQ_COMPLETE", name: "PBQ Operator", desc: "Complete a performance-based lab", xp: 70, apx: 35 },
     LEDGER_100: { id: "LEDGER_100", name: "Century Chain", desc: "Reach 100 ledger blocks", xp: 100, apx: 50 },
     PLAN_TASK: { id: "PLAN_TASK", name: "Plan Finisher", desc: "Complete 10 study-plan tasks", xp: 80, apx: 40 }
   };
 
+  const UNLOCK_CATALOG = {
+    AI_BURST: {
+      id: "AI_BURST",
+      name: "AI Coach Burst (+5 Prompts)",
+      desc: "5 extra Socratic AI tutor interactions beyond daily limits",
+      cost: 90,
+      type: "consumable",
+      charges: 5,
+      icon: ""
+    },
+    STREAK_FREEZE: {
+      id: "STREAK_FREEZE",
+      name: "24h Streak Shield",
+      desc: "Automatically preserves your streak if you miss a study day",
+      cost: 200,
+      type: "consumable",
+      charges: 1,
+      icon: ""
+    },
+    WEAK_SCAN: {
+      id: "WEAK_SCAN",
+      name: "Mastery Deficit Scan",
+      desc: "Deep-dive diagnostic report highlighting sub-objective weaknesses",
+      cost: 150,
+      type: "feature",
+      icon: ""
+    },
+    CRAM_SHEET: {
+      id: "CRAM_SHEET",
+      name: "Domain Cram-Sheet Export",
+      desc: "Printable high-density summary sheet covering Core 1 & Core 2",
+      cost: 1800,
+      type: "permanent",
+      icon: ""
+    },
+    CYBER_THEME: {
+      id: "CYBER_THEME",
+      name: "Matrix Cyber Terminal UI",
+      desc: "High-contrast neon green and obsidian terminal visual theme",
+      cost: 600,
+      type: "permanent",
+      icon: ""
+    },
+    HINT_PACK: {
+      id: "HINT_PACK",
+      name: "Explanation Hint Pack (+10)",
+      desc: "10 extra post-miss explanation hints for free-tier study",
+      cost: 250,
+      type: "consumable",
+      charges: 10,
+      icon: ""
+    },
+    MOCK_UNLOCK: {
+      id: "MOCK_UNLOCK",
+      name: "Full Mock Exam Unlock",
+      desc: "One full-length timed mock exam unlock for free-tier learners",
+      cost: 450,
+      type: "consumable",
+      charges: 1,
+      icon: ""
+    },
+    PRO_PASS_30D: {
+      id: "PRO_PASS_30D",
+      name: "30-Day Pro Pass",
+      desc: "30-day Pro Pass unlockable with earned APX",
+      cost: 3800,
+      type: "consumable",
+      charges: 30,
+      icon: ""
+    }
+  };
+
+  /**
+   * Faucet limits. Global daily budget binds practice + side mints so honest
+   * earn lands near 115-170 APX/day (Pro Pass ~21-25 days at cost 3800).
+   * Practice APX = attempt base + per-correct + domain bonuses (capped, decays on repeats).
+   * Milestone APX = full-exam pass / 850 / 900 bonuses (once per exam type per day).
+   * Achievements stay outside the daily budget (one-shot).
+   */
+  const EARN_RULES = {
+    examPracticeDailyCap: 120,
+    globalDailyApxBudget: 160,
+    memoryDailySoftCap: 40,
+    repeatMultipliers: [1, 0.5, 0.2],
+    fullExamMinQuestions: 60,
+    stakeMasteredPct: 80,
+    stakeYieldRate: 0.15,
+    stakeFailBurnsPrincipal: true,
+    budgetedTypes: [
+      "EXAM_COMPLETE",
+      "STUDY_OPEN",
+      "PBQ_COMPLETE",
+      "STUDY_PLAN_TASK",
+      "DAILY_CHECKIN",
+      "DAILY_QUEST_COMPLETE",
+      "FEATURED_OBJECTIVE_CLAIM",
+      "MEMORY_RECALL",
+      "MEMORY_RAID_COMPLETE"
+    ]
+  };
+
+  /** Positive mint sources that count toward globalDailyApxBudget (not achievements). */
+  const BUDGETED_MINT_TYPES = new Set(EARN_RULES.budgetedTypes);
+
+  /** Learning activity types that advance the soft streak. Excludes SPEND_INSIGHT / DOMAIN_STAKE_LOCK alone. */
+  const QUALIFYING_STREAK_TYPES = new Set([
+    "EXAM_COMPLETE",
+    "STUDY_OPEN",
+    "PBQ_COMPLETE",
+    "STUDY_PLAN_TASK",
+    "DAILY_CHECKIN",
+    "MEMORY_RAID_COMPLETE",
+    "MEMORY_RECALL",
+    "DAILY_QUEST_COMPLETE",
+    "FEATURED_OBJECTIVE_CLAIM"
+  ]);
+
   const keyCache = {};
 
+  function utils() {
+    return (global.APlus && global.APlus.utils) || null;
+  }
+
+  /** Local calendar day YYYY-MM-DD (device timezone). Prefer for new claim/quest APIs. */
+  function localDayKey(date) {
+    const d = date instanceof Date ? date : new Date();
+    const y = d.getFullYear();
+    let m = String(d.getMonth() + 1);
+    let day = String(d.getDate());
+    if (m.length < 2) m = "0" + m;
+    if (day.length < 2) day = "0" + day;
+    return y + "-" + m + "-" + day;
+  }
+
   function todayKey() {
-    const d = new Date();
+    const u = utils();
+    if (u && typeof u.todayKey === "function") return u.todayKey();
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  /** Day key for a ledger block: prefer payload.day, else UTC timestamp prefix (legacy replay). */
+  function blockDayKey(b) {
+    if (!b) return null;
+    if (b.payload && b.payload.day) {
+      return String(b.payload.day).slice(0, 10);
+    }
+    if (b.timestamp) return String(b.timestamp).slice(0, 10);
+    return null;
+  }
+
+  function shiftDayKey(isoDay, deltaDays) {
+    const d = new Date(String(isoDay) + "T12:00:00Z");
+    d.setUTCDate(d.getUTCDate() + Number(deltaDays || 0));
     return d.toISOString().slice(0, 10);
+  }
+
+  function daysBetweenKeys(a, b) {
+    const ta = Date.parse(String(a) + "T12:00:00Z");
+    const tb = Date.parse(String(b) + "T12:00:00Z");
+    if (!Number.isFinite(ta) || !Number.isFinite(tb)) return 0;
+    return Math.round((tb - ta) / 86400000);
+  }
+
+  function toDaySet(days) {
+    const set = new Set();
+    if (days && typeof days.forEach === "function") {
+      days.forEach((day) => {
+        if (day != null && day !== "") set.add(String(day));
+      });
+    }
+    return set;
+  }
+
+  /**
+   * Soft streak: miss 1 calendar day => frozen (number preserved);
+   * miss 2 consecutive days => reset to 0. At most one single-day hole
+   * may bridge the run when counting. Shielded days (spent STREAK_FREEZE)
+   * neither add to nor break the run.
+   */
+  function computeSoftStreak(activeDaySet, todayKeyStr, shieldedDaySet) {
+    const set = toDaySet(activeDaySet);
+    const shielded = toDaySet(shieldedDaySet);
+    const today = String(todayKeyStr || "");
+    let lastQualifyingDay = null;
+    set.forEach((day) => {
+      if (!day) return;
+      if (today && day > today) return;
+      if (!lastQualifyingDay || day > lastQualifyingDay) lastQualifyingDay = day;
+    });
+
+    if (!lastQualifyingDay) {
+      return { streak: 0, streakFrozen: false, lastQualifyingDay: null };
+    }
+
+    let gap = today ? daysBetweenKeys(lastQualifyingDay, today) : 0;
+    shielded.forEach((day) => {
+      if (day > lastQualifyingDay && day < today) gap -= 1;
+    });
+    if (gap >= 3) {
+      return { streak: 0, streakFrozen: false, lastQualifyingDay };
+    }
+
+    const streakFrozen = gap === 2;
+    let streak = 0;
+    let cursor = lastQualifyingDay;
+    let freezeUsed = false;
+
+    for (;;) {
+      if (set.has(cursor)) {
+        streak += 1;
+        cursor = shiftDayKey(cursor, -1);
+        continue;
+      }
+      if (shielded.has(cursor)) {
+        cursor = shiftDayKey(cursor, -1);
+        continue;
+      }
+      const prev = shiftDayKey(cursor, -1);
+      if (!freezeUsed && (set.has(prev) || shielded.has(prev))) {
+        freezeUsed = true;
+        cursor = prev;
+        continue;
+      }
+      break;
+    }
+
+    return { streak, streakFrozen, lastQualifyingDay };
   }
 
   function profileId() {
@@ -58,6 +283,8 @@
   }
 
   function storageGet() {
+    const u = utils();
+    if (u && typeof u.scopedGet === "function") return u.scopedGet(STORAGE_KEY);
     if (global.CompTIAProfiles && CompTIAProfiles.scopedGet) {
       return CompTIAProfiles.scopedGet(STORAGE_KEY);
     }
@@ -65,6 +292,11 @@
   }
 
   function storageSet(value) {
+    const u = utils();
+    if (u && typeof u.scopedSet === "function") {
+      u.scopedSet(STORAGE_KEY, value);
+      return;
+    }
     if (global.CompTIAProfiles && CompTIAProfiles.scopedSet) {
       CompTIAProfiles.scopedSet(STORAGE_KEY, value);
       return;
@@ -73,6 +305,11 @@
   }
 
   function storageRemove() {
+    const u = utils();
+    if (u && typeof u.scopedRemove === "function") {
+      u.scopedRemove(STORAGE_KEY);
+      return;
+    }
     if (global.CompTIAProfiles && CompTIAProfiles.scopedRemove) {
       CompTIAProfiles.scopedRemove(STORAGE_KEY);
       return;
@@ -98,11 +335,11 @@
   }
 
   function bytesToBase64(buf) {
-    const bytes = buf instanceof ArrayBuffer ? new Uint8Array(buf) : buf;
+    const bytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf && buf.buffer ? buf.buffer : buf);
     let s = "";
-    bytes.forEach((b) => {
-      s += String.fromCharCode(b);
-    });
+    for (let i = 0; i < bytes.length; i++) {
+      s += String.fromCharCode(bytes[i]);
+    }
     return btoa(s);
   }
 
@@ -278,22 +515,100 @@
     Object.keys(keyCache).forEach((k) => delete keyCache[k]);
   }
 
+  function currentDeviceId() {
+    try {
+      if (global.APlus && global.APlus.sync && typeof global.APlus.sync.getDeviceId === "function") {
+        return global.APlus.sync.getDeviceId();
+      }
+    } catch (_) {}
+    return "dev_local";
+  }
+
   function loadRaw() {
     try {
       const raw = storageGet();
-      if (!raw) return { version: 2, chain: [], signed: true };
+      if (!raw) return { version: 2, chain: [], signed: true, deviceId: currentDeviceId() };
       const parsed = JSON.parse(raw);
-      if (!parsed.chain || !Array.isArray(parsed.chain)) return { version: 2, chain: [], signed: true };
+      if (parsed && parsed.format === "multi_device_v1" && parsed.devices) {
+        const id = currentDeviceId();
+        const mine = parsed.devices[id] || { chain: [], publicKeyFingerprint: null, deviceId: id };
+        return {
+          version: 2,
+          signed: true,
+          deviceId: id,
+          chain: Array.isArray(mine.chain) ? mine.chain : [],
+          publicKeyFingerprint: mine.publicKeyFingerprint || null,
+          _peerDevices: parsed.devices,
+          format: "multi_device_v1"
+        };
+      }
+      if (!parsed.chain || !Array.isArray(parsed.chain)) {
+        return { version: 2, chain: [], signed: true, deviceId: currentDeviceId() };
+      }
+      if (!parsed.deviceId) parsed.deviceId = currentDeviceId();
       return parsed;
     } catch (_) {
-      return { version: 2, chain: [], signed: true };
+      return { version: 2, chain: [], signed: true, deviceId: currentDeviceId() };
     }
   }
 
   function saveRaw(state) {
     state.version = 2;
     state.signed = true;
-    storageSet(JSON.stringify(state));
+    if (!state.deviceId) state.deviceId = currentDeviceId();
+    let serialized;
+    if (state.format === "multi_device_v1" || state._peerDevices) {
+      const devices = Object.assign({}, state._peerDevices || {});
+      devices[state.deviceId] = {
+        chain: state.chain,
+        publicKeyFingerprint: state.publicKeyFingerprint || null,
+        deviceId: state.deviceId
+      };
+      serialized = JSON.stringify({
+        format: "multi_device_v1",
+        devices: devices,
+        updatedAt: new Date().toISOString()
+      });
+    } else {
+      serialized = JSON.stringify(state);
+    }
+    storageSet(serialized);
+    // Best-effort IndexedDB mirror for larger chains (does not block UI).
+    try {
+      localStorage.setItem(
+        "comptia_pom_wallet_summary_v1",
+        JSON.stringify({
+          height: Array.isArray(state.chain) ? state.chain.length : 0,
+          deviceId: state.deviceId,
+          savedAt: new Date().toISOString()
+        })
+      );
+    } catch (_) {}
+    Promise.resolve()
+      .then(async () => {
+        try {
+          await idbSet("ledger_blob:" + (state.deviceId || "local"), serialized);
+        } catch (_) {}
+      })
+      .catch(() => {});
+  }
+
+  /** Sum APX across peer device chains (subtract duplicate genesis grants). */
+  function multiDeviceBonusBalance(peerDevices, localDeviceId) {
+    if (!peerDevices) return 0;
+    let extra = 0;
+    let peerCount = 0;
+    Object.keys(peerDevices).forEach((id) => {
+      if (id === localDeviceId) return;
+      peerCount += 1;
+      const chain = peerDevices[id] && peerDevices[id].chain;
+      if (!Array.isArray(chain)) return;
+      chain.forEach((b) => {
+        if (b.type === "GENESIS") return;
+        extra += Number(b.tokenDelta) || 0;
+      });
+    });
+    return extra;
   }
 
   function blockPayloadString(block) {
@@ -373,17 +688,77 @@
     return state;
   }
 
+  function blockLocalDay(b) {
+    if (!b) return null;
+    if (b.payload && b.payload.day) return String(b.payload.day);
+    return blockDayKey(b);
+  }
+
+  /** Sum of positive budgeted mints already awarded on a local day. */
+  function dayBudgetSpent(chain, day) {
+    let spent = 0;
+    let memorySpent = 0;
+    (chain || []).forEach((b) => {
+      if (!BUDGETED_MINT_TYPES.has(b.type)) return;
+      if (blockLocalDay(b) !== day) return;
+      const d = Number(b.tokenDelta) || 0;
+      if (d <= 0) return;
+      spent += d;
+      if (b.type === "MEMORY_RECALL" || b.type === "MEMORY_RAID_COMPLETE") memorySpent += d;
+    });
+    return { spent, memorySpent };
+  }
+
+  /**
+   * Clip a requested positive mint to the remaining global daily budget.
+   * Memory also respects memoryDailySoftCap inside that residual.
+   */
+  function clipGlobalBudget(chain, day, requested, type) {
+    const want = Math.max(0, Math.round(Number(requested) || 0));
+    if (want <= 0) return { awarded: 0, capped: false, remaining: EARN_RULES.globalDailyApxBudget };
+    const { spent, memorySpent } = dayBudgetSpent(chain, day);
+    let remaining = Math.max(0, EARN_RULES.globalDailyApxBudget - spent);
+    if (type === "MEMORY_RECALL" || type === "MEMORY_RAID_COMPLETE") {
+      const memLeft = Math.max(0, EARN_RULES.memoryDailySoftCap - memorySpent);
+      remaining = Math.min(remaining, memLeft);
+    }
+    const awarded = Math.min(want, remaining);
+    return {
+      awarded,
+      capped: awarded < want,
+      remaining: remaining - awarded,
+      daySpent: spent,
+      memorySpent
+    };
+  }
+
   async function appendBlock(type, payload, tokenDelta, xpDelta) {
+    if (QUALIFYING_STREAK_TYPES.has(type)) await applyStreakShields();
     const state = await ensureGenesis();
     const keys = await ensureKeyPair();
     const prev = state.chain[state.chain.length - 1];
+    let delta = Number(tokenDelta) || 0;
+    const pl = Object.assign({}, payload || {});
+    if (delta > 0 && BUDGETED_MINT_TYPES.has(type)) {
+      const day = pl.day || localDayKey();
+      pl.day = day;
+      const clip = clipGlobalBudget(state.chain, day, delta, type);
+      if (clip.capped) {
+        pl.budgetCapped = true;
+        pl.rawTokenDelta = delta;
+      }
+      delta = clip.awarded;
+      if (delta <= 0 && (Number(tokenDelta) || 0) > 0) {
+        pl.budgetExhausted = true;
+      }
+    }
     const block = {
       index: prev.index + 1,
       prevHash: prev.hash,
       timestamp: new Date().toISOString(),
       type,
-      payload: payload || {},
-      tokenDelta: Number(tokenDelta) || 0,
+      payload: pl,
+      tokenDelta: delta,
       xpDelta: Number(xpDelta) || 0,
       nonce: Math.floor(Math.random() * 1e9)
     };
@@ -393,7 +768,23 @@
     block.publicKeyFingerprint = signed.publicKeyFingerprint;
     state.chain.push(block);
     state.publicKeyFingerprint = keys.fingerprint;
+    if (!state.deviceId) {
+      try {
+        state.deviceId =
+          (global.APlus && global.APlus.sync && typeof global.APlus.sync.getDeviceId === "function"
+            ? global.APlus.sync.getDeviceId()
+            : null) ||
+          "dev_local";
+      } catch (_) {
+        state.deviceId = "dev_local";
+      }
+    }
     saveRaw(state);
+    try {
+      if (global.APlus && global.APlus.apxTelemetry && typeof global.APlus.apxTelemetry.onBlock === "function") {
+        global.APlus.apxTelemetry.onBlock(block);
+      }
+    } catch (_) {}
     return block;
   }
 
@@ -453,16 +844,26 @@
     const studiedDocs = new Set();
     const stakes = {};
     const activeDays = new Set();
+    const shieldedDays = new Set();
     let exams = 0;
     let passes = 0;
     let pbqs = 0;
     let planTasks = 0;
     let lastDaily = null;
+    let lastDailyQuest = null;
+    const unlocks = {
+      consumables: {},
+      permanent: [],
+      history: []
+    };
 
     chain.forEach((b) => {
       balance += Number(b.tokenDelta) || 0;
       xp += Number(b.xpDelta) || 0;
-      if (b.timestamp) activeDays.add(b.timestamp.slice(0, 10));
+      if (QUALIFYING_STREAK_TYPES.has(b.type)) {
+        const day = blockDayKey(b);
+        if (day) activeDays.add(day);
+      }
       if (b.type === "ACHIEVEMENT_MINT" && b.payload && b.payload.achievementId) {
         achievements.add(b.payload.achievementId);
       }
@@ -475,21 +876,59 @@
       }
       if (b.type === "PBQ_COMPLETE") pbqs += 1;
       if (b.type === "STUDY_PLAN_TASK") planTasks += 1;
-      if (b.type === "DAILY_CHECKIN") lastDaily = (b.payload && b.payload.day) || b.timestamp.slice(0, 10);
+      if (b.type === "DAILY_CHECKIN") lastDaily = blockDayKey(b);
+      if (b.type === "DAILY_QUEST_COMPLETE") lastDailyQuest = blockDayKey(b);
       if (b.type === "DOMAIN_STAKE_LOCK" && b.payload && b.payload.stakeId) {
         stakes[b.payload.stakeId] = {
           domainKey: b.payload.domainKey,
           amount: b.payload.amount,
+          lockDay: b.payload.lockDay || blockDayKey(b),
+          baselinePct: b.payload.baselinePct == null ? null : Number(b.payload.baselinePct),
           status: "locked"
         };
       }
       if (b.type === "DOMAIN_STAKE_RESOLVE" && b.payload && b.payload.stakeId && stakes[b.payload.stakeId]) {
-        stakes[b.payload.stakeId].status = b.payload.success ? "yielded" : "returned";
+        if (b.payload.success) stakes[b.payload.stakeId].status = "yielded";
+        else if (Number(b.payload.burned) > 0) stakes[b.payload.stakeId].status = "burned";
+        else stakes[b.payload.stakeId].status = "returned";
+      }
+      if (b.type === "SPEND_UNLOCK" && b.payload && b.payload.unlockId) {
+        const uId = b.payload.unlockId;
+        const meta = UNLOCK_CATALOG[uId] || { type: b.payload.type || "feature" };
+        unlocks.history.push({
+          id: uId,
+          name: b.payload.name || (meta && meta.name) || uId,
+          cost: Math.abs(Number(b.tokenDelta) || 0),
+          timestamp: b.timestamp
+        });
+        if (meta.type === "consumable") {
+          const charges = Number(b.payload.charges) || (meta && meta.charges) || 1;
+          unlocks.consumables[uId] = (unlocks.consumables[uId] || 0) + charges;
+        } else {
+          if (!unlocks.permanent.includes(uId)) {
+            unlocks.permanent.push(uId);
+          }
+        }
+      }
+      if (b.type === "CONSUME_UNLOCK" && b.payload && b.payload.unlockId) {
+        const uId = b.payload.unlockId;
+        const amount = Number(b.payload.amount) || 1;
+        if (unlocks.consumables[uId]) {
+          unlocks.consumables[uId] = Math.max(0, unlocks.consumables[uId] - amount);
+        }
+        if (uId === "STREAK_FREEZE" && Array.isArray(b.payload.coveredDays)) {
+          b.payload.coveredDays.forEach((day) => shieldedDays.add(String(day)));
+        }
+      }
+      if (b.type === "SPEND_INSIGHT") {
+        if (!unlocks.permanent.includes("WEAK_SCAN")) {
+          unlocks.permanent.push("WEAK_SCAN");
+        }
       }
     });
 
     const rank = [...RANKS].reverse().find((r) => xp >= r.minXp) || RANKS[0];
-    const streak = computeStreak(activeDays);
+    const soft = computeSoftStreak(activeDays, localDayKey(), shieldedDays);
 
     return {
       balance,
@@ -498,34 +937,34 @@
       achievements: Array.from(achievements),
       studiedDocs: Array.from(studiedDocs),
       stakes,
+      unlocks,
       exams,
       passes,
       pbqs,
       planTasks,
       lastDaily,
-      streak,
+      lastDailyQuest,
+      streak: soft.streak,
+      streakFrozen: soft.streakFrozen,
+      lastQualifyingDay: soft.lastQualifyingDay,
       activeDays: activeDays.size,
+      activeDayList: Array.from(activeDays),
+      shieldedDays: Array.from(shieldedDays),
       height: chain.length
     };
   }
 
-  function computeStreak(activeDaySet) {
-    let streak = 0;
-    const cursor = new Date();
-    for (;;) {
-      const key = cursor.toISOString().slice(0, 10);
-      if (!activeDaySet.has(key)) break;
-      streak += 1;
-      cursor.setDate(cursor.getDate() - 1);
-    }
-    return streak;
-  }
-
   async function getState() {
     const state = await ensureGenesis();
-    const wallet = replayWallet(state.chain);
+    let wallet = replayWallet(state.chain);
     const integrity = await verifyChain();
     const keys = await ensureKeyPair();
+    // Spends are recorded on this device's chain only, so `balance` must stay local.
+    const peerBonus = multiDeviceBonusBalance(state._peerDevices, state.deviceId || currentDeviceId());
+    wallet = Object.assign({}, wallet, {
+      peerDeviceBonus: peerBonus,
+      totalAcrossDevices: wallet.balance + peerBonus
+    });
     return {
       tokenSymbol: TOKEN_SYMBOL,
       tokenName: TOKEN_NAME,
@@ -534,8 +973,10 @@
       integrity,
       ranks: RANKS,
       achievementsCatalog: ACHIEVEMENTS,
+      unlocksCatalog: UNLOCK_CATALOG,
       publicKeyFingerprint: keys.fingerprint,
-      keyStorage: keys.storage
+      keyStorage: keys.storage,
+      deviceId: state.deviceId || null
     };
   }
 
@@ -561,29 +1002,61 @@
     );
   }
 
+  function isFullExamAttempt(result) {
+    if (!result) return false;
+    const total = typeof result === "number" ? result : Math.max(0, Number(result.total) || 0);
+    const rawType = String((typeof result === "object" && result.examType) || "core1").toLowerCase();
+    const type = rawType.replace(/[-_\s]/g, "");
+
+    if (rawType.includes("domain") || type.includes("domain")) return false;
+
+    const registry = (global.APlus && global.APlus.trackRegistry) ||
+                     (typeof window !== "undefined" && window.APlus && window.APlus.trackRegistry) ||
+                     (typeof globalThis !== "undefined" && globalThis.APlus && globalThis.APlus.trackRegistry) ||
+                     null;
+    if (registry && typeof registry.getTrack === "function") {
+      const track = registry.getTrack(rawType) || registry.getTrack(type);
+      if (track && track.questionCount) {
+        return total >= Math.floor(track.questionCount * 0.88);
+      }
+    }
+
+    if (type === "az900" || type === "msaz900" || type === "azure") {
+      return total >= 40;
+    }
+    if (type === "az500" || type === "msaz500" || type === "azuresec" || type === "azuresecurity") {
+      return total >= 45;
+    }
+    return total >= (EARN_RULES.fullExamMinQuestions || 60);
+  }
+
   function calcExamReward(result) {
     const total = Math.max(1, Number(result.total) || 1);
     const correct = Number(result.rawCorrect) || 0;
     const scaled = Number(result.scaledScore) || 0;
     const passed = !!result.passed;
     const type = (result.examType || "core1").toLowerCase();
-    const isFull = total >= 60;
+    const isFull = isFullExamAttempt(result);
 
-    let apx = 10 + correct * 2;
+    let practiceApx = 10 + correct * 2;
+    let milestoneApx = 0;
     let xp = 15 + correct * 3;
 
+    let scoreBonus = 0;
     if (passed) {
-      apx += isFull ? 50 : 20;
+      scoreBonus += isFull ? 50 : 20;
       xp += isFull ? 80 : 30;
     }
     if (scaled >= 850) {
-      apx += 40;
+      scoreBonus += 40;
       xp += 60;
     }
     if (scaled >= 900) {
-      apx += 25;
+      scoreBonus += 25;
       xp += 40;
     }
+    if (isFull) milestoneApx += scoreBonus;
+    else practiceApx += scoreBonus;
 
     const domainBonuses = [];
     const domainStats = result.domainStats || {};
@@ -592,25 +1065,97 @@
       if (!s || !s.total) return;
       const pct = (s.correct / s.total) * 100;
       if (pct >= 80) {
-        apx += 15;
+        practiceApx += 15;
         xp += 20;
         domainBonuses.push({ domain: d, pct: Math.round(pct), bonusApx: 15 });
       }
     });
 
+    // Crucible Behavioral Bonuses (Instinct & Pacing Calibration)
+    let instinctBonus = 0;
+    const audit = result.crucibleAudit;
+    if (audit && typeof audit === "object") {
+      if (audit.totalSwitches !== undefined && audit.correctToWrong === 0 && total >= 15) {
+        instinctBonus += 10;
+        xp += 15;
+      }
+      if (audit.wrongToCorrect && audit.wrongToCorrect > 0) {
+        const calApx = Math.min(15, audit.wrongToCorrect * 5);
+        instinctBonus += calApx;
+        xp += audit.wrongToCorrect * 8;
+      }
+    }
+    practiceApx += instinctBonus;
+
     if (type === "missed") {
-      apx = Math.round(apx * 0.75);
+      practiceApx = Math.round(practiceApx * 0.75);
+      milestoneApx = Math.round(milestoneApx * 0.75);
       xp = Math.round(xp * 0.75);
     }
 
-    return { apx, xp, domainBonuses, isFull };
+    return { apx: practiceApx + milestoneApx, practiceApx, milestoneApx, xp, domainBonuses, instinctBonus, isFull };
+  }
+
+  function examSignature(result) {
+    return [
+      String(result.examType || "core1").toLowerCase(),
+      String(result.domainKey || ""),
+      Number(result.total) || 0
+    ].join("|");
+  }
+
+  /** Applies repeat decay, the daily practice cap and once-per-day milestones to a raw reward. */
+  function applyEarnLimits(raw, result, chain, day) {
+    const signature = examSignature(result);
+    const examType = String(result.examType || "core1").toLowerCase();
+    let repeatIndex = 0;
+    let practiceEarnedToday = 0;
+    let milestoneClaimedToday = false;
+
+    (chain || []).forEach((b) => {
+      if (b.type !== "EXAM_COMPLETE" || blockDayKey(b) !== day) return;
+      const p = b.payload || {};
+      const rb = p.rewardBreakdown || {};
+      if (p.signature === signature) repeatIndex += 1;
+      if (rb.practiceAwarded != null) practiceEarnedToday += Number(rb.practiceAwarded) || 0;
+      else practiceEarnedToday += Number(b.tokenDelta) || 0;
+      if ((Number(rb.milestoneAwarded) || 0) > 0 && String(p.examType || "").toLowerCase() === examType) {
+        milestoneClaimedToday = true;
+      }
+    });
+
+    const mults = EARN_RULES.repeatMultipliers;
+    const multiplier = mults[Math.min(repeatIndex, mults.length - 1)];
+    const decayedPractice = Math.round(raw.practiceApx * multiplier);
+    const capRemaining = Math.max(0, EARN_RULES.examPracticeDailyCap - practiceEarnedToday);
+    const practiceAwarded = Math.min(decayedPractice, capRemaining);
+    const milestoneAwarded = milestoneClaimedToday ? 0 : raw.milestoneApx;
+
+    return {
+      ...raw,
+      rawApx: raw.apx,
+      apx: practiceAwarded + milestoneAwarded,
+      xp: Math.round(raw.xp * multiplier),
+      practiceAwarded,
+      milestoneAwarded,
+      repeatIndex,
+      multiplier,
+      capped: practiceAwarded < decayedPractice,
+      capRemaining: capRemaining - practiceAwarded,
+      milestoneAlreadyClaimed: milestoneClaimedToday && raw.milestoneApx > 0,
+      signature
+    };
   }
 
   async function recordExamComplete(result) {
-    const reward = calcExamReward(result);
+    const day = localDayKey();
+    const pre = await ensureGenesis();
+    const reward = applyEarnLimits(calcExamReward(result), result, pre.chain, day);
     const block = await appendBlock(
       "EXAM_COMPLETE",
       {
+        day,
+        signature: reward.signature,
         examType: result.examType,
         scaledScore: result.scaledScore,
         rawCorrect: result.rawCorrect,
@@ -630,15 +1175,30 @@
       const b = await mintAchievementIfNew("FIRST_EXAM");
       if (b) minted.push(b);
     }
-    if (result.passed && String(result.examType).toLowerCase() === "core1" && result.total >= 60) {
+    const isFull = isFullExamAttempt(result);
+    const examTypeStr = String(result.examType || "core1").toLowerCase().replace(/[-_\s]/g, "");
+
+    if (result.passed && examTypeStr === "core1" && isFull) {
       const b = await mintAchievementIfNew("PASS_CORE1", { score: result.scaledScore });
       if (b) minted.push(b);
     }
-    if (result.passed && String(result.examType).toLowerCase() === "core2" && result.total >= 60) {
+    if (result.passed && examTypeStr === "core2" && isFull) {
       const b = await mintAchievementIfNew("PASS_CORE2", { score: result.scaledScore });
       if (b) minted.push(b);
     }
-    if (result.scaledScore >= 850 && result.total >= 60) {
+    if (result.passed && (examTypeStr === "az900" || examTypeStr === "msaz900" || examTypeStr === "azure") && isFull) {
+      const b = await mintAchievementIfNew("PASS_AZ900", { score: result.scaledScore });
+      if (b) minted.push(b);
+    }
+    if (result.passed && (examTypeStr === "az500" || examTypeStr === "msaz500" || examTypeStr === "azuresec" || examTypeStr === "azuresecurity") && isFull) {
+      const b = await mintAchievementIfNew("PASS_AZ500", { score: result.scaledScore });
+      if (b) minted.push(b);
+    }
+    if (result.passed && (examTypeStr.includes("crucible") || result.crucible || (result.mode && String(result.mode).toLowerCase() === "crucible")) && isFull) {
+      const b = await mintAchievementIfNew("CRUCIBLE_SURVIVOR", { score: result.scaledScore });
+      if (b) minted.push(b);
+    }
+    if (result.scaledScore >= 850 && isFull) {
       const b = await mintAchievementIfNew("SCORE_850", { score: result.scaledScore });
       if (b) minted.push(b);
     }
@@ -777,7 +1337,7 @@
   }
 
   async function claimDailyCheckin() {
-    const day = todayKey();
+    const day = localDayKey();
     const state = await getState();
     if (state.wallet.lastDaily === day) {
       return { skipped: true, reason: "already_claimed", wallet: state.wallet };
@@ -804,6 +1364,185 @@
     return { skipped: false, block, apx, xp, streakNext: after.wallet.streak, wallet: after.wallet, minted };
   }
 
+  /**
+   * P0 stub: mint DAILY_QUEST_COMPLETE once per local day.
+   * Full quest leg machine lives in js/daily-quest.js (later).
+   */
+  async function claimDailyQuest(payload) {
+    const day = (payload && payload.day) || localDayKey();
+    const state = await getState();
+    const already = (state.chain || []).some(
+      (b) =>
+        b.type === "DAILY_QUEST_COMPLETE" &&
+        blockDayKey(b) === day
+    );
+    if (already) {
+      return { skipped: true, reason: "already_claimed", day, wallet: state.wallet };
+    }
+    const streak = state.wallet.streak || 0;
+    const defendSkipped = !!(payload && payload.defendSkipped);
+    let apx = 12 + Math.min(20, streak * 3);
+    if (!defendSkipped) apx += 8;
+    apx = Math.min(45, apx);
+    const xp = 18;
+    const block = await appendBlock(
+      "DAILY_QUEST_COMPLETE",
+      {
+        day,
+        legs: (payload && payload.legs) || null,
+        defendSkipped: defendSkipped,
+        streakAtClaim: streak
+      },
+      apx,
+      xp
+    );
+    const after = await getState();
+    // Fold check-in into quest claim so learners do not double-grind a second CTA.
+    if (after.wallet.lastDaily !== day) {
+      await appendBlock(
+        "DAILY_CHECKIN",
+        { day, via: "daily_quest", streakAtClaim: after.wallet.streak || 0, bonus: 0 },
+        0,
+        0
+      );
+    }
+    const finalState = await getState();
+    return { skipped: false, block, apx, xp, day, wallet: finalState.wallet };
+  }
+
+  /**
+   * Once-per-campaignId bonus after Featured Objective quiz qualifies.
+   * Learn/Quiz still earn via STUDY_OPEN / EXAM_COMPLETE; this is a separate claim mint.
+   */
+  async function claimFeaturedObjective(payload) {
+    const day = (payload && payload.day) || localDayKey();
+    const campaignId = payload && payload.campaignId ? String(payload.campaignId) : "";
+    if (!campaignId) {
+      const state = await getState();
+      return { skipped: true, reason: "missing_campaign", day, wallet: state.wallet };
+    }
+    const state = await getState();
+    const already = (state.chain || []).some(
+      (b) =>
+        b.type === "FEATURED_OBJECTIVE_CLAIM" &&
+        b.payload &&
+        String(b.payload.campaignId || "") === campaignId
+    );
+    if (already) {
+      return { skipped: true, reason: "already_claimed", day, campaignId, wallet: state.wallet };
+    }
+    const bestPercent =
+      typeof payload.bestPercent === "number" && isFinite(payload.bestPercent)
+        ? Math.max(0, Math.min(100, payload.bestPercent))
+        : 70;
+    let apx = Math.min(20, 10 + Math.floor(bestPercent / 20));
+    const xp = 12;
+    const clip = clipGlobalBudget(state.chain, day, apx, "FEATURED_OBJECTIVE_CLAIM");
+    if (clip.awarded <= 0) {
+      // Still record a zero-mint claim so the campaign cannot be farmed after the cap.
+      const block = await appendBlock(
+        "FEATURED_OBJECTIVE_CLAIM",
+        {
+          day,
+          campaignId,
+          exam: (payload && payload.exam) || null,
+          objectiveCode: (payload && payload.objectiveCode) || null,
+          bestPercent,
+          attempts: (payload && payload.attempts) || null,
+          budgetExhausted: true
+        },
+        0,
+        xp
+      );
+      const after = await getState();
+      return {
+        skipped: true,
+        reason: "budget",
+        block,
+        apx: 0,
+        xp,
+        day,
+        campaignId,
+        wallet: after.wallet
+      };
+    }
+    const block = await appendBlock(
+      "FEATURED_OBJECTIVE_CLAIM",
+      {
+        day,
+        campaignId,
+        exam: (payload && payload.exam) || null,
+        objectiveCode: (payload && payload.objectiveCode) || null,
+        bestPercent,
+        attempts: (payload && payload.attempts) || null
+      },
+      apx,
+      xp
+    );
+    const after = await getState();
+    if (block && typeof block.tokenDelta === "number") apx = block.tokenDelta;
+    return {
+      skipped: false,
+      block,
+      apx,
+      xp,
+      day,
+      campaignId,
+      wallet: after.wallet
+    };
+  }
+
+  /**
+   * The free grace covers one missed day; each STREAK_FREEZE covers one more.
+   * Spends the fewest shields that keep the run alive, and none if the run
+   * cannot be saved with what the learner owns.
+   */
+  async function applyStreakShields() {
+    const state = await getState();
+    const w = state.wallet;
+    const owned = (w.unlocks && w.unlocks.consumables && w.unlocks.consumables.STREAK_FREEZE) || 0;
+    const last = w.lastQualifyingDay;
+    const today = localDayKey();
+    if (!owned || !last || last >= today) return { used: 0 };
+
+    const shielded = new Set(w.shieldedDays || []);
+    const missing = [];
+    for (let d = shiftDayKey(last, 1); d < today; d = shiftDayKey(d, 1)) {
+      if (!shielded.has(d)) missing.push(d);
+    }
+    if (missing.length <= 1) return { used: 0 };
+
+    const withToday = new Set(w.activeDayList || []);
+    withToday.add(today);
+    const streakIfCovered = (k) => {
+      const trial = new Set(shielded);
+      missing.slice(0, k).forEach((d) => trial.add(d));
+      return computeSoftStreak(withToday, today, trial).streak;
+    };
+    const unsaved = streakIfCovered(0);
+    let best = null;
+    for (let k = missing.length - 1; k <= Math.min(owned, missing.length); k++) {
+      const s = streakIfCovered(k);
+      if (s > unsaved && (!best || s > best.streak)) best = { k, streak: s };
+    }
+    if (!best) return { used: 0, insufficient: true, needed: missing.length - 1, owned };
+
+    const coveredDays = missing.slice(0, best.k);
+    const res = await consumeUnlock("STREAK_FREEZE", best.k, { coveredDays, day: today });
+    if (!res.ok) return { used: 0 };
+    return { used: best.k, coveredDays, streak: res.wallet.streak, wallet: res.wallet };
+  }
+
+  async function getStreak() {
+    const state = await getState();
+    const w = state.wallet || {};
+    return {
+      streak: Number(w.streak) || 0,
+      streakFrozen: !!w.streakFrozen,
+      lastQualifyingDay: w.lastQualifyingDay || null
+    };
+  }
+
   async function stakeDomain(domainKey, amount) {
     const amt = Number(amount) || 30;
     const state = await getState();
@@ -815,27 +1554,63 @@
     );
     if (open) return { ok: false, error: "You already have an open stake on this domain." };
 
+    const baselinePct = latestDomainPct(state.chain, domainKey);
+    if (baselinePct != null && baselinePct >= EARN_RULES.stakeMasteredPct) {
+      return {
+        ok: false,
+        error:
+          "You already score " + Math.round(baselinePct) + "% on " + domainKey +
+          ". Stake on a domain below " + EARN_RULES.stakeMasteredPct + "% to earn a mastery bonus."
+      };
+    }
+
     const stakeId = "stake_" + Date.now() + "_" + Math.floor(Math.random() * 1e5);
     const block = await appendBlock(
       "DOMAIN_STAKE_LOCK",
-      { stakeId, domainKey, amount: amt },
+      { stakeId, domainKey, amount: amt, lockDay: localDayKey(), baselinePct },
       -amt,
       5
     );
-    return { ok: true, block, stakeId, wallet: (await getState()).wallet };
+    return { ok: true, block, stakeId, baselinePct, wallet: (await getState()).wallet };
+  }
+
+  /** Most recent recorded percentage for a domain across exam blocks, or null if never attempted. */
+  function latestDomainPct(chain, domainKey) {
+    for (let i = (chain || []).length - 1; i >= 0; i--) {
+      const b = chain[i];
+      if (b.type !== "EXAM_COMPLETE" || !b.payload || !b.payload.domainStats) continue;
+      const s = b.payload.domainStats[domainKey];
+      if (s && s.total) return (s.correct / s.total) * 100;
+    }
+    return null;
   }
 
   async function resolveDomainStakes(domainKey, domainPct) {
     const state = await getState();
+    const today = localDayKey();
     const resolved = [];
-    const openIds = Object.keys(state.wallet.stakes || {}).filter(
-      (id) => state.wallet.stakes[id].status === "locked" && state.wallet.stakes[id].domainKey === domainKey
-    );
+    const openIds = Object.keys(state.wallet.stakes || {}).filter((id) => {
+      const s = state.wallet.stakes[id];
+      return s.status === "locked" && s.domainKey === domainKey && (!s.lockDay || s.lockDay < today);
+    });
     for (const stakeId of openIds) {
       const stake = state.wallet.stakes[stakeId];
-      const success = domainPct >= 80;
-      const yieldAmt = success ? Math.round(stake.amount * 0.4) : 0;
-      const delta = stake.amount + yieldAmt;
+      const success = domainPct >= EARN_RULES.stakeMasteredPct;
+      const yieldAmt = success ? Math.round(stake.amount * EARN_RULES.stakeYieldRate) : 0;
+      // Fail burns principal when stakeFailBurnsPrincipal; success returns stake + yield.
+      let returned = 0;
+      let burned = 0;
+      let delta = 0;
+      if (success) {
+        returned = stake.amount;
+        delta = stake.amount + yieldAmt;
+      } else if (EARN_RULES.stakeFailBurnsPrincipal) {
+        burned = stake.amount;
+        delta = 0;
+      } else {
+        returned = stake.amount;
+        delta = stake.amount;
+      }
       const block = await appendBlock(
         "DOMAIN_STAKE_RESOLVE",
         {
@@ -843,8 +1618,10 @@
           domainKey,
           success,
           domainPct,
-          returned: stake.amount,
-          yield: yieldAmt
+          returned,
+          burned,
+          yield: yieldAmt,
+          day: today
         },
         delta,
         success ? 30 : 8
@@ -855,18 +1632,126 @@
   }
 
   async function spendForInsight() {
-    const cost = 25;
-    const state = await getState();
-    if (state.wallet.balance < cost) {
-      return { ok: false, error: "Need " + cost + " " + TOKEN_SYMBOL };
+    return spendUnlock("WEAK_SCAN");
+  }
+
+  function getUnlocksCatalog() {
+    return JSON.parse(JSON.stringify(UNLOCK_CATALOG));
+  }
+
+  async function spendUnlock(unlockId) {
+    const meta = UNLOCK_CATALOG[unlockId];
+    if (!meta) {
+      return { ok: false, error: "Unknown unlock item: " + unlockId };
     }
+    const state = await getState();
+    if (meta.type === "permanent" && (state.wallet.unlocks.permanent || []).includes(unlockId)) {
+      return { ok: false, error: "You already own this permanent unlock." };
+    }
+    if (state.wallet.balance < meta.cost) {
+      return {
+        ok: false,
+        error: "Insufficient " + TOKEN_SYMBOL + ". Need " + meta.cost + ", balance is " + state.wallet.balance
+      };
+    }
+
     const block = await appendBlock(
-      "SPEND_INSIGHT",
-      { item: "Weak-domain insight unlock", cost },
-      -cost,
+      "SPEND_UNLOCK",
+      {
+        unlockId,
+        name: meta.name,
+        cost: meta.cost,
+        type: meta.type,
+        charges: meta.charges || 0
+      },
+      -meta.cost,
       5
     );
-    return { ok: true, block, wallet: (await getState()).wallet };
+
+    const after = await getState();
+    return {
+      ok: true,
+      block,
+      item: meta,
+      wallet: after.wallet
+    };
+  }
+
+  async function consumeUnlock(unlockId, amount, extraPayload) {
+    const amt = Number(amount) || 1;
+    const state = await getState();
+    const count = (state.wallet.unlocks && state.wallet.unlocks.consumables && state.wallet.unlocks.consumables[unlockId]) || 0;
+    if (count < amt) {
+      return { ok: false, error: "No available charges for " + unlockId };
+    }
+
+    const block = await appendBlock(
+      "CONSUME_UNLOCK",
+      { ...(extraPayload || {}), unlockId, amount: amt, remaining: count - amt },
+      0,
+      0
+    );
+
+    const after = await getState();
+    return {
+      ok: true,
+      block,
+      remaining: (after.wallet.unlocks.consumables[unlockId] || 0),
+      wallet: after.wallet
+    };
+  }
+
+  function checkWalletUnlock(wallet, unlockId) {
+    if (!wallet || !wallet.unlocks) return false;
+    if (Array.isArray(wallet.unlocks.permanent) && wallet.unlocks.permanent.includes(unlockId)) {
+      return true;
+    }
+    if (wallet.unlocks.consumables && (wallet.unlocks.consumables[unlockId] || 0) > 0) {
+      return true;
+    }
+    return false;
+  }
+
+  async function hasActiveUnlock(unlockId) {
+    const state = await getState();
+    return checkWalletUnlock(state.wallet, unlockId);
+  }
+
+  /** Remaining charges on this device's chain, readable from synchronous gates. */
+  function consumableChargesSync(unlockId) {
+    try {
+      const wallet = replayWallet(loadRaw().chain || []);
+      return (wallet.unlocks.consumables && wallet.unlocks.consumables[unlockId]) || 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  function proPassDayConsumed(chain, day) {
+    return (chain || []).some(
+      (b) => b.type === "CONSUME_UNLOCK" && b.payload && b.payload.unlockId === "PRO_PASS_30D" && b.payload.day === day
+    );
+  }
+
+  /** Pro Pass grants Pro while charges remain, plus the full day its last charge was spent. */
+  function proPassActiveSync() {
+    try {
+      const chain = loadRaw().chain || [];
+      const wallet = replayWallet(chain);
+      if ((wallet.unlocks.consumables.PRO_PASS_30D || 0) > 0) return true;
+      return proPassDayConsumed(chain, localDayKey());
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /** Spends one Pro Pass charge per active day; idempotent within a day. */
+  async function activateProPassDay() {
+    const state = await getState();
+    const day = localDayKey();
+    if (proPassDayConsumed(state.chain, day)) return { ok: true, alreadyActive: true };
+    if (!checkWalletUnlock(state.wallet, "PRO_PASS_30D")) return { ok: false, error: "No Pro Pass days left." };
+    return consumeUnlock("PRO_PASS_30D", 1, { day });
   }
 
   async function exportLedgerJson() {
@@ -894,9 +1779,13 @@
     TOKEN_NAME,
     RANKS,
     ACHIEVEMENTS,
+    UNLOCK_CATALOG,
+    QUALIFYING_STREAK_TYPES,
     ensureGenesis,
     ensureKeyPair,
     getState,
+    getStreak,
+    applyStreakShields,
     verifyChain,
     appendBlock,
     recordExamComplete,
@@ -904,12 +1793,29 @@
     recordPbqComplete,
     recordStudyPlanTask,
     claimDailyCheckin,
+    claimDailyQuest,
+    claimFeaturedObjective,
     stakeDomain,
     spendForInsight,
+    getUnlocksCatalog,
+    spendUnlock,
+    consumeUnlock,
+    hasActiveUnlock,
+    consumableChargesSync,
+    proPassActiveSync,
+    activateProPassDay,
+    checkWalletUnlock,
     exportLedgerJson,
     resetLedgerHard,
     calcExamReward,
+    applyEarnLimits,
+    isFullExamAttempt,
+    EARN_RULES,
+    clipGlobalBudget,
+    dayBudgetSpent,
     clearKeyCache,
+    localDayKey,
+    computeSoftStreak,
     STORAGE_KEY
   };
 })(window);

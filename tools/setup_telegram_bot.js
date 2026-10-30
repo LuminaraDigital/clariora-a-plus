@@ -80,6 +80,7 @@ async function setup() {
     commands: [
       { command: 'start', description: 'Launch Clariora CompTIA A+ Mini App' },
       { command: 'app', description: 'Open exam simulator and PBQ labs' },
+      { command: 'daily', description: "Start today's 20-question drill" },
       { command: 'pro', description: 'Pro passes priced in Telegram Stars' },
       { command: 'terms', description: 'Terms of sale for Stars digital goods' },
       { command: 'paysupport', description: 'Payment / refund support for Stars' },

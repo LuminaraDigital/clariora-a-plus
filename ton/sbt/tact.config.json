@@ -1,0 +1,13 @@
+{
+  "projects": [
+    {
+      "name": "ClarioraMasterySBT",
+      "path": "./contracts/ClarioraMasterySBT.tact",
+      "output": "./build",
+      "options": {
+        "debug": false,
+        "external": false
+      }
+    }
+  ]
+}

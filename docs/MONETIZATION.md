@@ -1,5 +1,9 @@
 # Monetization and licensing
 
+> **Live rails note:** Telegram and web also sell Ghost Coach Pro via Stars/TON
+> (see `js/stars_billing.js` and `workers/coach_handler.js`). The one-time
+> offline licence below remains the desktop unlock path.
+
 Clariora ships as a free app with a generous free tier and a single one-time
 purchase that unlocks everything, forever, on that PC. There is no subscription, no
 account, no server call, and no phone-home. A license key is a signed string the buyer

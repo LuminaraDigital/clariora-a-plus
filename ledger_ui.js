@@ -26,12 +26,68 @@
         : kind === "warn"
           ? "var(--accent-amber)"
           : "var(--accent-cyan)";
-    el.innerHTML = message;
+    // Allow a small trusted HTML subset from call sites; strip scripts and event handlers.
+    el.textContent = "";
+    const wrap = document.createElement("div");
+    wrap.innerHTML = String(message == null ? "" : message);
+    wrap.querySelectorAll("script,iframe,object,embed,link,meta").forEach(function (n) {
+      n.remove();
+    });
+    wrap.querySelectorAll("*").forEach(function (n) {
+      Array.prototype.slice.call(n.attributes || []).forEach(function (a) {
+        if (/^on/i.test(a.name)) n.removeAttribute(a.name);
+        if (
+          (a.name === "href" || a.name === "src" || a.name === "xlink:href") &&
+          /^\s*(javascript:|data:|vbscript:)/i.test(a.value || "")
+        ) {
+          n.removeAttribute(a.name);
+        }
+      });
+    });
+    while (wrap.firstChild) el.appendChild(wrap.firstChild);
     el.style.display = "block";
     clearTimeout(el._hideTimer);
     el._hideTimer = setTimeout(() => {
       el.style.display = "none";
     }, 4200);
+  }
+
+  function spawnCoinShower() {
+    if (typeof document === 'undefined') return;
+    const target = $("apxHeaderChip") || $("streakChip") || document.body;
+    if (!target || typeof target.getBoundingClientRect !== 'function') return;
+    const rect = target.getBoundingClientRect();
+    const destX = rect.left + rect.width / 2;
+    const destY = rect.top + rect.height / 2;
+
+    for (let i = 0; i < 7; i++) {
+      const coin = document.createElement("div");
+      coin.className = "l2e-floating-coin";
+      coin.textContent = "+1";
+      coin.style.cssText = `
+        position: fixed;
+        left: ${window.innerWidth / 2 + (Math.random() * 100 - 50)}px;
+        top: ${window.innerHeight / 2 + (Math.random() * 80 - 40)}px;
+        font-size: 1.35rem;
+        z-index: 10050;
+        pointer-events: none;
+        transition: all 0.75s cubic-bezier(0.2, 0.8, 0.2, 1);
+        opacity: 1;
+        transform: scale(0.5);
+      `;
+      document.body.appendChild(coin);
+
+      setTimeout(() => {
+        coin.style.left = `${destX}px`;
+        coin.style.top = `${destY}px`;
+        coin.style.transform = `scale(1.25) rotate(${Math.random() * 360}deg)`;
+        coin.style.opacity = "0.2";
+      }, 50 + i * 45);
+
+      setTimeout(() => {
+        if (coin.parentNode) coin.parentNode.removeChild(coin);
+      }, 850);
+    }
   }
 
   async function refreshWalletBadge() {
@@ -52,6 +108,115 @@
     }
     const streakEl = $("apxStreakBadge");
     if (streakEl) streakEl.textContent = `${w.streak}d`;
+
+    // Persistent Header APX Balance Chip
+    const headerBal = $("apxHeaderBalanceBadge");
+    if (headerBal) headerBal.textContent = w.balance;
+
+    // Degree + readiness beside APX (Achievement Wallet / L2E rule)
+    try {
+      const awCfg =
+        (global.APLUS_FEATURES_CONFIG && global.APLUS_FEATURES_CONFIG.achievementWallet) || {};
+      const showWallet = awCfg.enabled === true;
+      const degEl = $("apxDegreeBadge");
+      if (degEl) {
+        if (showWallet && awCfg.showDegree !== false && w.rank && w.rank.name) {
+          degEl.style.display = "inline";
+          degEl.textContent = w.rank.name;
+          degEl.title = "Degree from lifetime XP";
+        } else {
+          degEl.style.display = "none";
+          degEl.textContent = "";
+        }
+      }
+      const readyEl = $("apxReadinessNeighbor");
+      if (readyEl) {
+        let readyTxt = "";
+        if (showWallet && awCfg.showReadinessBesideApx !== false) {
+          try {
+            const a = global.APlus;
+            if (a && a.readiness2 && typeof a.readiness2.compute === "function") {
+              let history = [];
+              if (a.learner && typeof a.learner.getHistory === "function") {
+                history = a.learner.getHistory() || [];
+              }
+              const r = a.readiness2.compute({ history: history });
+              if (r && r.predicted != null) {
+                readyTxt =
+                  "Pred " +
+                  Math.round(r.predicted) +
+                  (r.readiness != null ? " · " + Math.round(r.readiness) + "%" : "");
+              }
+            }
+          } catch (_) {}
+        }
+        if (readyTxt) {
+          readyEl.style.display = "inline";
+          readyEl.textContent = readyTxt;
+          readyEl.title = "Predicted score and readiness beside APX";
+        } else {
+          readyEl.style.display = "none";
+          readyEl.textContent = "";
+        }
+      }
+    } catch (_) {}
+
+    if (typeof document !== "undefined" && document.body) {
+      document.body.classList.toggle("theme-cyber-terminal", CompTIALedger.checkWalletUnlock(w, "CYBER_THEME"));
+    }
+
+    // Visual Streak Shield Aura
+    const shieldBadge = $("apxStreakShieldBadge");
+    if (shieldBadge) {
+      const shields = (w.unlocks && w.unlocks.consumables && w.unlocks.consumables.STREAK_FREEZE) || 0;
+      if (shields > 0) {
+        shieldBadge.style.display = "inline";
+        shieldBadge.title = `Streak Shield Active (${shields} equipped)`;
+      } else {
+        shieldBadge.style.display = "none";
+      }
+    }
+
+    // Next Superpower Goal Progress Card
+    const goalTitle = $("l2eGoalTitle");
+    const goalCost = $("l2eGoalCostBadge");
+    const goalBar = $("l2eGoalProgressBar");
+    const goalText = $("l2eGoalProgressText");
+    const goalRem = $("l2eGoalRemainingText");
+
+    if (goalTitle && goalBar) {
+      const catalog = state.unlocksCatalog || {};
+      const perms = (w.unlocks && w.unlocks.permanent) || [];
+
+      const candidates = Object.values(catalog)
+        .filter((item) => item.type === "consumable" || !perms.includes(item.id))
+        .sort((a, b) => a.cost - b.cost);
+      const target =
+        candidates.find((item) => item.cost > w.balance) ||
+        candidates[candidates.length - 1] ||
+        catalog.AI_BURST;
+
+      if (target) {
+        const pct = Math.min(100, Math.round((w.balance / target.cost) * 100));
+        goalTitle.textContent = target.name;
+        if (goalCost) goalCost.textContent = `${target.cost} APX`;
+        goalBar.style.width = `${pct}%`;
+        if (goalText) goalText.textContent = `${w.balance} / ${target.cost} APX (${pct}%)`;
+
+        if (goalRem) {
+          if (w.balance >= target.cost) {
+            goalRem.textContent = "Ready to unlock. Tap to claim.";
+            goalRem.style.color = "var(--gold-light)";
+            goalBar.style.background = "linear-gradient(90deg, #10B981, #059669)";
+          } else {
+            const need = target.cost - w.balance;
+            goalRem.textContent = `Earn ${need} APX to unlock`;
+            goalRem.style.color = "var(--accent-cyan)";
+            goalBar.style.background = "linear-gradient(90deg, #F5D061, #E5A93C)";
+          }
+        }
+      }
+    }
   }
 
   async function openLedgerModal() {
@@ -63,12 +228,23 @@
     $("ledgerModal").classList.remove("active");
   }
 
+  /** APX chip router: Reward Center when enabled, else Progress record / store. */
+  function openApxSurface() {
+    try {
+      if (global.APlus && APlus.rewardCenter && typeof APlus.rewardCenter.openApxSurface === "function") {
+        APlus.rewardCenter.openApxSurface();
+        return;
+      }
+    } catch (_) {}
+    openLedgerModal();
+  }
+
   async function renderLedgerModal() {
     const state = await CompTIALedger.getState();
     const w = state.wallet;
     $("ledgerWalletSummary").innerHTML = `
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.75rem;">
-        <div class="card" style="padding:0.85rem;"><div style="font-size:0.75rem;color:var(--text-secondary);">Balance</div><div style="font-size:1.4rem;font-weight:800;color:var(--gold-light);">${w.balance} ${state.tokenSymbol}</div></div>
+        <div class="card" style="padding:0.85rem;"><div style="font-size:0.75rem;color:var(--text-secondary);">Spendable on this device</div><div style="font-size:1.4rem;font-weight:800;color:var(--gold-light);">${w.balance} ${state.tokenSymbol}</div>${w.peerDeviceBonus ? `<div style="font-size:0.75rem;color:var(--text-secondary);">${w.totalAcrossDevices} ${state.tokenSymbol} across all devices</div>` : ""}</div>
         <div class="card" style="padding:0.85rem;"><div style="font-size:0.75rem;color:var(--text-secondary);">XP / Rank</div><div style="font-size:1.05rem;font-weight:700;">${w.xp} XP<br>${w.rank.badge} ${escapeSafe(w.rank.name)}</div></div>
         <div class="card" style="padding:0.85rem;"><div style="font-size:0.75rem;color:var(--text-secondary);">Streak</div><div style="font-size:1.4rem;font-weight:800;">${w.streak} days</div></div>
         <div class="card" style="padding:0.85rem;"><div style="font-size:0.75rem;color:var(--text-secondary);">Chain</div><div style="font-size:1.05rem;font-weight:700;">Height ${w.height}<br><span style="color:${state.integrity.valid ? "var(--accent-green)" : "var(--accent-red)"};">${state.integrity.valid ? "Valid" : "Broken"}</span></div></div>
@@ -87,6 +263,69 @@
     `;
     if (global.CompTIAProductTrust && CompTIAProductTrust.refreshReadiness) {
       CompTIAProductTrust.refreshReadiness();
+    }
+
+    // Render Superpowers Store
+    const storeEl = $("ledgerUnlocksStore");
+    const buffEl = $("ledgerUnlocksBuffSummary");
+    const unlocksCatalog = state.unlocksCatalog || {};
+    const unlocksState = w.unlocks || { consumables: {}, permanent: [] };
+
+    if (buffEl) {
+      const activeBuffs = [];
+      if (unlocksState.consumables && unlocksState.consumables.AI_BURST > 0) {
+        activeBuffs.push(`AI Burst: ${unlocksState.consumables.AI_BURST} prompts`);
+      }
+      if (unlocksState.consumables && unlocksState.consumables.STREAK_FREEZE > 0) {
+        activeBuffs.push(`Streak Shield: Active (${unlocksState.consumables.STREAK_FREEZE})`);
+      }
+      if (unlocksState.permanent && unlocksState.permanent.length > 0) {
+        activeBuffs.push(`${unlocksState.permanent.length} permanent unlocked`);
+      }
+      buffEl.innerHTML = activeBuffs.length ? activeBuffs.join(" · ") : "No active buffs";
+    }
+
+    if (storeEl) {
+      storeEl.innerHTML = Object.values(unlocksCatalog)
+        .map((item) => {
+          const isPerm = item.type === "permanent";
+          const owned = isPerm && (unlocksState.permanent || []).includes(item.id);
+          const consumableCharges = !isPerm && (unlocksState.consumables && unlocksState.consumables[item.id] || 0);
+          const canAfford = w.balance >= item.cost;
+
+          let btnHtml = "";
+          if (owned && OWNED_ACTIONS[item.id]) {
+            btnHtml = `<button type="button" class="btn btn-primary" style="font-size:0.8rem; padding:0.35rem 0.65rem;" onclick="useOwnedUnlock('${item.id}')">${OWNED_ACTIONS[item.id].label}</button>`;
+          } else if (owned) {
+            btnHtml = `<button type="button" class="btn btn-secondary" style="font-size:0.8rem; padding:0.35rem 0.65rem;" disabled>Owned</button>`;
+          } else if (!canAfford) {
+            btnHtml = `<button type="button" class="btn btn-secondary" style="font-size:0.8rem; padding:0.35rem 0.65rem; opacity:0.6;" disabled>Need ${item.cost} ${state.tokenSymbol}</button>`;
+          } else {
+            btnHtml = `<button type="button" class="btn btn-primary" style="font-size:0.8rem; padding:0.35rem 0.65rem;" onclick="promptUnlock('${item.id}')">Unlock · ${item.cost} ${state.tokenSymbol}</button>`;
+          }
+
+          let badgeHtml = "";
+          if (!isPerm && consumableCharges > 0) {
+            badgeHtml = `<span style="font-size:0.72rem; color:var(--accent-green); font-weight:bold;">(${consumableCharges} active)</span>`;
+          } else if (isPerm) {
+            badgeHtml = `<span style="font-size:0.72rem; color:var(--gold-light);">Permanent</span>`;
+          }
+
+          return `<div style="padding:0.75rem; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-card); display:flex; flex-direction:column; justify-content:space-between; gap:0.5rem;">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong>${escapeSafe(item.name)}</strong>
+                ${badgeHtml}
+              </div>
+              <div style="font-size:0.78rem; color:var(--text-secondary); margin-top:0.3rem;">${escapeSafe(item.desc)}</div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.4rem; padding-top:0.4rem; border-top:1px solid rgba(255,255,255,0.06);">
+              <span style="font-weight:700; color:var(--gold-light); font-size:0.9rem;">${item.cost} ${state.tokenSymbol}</span>
+              ${btnHtml}
+            </div>
+          </div>`;
+        })
+        .join("");
     }
 
     const ach = $("ledgerAchievements");
@@ -123,6 +362,112 @@
       .join("");
   }
 
+  async function promptUnlock(unlockId) {
+    if (!global.CompTIALedger) return;
+    const state = await CompTIALedger.getState();
+    const item = (state.unlocksCatalog || {})[unlockId];
+    if (!item) return;
+
+    let modal = $("ledgerSignTxModal");
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = "ledgerSignTxModal";
+      modal.className = "modal-overlay";
+      modal.style.cssText = "z-index: 10050;";
+      document.body.appendChild(modal);
+    }
+
+    const shortPub = state.publicKeyFingerprint ? state.publicKeyFingerprint.slice(0, 10) + "…" : "Local WebCrypto Key";
+
+    modal.innerHTML = `
+      <div class="modal-card" style="max-width: 480px; border: 1px solid var(--gold-light); box-shadow: 0 16px 48px rgba(0,0,0,0.5);">
+        <div class="modal-header">
+          <div>
+            <h3 style="font-size: 1.15rem; color: var(--gold-light);">Sign Cryptographic Transaction</h3>
+            <p style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.2rem;">Proof-of-Mastery Local Ledger (ECDSA P-256)</p>
+          </div>
+          <button style="background: none; border: none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer;" onclick="closeSignTxModal()">&times;</button>
+        </div>
+
+        <div style="background: var(--bg-card); padding: 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.82rem; margin: 0.75rem 0;">
+          <div style="display:flex; justify-content:space-between; margin-bottom: 0.4rem;">
+            <span style="color:var(--text-secondary);">Transaction:</span>
+            <strong style="color:var(--accent-cyan);">SPEND_UNLOCK</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom: 0.4rem;">
+            <span style="color:var(--text-secondary);">Signer (You):</span>
+            <code style="color:var(--gold-light);">${escapeSafe(shortPub)}</code>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom: 0.4rem;">
+            <span style="color:var(--text-secondary);">Item:</span>
+            <strong>${escapeSafe(item.name)}</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom: 0.4rem;">
+            <span style="color:var(--text-secondary);">Cost:</span>
+            <strong style="color:var(--accent-red); font-family:monospace;">-${item.cost} ${state.tokenSymbol}</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:var(--text-secondary);">Balance after:</span>
+            <strong style="color:var(--accent-green); font-family:monospace;">${state.wallet.balance - item.cost} ${state.tokenSymbol}</strong>
+          </div>
+        </div>
+
+        <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4;">
+          <strong>Educational Safe Transaction</strong>: This block will be signed on your device with your ECDSA P-256 private key and linked to your immutable audit chain. No external network fees or real money involved.
+        </p>
+
+        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+          <button type="button" class="btn btn-secondary" onclick="closeSignTxModal()">Cancel</button>
+          <button type="button" class="btn btn-primary" id="confirmSignTxBtn" onclick="confirmUnlock('${item.id}')">Sign Block &amp; Unlock</button>
+        </div>
+      </div>
+    `;
+
+    modal.classList.add("active");
+  }
+
+  function closeSignTxModal() {
+    const modal = $("ledgerSignTxModal");
+    if (modal) modal.classList.remove("active");
+  }
+
+  async function confirmUnlock(unlockId) {
+    const btn = $("confirmSignTxBtn");
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Signing with P-256...";
+    }
+
+    try {
+      const res = await CompTIALedger.spendUnlock(unlockId);
+      closeSignTxModal();
+      if (!res.ok) {
+        toast(`Transaction rejected: ${escapeSafe(res.error)}`, "warn");
+        return;
+      }
+
+      if (global.TMABridge && typeof global.TMABridge.haptic === "function") {
+        global.TMABridge.haptic("success");
+      }
+      spawnCoinShower();
+
+      toast(
+        `<strong>Unlocked: ${escapeSafe(res.item.name)}</strong><br><span style="color:var(--text-secondary);font-size:0.75rem;">Mined into Block #${res.block.index}</span>`,
+        "earn"
+      );
+
+      await refreshWalletBadge();
+      await renderLedgerModal();
+
+      if (unlockId === "CYBER_THEME") {
+        document.body.classList.add("theme-cyber-terminal");
+      }
+    } catch (err) {
+      closeSignTxModal();
+      toast(`Signature failed: ${escapeSafe((err && err.message) || err)}`, "warn");
+    }
+  }
+
   function escapeSafe(str) {
     return String(str || "")
       .replace(/&/g, "&amp;")
@@ -131,18 +476,49 @@
       .replace(/"/g, "&quot;");
   }
 
+  function earnLimitNote(reward) {
+    if (!reward) return "";
+    const notes = [];
+    if (reward.multiplier != null && reward.multiplier < 1) {
+      notes.push(`repeat of today's quiz pays ${Math.round(reward.multiplier * 100)}%`);
+    }
+    if (reward.capped) notes.push("daily practice APX limit reached, XP still counts");
+    if (reward.milestoneAlreadyClaimed) notes.push("pass bonus already claimed today for this exam");
+    if (!notes.length) return "";
+    return `<br><span style="color:var(--text-secondary);font-size:0.8rem;">${notes.join(" · ")}</span>`;
+  }
+
+  const _processedAttempts = new Set();
   async function onExamComplete(result) {
-    if (!global.CompTIALedger) return null;
-    const out = await CompTIALedger.recordExamComplete(result);
+    if (!global.CompTIALedger || !result) return null;
+    const attemptSig = result.sessionId || [result.examType, result.total, result.rawCorrect, result.scaledScore, Math.floor(Date.now() / 15000)].join(':');
+    if (_processedAttempts.has(attemptSig)) {
+      return null;
+    }
+    _processedAttempts.add(attemptSig);
+    if (_processedAttempts.size > 50) {
+      const oldest = Array.from(_processedAttempts).slice(0, 20);
+      oldest.forEach((k) => _processedAttempts.delete(k));
+    }
+
+    const out = await global.CompTIALedger.recordExamComplete(result);
     await refreshWalletBadge();
+
+    if (global.TMABridge && typeof global.TMABridge.haptic === "function") {
+      global.TMABridge.haptic("success");
+    }
+    spawnCoinShower();
+
     const rewardEl = $("apxExamRewardBanner");
     if (rewardEl) {
       rewardEl.style.display = "block";
       rewardEl.innerHTML = `
-        <strong style="color:var(--accent-cyan);">+${out.reward.apx} APX</strong> mined into block
+        <strong style="color:var(--accent-cyan);">+${out.reward.apx} APX</strong> earned
         <code>#${out.block.index}</code> (${shortHash(out.block.hash)})
         · +${out.reward.xp} XP
         ${out.minted.length ? ` · Achievements: ${out.minted.map((m) => m.payload.name).join(", ")}` : ""}
+        ${out.reward.instinctBonus ? ` · <span style="color:var(--accent-green);">Instinct Bonus: +${out.reward.instinctBonus} APX</span>` : ""}
+        ${earnLimitNote(out.reward)}
       `;
     }
     toast(
@@ -170,6 +546,10 @@
     const out = await CompTIALedger.recordPbqComplete(labName);
     await refreshWalletBadge();
     if (!out.skipped) {
+      if (global.TMABridge && typeof global.TMABridge.haptic === "function") {
+        global.TMABridge.haptic("success");
+      }
+      spawnCoinShower();
       toast(`<strong>+18 APX</strong> PBQ completed<br>${escapeSafe(labName)}`, "earn");
     }
     return out;
@@ -182,31 +562,110 @@
     if (out.skipped) {
       toast("Daily check-in already claimed for today.", "warn");
     } else {
+      if (global.TMABridge && typeof global.TMABridge.haptic === "function") {
+        global.TMABridge.haptic("success");
+      }
+      spawnCoinShower();
       toast(`<strong>+${out.apx} APX</strong> daily check-in · streak ${out.wallet.streak}d`, "earn");
     }
   }
 
+  function updateDomainDropdown() {
+    const sel = $("domainSelect");
+    if (!sel) return;
+    const registry = (global.APlus && global.APlus.trackRegistry) ||
+                     (typeof window !== "undefined" && window.APlus && window.APlus.trackRegistry) ||
+                     (typeof globalThis !== "undefined" && globalThis.APlus && globalThis.APlus.trackRegistry) ||
+                     null;
+    if (!registry || typeof registry.getActiveTrack !== "function") return;
+    const track = registry.getActiveTrack();
+    if (!track || !Array.isArray(track.blueprint) || track.blueprint.length === 0) return;
+
+    const prevVal = sel.value;
+    sel.innerHTML = "";
+    const group = document.createElement("optgroup");
+    group.label = track.title || track.code || "Domains";
+    track.blueprint.forEach((bp, idx) => {
+      const opt = document.createElement("option");
+      opt.value = `${track.id}_${idx + 1}`;
+      opt.textContent = `${track.badge || track.code}: ${bp.name || bp.prefix}`;
+      group.appendChild(opt);
+    });
+    sel.appendChild(group);
+    if (prevVal) {
+      for (let i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value === prevVal) {
+          sel.selectedIndex = i;
+          break;
+        }
+      }
+    }
+  }
+
   async function stakeSelectedDomain() {
-    const val = $("domainSelect").value;
-    const map = {
-      c1_1: "1.0 Mobile Devices",
-      c1_2: "2.0 Networking",
-      c1_3: "3.0 Hardware",
-      c1_4: "4.0 Virtualization and Cloud Computing",
-      c1_5: "5.0 Hardware and Network Troubleshooting",
-      c2_1: "1.0 Operating Systems",
-      c2_2: "2.0 Security",
-      c2_3: "3.0 Software Troubleshooting",
-      c2_4: "4.0 Operational Procedures"
-    };
-    const domainKey = map[val] || val;
-    const out = await CompTIALedger.stakeDomain(domainKey, 30);
+    const sel = $("domainSelect");
+    const val = sel ? sel.value : "";
+    let domainKey = val;
+
+    const registry = (global.APlus && global.APlus.trackRegistry) ||
+                     (typeof window !== "undefined" && window.APlus && window.APlus.trackRegistry) ||
+                     (typeof globalThis !== "undefined" && globalThis.APlus && globalThis.APlus.trackRegistry) ||
+                     null;
+
+    if (registry && typeof registry.getActiveTrack === "function") {
+      const track = registry.getActiveTrack();
+      if (track && Array.isArray(track.blueprint)) {
+        const match = track.blueprint.find((bp, idx) => {
+          const key1 = `${track.id}_${idx + 1}`;
+          const key2 = `${track.id}_${bp.prefix}`;
+          const alias1 = track.id === "core1" ? `c1_${idx + 1}` : track.id === "core2" ? `c2_${idx + 1}` : key1;
+          return val === key1 || val === key2 || val === alias1 || val === bp.name || val === bp.prefix ||
+                 (val && val.toLowerCase() === (bp.name || "").toLowerCase()) ||
+                 (val && (bp.name || "").toLowerCase().startsWith(val.toLowerCase()));
+        });
+        if (match) {
+          domainKey = match.name;
+        }
+      }
+    }
+
+    if (!domainKey || domainKey === val) {
+      const map = {
+        c1_1: "1.0 Mobile Devices",
+        c1_2: "2.0 Networking",
+        c1_3: "3.0 Hardware",
+        c1_4: "4.0 Virtualization and Cloud Computing",
+        c1_5: "5.0 Hardware and Network Troubleshooting",
+        c2_1: "1.0 Operating Systems",
+        c2_2: "2.0 Security",
+        c2_3: "3.0 Software Troubleshooting",
+        c2_4: "4.0 Operational Procedures",
+        // Azure AZ-900 domain keys
+        az900_1: "1.0 Describe cloud concepts",
+        az900_2: "2.0 Describe Azure architecture and services",
+        az900_3: "3.0 Describe Azure management and governance",
+        // Azure AZ-500 domain keys
+        az500_1: "1.0 Manage identity and access",
+        az500_2: "2.0 Secure networking",
+        az500_3: "3.0 Secure compute, storage, and databases",
+        az500_4: "4.0 Manage security operations"
+      };
+      domainKey = map[val] || val;
+    }
+
+    const ledger = global.CompTIALedger || (typeof CompTIALedger !== "undefined" ? CompTIALedger : null);
+    if (!ledger) return { ok: false, error: "CompTIALedger not loaded" };
+    const out = await ledger.stakeDomain(domainKey, 30);
     await refreshWalletBadge();
     if (!out.ok) {
       toast(escapeSafe(out.error), "warn");
-      return;
+      return out;
     }
-    toast(`Staked <strong>30 APX</strong> on ${escapeSafe(domainKey)}. Score 80%+ to earn yield.`, "earn");
+    toast(
+      `Staked <strong>30 APX</strong> on ${escapeSafe(domainKey)}. Score 80%+ on a drill from tomorrow onward to get it back plus 12 APX.`,
+      "earn"
+    );
+    return out;
   }
 
   async function exportLedger() {
@@ -238,7 +697,133 @@
       return;
     }
     await CompTIALedger.ensureGenesis();
+    try {
+      const shield = await CompTIALedger.applyStreakShields();
+      if (shield && shield.used > 0) {
+        toast(
+          `<strong>Streak Shield used</strong> (${shield.used})<br>Your ${shield.streak}-day streak is safe. Study today to keep it going.`,
+          "earn"
+        );
+      }
+    } catch (err) {
+      console.warn("Streak shield check failed:", err && err.message);
+    }
+    try {
+      const pass = await CompTIALedger.activateProPassDay();
+      if (pass && pass.ok && !pass.alreadyActive) {
+        toast(`<strong>Pro Pass active today</strong><br>${pass.remaining} day${pass.remaining === 1 ? "" : "s"} left.`, "earn");
+      }
+    } catch (err) {
+      console.warn("Pro Pass activation failed:", err && err.message);
+    }
+    updateDomainDropdown();
+    try {
+      const reg = (global.APlus && global.APlus.trackRegistry) ||
+                  (typeof window !== "undefined" && window.APlus && window.APlus.trackRegistry) ||
+                  (typeof globalThis !== "undefined" && globalThis.APlus && globalThis.APlus.trackRegistry);
+      if (reg && typeof reg.onTrackChange === "function") {
+        reg.onTrackChange(() => updateDomainDropdown());
+      }
+    } catch (_) {}
     await refreshWalletBadge();
+  }
+
+  const OWNED_ACTIONS = {
+    CRAM_SHEET: { label: "Print sheet", run: () => global.APlus && APlus.cramSheet && APlus.cramSheet.printAll() },
+    WEAK_SCAN: { label: "Run scan", run: () => openDeficitScan() },
+    HINT_PACK: {
+      label: "How to use",
+      run: () => {
+        const left = CompTIALedger.consumableChargesSync("HINT_PACK");
+        toast(`You have ${left} hint${left === 1 ? "" : "s"}. In a practice drill, tap <strong>Use hint</strong> to remove one wrong option. Hints are off in timed mocks.`, "earn");
+      }
+    },
+    MOCK_UNLOCK: {
+      label: "How to use",
+      run: () => {
+        const left = CompTIALedger.consumableChargesSync("MOCK_UNLOCK");
+        toast(`You have ${left} full mock${left === 1 ? "" : "s"}. Start any 90-question Core 1, Core 2 or mixed exam and one is used when it begins.`, "earn");
+      }
+    },
+    PRO_PASS_30D: {
+      label: "Days left",
+      run: () => {
+        const left = CompTIALedger.consumableChargesSync("PRO_PASS_30D");
+        toast(`Pro Pass: ${left} day${left === 1 ? "" : "s"} left after today. One day is used on each day you open the app.`, "earn");
+      }
+    }
+  };
+
+  function useOwnedUnlock(unlockId) {
+    const action = OWNED_ACTIONS[unlockId];
+    if (!action) return;
+    closeLedgerModal();
+    action.run();
+  }
+
+  async function openDeficitScan() {
+    if (!(await CompTIALedger.hasActiveUnlock("WEAK_SCAN"))) {
+      toast("The Mastery Deficit Scan is a store unlock. Open the store to get it.", "warn");
+      openLedgerModal();
+      return;
+    }
+    const heatmap = global.APlus && APlus.masteryHeatmap;
+    const report = heatmap && typeof heatmap.buildDeficitReport === "function" ? heatmap.buildDeficitReport() : null;
+    if (!report) {
+      toast("Mastery data is still loading. Try again in a moment.", "warn");
+      return;
+    }
+
+    let modal = $("deficitScanModal");
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = "deficitScanModal";
+      modal.className = "modal-overlay";
+      modal.setAttribute("role", "dialog");
+      modal.setAttribute("aria-modal", "true");
+      modal.setAttribute("aria-labelledby", "deficitScanTitle");
+      document.body.appendChild(modal);
+    }
+
+    const row = (o) => `
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:0.75rem;padding:0.6rem 0.75rem;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-card);">
+        <div style="min-width:0;">
+          <strong>${o.exam === "core1" ? "Core 1" : "Core 2"} · ${escapeSafe(o.code)}</strong>
+          <div style="font-size:0.78rem;color:var(--text-secondary);">${escapeSafe(o.title)}</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);">${o.correct}/${o.attempts} correct (${o.pct}%)</div>
+        </div>
+        <button type="button" class="btn btn-primary" style="font-size:0.78rem;padding:0.3rem 0.65rem;white-space:nowrap;" onclick="startDeficitDrill('${escapeSafe(o.code)}','${o.exam}')">Drill</button>
+      </div>`;
+
+    modal.innerHTML = `
+      <div class="modal-card" style="max-width:640px;width:95%;max-height:90vh;overflow-y:auto;">
+        <div class="modal-header" style="display:flex;justify-content:space-between;align-items:center;">
+          <h3 id="deficitScanTitle" style="margin:0;">Mastery Deficit Scan</h3>
+          <button type="button" class="btn btn-secondary btn-icon" onclick="closeDeficitScan()" aria-label="Close">X</button>
+        </div>
+        <p style="font-size:0.82rem;color:var(--text-secondary);margin:0.5rem 0 0.9rem;">
+          Your weakest objectives across both exams, ranked by accuracy. Only objectives with at least ${report.minAttempts} answers are ranked.
+        </p>
+        <h4 style="margin:0 0 0.5rem;">Fix these first</h4>
+        <div style="display:grid;gap:0.5rem;">
+          ${report.weakest.length ? report.weakest.map(row).join("") : `<div style="font-size:0.85rem;color:var(--text-secondary);">No objective below ${report.weakThreshold}% yet. Keep practising to build a fuller picture.</div>`}
+        </div>
+        <h4 style="margin:1rem 0 0.5rem;">Not enough data yet (${report.untested.length})</h4>
+        <div style="font-size:0.8rem;color:var(--text-secondary);line-height:1.5;">
+          ${report.untested.slice(0, 20).map((o) => `${o.exam === "core1" ? "C1" : "C2"} ${escapeSafe(o.code)}`).join(" · ")}${report.untested.length > 20 ? " …" : ""}
+        </div>
+      </div>`;
+    modal.classList.add("active");
+  }
+
+  function closeDeficitScan() {
+    const modal = $("deficitScanModal");
+    if (modal) modal.classList.remove("active");
+  }
+
+  function startDeficitDrill(code, exam) {
+    closeDeficitScan();
+    if (global.APlus && APlus.masteryHeatmap) APlus.masteryHeatmap.launchTargetedDrill(code, exam);
   }
 
   global.CompTIALedgerUI = {
@@ -246,23 +831,40 @@
     refreshWalletBadge,
     openLedgerModal,
     closeLedgerModal,
+    openApxSurface,
+    spawnCoinShower,
     renderLedgerModal,
     onExamComplete,
     onStudyOpen,
     onPbqComplete,
     claimDaily,
     stakeSelectedDomain,
+    updateDomainDropdown,
     exportLedger,
     verifyNow,
+    promptUnlock,
+    closeSignTxModal,
+    confirmUnlock,
+    useOwnedUnlock,
+    openDeficitScan,
     toast
   };
+  global.useOwnedUnlock = useOwnedUnlock;
+  global.openDeficitScan = openDeficitScan;
+  global.closeDeficitScan = closeDeficitScan;
+  global.startDeficitDrill = startDeficitDrill;
 
   // Expose for inline onclick handlers
   global.openLedgerModal = openLedgerModal;
   global.closeLedgerModal = closeLedgerModal;
+  global.openApxSurface = openApxSurface;
   global.claimDailyApx = claimDaily;
   global.stakeSelectedDomain = stakeSelectedDomain;
+  global.updateDomainDropdown = updateDomainDropdown;
   global.exportPomLedger = exportLedger;
   global.verifyPomLedger = verifyNow;
   global.renderLedgerModal = renderLedgerModal;
+  global.promptUnlock = promptUnlock;
+  global.closeSignTxModal = closeSignTxModal;
+  global.confirmUnlock = confirmUnlock;
 })(window);

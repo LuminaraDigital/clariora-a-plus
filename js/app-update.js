@@ -186,7 +186,8 @@
     if (!line) return;
     var version = (status && status.currentVersion) ||
       (global.electronAPI && global.electronAPI.appVersion) ||
-      (APlus && APlus.APP_VERSION) || null;
+      (APlus && APlus.APP_VERSION) ||
+      global.APLUS_VERSION || null;
     if (version) line.textContent = 'Version ' + version;
   }
 

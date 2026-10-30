@@ -117,7 +117,6 @@
               <h3 style="font-size: 1.25rem; color: var(--accent-cyan); display: flex; align-items: center; gap: 0.5rem;">
                 <span>Procedure drill</span>
               </h3>
-              <p class="modal-subtitle" style="margin-top: 0.2rem;">Run the sequence until you can recite it without the screen.</p>
             </div>
             <button class="modal-close-btn" onclick="document.getElementById('kataModal').classList.remove('active')">&times;</button>
           </div>
@@ -261,7 +260,6 @@
               <h3 style="font-size: 1.25rem; color: var(--accent-amber); display: flex; align-items: center; gap: 0.5rem;">
                 <span>Log why I missed this</span>
               </h3>
-              <p class="modal-subtitle" style="margin-top: 0.2rem;">Name the root cause so the same mistake does not repeat.</p>
             </div>
             <button class="modal-close-btn" onclick="document.getElementById('hanseiModal').classList.remove('active')">&times;</button>
           </div>
@@ -359,3 +357,4 @@
   APlus.mastery = new MasteryEngine();
 
 })(typeof window !== 'undefined' ? window : this);
+// a11y-hard-20260911

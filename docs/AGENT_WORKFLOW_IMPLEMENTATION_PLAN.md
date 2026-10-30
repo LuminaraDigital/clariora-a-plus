@@ -16,7 +16,9 @@ Reasons:
 
 **Strategy:** extract proven patterns into a lean Clariora Agent Runtime (CAR) on the Worker.
 
-Research clones (analysis only, not product deps): `%TEMP%\clariora-agent-research\{mem0,crewAI,autogen,langchain,crawl4ai}`.
+Research clones (analysis only, not product deps): `%TEMP%\clariora-agent-research\{mem0,crewAI,autogen,langchain,crawl4ai,OpenManus-RL}`.
+
+Local fine-tuning datasets and recipes (OpenManus-RL, Nemotron-Agentic, SWE-Lego, etc.) are documented in `docs/LOCAL_AGENT_TRAINING.md`. They must not ship in the learner app.
 
 ---
 

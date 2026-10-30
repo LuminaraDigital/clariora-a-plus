@@ -7,10 +7,16 @@
 # Secrets and credentials
 .env*
 !.env.example
+!.env.local.example
+!.env.staging.example
+!.env.production.example
 !.env.*.template
 .groq_key
 **/groq-secrets.local.js
 **/groq_secrets.local.json
+.secrets/
+**/.secrets/
+users.json
 build/certs/
 credentials/
 *serviceAccount*.json
@@ -26,6 +32,9 @@ release/
 dist/
 dist_web/
 **/dist/
+# Third-party agent frameworks must never live in this product tree
+services/paperclip/
+**/paperclipai/
 CompTIA_A_Plus_Desktop_App/**
 !CompTIA_A_Plus_Desktop_App/
 !CompTIA_A_Plus_Desktop_App/resources/
@@ -40,6 +49,7 @@ curriculum_data.js
 curriculum_data.json
 
 # Third-party course media (not redistributable; kept local only)
+vendor_sources/
 Videos For A+/
 PowerPoint for A+/
 Labs for A+/

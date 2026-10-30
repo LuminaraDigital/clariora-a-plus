@@ -1,0 +1,17 @@
+{
+  "product": "Clariora",
+  "version": "1.0.0",
+  "description": "Native Clariora release budgets and quality gates. Not a third-party agent orchestrator.",
+  "budgets": {
+    "offlineShellMb": 12,
+    "maxSingleFileMb": 25,
+    "maxGlbKb": 500,
+    "coachDailyLimitUsd": 15
+  },
+  "rules": {
+    "requireHumanApprovalForDeployment": true,
+    "requireZeroTestFailuresForMerge": true,
+    "strictDesignTokenCompliance": true,
+    "blockHdClaimWithoutTextures": true
+  }
+}

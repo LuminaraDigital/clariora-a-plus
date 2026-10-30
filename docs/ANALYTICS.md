@@ -36,10 +36,32 @@ and does not contain any personal or hardware-identifying information.
 | `session_end` | `seconds` (active seconds since last resume) | `pagehide`, or `visibilitychange` to hidden |
 | `exam_started` | `examType`, `count` (question count), `minutes`, `mode` | bus `exam:started` |
 | `exam_finished` | `examType`, `total`, `rawCorrect`, `scaledScore`, `passed`, `seconds`, `flagged` | bus `exam:finished` |
+| `onboarding_shown` | `exam`, `restored` | onboarding step-1 render |
+| `onboarding_completed` | `exam`, `readiness` | diagnostic finished and profile saved |
+| `onboarding_skipped` | `exam` | user skips onboarding |
+| `onboarding_draft_restored` | `exam` | draft recovered after navigation away |
 | `diagnostic_started` | (module-defined flat props only) | bus `onboarding:diagnostic_started`, or direct `APlus.telemetry.track('diagnostic_started', {...})` |
 | `diagnostic_completed` | (module-defined flat props only) | bus `onboarding:diagnostic_completed`, or direct `APlus.telemetry.track(...)` |
+| `time_to_first_value` | `action`, `seconds` | first core action (diagnostic start/complete, today session) |
+| `funnel_abandon` | `funnel`, `exam` | leave onboarding before complete/skip |
+| `form_validation_error` | `form`, `field` | inline validation failure |
 | `today_session_started` | (module-defined flat props only) | direct `APlus.telemetry.track('today_session_started', {...})`, or bus `today:session:started` if emitted |
 | `feature_opened` | `feature` | bus `feature:opened` |
+| `tiny_win_shown` | `type`, `id` | Next Tiny Win card rendered on Home |
+| `tiny_win_started` | `type`, `id` | User taps "Do it now" on Tiny Win |
+| `tiny_win_completed` | `type`, `id` | Session/leg finished after a Tiny Win start |
+| `path_reordered` | `reason`, `fromDomain`, `toDomain` | 7-day readiness path regenerated with a new Day-1 focus |
+| `loop_closed_shown` | `mutation`, `fromDomain`, `toDomain` | Close-the-loop note shown after a path mutation |
+| `loop_shown` | `examType` | Close-loop panel after exam finish |
+| `loop_action_taken` | `cta` | Close-loop CTA clicked |
+| `loop_completed` | `ok` | Close-loop action finished |
+| `friction_diagnosed` | `domain`, `accuracy`, `tag` | Why-stuck coach shown |
+| `jit_survey_shown` | `surface` | One-question friction survey shown |
+| `jit_survey_answered` | `reason`, `surface` | Friction survey answered |
+| `habit66_started` | `dayIndex` | 66-day habit program started |
+| `habit66_relapse_recovery` | `count` | Relapse recovery offered |
+| `proof_export` | `exam`, `alg` | Proof of Readiness exported |
+| `telegram_buddy_opt_in` | `on` | Study buddy preference toggled |
 | `error` | `message` (truncated to 160 chars), `source` (basename only, no path), `line` | `window.onerror`, `unhandledrejection` |
 
 Any module may also call `APlus.telemetry.track(name, props)` directly for
@@ -132,7 +154,8 @@ buffer, via `APlus.telemetry.metrics()`:
 ```js
 const m = APlus.telemetry.metrics();
 // {
-//   sessionsTotal, diagnosticCompletionRate,
+//   sessionsTotal, diagnosticCompletionRate, onboardingCompletionRate,
+//   meanTimeToFirstValueSec, funnelAbandons,
 //   day7Return: { returned, rollingWeeksFraction },
 //   examsFinished, meanScaledScoreLast5, errorsLast7Days
 // }

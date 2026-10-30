@@ -26,7 +26,13 @@
     volume: 0.15
   };
 
+  function utils() {
+    return (global.APlus && global.APlus.utils) || null;
+  }
+
   function storageGet() {
+    const u = utils();
+    if (u && typeof u.scopedGet === "function") return u.scopedGet(STORAGE_KEY);
     if (global.CompTIAProfiles && CompTIAProfiles.scopedGet) {
       return CompTIAProfiles.scopedGet(STORAGE_KEY);
     }
@@ -38,6 +44,11 @@
   }
 
   function storageSet(value) {
+    const u = utils();
+    if (u && typeof u.scopedSet === "function") {
+      u.scopedSet(STORAGE_KEY, value);
+      return;
+    }
     if (global.CompTIAProfiles && CompTIAProfiles.scopedSet) {
       CompTIAProfiles.scopedSet(STORAGE_KEY, value);
       return;

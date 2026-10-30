@@ -86,6 +86,21 @@
           state.firestoreAvailable = false;
         }
 
+        // Handle pending redirect sign-in from Google OAuth flow
+        if (typeof mods.auth.getRedirectResult === 'function') {
+          mods.auth.getRedirectResult(state.auth).then(function (result) {
+            if (result && result.user) {
+              console.log('[Firebase] Redirect sign-in success:', result.user.email);
+              state.currentUser = result.user;
+              notifyAuthSubscribers(result.user);
+            }
+          }).catch(function (redirectErr) {
+            if (redirectErr && redirectErr.code !== 'auth/popup-closed-by-user') {
+              console.warn('[Firebase] Redirect result notice:', redirectErr);
+            }
+          });
+        }
+
         // Listen for authentication changes
         mods.auth.onAuthStateChanged(state.auth, function (user) {
           state.currentUser = user;
@@ -135,23 +150,49 @@
    * Sign in with Google (Popup with Redirect fallback)
    */
   async function signInWithGoogle() {
-    await init();
+    if (!state.initialized || !state.auth || !state.modules) {
+      await init();
+    }
     if (!state.auth || !state.modules) {
       throw new Error('Firebase Auth is not available');
+    }
+
+    var isDesktopOrFile = (typeof window !== 'undefined') &&
+      (!!window.electronAPI || (window.location && window.location.protocol === 'file:'));
+    if (isDesktopOrFile) {
+      var deskErr = new Error('Google Sign-In is supported in standard web browsers. In this desktop app, your progress is safely stored on this computer.');
+      deskErr.code = 'auth/operation-not-supported-in-this-environment';
+      deskErr.isDesktopShell = true;
+      throw deskErr;
     }
 
     var authMod = state.modules.auth;
     var provider = new authMod.GoogleAuthProvider();
     provider.addScope('profile');
     provider.addScope('email');
+    if (typeof provider.setCustomParameters === 'function') {
+      provider.setCustomParameters({ prompt: 'select_account' });
+    }
 
     try {
       var result = await authMod.signInWithPopup(state.auth, provider);
       return result.user;
     } catch (err) {
-      if (err.code === 'auth/popup-blocked' || err.code === 'auth/popup-closed-by-user') {
-        console.log('[Firebase] Popup blocked or closed; trying redirect...');
-        return authMod.signInWithRedirect(state.auth, provider);
+      if (err && err.code === 'auth/popup-blocked') {
+        if (typeof window !== 'undefined' && window.location && window.location.protocol.startsWith('http')) {
+          console.log('[Firebase] Popup blocked; redirecting to Google sign-in...');
+          await authMod.signInWithRedirect(state.auth, provider);
+          return null;
+        }
+      }
+      if (err && err.code === 'auth/operation-not-supported-in-this-environment') {
+        throw new Error('Google Sign-In is not supported in this offline/desktop shell. Please run in a standard web browser.');
+      }
+      if (err && err.code === 'auth/unauthorized-domain') {
+        var host = (typeof window !== 'undefined' && window.location && window.location.hostname) || '';
+        var domErr = new Error('This domain (' + (host || 'local file') + ') is not yet authorized for Google Sign-in in Firebase Console. Sign in with email or continue locally.');
+        domErr.code = 'auth/unauthorized-domain';
+        throw domErr;
       }
       throw err;
     }
@@ -185,6 +226,7 @@
     if (displayName && result.user) {
       try {
         await authMod.updateProfile(result.user, { displayName: displayName });
+        result.user.displayName = displayName;
       } catch (pErr) {
         console.debug('[Firebase] Display name update notice:', pErr);
       }
@@ -202,6 +244,23 @@
     }
     var authMod = state.modules.auth;
     return authMod.sendPasswordResetEmail(state.auth, email);
+  }
+
+  /**
+   * Google redirect returns to this page once. A normal reload returns null.
+   * Callers treat a non-null user as an explicit sign-in so it can replace
+   * a different cookie subject. The result is consumed on first read.
+   */
+  async function consumeRedirectSignIn() {
+    await init();
+    if (!state.auth || !state.modules || !state.modules.auth.getRedirectResult) return null;
+    try {
+      var result = await state.modules.auth.getRedirectResult(state.auth);
+      return result && result.user ? result.user : null;
+    } catch (err) {
+      console.warn('[Firebase] redirect result notice:', err);
+      return null;
+    }
   }
 
   /**
@@ -244,41 +303,64 @@
      ============================================================ */
 
   /**
-   * Upsert per-account profile doc so each learner has durable identity + timestamps.
-   * Path: users/{uid}
+   * Upsert per-account profile doc ensuring zero-trust identity and PII isolation.
+   * Path 1: users/{uid}/public_profile/current (Safe, public metadata)
+   * Path 2: users/{uid}/private_data/current (Sensitive PII)
+   * Path 3: users/{uid} (Anchor document)
    */
   async function ensureUserProfile(sessionOrUser) {
     await init();
     if (!state.db || !state.modules || !state.firestoreAvailable) return false;
-    var uid = sessionOrUser && (sessionOrUser.uid || sessionOrUser.id);
-    if (!uid) return false;
+    
+    // ZERO-TRUST CLIENT IDENTITY: Never trust caller-supplied UID; enforce verified session UID
+    var currentUser = getCurrentUser();
+    if (!currentUser || !currentUser.uid) return false;
+    var uid = currentUser.uid;
 
     var fsMod = state.modules.firestore;
-    var docRef = fsMod.doc(state.db, 'users', uid);
     var now = new Date().toISOString();
-    var existing = null;
-    try {
-      var snap = await fsMod.getDoc(docRef);
-      if (snap.exists()) existing = snap.data();
-    } catch (_) {}
+    // updatedAt must be the server clock: security rules pin it to request.time so a
+    // backdated client timestamp cannot defeat the per-document write throttle.
+    var stamp = fsMod.serverTimestamp();
 
-    var payload = {
-      uid: uid,
-      email: (sessionOrUser && sessionOrUser.email) || (existing && existing.email) || '',
-      displayName: (sessionOrUser && sessionOrUser.displayName) || (existing && existing.displayName) || '',
-      photoURL: (sessionOrUser && sessionOrUser.photoURL) || (existing && existing.photoURL) || '',
-      provider: (sessionOrUser && sessionOrUser.provider) || (existing && existing.provider) || 'unknown',
-      lastSignInAt: now,
-      updatedAt: now
-    };
-    if (!existing || !existing.createdAt) payload.createdAt = now;
-    if (!existing) payload.signupAt = now;
+    var displayName = (currentUser.displayName || (sessionOrUser && sessionOrUser.displayName) || 'Technician').slice(0, 100);
+    var photoURL = (currentUser.photoURL || (sessionOrUser && sessionOrUser.photoURL) || '').slice(0, 500);
+    var email = (currentUser.email || (sessionOrUser && sessionOrUser.email) || '').slice(0, 120);
+    var provider = (currentUser.providerData && currentUser.providerData[0] && currentUser.providerData[0].providerId) ||
+      (sessionOrUser && sessionOrUser.provider) || 'password';
 
     try {
-      await fsMod.setDoc(docRef, payload, { merge: true });
+      // 1. Write Public Profile
+      var publicDocRef = fsMod.doc(state.db, 'users', uid, 'public_profile', 'current');
+      await fsMod.setDoc(publicDocRef, {
+        displayName: displayName,
+        photoURL: photoURL,
+        updatedAt: stamp
+      }, { merge: true });
+
+      // 2. Write Private PII (Separated from public data)
+      if (email) {
+        var privateDocRef = fsMod.doc(state.db, 'users', uid, 'private_data', 'current');
+        await fsMod.setDoc(privateDocRef, {
+          email: email,
+          updatedAt: stamp
+        }, { merge: true });
+      }
+
+      // 3. Update Anchor User Document with strictly whitelisted keys
+      var anchorDocRef = fsMod.doc(state.db, 'users', uid);
+      await fsMod.setDoc(anchorDocRef, {
+        uid: uid,
+        displayName: displayName,
+        photoURL: photoURL,
+        provider: provider,
+        lastSignInAt: now,
+        updatedAt: stamp
+      }, { merge: true });
+
       return true;
     } catch (err) {
-      console.warn('[Firebase] profile save notice:', err.message);
+      console.warn('[Firebase] Secure profile save notice:', err.message);
       return false;
     }
   }
@@ -288,6 +370,9 @@
    */
   function setupRealtimeLearningSync(uid) {
     if (!state.db || !state.modules || !state.firestoreAvailable) return;
+    var currentUser = getCurrentUser();
+    // Verify listener is bound to authenticated user only
+    if (!currentUser || currentUser.uid !== uid) return;
     var fsMod = state.modules.firestore;
 
     try {
@@ -313,11 +398,16 @@
   }
 
   var syncDebounceTimer = null;
+  var lastSyncAttempt = 0;
   function scheduleSyncToFirestore() {
     if (syncDebounceTimer) clearTimeout(syncDebounceTimer);
+    var now = Date.now();
+    // Obey the 5-second time differential rate limit
+    var delay = Math.max(5000 - (now - lastSyncAttempt), 1500);
     syncDebounceTimer = setTimeout(function () {
+      lastSyncAttempt = Date.now();
       syncLocalToFirestore();
-    }, 1500);
+    }, delay);
   }
 
   /**
@@ -326,13 +416,29 @@
   async function syncLocalToFirestore() {
     var user = getCurrentUser();
     if (!user || !state.db || !state.modules || !state.firestoreAvailable) return false;
+    if (!learningSyncAllowed()) return false;
+
+    var activePrefix = null;
+    if (typeof window !== 'undefined' && window.CompTIAProfiles && typeof window.CompTIAProfiles.getActiveId === 'function') {
+      activePrefix = 'comptia_p_' + window.CompTIAProfiles.getActiveId() + '__';
+    }
 
     var payload = {};
     if (typeof localStorage !== 'undefined') {
       for (var i = 0; i < localStorage.length; i++) {
         var k = localStorage.key(i);
-        if (k && (k.startsWith('comptia_') || k.startsWith('aplus3_'))) {
-          if (k === 'comptia_database_master_v3' || k.indexOf('telemetry') !== -1 || k.indexOf('groq') !== -1) continue;
+        if (!k) continue;
+        if (k === 'comptia_database_master_v3' || k.indexOf('telemetry') !== -1 || k.indexOf('groq') !== -1 || k.indexOf('license') !== -1) continue;
+
+        // Isolate per-user persistent memory: never leak another profile's keys to this user's cloud store
+        if (k.startsWith('comptia_p_')) {
+          if (activePrefix && k.startsWith(activePrefix)) {
+            payload[k] = localStorage.getItem(k);
+          }
+          continue;
+        }
+
+        if (k.startsWith('comptia_') || k.startsWith('aplus3_')) {
           payload[k] = localStorage.getItem(k);
         }
       }
@@ -347,7 +453,24 @@
   /**
    * Applies remote Firestore snapshot to local database
    */
+  /**
+   * Cloud learner blobs are per Firebase uid. Refuse the write unless this
+   * browser's storage owner is that same uid. Stops a persisted Google user
+   * from pouring another account's history into the live keys.
+   */
+  function learningSyncAllowed() {
+    var user = getCurrentUser();
+    if (!user || !user.uid) return false;
+    try {
+      if (typeof localStorage === 'undefined') return false;
+      return localStorage.getItem('clariora_storage_owner_uid') === user.uid;
+    } catch (_) {
+      return false;
+    }
+  }
+
   function applyRemoteToLocal(remotePayload) {
+    if (!learningSyncAllowed()) return;
     if (!remotePayload || !remotePayload.data) return;
     var remoteData = remotePayload.data;
     var changed = false;
@@ -364,30 +487,39 @@
       }
     }
 
-    if (changed && typeof window !== 'undefined' && window.CompTIADatabase && typeof window.CompTIADatabase.init === 'function') {
-      try {
-        window.CompTIADatabase.init();
-      } catch (_) {}
+    if (changed && typeof window !== 'undefined') {
+      if (window.CompTIADatabase && typeof window.CompTIADatabase.init === 'function') {
+        try { window.CompTIADatabase.init(); } catch (_) {}
+      }
+      if (window.CompTIAProductTrust && typeof window.CompTIAProductTrust.afterProfileChange === 'function') {
+        try { window.CompTIAProductTrust.afterProfileChange(); } catch (_) {}
+      }
     }
   }
 
   /**
-   * Save learner progress to Firestore
+   * Save learner progress to Firestore with strict schema whitelisting
    */
   async function saveLearnerProgress(progressData) {
     var user = getCurrentUser();
     if (!user || !state.db || !state.modules || !state.firestoreAvailable) return false;
 
     var fsMod = state.modules.firestore;
+    var now = new Date().toISOString();
     try {
       var docRef = fsMod.doc(state.db, 'users', user.uid, 'learning', 'state');
-      var payload = Object.assign({}, progressData, {
-        lastSyncedAt: new Date().toISOString(),
-        email: user.email || '',
-        displayName: user.displayName || ''
-      });
+      
+      // MASS ASSIGNMENT DEFENSE: Explicit field whitelisting (never spread arbitrary objects).
+      // No identity or PII keys belong on the learning doc: displayName lives in
+      // public_profile and email in private_data, so a progress sync cannot leak either.
+      var safePayload = {
+        data: (progressData && typeof progressData.data === 'object' && progressData.data !== null) ? progressData.data : {},
+        syncedAt: (progressData && progressData.syncedAt) || now,
+        lastSyncedAt: now,
+        updatedAt: fsMod.serverTimestamp()
+      };
 
-      await fsMod.setDoc(docRef, payload, { merge: true });
+      await fsMod.setDoc(docRef, safePayload, { merge: true });
       return true;
     } catch (err) {
       console.warn('[Firebase] Firestore save notice:', err.message);
@@ -427,6 +559,7 @@
     signUpWithEmail: signUpWithEmail,
     sendPasswordReset: sendPasswordReset,
     signOutUser: signOutUser,
+    consumeRedirectSignIn: consumeRedirectSignIn,
     ensureUserProfile: ensureUserProfile,
     saveLearnerProgress: saveLearnerProgress,
     loadLearnerProgress: loadLearnerProgress,

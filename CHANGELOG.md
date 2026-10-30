@@ -4,6 +4,38 @@ All notable changes to this project are documented here. The format follows Keep
 
 ## [Unreleased]
 
+### Added
+
+- **Dual-track AZ-900:** Microsoft Azure Fundamentals bank, objectives, study
+  library, and home/exam shell shortcuts alongside CompTIA A+ Core 1 and Core 2.
+- **Community item analytics:** review UI fetches live D1 `item_stats` and hides
+  the community badge until `sample_size >= 30` (no synthetic hash %). Telemetry
+  paths cover drills and adaptive practice, not only full mocks.
+- **Similar questions:** offline `similar_neighbors.json` shipped in `dist_web`,
+  `GET /api/v1/items/similar`, Vectorize binding `clariora-question-embeddings`,
+  and Ghost Coach tool `retrieve_similar_items`.
+- **Item discrimination cron:** nightly point-biserial recompute
+  (`workers/item_discrimination.js`) with quality flags for author review.
+- **Daily Quest (flagged):** Home `#todayPlanCard` three-leg habit loop behind
+  `js/features-config.js` (`gamification.enabled`). Soft streak freeze / reset
+  in `ledger_engine.js`. Set `enabled: false` to hide.
+- **System architecture doc:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and
+  big-data edge plan [docs/BIG_DATA_IMPLEMENTATION_PLAN.md](docs/BIG_DATA_IMPLEMENTATION_PLAN.md).
+
+### Security
+
+- Telegram WebApp `initData` now requires `auth_date` with a 1-hour replay window;
+  TMA auth gate fails closed if server session report fails; session cookies persist
+  `telegramVerified`; production requires dedicated `AUTH_SESSION_SECRET`.
+- Stars webhook grants re-validate product, amount, and payload payer binding;
+  charge insert uses `ON CONFLICT DO NOTHING` with ledger-derived `stars_spent` so
+  redelivery recovers a paid-but-not-entitled user. New `tools/test_stars_binding.js`.
+- CSP tightened: `cdn.jsdelivr.net` in `script-src`, Firebase `wss://`, `form-action`,
+  `worker-src`, `manifest-src`, `upgrade-insecure-requests` (unsafe-inline retained
+  until onclick migration).
+- Ledger toast strips scripts/handlers before HTML insert; markdown `_renderInline`
+  escapes raw HTML first and blocks `javascript:` / `data:` links.
+
 ### Changed
 
 - The product is renamed from CompTIA A+ Master to Clariora across the app
@@ -11,6 +43,22 @@ All notable changes to this project are documented here. The format follows Keep
   TON Connect manifest, legal pages, build scripts and docs. Storage keys,
   the Electron appId, the GitHub repository, the Cloudflare project name and
   the public domain are unchanged so installed apps and links keep working.
+- Packt / unlicensed git submodules removed; study notes consolidated under
+  `notes/guides`. GitHub docs and advisory links point at
+  `LuminaraDigital/clariora-a-plus`.
+- CI Actions bumped to v7; `adm-zip` 0.6.1 and Electron 44.4.x.
+
+## [3.2.0] - 2026-09-22
+
+### Added
+
+- **Pearson VUE Exam Scratchpad / Digital Whiteboard**: An authentic in-exam digital whiteboard accessible during all timed mock exams, Pearson mode sessions, and drills via the header/toolbar button or `Alt+S`. Includes instant brain-dump templates (6-Step Troubleshooting, Common Ports, IPv4 CIDR Subnetting, Laser Printing Cycle, RAID Matrix), continuous debounced autosave, and clipboard copy.
+- **Per-Question Personal Takeaways & Mnemonics**: Learners can attach custom study takeaways and memory hooks directly to any question. In review mode, personal notes appear in a highlighted gold card alongside official explanations and distractor autopsies.
+- **Centralized "My Study Notebook" Hub**: Aggregates all learner takeaways and notes into a dedicated drawer workspace with domain/exam filtering, live search, 1-click Markdown study guide export (`.md`), and clipboard sync.
+- **Rich Markdown & Callout Rendering for Study Library**: Upgraded the study library document reader to render high-fidelity Markdown, responsive data tables, styled code blocks with copy buttons, inline math, and GitHub-style alert callouts (`[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`).
+- **Interactive High-Yield Quick Cram Sheet**: Instant tabbed reference tables for Ports & Protocols, CompTIA 6-Step Troubleshooting Flow with trap alerts, ANSI/TIA-568A/B Cabling & Ethernet Pinouts, 802.11 Wi-Fi Standards, RAID Fault Tolerances, and Essential Windows/Linux CLI Commands.
+- **"Notes & Flags" Practice Drill**: Targeted practice drill generator that filters the 1,130-question bank down to questions where the learner added personal notes or flagged for review.
+- **Automated CEO Test Suite (`tools/test_notes_suite.js`)**: Standalone Node test suite covering note persistence, scratchpad state, Markdown compilation, table rendering, and exam mode integration, running cleanly under CI with 40/40 passing test scripts.
 
 ## [3.1.4] - 2026-09-06
 

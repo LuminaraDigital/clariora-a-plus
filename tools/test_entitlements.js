@@ -25,7 +25,10 @@ const webcrypto = nodeCrypto.webcrypto || globalThis.crypto;
 const issuer = require('./issue_license.js');
 
 const ROOT = path.resolve(__dirname, '..');
-const ENTITLEMENTS_SRC = fs.readFileSync(path.join(ROOT, 'js', 'entitlements.js'), 'utf8');
+const ENTITLEMENTS_SRC =
+  fs.readFileSync(path.join(ROOT, 'js', 'entitlements-crypto.js'), 'utf8') +
+  '\n' +
+  fs.readFileSync(path.join(ROOT, 'js', 'entitlements.js'), 'utf8');
 
 /* ------------------------------------------------------------------------- */
 /* Tiny assertion harness                                                      */
@@ -348,6 +351,51 @@ async function run() {
       lastCall && lastCall.count === 90 && lastCall.minutes === 90, JSON.stringify(lastCall));
   }
 
+  section('APX store items deliver through the gates');
+  {
+    const env = loadEntitlements({ publicKeyJwk: keys.publicJwk });
+    const charges = { MOCK_UNLOCK: 1, AI_BURST: 5, PRO_PASS_30D: 0 };
+    let proPassToday = false;
+    const consumed = [];
+    env.win.CompTIALedger = {
+      consumableChargesSync: (id) => charges[id] || 0,
+      proPassActiveSync: () => proPassToday || charges.PRO_PASS_30D > 0,
+      consumeUnlock: async (id, n, extra) => {
+        if ((charges[id] || 0) < n) return { ok: false, error: 'none' };
+        charges[id] -= n;
+        consumed.push({ id, n, extra });
+        return { ok: true, remaining: charges[id] };
+      }
+    };
+    let lastCall = null;
+    env.win.startExam = function (type, count, minutes) { lastCall = { type, count, minutes }; };
+
+    env.win.startExam('core1', 90, 90);
+    await new Promise((r) => setImmediate(r));
+    check('a Mock Unlock charge starts the full 90 question mock',
+      lastCall && lastCall.count === 90 && lastCall.minutes === 90, JSON.stringify(lastCall));
+    check('starting the mock spent exactly one Mock Unlock charge',
+      charges.MOCK_UNLOCK === 0 && consumed.length === 1 && consumed[0].id === 'MOCK_UNLOCK');
+
+    lastCall = null;
+    env.win.startExam('core1', 90, 90);
+    await new Promise((r) => setImmediate(r));
+    check('with no charges left the full mock is blocked again', lastCall === null);
+
+    check('AI Burst charges add to the free coach allowance',
+      env.ent.remainingToday('coach') === 5 + 5, String(env.ent.remainingToday('coach')));
+
+    charges.PRO_PASS_30D = 3;
+    check('an APX Pro Pass with days left grants Pro', env.ent.isPro() === true);
+    check('Pro Pass unlocks full mocks', env.ent.can('full_mock').ok === true);
+    lastCall = null;
+    env.win.startExam('core2', 90, 90);
+    check('Pro Pass runs the mock without spending a Mock Unlock',
+      lastCall && lastCall.count === 90 && consumed.length === 1, JSON.stringify(lastCall));
+    charges.PRO_PASS_30D = 0;
+    check('an exhausted Pro Pass no longer grants Pro', env.ent.isPro() === false);
+  }
+
   section('Consumption from the exam bus');
   {
     const env = loadEntitlements({ publicKeyJwk: keys.publicJwk });
@@ -531,6 +579,43 @@ async function run() {
       threw = err;
     }
     check('module never throws at load without a DOM', threw === null, threw && threw.message);
+  }
+
+  section('AI Burst charges from the profile-scoped ledger');
+  {
+    const env = loadEntitlements({ publicKeyJwk: keys.publicJwk });
+    const scopedKey = 'comptia_p_p1__comptia_pom_ledger_v1';
+    const ledger = { chain: [{ type: 'SPEND_UNLOCK', payload: { unlockId: 'AI_BURST', charges: 5 } }] };
+    env.storage.setItem(scopedKey, JSON.stringify(ledger));
+    env.win.CompTIAProfiles = { scopedGet: (k) => env.storage.getItem('comptia_p_p1__' + k) };
+    const consumed = [];
+    env.win.CompTIALedger = {
+      consumableChargesSync(id) {
+        const chain = JSON.parse(env.win.CompTIAProfiles.scopedGet('comptia_pom_ledger_v1')).chain;
+        return chain.reduce((n, b) => {
+          if (!b.payload || b.payload.unlockId !== id) return n;
+          if (b.type === 'SPEND_UNLOCK') return n + b.payload.charges;
+          if (b.type === 'CONSUME_UNLOCK') return Math.max(0, n - b.payload.amount);
+          return n;
+        }, 0);
+      },
+      consumeUnlock(id, amount) {
+        consumed.push(amount);
+        ledger.chain.push({ type: 'CONSUME_UNLOCK', payload: { unlockId: id, amount } });
+        env.storage.setItem(scopedKey, JSON.stringify(ledger));
+        return Promise.resolve({ ok: true });
+      }
+    };
+
+    check('purchased charges add to the free coach allowance', env.ent.remainingToday('coach') === 10,
+      'remaining=' + env.ent.remainingToday('coach'));
+    env.ent.consume('coach', 5);
+    check('prompts inside the free allowance spend no charges', consumed.length === 0);
+    check('charges remain after the free allowance is used', env.ent.remainingToday('coach') === 5);
+    env.ent.consume('coach', 1);
+    check('an over-limit prompt spends exactly one charge', consumed.join(',') === '1', consumed.join(','));
+    check('an over-limit prompt reduces remaining by one, not two', env.ent.remainingToday('coach') === 4,
+      'remaining=' + env.ent.remainingToday('coach'));
   }
 
   /* ----------------------------------------------------------------------- */

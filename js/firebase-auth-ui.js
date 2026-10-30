@@ -21,8 +21,19 @@
     accountOpen: false,
     busy: false,
     wallMode: false,
-    authListeners: []
+    authListeners: [],
+    subject: null
   };
+
+  function escapeHtml(str) {
+    if (str == null) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
 
   /**
    * Initializes the Auth UI layer
@@ -47,36 +58,34 @@
       starsChip.style.display = authState.isTMA ? 'inline-flex' : 'none';
     }
 
-    // Restore Telegram web session if logged in previously
-    var savedTg = localStorage.getItem('clariora_telegram_auth');
-    if (savedTg) {
-      try {
+    // Strip leftover Telegram login payloads. Do not paint that cache:
+    // the header binds only to the subject AuthGate adopts from the verified session.
+    try { localStorage.removeItem('clariora_telegram_login_payload'); } catch (_) {}
+    try {
+      var savedTg = localStorage.getItem('clariora_telegram_auth');
+      if (savedTg) {
         var tgUser = JSON.parse(savedTg);
-        var tgName = tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : '');
-        renderHeaderPill({
-          displayName: tgName,
-          photoURL: tgUser.photo_url,
-          email: tgUser.username ? '@' + tgUser.username : null,
-          isTelegram: true
-        });
-        notifyAuthenticated({ isTelegram: true, user: tgUser, event: 'signin' });
-      } catch (e) {}
-    }
+        if (tgUser && tgUser.hash) {
+          localStorage.setItem('clariora_telegram_auth', JSON.stringify({
+            id: tgUser.id,
+            first_name: tgUser.first_name || '',
+            last_name: tgUser.last_name || '',
+            username: tgUser.username || '',
+            photo_url: tgUser.photo_url || ''
+          }));
+        }
+      }
+    } catch (_) {}
 
+    // Leave the header empty until AuthGate binds the verified subject.
+    // Painting a signed-out chip or a cached profile here is what flipped
+    // the name on reload.
     var service = firebaseService || window.ClarioraFirebaseService;
     if (service) {
       service.onAuthStateChanged(function (user) {
-        renderHeaderPill(user);
-        if (user && authState.modalOpen) {
-          closeModal();
-        }
-        if (user) {
-          notifyAuthenticated({ isTelegram: false, user: user, event: 'signin' });
-        }
+        if (user && authState.modalOpen) closeModal();
       });
       service.init();
-    } else {
-      renderHeaderPill(null);
     }
 
     if (options.wall) setWallMode(true);
@@ -87,6 +96,27 @@
     // Close button stays visible so email modal can return to the wall.
     var closeBtn = document.querySelector('#clarioraAuthModalOverlay .auth-close-btn');
     if (closeBtn) closeBtn.style.display = '';
+  }
+
+  /**
+   * The login wall is its own aria-modal dialog. While the email dialog is open
+   * on top of it, leave the wall out of the accessibility tree so the password
+   * field is a named textbox instead of content hidden by the wall.
+   */
+  function suppressLoginWallForModal(suppress) {
+    var wall = document.getElementById('clarioraLoginWall');
+    if (!wall) return;
+    if (suppress) {
+      if (wall.hidden || wall.getAttribute('data-a11y-suppressed') === 'true') return;
+      wall.setAttribute('data-a11y-suppressed', 'true');
+      wall.setAttribute('aria-hidden', 'true');
+      if ('inert' in wall) wall.inert = true;
+      return;
+    }
+    if (wall.getAttribute('data-a11y-suppressed') !== 'true') return;
+    wall.removeAttribute('data-a11y-suppressed');
+    wall.removeAttribute('aria-hidden');
+    if ('inert' in wall) wall.inert = false;
   }
 
   function onAuthenticated(callback) {
@@ -166,8 +196,8 @@
       '  width: 7px;',
       '  height: 7px;',
       '  border-radius: 50%;',
-      '  background: #58A177;',
-      '  box-shadow: 0 0 6px rgba(88, 161, 119, 0.7);',
+      '  background: var(--color-success);',
+      '  box-shadow: 0 0 6px color-mix(in srgb, var(--color-success) 70%, transparent);',
       '}',
       '/* Auth Modal */',
       '.auth-modal-overlay {',
@@ -220,18 +250,18 @@
       '  border: 0;',
       '  border-radius: 6px;',
       '  background: transparent;',
-      '  color: #A3ADC2;',
+      '  color: var(--text-secondary);',
       '  font: inherit;',
       '  font-size: 13px;',
       '  font-weight: 700;',
       '  cursor: pointer;',
       '}',
       '.auth-mode-tab[aria-selected="true"] {',
-      '  background: #D4AF37;',
-      '  color: #07090E;',
+      '  background: var(--gold-primary);',
+      '  color: var(--on-gold);',
       '}',
       '.auth-mode-tab:hover:not([aria-selected="true"]) {',
-      '  color: #F3F4F6;',
+      '  color: var(--text-primary);',
       '  background: rgba(255,255,255,0.06);',
       '}',
       '.auth-modal-header {',
@@ -253,10 +283,10 @@
       '  margin: 6px 0 0;',
       '  font-size: 11px;',
       '  line-height: 1.4;',
-      '  color: #8B95A8;',
+      '  color: var(--text-muted);',
       '}',
       '.auth-input.is-invalid {',
-      '  border-color: #CB6E63;',
+      '  border-color: var(--color-danger);',
       '}',
       '.btn-google:focus-visible,',
       '.btn-telegram:focus-visible,',
@@ -264,7 +294,7 @@
       '.auth-mode-tab:focus-visible,',
       '.auth-link:focus-visible,',
       '.auth-close-btn:focus-visible {',
-      '  outline: 2px solid #D4AF37;',
+      '  outline: 2px solid var(--gold-primary);',
       '  outline-offset: 2px;',
       '}',
       '.btn-auth-submit[disabled] {',
@@ -273,9 +303,9 @@
       '}',
       '.auth-error-banner[hidden] { display: none !important; }',
       '.auth-error-banner.is-info {',
-      '  background: rgba(88, 161, 119, 0.14);',
-      '  border-color: rgba(88, 161, 119, 0.4);',
-      '  color: #86EFAC;',
+      '  background: color-mix(in srgb, var(--color-success) 14%, transparent);',
+      '  border-color: color-mix(in srgb, var(--color-success) 40%, transparent);',
+      '  color: var(--color-success);',
       '}',
       '.btn-google {',
       '  width: 100%;',
@@ -364,8 +394,8 @@
       '.btn-auth-submit {',
       '  width: 100%;',
       '  padding: 11px;',
-      '  background: var(--gold-primary, #D4AF37);',
-      '  color: #07090E;',
+      '  background: var(--gold-primary);',
+      '  color: var(--on-gold);',
       '  font-weight: 700;',
       '  font-size: 14px;',
       '  border: none;',
@@ -393,9 +423,9 @@
       '  text-decoration: underline;',
       '}',
       '.auth-error-banner {',
-      '  background: rgba(203, 110, 99, 0.15);',
-      '  border: 1px solid rgba(203, 110, 99, 0.4);',
-      '  color: #FCA5A5;',
+      '  background: color-mix(in srgb, var(--color-danger) 15%, transparent);',
+      '  border: 1px solid color-mix(in srgb, var(--color-danger) 40%, transparent);',
+      '  color: var(--color-danger);',
       '  padding: 10px 12px;',
       '  border-radius: 8px;',
       '  font-size: 13px;',
@@ -473,19 +503,19 @@
       '      <input type="email" id="authEmail" class="auth-input" placeholder="you@example.com" required autocomplete="email" inputmode="email" spellcheck="false">',
       '    </div>',
       '    <div class="auth-input-group">',
-      '      <label for="authPassword">Password</label>',
-      '      <input type="password" id="authPassword" class="auth-input" placeholder="Password" required autocomplete="current-password" minlength="8">',
+      '      <label id="authPasswordLabel" for="authPassword">Password</label>',
+      '      <input type="password" id="authPassword" name="password" class="auth-input" placeholder="Password" required autocomplete="current-password" minlength="8" aria-labelledby="authPasswordLabel" aria-describedby="authPasswordHint">',
       '      <p class="auth-password-hint" id="authPasswordHint">At least 8 characters. Use letters and a number.</p>',
       '    </div>',
       '    <div class="auth-input-group" id="authConfirmGroup" hidden>',
-      '      <label for="authPasswordConfirm">Confirm password</label>',
-      '      <input type="password" id="authPasswordConfirm" class="auth-input" placeholder="Confirm password" autocomplete="new-password" minlength="8">',
+      '      <label id="authPasswordConfirmLabel" for="authPasswordConfirm">Confirm password</label>',
+      '      <input type="password" id="authPasswordConfirm" name="password-confirm" class="auth-input" placeholder="Confirm password" autocomplete="new-password" minlength="8" aria-labelledby="authPasswordConfirmLabel">',
       '    </div>',
       '    <button type="submit" id="authSubmitBtn" class="btn-auth-submit">Sign in</button>',
       '  </form>',
       '  <div class="auth-footer-links">',
       '    <button type="button" class="auth-link" id="authForgotBtn" onclick="ClarioraAuthUI.handleForgotPassword()">Forgot password?</button>',
-      '    <p style="margin: 14px 0 0; font-size: 11px; line-height: 1.45; color: #8B95A8; text-align: center;">Local-first privacy: Practice history is saved on this device. Sign in to sync across devices.</p>',
+      '    <p style="margin: 14px 0 0; font-size: 11px; line-height: 1.45; color: var(--text-muted); text-align: center;">Local-first privacy: Practice history is saved on this device. Sign in to sync across devices.</p>',
       '  </div>',
       '</div>'
     ].join('\n');
@@ -504,6 +534,44 @@
   }
 
   /**
+   * Header chip. When a subject is bound, every paint uses that subject.
+   * A Firebase or Telegram profile for a different uid cannot replace the name.
+   */
+  function bindSubject(subject) {
+    if (!subject || !subject.uid) {
+      authState.subject = null;
+      renderHeaderPill(null);
+      return;
+    }
+    var api = window.ClarioraSessionIdentity;
+    var name = (api && typeof api.displayNameFor === 'function')
+      ? api.displayNameFor(subject)
+      : (subject.displayName || 'Learner');
+    authState.subject = {
+      uid: String(subject.uid),
+      displayName: name,
+      email: subject.email || '',
+      photoURL: subject.photoURL || '',
+      provider: subject.provider || ''
+    };
+    renderHeaderPill(authState.subject);
+  }
+
+  function hasBoundSubject() {
+    return !!(authState.subject && authState.subject.uid);
+  }
+
+  function markExplicitSignIn() {
+    var api = window.ClarioraSessionIdentity;
+    if (api && typeof api.markExplicitSignIn === 'function') api.markExplicitSignIn();
+  }
+
+  function clearExplicitSignIn() {
+    var api = window.ClarioraSessionIdentity;
+    if (api && typeof api.consumeExplicitSignIn === 'function') api.consumeExplicitSignIn();
+  }
+
+  /**
    * Renders the header control pill
    */
   function renderHeaderPill(user) {
@@ -511,6 +579,8 @@
     if (!mount) return;
 
     if (authState.isTMA) return; // Leave for TMA bridge
+
+    if (authState.subject && user) user = authState.subject;
 
     if (!user) {
       mount.innerHTML = [
@@ -525,18 +595,19 @@
       if (dm) dm.textContent = 'Cloud Sync';
     } else {
       var name = user.displayName || (user.email ? user.email.split('@')[0] : 'Learner');
+      var safeName = escapeHtml(name);
       var avatarHtml = '';
       if (user.photoURL) {
-        avatarHtml = '<img src="' + user.photoURL + '" alt="' + name + '" class="user-chip-avatar" crossorigin="anonymous">';
+        avatarHtml = '<img src="' + escapeHtml(user.photoURL) + '" alt="' + safeName + '" class="user-chip-avatar" crossorigin="anonymous">';
       } else {
-        var initial = (name.charAt(0) || 'U').toUpperCase();
+        var initial = escapeHtml((name.charAt(0) || 'U').toUpperCase());
         avatarHtml = '<span class="user-chip-initials">' + initial + '</span>';
       }
 
       mount.innerHTML = [
         '<button type="button" class="streak-chip clariora-user-chip" onclick="ClarioraAuthUI.openAccountMenu()" title="Account settings and cloud sync" aria-label="Account">',
         avatarHtml,
-        '<span class="user-chip-name">' + name + '</span>',
+        '<span class="user-chip-name">' + safeName + '</span>',
         '<span class="sync-dot" title="Cloud Synced" aria-hidden="true"></span>',
         '</button>'
       ].join('');
@@ -554,6 +625,7 @@
     if (opts.wall) setWallMode(true);
     var desired = opts.mode === 'signup' ? 'signup' : 'signin';
     setMode(desired);
+    suppressLoginWallForModal(true);
     var overlay = document.getElementById('clarioraAuthModalOverlay');
     if (overlay) {
       overlay.classList.add('is-active');
@@ -576,6 +648,7 @@
       authState.modalOpen = false;
       clearError();
     }
+    suppressLoginWallForModal(false);
   }
 
   function setMode(mode) {
@@ -667,10 +740,13 @@
     var service = firebaseService || window.ClarioraFirebaseService;
     if (!service) return;
 
+    markExplicitSignIn();
     try {
-      await service.signInWithGoogle();
+      var user = await service.signInWithGoogle();
       closeModal();
+      if (user) notifyAuthenticated({ isTelegram: false, user: user, event: 'signin' });
     } catch (err) {
+      clearExplicitSignIn();
       console.warn('[AuthUI] Google sign-in failed:', err);
       if (err.code !== 'auth/popup-closed-by-user') {
         var msg = err.message || 'Google sign-in could not be completed.';
@@ -734,6 +810,7 @@
       submitBtn.setAttribute('aria-busy', 'true');
     }
     authState.busy = true;
+    markExplicitSignIn();
 
     try {
       if (authState.mode === 'signup') {
@@ -745,6 +822,7 @@
       }
       closeModal();
     } catch (err) {
+      clearExplicitSignIn();
       console.warn('[AuthUI] Email auth failed:', err);
       var userMessage = 'Authentication failed. Check your details and try again.';
       if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
@@ -799,6 +877,7 @@
 
   function handleTelegramSignIn() {
     clearError();
+    markExplicitSignIn();
     if (!window.Telegram || !window.Telegram.Login) {
       var script = document.createElement('script');
       script.src = 'https://telegram.org/js/telegram-widget.js?22';
@@ -824,11 +903,13 @@
       { bot_id: '8280144046', request_access: true },
       function (data) {
         if (!data) {
+          clearExplicitSignIn();
           showError('Telegram login cancelled.');
           return;
         }
         fetch('/api/v1/auth/telegram', {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         })
@@ -836,11 +917,17 @@
         .then(function (result) {
           if (result.success && result.user) {
             try {
-              localStorage.setItem('clariora_telegram_auth', JSON.stringify(result.user));
-              localStorage.setItem('clariora_telegram_login_payload', JSON.stringify(data));
+              localStorage.setItem('clariora_telegram_auth', JSON.stringify({
+                id: result.user.id,
+                first_name: result.user.first_name || '',
+                last_name: result.user.last_name || '',
+                username: result.user.username || '',
+                photo_url: result.user.photo_url || ''
+              }));
+              localStorage.removeItem('clariora_telegram_login_payload');
             } catch (_) {}
             if (window.ClarioraAuthGate && window.ClarioraAuthGate.storeTelegramLoginPayload) {
-              window.ClarioraAuthGate.storeTelegramLoginPayload(data);
+              window.ClarioraAuthGate.storeTelegramLoginPayload(null);
             }
             if (result.entitlement) {
               try {
@@ -848,13 +935,6 @@
                 window.dispatchEvent(new CustomEvent('clariora:entitlement-updated'));
               } catch (_) {}
             }
-            var displayName = result.user.first_name + (result.user.last_name ? ' ' + result.user.last_name : '');
-            renderHeaderPill({
-              displayName: displayName,
-              photoURL: result.user.photo_url,
-              email: result.user.username ? '@' + result.user.username : null,
-              isTelegram: true
-            });
             notifyAuthenticated({
               isTelegram: true,
               user: result.user,
@@ -863,54 +943,47 @@
             });
             closeModal();
           } else {
+            clearExplicitSignIn();
             showError(result.error || 'Telegram verification failed.');
           }
         })
         .catch(function (err) {
+          clearExplicitSignIn();
           showError('Authentication error: ' + err.message);
         });
       }
     );
   }
 
-  function openAccountMenu() {
-    var savedTg = localStorage.getItem('clariora_telegram_auth');
-    var tgUser = null;
-    if (savedTg) {
-      try { tgUser = JSON.parse(savedTg); } catch (_) {}
-    }
-    var service = firebaseService || window.ClarioraFirebaseService;
-    var user = service ? service.getCurrentUser() : null;
+  function providerLabelFor(provider) {
+    if (provider === 'google') return 'Google';
+    if (provider === 'telegram' || provider === 'telegram_tma') return 'Telegram';
+    if (provider === 'offline') return 'This device';
+    if (provider === 'email' || provider === 'password') return 'Email';
+    return 'Account';
+  }
 
-    if (!tgUser && !user) {
+  function openAccountMenu() {
+    var service = firebaseService || window.ClarioraFirebaseService;
+    var subject = authState.subject;
+    if (!subject || !subject.uid) {
       openModal();
       return;
     }
 
-    var displayName = '';
-    var emailOrHandle = '';
-    var providerLabel = '';
+    var displayName = subject.displayName || 'Learner';
+    var emailOrHandle = subject.email || 'Signed in';
+    var providerLabel = providerLabelFor(subject.provider);
     var avatarHtml = '';
-
-    if (tgUser) {
-      displayName = tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : '');
-      emailOrHandle = tgUser.username ? '@' + tgUser.username : 'Telegram Account';
-      providerLabel = 'Telegram';
-      if (tgUser.photo_url) {
-        avatarHtml = '<img src="' + tgUser.photo_url + '" class="user-chip-avatar" style="width:42px;height:42px;" alt="' + displayName + '">';
-      } else {
-        avatarHtml = '<span class="user-chip-initials" style="width:42px;height:42px;font-size:16px;">' + (displayName.charAt(0) || 'T').toUpperCase() + '</span>';
-      }
+    if (subject.photoURL) {
+      avatarHtml = '<img src="' + escapeHtml(subject.photoURL) + '" class="user-chip-avatar" style="width:42px;height:42px;" alt="' + escapeHtml(displayName) + '">';
     } else {
-      displayName = user.displayName || (user.email ? user.email.split('@')[0] : 'Learner');
-      emailOrHandle = user.email || 'Cloud Account';
-      providerLabel = (user.providerData && user.providerData[0] && user.providerData[0].providerId === 'google.com') ? 'Google' : 'Email';
-      if (user.photoURL) {
-        avatarHtml = '<img src="' + user.photoURL + '" class="user-chip-avatar" style="width:42px;height:42px;" alt="' + displayName + '">';
-      } else {
-        avatarHtml = '<span class="user-chip-initials" style="width:42px;height:42px;font-size:16px;">' + (displayName.charAt(0) || 'L').toUpperCase() + '</span>';
-      }
+      avatarHtml = '<span class="user-chip-initials" style="width:42px;height:42px;font-size:16px;">' + escapeHtml((displayName.charAt(0) || 'L').toUpperCase()) + '</span>';
     }
+
+    var safeDisplayName = escapeHtml(displayName);
+    var safeEmailOrHandle = escapeHtml(emailOrHandle);
+    var safeProviderLabel = escapeHtml(providerLabel);
 
     var overlayId = 'clarioraAccountSheetOverlay';
     var existing = document.getElementById(overlayId);
@@ -930,23 +1003,23 @@
       '  <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 18px;">',
       '    ' + avatarHtml,
       '    <div style="overflow: hidden;">',
-      '      <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #F3F4F6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' + displayName + '</h3>',
-      '      <p style="margin: 2px 0 0; font-size: 0.84rem; color: #94A3B8;">' + emailOrHandle + '</p>',
+      '      <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' + safeDisplayName + '</h3>',
+      '      <p style="margin: 2px 0 0; font-size: 0.84rem; color: var(--text-muted);">' + safeEmailOrHandle + '</p>',
       '    </div>',
       '  </div>',
       '  <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(212,175,55,0.2); border-radius: 8px; padding: 12px 14px; margin-bottom: 18px;">',
       '    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">',
-      '      <span style="color: #94A3B8;">Sign-in method</span>',
-      '      <strong style="color: #D4AF37;">' + providerLabel + '</strong>',
+      '      <span style="color: var(--text-muted);">Sign-in method</span>',
+      '      <strong style="color: var(--gold-primary);">' + safeProviderLabel + '</strong>',
       '    </div>',
       '    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px;">',
-      '      <span style="color: #94A3B8;">Cloud backup</span>',
-      '      <span style="color: #86EFAC; display: flex; align-items: center; gap: 6px;"><span class="sync-dot"></span> Synced</span>',
+      '      <span style="color: var(--text-muted);">Cloud backup</span>',
+      '      <span style="color: var(--color-success); display: flex; align-items: center; gap: 6px;"><span class="sync-dot"></span> Synced</span>',
       '    </div>',
       '  </div>',
       '  <div style="display: grid; gap: 10px;">',
-      '    <button type="button" class="btn" id="clarioraAccountSyncNowBtn" style="width: 100%; padding: 10px; background: rgba(212,175,55,0.14); border: 1px solid rgba(212,175,55,0.4); color: #F5D061; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">Sync Now</button>',
-      '    <button type="button" class="btn" id="clarioraAccountSignOutBtn" style="width: 100%; padding: 10px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #FCA5A5; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">Sign out</button>',
+      '    <button type="button" class="btn" id="clarioraAccountSyncNowBtn" style="width: 100%; padding: 10px; background: color-mix(in srgb, var(--gold-primary) 14%, transparent); border: 1px solid color-mix(in srgb, var(--gold-primary) 40%, transparent); color: var(--gold-light); border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">Sync Now</button>',
+      '    <button type="button" class="btn" id="clarioraAccountSignOutBtn" style="width: 100%; padding: 10px; background: color-mix(in srgb, var(--color-danger) 10%, transparent); border: 1px solid color-mix(in srgb, var(--color-danger) 30%, transparent); color: var(--color-danger); border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">Sign out</button>',
       '  </div>',
       '</div>'
     ].join('\n');
@@ -985,18 +1058,21 @@
     if (signOutBtn) {
       signOutBtn.onclick = function () {
         closeSheet();
-        if (tgUser) {
+        bindSubject(null);
+        try {
           localStorage.removeItem('clariora_telegram_auth');
           localStorage.removeItem('clariora_telegram_login_payload');
           localStorage.removeItem('clariora_auth_session_v1');
-          renderHeaderPill(null);
-          if (window.ClarioraAuthGate) window.ClarioraAuthGate.lock();
-        } else if (service) {
-          service.signOutUser().then(function () {
-            localStorage.removeItem('clariora_auth_session_v1');
-            renderHeaderPill(null);
-            if (window.ClarioraAuthGate) window.ClarioraAuthGate.lock();
-          });
+        } catch (_) {}
+        var finish = function () {
+          if (window.ClarioraAuthGate && window.ClarioraAuthGate.lock) {
+            window.ClarioraAuthGate.lock();
+          }
+        };
+        if (service && typeof service.signOutUser === 'function') {
+          service.signOutUser().then(finish, finish);
+        } else {
+          finish();
         }
       };
     }
@@ -1014,6 +1090,8 @@
     handleForgotPassword: handleForgotPassword,
     openAccountMenu: openAccountMenu,
     setWallMode: setWallMode,
-    onAuthenticated: onAuthenticated
+    onAuthenticated: onAuthenticated,
+    bindSubject: bindSubject,
+    hasBoundSubject: hasBoundSubject
   };
 });

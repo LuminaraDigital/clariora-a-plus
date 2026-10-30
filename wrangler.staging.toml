@@ -1,0 +1,70 @@
+# Clariora - Cloudflare STAGING edge deployment
+# Isolated from production. Never point this file at production D1, R2, or DNS routes.
+#
+# Deploy:
+#   npx wrangler deploy -c wrangler.staging.toml
+#   python tools/deploy_cloudflare.py --env staging
+#
+# Prerequisites (one-time in Cloudflare dashboard):
+#   1. Create Worker name clariora-a-plus-staging (or let wrangler create it)
+#   2. Create D1 database clariora_edge_db_staging and paste its id below
+#   3. Put staging secrets via: npx wrangler secret put <KEY> -c wrangler.staging.toml
+#   4. Do NOT attach production zone routes here
+
+name = "clariora-a-plus-staging"
+main = "workers/api_worker.js"
+compatibility_date = "2026-09-01"
+account_id = "2373013c66331e9660e47ffa3ae40f5c"
+workers_dev = true
+
+# No production zone routes. Staging is workers.dev (and optional staging hostname) only.
+
+[assets]
+directory = "./dist_web"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+html_handling = "auto-trailing-slash"
+run_worker_first = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "clariora_edge_db_staging"
+database_id = "2c0055a1-9fcb-4902-9396-f33470ef2149"
+migrations_dir = "migrations"
+
+[ai]
+binding = "AI"
+
+[[vectorize]]
+binding = "VECTORIZE"
+index_name = "clariora-question-embeddings"
+
+[triggers]
+crons = ["0 6 * * *"]
+
+[[durable_objects.bindings]]
+name = "COACH_RATE_LIMITER"
+class_name = "CoachRateLimiter"
+
+[[migrations]]
+tag = "v1-coach-rate-limiter"
+new_sqlite_classes = ["CoachRateLimiter"]
+
+[vars]
+ENVIRONMENT = "staging"
+AI_EXPLAIN_CACHE = "1"
+AI_GUARD_CONSISTENCY = "1"
+# TON pay/verify on staging always targets testnet (TonCenter testnet + TonConnect network -3).
+TON_NETWORK = "testnet"
+# Set after testnet Mastery SBT deploy (friendly EQ/kQ address). Leave empty until deploy lands.
+TON_SBT_COLLECTION_ADDRESS = "kQAOn0qiRkQo6V_pjn1BY6m-TqqmvP9RgcNQOSmB8mv4OUbJ"
+
+[build]
+command = "python tools/build_web_dist.py"
+
+# Staging secrets (set with wrangler secret put -c wrangler.staging.toml):
+# TELEGRAM_BOT_TOKEN, EDGE_WEBHOOK_SECRET, ADMIN_API_KEY, AI provider keys
+# TON_MERCHANT_WALLET_ADDRESS  (testnet wallet friendly address, EQ...)
+# TONCENTER_API_KEY            (TonCenter key; testnet verify uses testnet.toncenter.com)
+# TON_SBT_COLLECTION_ADDRESS   (optional mirror of [vars]; set via secret if preferred)
+# Use sandbox / test bot tokens only. Never reuse production secrets.

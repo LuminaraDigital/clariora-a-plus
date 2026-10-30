@@ -7,6 +7,7 @@
   }
 
   function escapeSafe(str) {
+    if (typeof global.escapeHTML === "function") return global.escapeHTML(str);
     return String(str || "")
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")

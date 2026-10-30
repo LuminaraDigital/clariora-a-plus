@@ -27,6 +27,7 @@
     else if (id === "messerModal" && typeof global.closeMesserModal === "function") global.closeMesserModal();
     else if (id === HELP_ID) closeShortcutHelp();
     else open.classList.remove("active");
+    releaseFocusTrap(open);
     announce("Dialog closed");
     return true;
   }
@@ -102,9 +103,12 @@
   }
 
   function decorateStaticAria() {
+    const home = document.getElementById("startScreen");
+    if (home) {
+      home.setAttribute("aria-label", "Home dashboard");
+    }
     const exam = document.getElementById("examScreen");
     if (exam) {
-      exam.setAttribute("role", "main");
       exam.setAttribute("aria-label", "Active exam");
     }
     const timer = document.getElementById("timerDisplay");
@@ -171,6 +175,105 @@
         panel.insertBefore(hint, panel.firstChild);
       }
     }
+
+    syncScreenLandmarks();
+  }
+
+  function syncScreenLandmarks() {
+    document.querySelectorAll(".screen").forEach((s) => {
+      const active = s.classList.contains("active");
+      s.setAttribute("aria-hidden", active ? "false" : "true");
+      if ("inert" in s) {
+        if (active) s.removeAttribute("inert");
+        else s.inert = true;
+      }
+    });
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Modal focus trap for .modal-overlay.active
+   * ------------------------------------------------------------------ */
+
+  let trapOverlay = null;
+  let trapPrevFocus = null;
+
+  function focusableIn(root) {
+    if (!root) return [];
+    const nodes = root.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])'
+    );
+    return Array.prototype.filter.call(nodes, (el) => {
+      if (el.getAttribute("aria-hidden") === "true") return false;
+      const style = window.getComputedStyle(el);
+      if (style.visibility === "hidden" || style.display === "none") return false;
+      return el.offsetParent !== null || el === document.activeElement;
+    });
+  }
+
+  function activateFocusTrap(overlay) {
+    if (!overlay || trapOverlay === overlay) return;
+    trapPrevFocus = document.activeElement;
+    trapOverlay = overlay;
+    window.setTimeout(() => {
+      const list = focusableIn(overlay);
+      if (list.length) list[0].focus();
+      else if (typeof overlay.focus === "function") {
+        if (!overlay.hasAttribute("tabindex")) overlay.setAttribute("tabindex", "-1");
+        overlay.focus();
+      }
+    }, 0);
+  }
+
+  function releaseFocusTrap(overlay) {
+    if (trapOverlay && overlay && trapOverlay !== overlay) return;
+    const restore = trapPrevFocus;
+    trapOverlay = null;
+    trapPrevFocus = null;
+    if (restore && typeof restore.focus === "function") {
+      try {
+        restore.focus();
+      } catch (_) {}
+    }
+  }
+
+  function onTrapKeyDown(e) {
+    if (!trapOverlay || !trapOverlay.classList.contains("active")) return;
+    if (e.key !== "Tab") return;
+    const list = focusableIn(trapOverlay);
+    if (!list.length) {
+      e.preventDefault();
+      return;
+    }
+    const first = list[0];
+    const last = list[list.length - 1];
+    if (e.shiftKey) {
+      if (document.activeElement === first || !trapOverlay.contains(document.activeElement)) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else if (document.activeElement === last || !trapOverlay.contains(document.activeElement)) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
+  function watchModalFocusTraps() {
+    if (!window.MutationObserver) return;
+    const sync = () => {
+      const open = document.querySelector(".modal-overlay.active");
+      if (open) activateFocusTrap(open);
+      else if (trapOverlay) releaseFocusTrap(trapOverlay);
+    };
+    const observer = new MutationObserver(() => {
+      window.setTimeout(sync, 0);
+    });
+    observer.observe(document.body, {
+      attributes: true,
+      subtree: true,
+      attributeFilter: ["class"]
+    });
+    document.addEventListener("keydown", onTrapKeyDown, true);
+    sync();
   }
 
   function enhanceOptionsInDom() {
@@ -384,6 +487,7 @@
     ensureLiveRegion();
     ensureShortcutHelp();
     decorateStaticAria();
+    watchModalFocusTraps();
     wrapRenderHooks();
     // Replace legacy inline keydown by capturing ours (legacy still fires; we preventDefault on handled keys)
     document.addEventListener("keydown", onKeyDown, true);
@@ -395,7 +499,8 @@
     openShortcutHelp,
     closeShortcutHelp,
     toggleShortcutHelp,
-    enhanceOptionsInDom
+    enhanceOptionsInDom,
+    syncScreenLandmarks
   };
 
   if (document.readyState === "loading") {

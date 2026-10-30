@@ -21,6 +21,12 @@
   const MODE_BY_TYPE = {
     core1: 'mock',
     core2: 'mock',
+    az900: 'mock',
+    ms_az900: 'mock',
+    az500: 'mock',
+    ms_az500: 'mock',
+    azure_sec: 'mock',
+    azure_security: 'mock',
     both: 'mock',
     mixed: 'mock',
     mock: 'mock',
@@ -33,7 +39,8 @@
     coach: 'practice',
     memory: 'practice',
     raid: 'practice',
-    assessment: 'practice'
+    assessment: 'practice',
+    notes: 'practice'
   };
 
   /** Resolve the session mode from a session type plus an optional override. */
@@ -90,10 +97,34 @@
     return 'practice';
   }
 
+  /**
+   * A Hint Pack charge may be spent only where it delivers: a practice-mode
+   * single-answer question that is still unanswered and not yet hinted.
+   */
+  function hintAllowed(mode, q, storedAnswer, alreadyHinted) {
+    if (mode === 'mock' || mode === 'diagnostic') return false;
+    if (!q || typeof q.answer !== 'number' || !Array.isArray(q.options)) return false;
+    if (storedAnswer !== undefined && storedAnswer !== null) return false;
+    return !alreadyHinted;
+  }
+
+  /** Lowest-index wrong option not already eliminated, or null when none is left. */
+  function pickHintOption(q, eliminated) {
+    if (!q || !Array.isArray(q.options) || typeof q.answer !== 'number') return null;
+    for (let i = 0; i < q.options.length; i += 1) {
+      if (i === q.answer) continue;
+      if (eliminated && eliminated.has(i)) continue;
+      return i;
+    }
+    return null;
+  }
+
   APlus.modes = {
     MODE_BY_TYPE: MODE_BY_TYPE,
     examModeForType: examModeForType,
     shouldRevealOnSelect: shouldRevealOnSelect,
+    hintAllowed: hintAllowed,
+    pickHintOption: pickHintOption,
     eliminateOption: eliminateOption,
     currentExamMode: currentExamMode,
     timerAlertLevel: timerAlertLevel
@@ -111,6 +142,7 @@
       this.currentIndex = 0;
       this.userAnswers = {};
       this.eliminatedOptions = {};
+      this.hintedQuestions = new Set();
       this.flaggedQuestions = new Set();
       this.totalSeconds = 90 * 60;
       this.remainingSeconds = 90 * 60;
@@ -123,14 +155,29 @@
       this.assessmentKind = null;
       this.questionEnteredAt = Date.now();
       this.questionSeconds = {};
+      this._itemAnsweredEmitted = new Set();
     }
 
     start(config = {}) {
       if (this.timerInterval) clearInterval(this.timerInterval);
+      // The shell keeps its own interval. If it keeps ticking, the digits
+      // show that clock instead of the session that just started.
+      try {
+        const shell = window.currentExamSession;
+        if (shell && shell.timerInterval) {
+          clearInterval(shell.timerInterval);
+          shell.timerInterval = null;
+        }
+        if (window.__aplusShellTimer) {
+          clearInterval(window.__aplusShellTimer);
+          window.__aplusShellTimer = null;
+        }
+      } catch (_) {}
 
       const type = config.type || 'core1';
-      const questionCount = config.questionCount || 90;
-      const timeMinutes = config.timeMinutes || 90;
+      let questionCount = config.questionCount || 90;
+      let timeMinutes = config.timeMinutes || 90;
+      const diagnosticRequested = config.mode === 'diagnostic' || config.mode === 'placement' || config.diagnostic === true;
 
       let pool = [];
       if (config.customPool && Array.isArray(config.customPool)) {
@@ -139,8 +186,17 @@
         pool = APlus.data.getQuestions(type === 'both' ? 'both' : (type === 'core2' ? 'core2' : 'core1'));
       }
 
+      // Diagnostic length is the bank, capped at the target. A button that
+      // still says 20 cannot start 10 when this pool has 20 or more, and it
+      // cannot keep asking for 20 when the pool is shorter.
+      if (diagnosticRequested && !config.customPool && APlus.honesty && typeof APlus.honesty.resolveDiagnosticLength === 'function' && pool.length) {
+        const nonPbq = pool.filter(q => q && q.type !== 'pbq').length;
+        questionCount = APlus.honesty.resolveDiagnosticLength(nonPbq);
+        timeMinutes = questionCount;
+      }
+
       let sampled = [];
-      if (type === 'domain' || type === 'missed' || type === 'coach' || type === 'assessment') {
+      if (type === 'domain' || type === 'missed' || type === 'coach' || type === 'assessment' || type === 'drill') {
         sampled = APlus.engineCore.shuffle(pool).slice(0, Math.min(questionCount, pool.length));
       } else {
         sampled = APlus.engineCore.sampleStratified(pool, questionCount, type);
@@ -155,9 +211,20 @@
       this.currentIndex = 0;
       this.userAnswers = {};
       this.eliminatedOptions = {};
+      this.hintedQuestions = new Set();
       this.flaggedQuestions = new Set();
-      this.totalSeconds = timeMinutes * 60;
-      this.remainingSeconds = timeMinutes * 60;
+      const honesty = APlus.honesty;
+      const clockSeconds = honesty && typeof honesty.sessionClockSeconds === 'function'
+        ? honesty.sessionClockSeconds({
+          mode: examModeForType(type, config),
+          diagnostic: diagnosticRequested,
+          questionCount: config.questionCount || questionCount,
+          timeMinutes: config.timeMinutes || timeMinutes,
+          delivered: preparedQuestions.length
+        })
+        : timeMinutes * 60;
+      this.totalSeconds = clockSeconds;
+      this.remainingSeconds = clockSeconds;
       this.isPaused = false;
       this.domainKey = config.domainKey || null;
       this.coachMissionId = config.coachMissionId || null;
@@ -186,14 +253,20 @@
 
     startTimer() {
       if (this.timerInterval) clearInterval(this.timerInterval);
+      const emitTick = () => {
+        APlus.bus.emit('exam:timer:tick', {
+          remainingSeconds: this.remainingSeconds,
+          totalSeconds: this.totalSeconds,
+          alertLevel: timerAlertLevel(this.remainingSeconds)
+        });
+      };
+      // Paint the real clock immediately. The markup defaults to 90:00, which
+      // is wrong for a shorter diagnostic until the first one-second tick.
+      emitTick();
       this.timerInterval = setInterval(() => {
         if (!this.isPaused) {
           this.remainingSeconds--;
-          APlus.bus.emit('exam:timer:tick', {
-            remainingSeconds: this.remainingSeconds,
-            totalSeconds: this.totalSeconds,
-            alertLevel: timerAlertLevel(this.remainingSeconds)
-          });
+          emitTick();
 
           if (this.remainingSeconds <= 0) {
             clearInterval(this.timerInterval);
@@ -262,6 +335,39 @@
         question: q,
         isTutorMode: revealAllowed
       });
+
+      // Emit per-item analytics on every practice path (drills, raids, mocks).
+      // Re-answers for the same id in-session overwrite for telemetry (latest).
+      if (APlus.bus && typeof APlus.bus.emit === 'function' && q.id) {
+        if (!this._itemAnsweredEmitted) this._itemAnsweredEmitted = new Set();
+        this._itemAnsweredEmitted.add(q.id);
+        let abilityProxy = null;
+        try {
+          if (APlus.readiness2 && typeof APlus.readiness2.compute === 'function') {
+            const hist = APlus.storage ? APlus.storage.get('history', []) : [];
+            const examKey = this.type === 'core2' ? 'core2' : 'core1';
+            const r = APlus.readiness2.compute({ exam: examKey, history: hist });
+            if (r && typeof r.readiness === 'number' && Number.isFinite(r.readiness)) {
+              abilityProxy = Math.max(0, Math.min(1, r.readiness / 100));
+            } else if (r && r.predicted && typeof r.predicted.point === 'number') {
+              abilityProxy = Math.max(0, Math.min(1, (r.predicted.point - 100) / 800));
+            }
+          }
+        } catch (_) {
+          abilityProxy = null;
+        }
+        APlus.bus.emit('item:answered', {
+          questionId: q.id,
+          objective: q.objective || null,
+          domain: q.domain || null,
+          correct: isCorrect,
+          selectedOption: typeof answerValue === 'number' ? answerValue : null,
+          seconds: secondsOnQuestion,
+          examType: this.type,
+          assessmentKind: this.assessmentKind || this.mode || null,
+          abilityProxy: abilityProxy
+        });
+      }
     }
 
     toggleEliminateOption(optionIdx) {
@@ -281,6 +387,37 @@
         optionIndex: optionIdx,
         eliminated: set
       });
+    }
+
+    canUseHint() {
+      const idx = this.currentIndex;
+      const hinted = this.hintedQuestions ? this.hintedQuestions.has(idx) : false;
+      return hintAllowed(this.mode, this.getCurrentQuestion(), this.userAnswers[idx], hinted) &&
+        pickHintOption(this.getCurrentQuestion(), this.eliminatedOptions[idx]) !== null;
+    }
+
+    async useHint() {
+      if (!this.canUseHint()) return { ok: false, error: 'Hints are not available on this question.' };
+      const ledger = window.CompTIALedger;
+      if (!ledger || typeof ledger.consumeUnlock !== 'function') {
+        return { ok: false, error: 'Wallet unavailable.' };
+      }
+      const idx = this.currentIndex;
+      const q = this.getCurrentQuestion();
+      const pick = pickHintOption(q, this.eliminatedOptions[idx]);
+      const res = await ledger.consumeUnlock('HINT_PACK', 1, { qid: q.id || null });
+      if (!res || !res.ok) return res || { ok: false, error: 'No hint charges left.' };
+      if (!this.hintedQuestions) this.hintedQuestions = new Set();
+      this.hintedQuestions.add(idx);
+      if (!this.eliminatedOptions[idx]) this.eliminatedOptions[idx] = new Set();
+      this.eliminatedOptions[idx].add(pick);
+      APlus.bus.emit('exam:eliminate:toggled', {
+        questionIndex: idx,
+        optionIndex: pick,
+        eliminated: this.eliminatedOptions[idx],
+        hint: true
+      });
+      return { ok: true, eliminated: pick, remaining: res.remaining };
     }
 
     toggleFlag() {
@@ -344,14 +481,25 @@
         domainStats[domain].total++;
         if (isCorrect) domainStats[domain].correct++;
 
+        let userAnswerText = 'None';
+        if (userAns !== undefined && userAns !== null) {
+          if (Array.isArray(q.options) && typeof userAns === 'number' && q.options[userAns] != null) {
+            userAnswerText = String(q.options[userAns]);
+          } else {
+            userAnswerText = String(userAns);
+          }
+        }
+
         perQuestion.push({
           id: q.id,
           objective: q.objective,
           domain: domain,
+          exam: q.exam || null,
           type: q.type || 'single',
           correct: isCorrect,
           flagged: this.flaggedQuestions.has(idx),
           answer: userAns,
+          userAnswerText: userAnswerText,
           correctAnswer: typeof q.answer === 'number' ? q.answer : null,
           secondsOnQuestion: this.questionSeconds[idx] || 0
         });
@@ -360,39 +508,64 @@
       const scaledScore = APlus.engineCore.calcScaledScore(rawCorrect, total);
       const passed = scaledScore >= this.passingScore;
       const secondsSpent = this.totalSeconds - this.remainingSeconds;
+      const examTypeForMeta = this.type;
 
-      // Update storage
+      const finishedAt = new Date();
+      const attempt = {
+        // Millisecond timestamp so attempts inside the same minute still
+        // order correctly. The locale date string is display only, and
+        // Date.parse of it is only minute precision.
+        timestamp: finishedAt.getTime(),
+        date: finishedAt.toLocaleDateString() + ' ' + finishedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        examType: this.type.toUpperCase(),
+        mode: this.mode,
+        scaledScore: scaledScore,
+        rawCorrect: rawCorrect,
+        totalQuestions: total,
+        raw: `${rawCorrect}/${total}`,
+        percentage: `${((rawCorrect / (total || 1)) * 100).toFixed(1)}%`,
+        passed: passed,
+        status: passed ? 'PASSED' : 'FAILED',
+        passingScore: this.passingScore,
+        domainStats: domainStats,
+        perQuestion: perQuestion,
+        // Which generation of the question bank scored this attempt. Lets a
+        // future correction invalidate exactly the affected attempts instead
+        // of guessing from timestamps.
+        bankRevision: (APlus.bankIntegrity && APlus.bankIntegrity.BANK_REVISION) || 2
+      };
+
+      // Progress reads the same store as results. Write the attempt even when
+      // the namespaced storage adapter is missing; recordAttempt also mirrors
+      // the profile key and repaints the history table.
+      if (APlus.learner && typeof APlus.learner.recordAttempt === 'function') {
+        APlus.learner.recordAttempt(attempt);
+      } else if (APlus.storage) {
+        const history = APlus.storage.get('history', []);
+        history.unshift(attempt);
+        if (history.length > 25) history.pop();
+        APlus.storage.set('history', history);
+      }
+
       if (APlus.storage) {
         const existingMissed = APlus.storage.get('missed', []);
         const mergedMissed = Array.from(new Set([...existingMissed, ...newlyMissedIds]));
         APlus.storage.set('missed', mergedMissed);
+      }
 
-        const history = APlus.storage.get('history', []);
-        const finishedAt = new Date();
-        history.unshift({
-          // Millisecond timestamp so attempts inside the same minute still
-          // order correctly. The locale date string is display only, and
-          // Date.parse of it is only minute precision.
-          timestamp: finishedAt.getTime(),
-          date: finishedAt.toLocaleDateString() + ' ' + finishedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          examType: this.type.toUpperCase(),
-          mode: this.mode,
-          scaledScore: scaledScore,
-          rawCorrect: rawCorrect,
-          totalQuestions: total,
-          raw: `${rawCorrect}/${total}`,
-          percentage: `${((rawCorrect / (total || 1)) * 100).toFixed(1)}%`,
-          passed: passed,
-          status: passed ? 'PASSED' : 'FAILED',
-          passingScore: this.passingScore,
-          domainStats: domainStats,
-          // Which generation of the question bank scored this attempt. Lets a
-          // future correction invalidate exactly the affected attempts instead
-          // of guessing from timestamps.
-          bankRevision: (APlus.bankIntegrity && APlus.bankIntegrity.BANK_REVISION) || 2
-        });
-        if (history.length > 25) history.pop();
-        APlus.storage.set('history', history);
+      const missedQuestionIds = perQuestion.filter(r => !r.correct && r.id).map(r => r.id);
+      if (missedQuestionIds.length && typeof window !== 'undefined' && window.CompTIAMemorySRS && typeof window.CompTIAMemorySRS.enqueueMissed === 'function') {
+        try {
+          window.CompTIAMemorySRS.enqueueMissed(missedQuestionIds, function (id) {
+            const q = perQuestion.find(x => x.id === id);
+            return q ? { domain: q.domain, exam: q.exam || examTypeForMeta } : { exam: examTypeForMeta };
+          });
+          if (window.CompTIAMemoryMode && typeof window.CompTIAMemoryMode.refreshMemoryHome === 'function') {
+            window.CompTIAMemoryMode.refreshMemoryHome();
+          }
+        } catch (srsErr) {
+          console.warn('[Engine] SRS auto-enqueue notice:', srsErr);
+        }
       }
 
       const resultsPayload = {
@@ -404,6 +577,7 @@
         passed: passed,
         domainStats: domainStats,
         perQuestion: perQuestion,
+        missedIds: missedQuestionIds,
         secondsSpent: secondsSpent,
         flaggedCount: this.flaggedQuestions.size,
         domainKey: this.domainKey,
@@ -415,17 +589,32 @@
 
       APlus.bus.emit('exam:finished', resultsPayload);
 
-      // Per-item anonymised outcomes for premium item analysis (ids only).
+      try {
+        if (typeof window.renderHistoryTable === 'function') window.renderHistoryTable();
+      } catch (_) {}
+
+      // Finish-path backfill for answered items not already emitted mid-session
+      // (e.g. Pearson exam-day mode where answers were locked without mid emit).
       if (APlus.bus && typeof APlus.bus.emit === 'function') {
+        const emitted = this._itemAnsweredEmitted || new Set();
+        let abilityProxy = null;
+        try {
+          if (total > 0) abilityProxy = Math.max(0, Math.min(1, rawCorrect / total));
+        } catch (_) {
+          abilityProxy = null;
+        }
         perQuestion.forEach(function (row) {
+          if (!row || !row.id || emitted.has(row.id)) return;
           APlus.bus.emit('item:answered', {
             questionId: row.id,
             objective: row.objective || null,
             domain: row.domain || null,
             correct: row.correct,
+            selectedOption: typeof row.answer === 'number' ? row.answer : null,
             seconds: row.secondsOnQuestion || 0,
             examType: resultsPayload.examType,
-            assessmentKind: resultsPayload.assessmentKind || null
+            assessmentKind: resultsPayload.assessmentKind || null,
+            abilityProxy: abilityProxy
           });
         });
       }

@@ -1,0 +1,409 @@
+[
+  {
+    "id": "AZ-001",
+    "exam": "az900",
+    "domain": "1.0 Describe cloud concepts",
+    "objective": "1.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "An enterprise is planning to migrate an on-premises database to an Azure Virtual Machine (IaaS). Under the Microsoft Shared Responsibility Model, which security layer remains the sole responsibility of the customer?",
+    "options": [
+      "Physical datacenter security and perimeter access control",
+      "Virtual machine guest operating system patching and updates",
+      "Physical blade server hardware replacement and cooling",
+      "Host virtualization hypervisor clustering and maintenance"
+    ],
+    "answer": 1,
+    "explanation": "In Infrastructure as a Service (IaaS), the cloud provider manages the physical infrastructure, virtualization, and datacenter hardware. The customer is responsible for configuring, securing, and patching the guest operating system, applications, network firewall rules, and data.",
+    "distractor_analysis": {
+      "0": "Physical datacenter perimeter security and biometric controls are always managed by Microsoft.",
+      "2": "Server hardware maintenance, cooling, and power delivery are managed entirely by Microsoft.",
+      "3": "Hypervisor fabric and physical cluster orchestration are the cloud provider's core responsibility."
+    },
+    "tags": [
+      "cloud-concepts",
+      "shared-responsibility",
+      "iaas"
+    ]
+  },
+  {
+    "id": "AZ-002",
+    "exam": "az900",
+    "domain": "1.0 Describe cloud concepts",
+    "objective": "1.1",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Which cloud computing model enables an organization to run critical proprietary workloads on an on-premises private cloud while bursting seasonal customer traffic into the Microsoft Azure public cloud?",
+    "options": [
+      "Hybrid cloud",
+      "Public cloud only",
+      "Community cloud",
+      "SaaS-only deployment"
+    ],
+    "answer": 0,
+    "explanation": "A hybrid cloud combines on-premises private cloud infrastructure or local datacenters with public cloud services like Microsoft Azure, facilitating secure data transfer and workload mobility (such as cloud bursting).",
+    "distractor_analysis": {
+      "1": "A public cloud only model means no on-premises infrastructure is utilized.",
+      "2": "A community cloud is shared by several organizations with shared compliance or industry needs.",
+      "3": "SaaS provides hosted end-user applications, not interconnected infrastructure models."
+    },
+    "tags": [
+      "cloud-models",
+      "hybrid-cloud",
+      "bursting"
+    ]
+  },
+  {
+    "id": "AZ-003",
+    "exam": "az900",
+    "domain": "1.0 Describe cloud concepts",
+    "objective": "1.2",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "A retail application experiences sudden demand spikes during holiday flash sales. Which cloud architecture benefit allows the platform to automatically scale computational capacity up or down based on dynamic resource demand?",
+    "options": [
+      "Elasticity",
+      "High availability",
+      "Geographic redundancy",
+      "Predictability"
+    ],
+    "answer": 0,
+    "explanation": "Elasticity is the ability to automatically dynamically allocate and deallocate computing resources (like CPU, RAM, and VM instances) in response to fluctuating demand.",
+    "distractor_analysis": {
+      "1": "High availability ensures systems remain accessible with minimal downtime, but does not describe automatic scaling.",
+      "2": "Geographic redundancy duplicates data across regions to withstand catastrophic regional disasters.",
+      "3": "Predictability refers to knowing upfront how a workload will perform and cost over time."
+    },
+    "tags": [
+      "cloud-benefits",
+      "elasticity",
+      "autoscaling"
+    ]
+  },
+  {
+    "id": "AZ-004",
+    "exam": "az900",
+    "domain": "1.0 Describe cloud concepts",
+    "objective": "1.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "What is the primary financial distinction between Capital Expenditure (CapEx) and Operational Expenditure (OpEx) when transitioning to Azure?",
+    "options": [
+      "CapEx involves ongoing monthly billing based on consumption, while OpEx requires purchasing physical server racks upfront.",
+      "CapEx involves upfront financial investment in physical equipment with depreciation over time, whereas OpEx represents ongoing pay-as-you-go operational costs without upfront capital.",
+      "CapEx eliminates maintenance costs, whereas OpEx guarantees fixed hardware ownership.",
+      "CapEx applies solely to Software as a Service, while OpEx applies solely to private datacenters."
+    ],
+    "answer": 1,
+    "explanation": "CapEx is the upfront spending on physical assets (servers, storage arrays, facility construction) that is depreciated over years. OpEx is spending on services and operational costs on a pay-as-you-go consumption basis with no upfront infrastructure cost.",
+    "distractor_analysis": {
+      "0": "This description inverts the definitions of CapEx and OpEx.",
+      "2": "CapEx involves significant maintenance and depreciation overhead.",
+      "3": "SaaS is billed as OpEx; private datacenters require massive CapEx."
+    },
+    "tags": [
+      "capex-opex",
+      "consumption-model",
+      "cloud-economics"
+    ]
+  },
+  {
+    "id": "AZ-005",
+    "exam": "az900",
+    "domain": "1.0 Describe cloud concepts",
+    "objective": "1.3",
+    "type": "multi",
+    "difficulty": "medium",
+    "question": "Which TWO of the following services are prime examples of Platform as a Service (PaaS)? (Choose TWO)",
+    "options": [
+      "Azure App Service",
+      "Azure Virtual Machines",
+      "Azure SQL Database",
+      "Microsoft 365",
+      "Azure Dedicated Host"
+    ],
+    "answers": [
+      0,
+      2
+    ],
+    "explanation": "Azure App Service and Azure SQL Database are managed Platform as a Service (PaaS) offerings where developers deploy code or schemas without managing the underlying operating system, runtime, or hardware. Azure Virtual Machines and Dedicated Hosts are IaaS, while Microsoft 365 is SaaS.",
+    "distractor_analysis": {
+      "1": "Azure Virtual Machines are IaaS; you manage the OS, updates, and configuration.",
+      "3": "Microsoft 365 is a turnkey Software as a Service (SaaS) solution.",
+      "4": "Azure Dedicated Host is physical IaaS dedicated to a single tenant."
+    },
+    "tags": [
+      "paas",
+      "iaas",
+      "saas",
+      "cloud-service-types"
+    ]
+  },
+  {
+    "id": "AZ-006",
+    "exam": "az900",
+    "domain": "1.0 Describe cloud concepts",
+    "objective": "1.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Which serverless computing characteristic allows code execution in Azure Functions without provisioning, managing, or scaling underlying virtual machines?",
+    "options": [
+      "Event-driven architecture with automatic scaling and zero idle billing",
+      "Dedicated bare-metal hardware reservation with annual contracts",
+      "Static hypervisor allocation requiring manual load balancer rules",
+      "Permanent OS registry configuration through Group Policy"
+    ],
+    "answer": 0,
+    "explanation": "Serverless architectures (like Azure Functions) execute code in response to events or HTTP triggers, automatically scaling compute resources dynamically and billing exclusively for the milliseconds the code executes.",
+    "distractor_analysis": {
+      "1": "Dedicated bare-metal instances are IaaS, the polar opposite of serverless.",
+      "2": "Serverless completely abstracts hypervisors and load balancers from developers.",
+      "3": "Serverless applications run statelessly and do not involve OS registry or Group Policy management."
+    },
+    "tags": [
+      "serverless",
+      "azure-functions",
+      "event-driven"
+    ]
+  },
+  {
+    "id": "AZ-007",
+    "exam": "az900",
+    "domain": "1.0 Describe cloud concepts",
+    "objective": "1.2",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "How does High Availability (HA) differ from Disaster Recovery (DR) in cloud architecture design?",
+    "options": [
+      "High availability keeps systems operational during component disruptions; disaster recovery focuses on restoring business services after a catastrophic catastrophic regional failure.",
+      "High availability is only possible in private datacenters; disaster recovery is cloud-only.",
+      "High availability requires rebuilding servers from tape; disaster recovery runs in parallel constantly.",
+      "High availability guarantees zero monthly cloud billing during outages."
+    ],
+    "answer": 0,
+    "explanation": "High Availability guarantees uptime and minimal service interruption through redundant hardware and fault domains. Disaster Recovery focuses on business continuity, recovering systems, and restoring data following major natural disasters or regional blackouts.",
+    "distractor_analysis": {
+      "1": "Both HA and DR are standard native cloud architecture patterns.",
+      "2": "Tape restores are legacy methods, not the definition of HA.",
+      "3": "Cloud billing is independent of uptime guarantees; SLAs govern credits."
+    },
+    "tags": [
+      "high-availability",
+      "disaster-recovery",
+      "resilience"
+    ]
+  },
+  {
+    "id": "AZ-008",
+    "exam": "az900",
+    "domain": "1.0 Describe cloud concepts",
+    "objective": "1.3",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "When an enterprise subscribes to Microsoft 365, which cloud service delivery model is being consumed?",
+    "options": [
+      "Software as a Service (SaaS)",
+      "Platform as a Service (PaaS)",
+      "Infrastructure as a Service (IaaS)",
+      "Hardware as a Service (HaaS)"
+    ],
+    "answer": 0,
+    "explanation": "Microsoft 365 is a premier example of Software as a Service (SaaS). Microsoft hosts, manages, and patches the complete application stack, while the client simply manages user identities and data.",
+    "distractor_analysis": {
+      "1": "PaaS provides development runtimes and databases, not complete end-user office applications.",
+      "2": "IaaS provides bare compute, storage, and networking.",
+      "3": "HaaS is not a standard cloud service category in the official AZ-900 syllabus."
+    },
+    "tags": [
+      "saas",
+      "microsoft-365",
+      "service-models"
+    ]
+  },
+  {
+    "id": "AZ-009",
+    "exam": "az900",
+    "domain": "1.0 Describe cloud concepts",
+    "objective": "1.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A DevOps development team can spin up and tear down testing environments in Microsoft Azure within minutes using templates. Which cloud benefit does this illustrate?",
+    "options": [
+      "Agility",
+      "Geographic isolation",
+      "Physical segregation",
+      "Depreciation"
+    ],
+    "answer": 0,
+    "explanation": "Cloud agility describes the rapid ability to develop, test, launch, and adapt applications and infrastructure quickly without waiting for physical hardware procurement and deployment.",
+    "distractor_analysis": {
+      "1": "Geographic isolation refers to data sovereignty and regional constraints.",
+      "2": "Physical segregation is a security property of isolated hosts.",
+      "3": "Depreciation is an accounting practice tied to CapEx assets."
+    },
+    "tags": [
+      "agility",
+      "cloud-benefits",
+      "devops"
+    ]
+  },
+  {
+    "id": "AZ-010",
+    "exam": "az900",
+    "domain": "1.0 Describe cloud concepts",
+    "objective": "1.1",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Which statement correctly describes a Private Cloud deployment?",
+    "options": [
+      "Cloud resources are used exclusively by a single business or organization, hosted either on-premises or by a third-party host.",
+      "Hardware resources are pooled and shared across thousands of unrelated public tenants.",
+      "Services are delivered without any security or access controls.",
+      "Infrastructure is accessible only via dial-up modem lines."
+    ],
+    "answer": 0,
+    "explanation": "A private cloud consists of cloud computing resources dedicated exclusively to one business or organization. It can be physically located in the company's on-site datacenter or hosted by a third-party service provider.",
+    "distractor_analysis": {
+      "1": "Sharing resources across unrelated multi-tenant businesses defines a public cloud.",
+      "2": "Private clouds emphasize stringent internal security and governance.",
+      "3": "Dial-up connectivity has nothing to do with modern private cloud virtualization."
+    },
+    "tags": [
+      "private-cloud",
+      "cloud-models"
+    ]
+  },
+  {
+    "id": "AZ-011",
+    "exam": "az900",
+    "domain": "1.0 Describe cloud concepts",
+    "objective": "1.1",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "In the consumption-based pricing model used by Microsoft Azure, how are customers charged for compute resources?",
+    "options": [
+      "Customers pay only for the actual cloud resources they provision and consume over time.",
+      "Customers must pay a fixed flat fee of $10,000 upfront regardless of usage.",
+      "Customers are charged solely based on the number of employees in their organization.",
+      "Customers are billed once per decade during hardware refreshes."
+    ],
+    "answer": 0,
+    "explanation": "In a consumption-based pricing model, there are no upfront costs, no termination fees, and users pay only for the exact resources and minutes consumed.",
+    "distractor_analysis": {
+      "1": "There are no mandatory upfront minimums in pay-as-you-go Azure tiers.",
+      "2": "Billing is based on infrastructure and API consumption, not employee headcount (which applies to user licensing like M365).",
+      "3": "Cloud billing occurs monthly on a pay-as-you-go basis."
+    },
+    "tags": [
+      "consumption-model",
+      "pay-as-you-go",
+      "cloud-economics"
+    ]
+  },
+  {
+    "id": "AZ-012",
+    "exam": "az900",
+    "domain": "1.0 Describe cloud concepts",
+    "objective": "1.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Which cloud architecture attribute ensures an application remains fully functional and accessible even if a power supply or network interface card fails inside a server rack?",
+    "options": [
+      "Fault tolerance",
+      "Latency",
+      "Multi-tenancy",
+      "Vendor lock-in"
+    ],
+    "answer": 0,
+    "explanation": "Fault tolerance is the capability of a cloud system to continue operating without interruption even in the event of component, hardware, or server failures.",
+    "distractor_analysis": {
+      "1": "Latency measures the round-trip network delay in milliseconds.",
+      "2": "Multi-tenancy is the architectural sharing of infrastructure among multiple clients.",
+      "3": "Vendor lock-in is the dependency on a single cloud vendor's proprietary APIs."
+    },
+    "tags": [
+      "fault-tolerance",
+      "reliability",
+      "cloud-concepts"
+    ]
+  },
+  {
+    "id": "AZ-013",
+    "exam": "az900",
+    "domain": "1.0 Describe cloud concepts",
+    "objective": "1.1",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "How do Economies of Scale benefit enterprise cloud customers adopting Microsoft Azure?",
+    "options": [
+      "Microsoft's massive purchasing power allows it to procure hardware and power at lower unit costs, passing cost efficiencies to customers.",
+      "Customers can monopolize physical datacenters in their home countries.",
+      "Hardware depreciation is shifted directly to local municipalities.",
+      "Organizations are exempt from standard data privacy regulations."
+    ],
+    "answer": 0,
+    "explanation": "Economies of scale describe the cost advantages that enterprises obtain due to their scale of operation. Microsoft purchases massive volumes of servers, storage, and electricity at lower rates than individual enterprises could ever obtain.",
+    "distractor_analysis": {
+      "1": "Datacenters remain shared multi-tenant facilities.",
+      "2": "Municipalities do not absorb private depreciation.",
+      "3": "All cloud deployments remain strictly subject to GDPR, HIPAA, and privacy laws."
+    },
+    "tags": [
+      "economies-of-scale",
+      "cloud-economics"
+    ]
+  },
+  {
+    "id": "AZ-014",
+    "exam": "az900",
+    "domain": "1.0 Describe cloud concepts",
+    "objective": "1.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "An organization runs critical data processing across both Microsoft Azure and Amazon Web Services (AWS) simultaneously. What type of cloud deployment strategy is this?",
+    "options": [
+      "Multi-cloud",
+      "Private cloud",
+      "Monolithic deployment",
+      "Local intranet"
+    ],
+    "answer": 0,
+    "explanation": "A multi-cloud deployment uses services from multiple public cloud providers (such as Microsoft Azure, AWS, and GCP) to mitigate risk and prevent vendor lock-in.",
+    "distractor_analysis": {
+      "1": "Private clouds are owned and operated exclusively on private infrastructure.",
+      "2": "Monolithic refers to tightly coupled legacy application codebases.",
+      "3": "Local intranet is a private internal enterprise network."
+    },
+    "tags": [
+      "multi-cloud",
+      "cloud-strategy"
+    ]
+  },
+  {
+    "id": "AZ-015",
+    "exam": "az900",
+    "domain": "1.0 Describe cloud concepts",
+    "objective": "1.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "What is the technical difference between Vertical Scaling (scaling up) and Horizontal Scaling (scaling out) in Azure?",
+    "options": [
+      "Scaling up increases the CPU, RAM, or disk speed of an existing virtual machine; scaling out adds more virtual machine instances to distribute the workload.",
+      "Scaling up adds more physical servers; scaling out replaces virtual machines with containers.",
+      "Scaling up is automated; scaling out requires replacing hardware in the datacenter.",
+      "Scaling up is free; scaling out incurs exponential licensing penalties."
+    ],
+    "answer": 0,
+    "explanation": "Vertical scaling (scaling up) upgrades an existing server with more memory or processing power. Horizontal scaling (scaling out) adds additional server instances (like Azure Virtual Machine Scale Sets) to share the incoming traffic.",
+    "distractor_analysis": {
+      "1": "Scaling out does not require switching to containers; both VMs and containers can scale out.",
+      "2": "Both scaling models can be automated via Azure Autoscale policies.",
+      "3": "Scaling up requires a higher tier VM SKU which costs more money."
+    },
+    "tags": [
+      "scaling",
+      "scale-up",
+      "scale-out"
+    ]
+  }
+]

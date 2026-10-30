@@ -37,12 +37,27 @@
       { prefix: '2.0', name: '2.0 Security', weight: 28 },
       { prefix: '3.0', name: '3.0 Software Troubleshooting', weight: 23 },
       { prefix: '4.0', name: '4.0 Operational Procedures', weight: 21 }
+    ],
+    az900: [
+      { prefix: '1.0', name: '1.0 Describe cloud concepts', weight: 28 },
+      { prefix: '2.0', name: '2.0 Describe Azure architecture and services', weight: 37 },
+      { prefix: '3.0', name: '3.0 Describe Azure management and governance', weight: 35 }
+    ],
+    az500: [
+      { prefix: '1.0', name: '1.0 Manage identity and access', weight: 28 },
+      { prefix: '2.0', name: '2.0 Secure networking', weight: 22 },
+      { prefix: '3.0', name: '3.0 Secure compute, storage, and databases', weight: 25 },
+      { prefix: '4.0', name: '4.0 Manage security operations', weight: 25 }
     ]
   };
 
   const PASSING_SCORES = {
     core1: 675,
     core2: 700,
+    az900: 700,
+    ms_az900: 700,
+    az500: 700,
+    ms_az500: 700,
     both: 675,
     domain: 675,
     missed: 675,
@@ -193,9 +208,81 @@
     }
   ];
 
+  const DEFAULT_AZ900_PBQS = [
+    {
+      id: 'PBQ-AZ-01',
+      exam: 'az900',
+      domain: '2.0 Describe Azure architecture and services',
+      objective: '2.2',
+      type: 'pbq',
+      pbqType: 'storageTiers',
+      question: 'A media enterprise is optimizing Azure Storage costs. Categorize each data tier (Hot, Cool, Cold, Archive) based on access frequency and retrieval latency requirements.',
+      explanation: 'Hot tier is optimized for frequent access with lowest access costs. Cool tier is for data accessed infrequently (stored for at least 30 days). Cold tier is for infrequently accessed data (stored for at least 90 days). Archive tier is offline storage with lowest storage cost but hours of retrieval rehydration latency.',
+      tags: ['pbq', 'storage', 'azure', 'cloud']
+    },
+    {
+      id: 'PBQ-AZ-02',
+      exam: 'az900',
+      domain: '1.0 Describe cloud concepts',
+      objective: '1.1',
+      type: 'pbq',
+      pbqType: 'sharedResponsibility',
+      question: 'Audit corporate cloud workloads against the Microsoft Shared Responsibility Model. Classify responsibility (Customer, Microsoft, or Shared) for OS Patching, Physical Datacenter Security, and Data/Information.',
+      explanation: 'In IaaS, the customer manages OS patching, middleware, and data, while Microsoft manages physical hosts and network. In SaaS, Microsoft manages everything except information and data, devices, and accounts.',
+      tags: ['pbq', 'cloud-concepts', 'shared-responsibility']
+    },
+    {
+      id: 'PBQ-AZ-03',
+      exam: 'az900',
+      domain: '2.0 Describe Azure architecture and services',
+      objective: '2.1',
+      type: 'pbq',
+      pbqType: 'azureTopology',
+      question: 'Design a highly available Azure infrastructure layout across Geographies, Regions, Availability Zones, and Resource Groups.',
+      explanation: 'Availability Zones provide fault-isolated locations within a region with independent power, cooling, and networking. Resource Groups act as logical containers for lifecycle management.',
+      tags: ['pbq', 'architecture', 'azure-topology']
+    }
+  ];
+
+  const DEFAULT_AZ500_PBQS = [
+    {
+      id: 'PBQ-AZ500-01',
+      exam: 'az500',
+      domain: '4.0 Manage security operations',
+      objective: '4.2',
+      type: 'pbq',
+      pbqType: 'keyVaultRbac',
+      question: 'An enterprise cloud security architecture requires migrating from Key Vault Access Policies to Azure RBAC permission model. Categorize each role assignment requirement (Key Vault Administrator, Key Vault Secrets Officer, Key Vault Secrets User, Key Vault Crypto Officer) to its exact operational capability and scope.',
+      explanation: 'Key Vault Secrets User allows reading secret contents (data plane). Key Vault Secrets Officer allows managing/creating secrets. Key Vault Crypto Officer manages encryption keys. Key Vault Administrator manages both data plane and control plane roles under Azure RBAC.',
+      tags: ['pbq', 'key-vault', 'rbac', 'az500']
+    },
+    {
+      id: 'PBQ-AZ500-02',
+      exam: 'az500',
+      domain: '2.0 Secure networking',
+      objective: '2.1',
+      type: 'pbq',
+      pbqType: 'nsgMicrosegmentation',
+      question: 'Configure Network Security Group (NSG) and Application Security Group (ASG) rules for a 3-tier architecture (Web -> App -> Database). Define priority ordering and 5-tuple criteria to prevent the Web tier from directly accessing the Database tier while permitting App to Database SQL on port 1433.',
+      explanation: 'ASGs group NICs logically (ASG-Web, ASG-App, ASG-DB). An NSG rule with source ASG-App and destination ASG-DB on port 1433 (priority 200) allows SQL. A subsequent rule denying all other traffic to ASG-DB (priority 300) blocks direct Web-to-DB ingress.',
+      tags: ['pbq', 'nsg', 'asg', 'microsegmentation', 'az500']
+    },
+    {
+      id: 'PBQ-AZ500-03',
+      exam: 'az500',
+      domain: '4.0 Manage security operations',
+      objective: '4.1',
+      type: 'pbq',
+      pbqType: 'sentinelSoarWorkflow',
+      question: 'Orchestrate an automated security response workflow in Microsoft Sentinel: Sequence the four stages from anomalous log telemetry ingestion to automated threat containment (Syslog/CEF Data Connector -> Scheduled KQL Analytics Rule -> Incident Creation & Entity Mapping -> Logic App Playbook Execution).',
+      explanation: '1. Ingestion: Data connector streams logs to Log Analytics workspace. 2. Detection: Analytics rule runs KQL on a schedule. 3. Triage: Incident is generated with mapped entities (IP/Account). 4. Remediation: Automation rule fires an Azure Logic App playbook to block malicious IP on firewall.',
+      tags: ['pbq', 'sentinel', 'soar', 'kql', 'az500']
+    }
+  ];
+
   /**
    * Main Stratified Sampler
-   * Supports 'core1', 'core2', 'both', 'quick'
+   * Supports 'core1', 'core2', 'az900', 'az500', 'both', 'quick'
    * In full timed mock exams (targetCount >= 40), compulsory PBQs are placed first (Questions 1-3)
    */
   function sampleStratified(allQuestions, targetCount = 90, examType = 'core1') {
@@ -205,7 +292,13 @@
     let mcqTargetCount = targetCount;
 
     if (targetCount >= 40) {
-      if (examType === 'core1') {
+      if (examType === 'az500' || examType === 'ms_az500') {
+        const poolPbqs = allQuestions.filter(q => q.exam === 'az500' && q.type === 'pbq');
+        pbqsToPrepend = poolPbqs.length > 0 ? shuffle(poolPbqs).slice(0, 3) : DEFAULT_AZ500_PBQS.slice(0, 3);
+      } else if (examType === 'az900' || examType === 'ms_az900') {
+        const poolPbqs = allQuestions.filter(q => q.exam === 'az900' && q.type === 'pbq');
+        pbqsToPrepend = poolPbqs.length > 0 ? shuffle(poolPbqs).slice(0, 3) : DEFAULT_AZ900_PBQS.slice(0, 3);
+      } else if (examType === 'core1') {
         const poolPbqs = allQuestions.filter(q => (q.exam === 'core1' || !q.exam) && q.type === 'pbq');
         pbqsToPrepend = poolPbqs.length > 0 ? shuffle(poolPbqs).slice(0, 3) : DEFAULT_CORE1_PBQS.slice(0, 3);
       } else if (examType === 'core2') {
@@ -220,7 +313,13 @@
     }
 
     let sampled = [];
-    if (examType === 'core1') {
+    if (examType === 'az500' || examType === 'ms_az500') {
+      const azPool = allQuestions.filter(q => q.exam === 'az500' && q.type !== 'pbq');
+      sampled = sampleCoreStratified(azPool, DOMAIN_BLUEPRINTS.az500, Math.min(mcqTargetCount, azPool.length));
+    } else if (examType === 'az900' || examType === 'ms_az900') {
+      const azPool = allQuestions.filter(q => q.exam === 'az900' && q.type !== 'pbq');
+      sampled = sampleCoreStratified(azPool, DOMAIN_BLUEPRINTS.az900, Math.min(mcqTargetCount, azPool.length));
+    } else if (examType === 'core1') {
       const c1Pool = allQuestions.filter(q => (q.exam === 'core1' || !q.exam) && q.type !== 'pbq');
       sampled = sampleCoreStratified(c1Pool, DOMAIN_BLUEPRINTS.core1, Math.min(mcqTargetCount, c1Pool.length));
     } else if (examType === 'core2') {
@@ -302,11 +401,16 @@
   }
 
   /**
-   * CompTIA Scaled Score Math: 100 to 900 scale
+   * Scaled Score Math:
+   * CompTIA: 100 to 900 scale (pass 675/700)
+   * Microsoft AZ-900 & AZ-500: 100 to 1000 scale (pass 700)
    */
-  function calcScaledScore(rawCorrect, totalQuestions) {
+  function calcScaledScore(rawCorrect, totalQuestions, examType) {
     if (!totalQuestions || totalQuestions <= 0) return 100;
     const ratio = Math.min(1, Math.max(0, rawCorrect / totalQuestions));
+    if (examType === 'az900' || examType === 'ms_az900' || examType === 'az500' || examType === 'ms_az500' || examType === 'azure_sec' || examType === 'azure_security') {
+      return Math.round(100 + (900 * ratio));
+    }
     return Math.round(100 + (800 * ratio));
   }
 

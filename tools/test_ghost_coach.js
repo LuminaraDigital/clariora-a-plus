@@ -106,13 +106,20 @@ function run() {
   const bootstrap = core.buildMission(core.emptyState(), { size: 8 });
   assert.strictEqual(bootstrap.kind, 'bootstrap');
 
+  const promote = core.buildMemoryPromotionPayload(state, Date.now(), { pairs: 5, weak: 5 });
+  assert.ok(promote.confusionPairs.length >= 1, 'promote payload should include ranked confusion pairs');
+  assert.ok(promote.weakObjectives.length >= 1, 'promote payload should include weak objectives');
+  assert.ok(promote.confusionPairs[0].key, 'pair needs key');
+  assert.ok(promote.confusionPairs[0].a && promote.confusionPairs[0].b, 'pair needs a/b labels');
+
   console.log('ghost-coach tests: PASS');
   console.log(JSON.stringify({
     weakObjective: weak[0].objective,
     confusionTop: pairs[0].key,
     missionKind: mission.kind,
     boostCount: boostCount,
-    outcomeAccuracy: measured.outcomes[0].afterAccuracy
+    outcomeAccuracy: measured.outcomes[0].afterAccuracy,
+    promotePairs: promote.confusionPairs.length
   }, null, 2));
 }
 

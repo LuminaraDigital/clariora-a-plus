@@ -16,6 +16,18 @@
 (function (window) {
   'use strict';
 
+  /**
+   * Tier 1 request guard (js/request-guard.js). This calls the Groq inference API directly from the browser, so every
+   * dispatch is billed token spend with no server-side budget in front of it.
+   * Degrades to plain fetch when the guard has not loaded.
+   */
+  function guardedFetch(url, init, guardOpts) {
+    var g = (typeof window !== 'undefined' && window.APlus && window.APlus.guard) || null;
+    if (g) return g.fetch(url, init, guardOpts);
+    return fetch(url, init);
+  }
+
+
   window.APlus = window.APlus || {};
   const APlus = window.APlus;
 
@@ -122,7 +134,7 @@
         };
       }
 
-      const res = await fetch(CHAT_URL, {
+      const res = await guardedFetch(CHAT_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

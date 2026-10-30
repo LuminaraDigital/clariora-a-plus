@@ -12,7 +12,9 @@ const fs = require('fs');
 const path = require('path');
 
 const TOOLS = __dirname;
-const SKIP = new Set(['smoke_electron.js']); // needs a packaged Electron binary
+const SKIP = new Set([
+  'smoke_electron.js', // needs a packaged Electron binary
+]);
 
 const files = fs
   .readdirSync(TOOLS)

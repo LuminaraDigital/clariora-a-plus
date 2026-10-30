@@ -16,6 +16,7 @@
     input, button { font: inherit; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); }
     input { min-width: 280px; flex: 1; }
     button { background: var(--gold); color: #07090E; font-weight: 700; border: none; cursor: pointer; }
+    button.secondary { background: transparent; color: var(--gold); border: 1px solid var(--line); }
     .grid { display: grid; gap: 18px; }
     table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
     th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 13px; }
@@ -28,10 +29,11 @@
 <body>
   <main>
     <h1>Clariora gated accounts</h1>
-    <p>Who signed up and who signed in. Requires the worker <code>ADMIN_API_KEY</code> secret.</p>
+    <p>Who signed up and who signed in. Exchange <code>ADMIN_API_KEY</code> once for an HttpOnly admin session cookie (30 minutes). The key is never stored in browser storage.</p>
     <div class="row">
       <input id="adminKey" type="password" placeholder="Admin API key" autocomplete="off">
-      <button type="button" id="loadBtn">Load accounts</button>
+      <button type="button" id="loadBtn">Sign in and load</button>
+      <button type="button" id="logoutBtn" class="secondary">End admin session</button>
     </div>
     <p id="status" class="err" hidden></p>
     <div class="grid">
@@ -63,10 +65,6 @@
     (function () {
       var keyInput = document.getElementById('adminKey');
       var statusEl = document.getElementById('status');
-      try {
-        var saved = sessionStorage.getItem('clariora_admin_key');
-        if (saved) keyInput.value = saved;
-      } catch (_) {}
 
       function showStatus(msg, ok) {
         statusEl.hidden = !msg;
@@ -79,50 +77,88 @@
           .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       }
 
+      function render(data) {
+        var accounts = data.accounts || [];
+        var events = data.events || [];
+        document.getElementById('accountsBody').innerHTML = accounts.map(function (a) {
+          return '<tr>' +
+            '<td>' + esc(a.display_name) + '</td>' +
+            '<td>' + esc(a.email) + '</td>' +
+            '<td><span class="pill">' + esc(a.provider) + '</span></td>' +
+            '<td>' + esc(a.signup_at) + '</td>' +
+            '<td>' + esc(a.last_signin_at) + '</td>' +
+            '<td>' + esc(a.signin_count) + '</td>' +
+            '</tr>';
+        }).join('') || '<tr><td colspan="6">No accounts yet.</td></tr>';
+        document.getElementById('eventsBody').innerHTML = events.map(function (e) {
+          return '<tr>' +
+            '<td>' + esc(e.created_at) + '</td>' +
+            '<td><span class="pill">' + esc(e.event) + '</span></td>' +
+            '<td>' + esc(e.provider) + '</td>' +
+            '<td>' + esc(e.display_name) + '</td>' +
+            '<td>' + esc(e.email) + '</td>' +
+            '<td>' + esc(e.uid) + '</td>' +
+            '</tr>';
+        }).join('') || '<tr><td colspan="6">No events yet.</td></tr>';
+        showStatus('Loaded ' + accounts.length + ' accounts.', true);
+        keyInput.value = '';
+      }
+
+      async function loadAccounts() {
+        var res = await fetch('/api/v1/auth/accounts?limit=200', {
+          credentials: 'include',
+          headers: { 'Accept': 'application/json' }
+        });
+        var data = await res.json().catch(function () { return {}; });
+        if (!res.ok) {
+          showStatus(data.error || ('HTTP ' + res.status));
+          return false;
+        }
+        render(data);
+        return true;
+      }
+
       document.getElementById('loadBtn').addEventListener('click', async function () {
         var key = (keyInput.value || '').trim();
-        if (!key) {
-          showStatus('Enter ADMIN_API_KEY first.');
-          return;
-        }
-        try { sessionStorage.setItem('clariora_admin_key', key); } catch (_) {}
-        showStatus('Loading…', true);
+        showStatus('Signing in…', true);
         try {
-          var res = await fetch('/api/v1/auth/accounts?limit=200', {
-            headers: { 'X-Admin-Key': key }
-          });
-          var data = await res.json();
-          if (!res.ok) {
-            showStatus(data.error || ('HTTP ' + res.status));
-            return;
+          if (key) {
+            var loginRes = await fetch('/api/v1/auth/admin/session', {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ adminKey: key })
+            });
+            var loginData = await loginRes.json().catch(function () { return {}; });
+            if (!loginRes.ok) {
+              showStatus(loginData.error || ('HTTP ' + loginRes.status));
+              return;
+            }
           }
-          var accounts = data.accounts || [];
-          var events = data.events || [];
-          document.getElementById('accountsBody').innerHTML = accounts.map(function (a) {
-            return '<tr>' +
-              '<td>' + esc(a.display_name) + '</td>' +
-              '<td>' + esc(a.email) + '</td>' +
-              '<td><span class="pill">' + esc(a.provider) + '</span></td>' +
-              '<td>' + esc(a.signup_at) + '</td>' +
-              '<td>' + esc(a.last_signin_at) + '</td>' +
-              '<td>' + esc(a.signin_count) + '</td>' +
-              '</tr>';
-          }).join('') || '<tr><td colspan="6">No accounts yet.</td></tr>';
-          document.getElementById('eventsBody').innerHTML = events.map(function (e) {
-            return '<tr>' +
-              '<td>' + esc(e.created_at) + '</td>' +
-              '<td><span class="pill">' + esc(e.event) + '</span></td>' +
-              '<td>' + esc(e.provider) + '</td>' +
-              '<td>' + esc(e.display_name) + '</td>' +
-              '<td>' + esc(e.email) + '</td>' +
-              '<td>' + esc(e.uid) + '</td>' +
-              '</tr>';
-          }).join('') || '<tr><td colspan="6">No events yet.</td></tr>';
-          showStatus('Loaded ' + accounts.length + ' accounts and ' + events.length + ' events.', true);
+          await loadAccounts();
         } catch (err) {
-          showStatus(err.message || 'Request failed');
+          showStatus(err && err.message ? err.message : 'Request failed');
         }
       });
+
+      document.getElementById('logoutBtn').addEventListener('click', async function () {
+        try {
+          await fetch('/api/v1/auth/admin/logout', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: '{}'
+          });
+          document.getElementById('accountsBody').innerHTML = '';
+          document.getElementById('eventsBody').innerHTML = '';
+          showStatus('Admin session ended.', true);
+        } catch (err) {
+          showStatus(err && err.message ? err.message : 'Logout failed');
+        }
+      });
+
+      // Resume existing admin cookie if present.
+      loadAccounts().catch(function () {});
     })();
   </script>
 </body>

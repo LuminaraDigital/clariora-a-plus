@@ -26,6 +26,8 @@
   let inMemoryCache = {};
   let isEngineReady = false;
   let saveDebounceTimer = null;
+  let flushPendingSince = 0;
+  const MAX_FLUSH_WAIT_MS = 2000;
   let isSaving = false;
 
   /**
@@ -158,10 +160,57 @@
     return schema;
   }
 
+  function storageOwnerUid() {
+    try {
+      return localStorage.getItem('clariora_storage_owner_uid') || '';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  function identityGeneration() {
+    return (typeof global.__CLARIORA_IDENTITY_GEN === 'number') ? global.__CLARIORA_IDENTITY_GEN : 0;
+  }
+
+  /**
+   * Replace the in-memory snapshot with the live localStorage learner keys.
+   * Used after the auth subject parks one uid and restores another, so a
+   * late IndexedDB read cannot put the previous person's history back.
+   */
+  function rebindFromLocalStorage() {
+    const owner = storageOwnerUid();
+    const next = {
+      _meta: Object.assign({}, (inMemoryCache && inMemoryCache._meta) || {}, {
+        schemaVersion: SCHEMA_VERSION,
+        ownerUid: owner,
+        updatedAt: new Date().toISOString()
+      })
+    };
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!isPersistableKey(k)) continue;
+        const val = localStorage.getItem(k);
+        if (val != null) next[k] = val;
+      }
+    } catch (_) {}
+    inMemoryCache = next;
+    scheduleFlush();
+    return inMemoryCache;
+  }
+
   /**
    * Load entire database snapshot from multi-tier storage
    */
   async function loadDatabaseSnapshot() {
+    const genAtStart = identityGeneration();
+    const ownerAtStart = storageOwnerUid();
+    function identityMoved() {
+      if (identityGeneration() !== genAtStart) return true;
+      const ownerNow = storageOwnerUid();
+      return !!(ownerAtStart && ownerNow && ownerAtStart !== ownerNow);
+    }
+
     let snapshot = null;
 
     // 1. Try Electron native file storage first (highest priority)
@@ -227,6 +276,21 @@
     //    on every flush (the file doubled each save). Unwrap, drop junk, keep newest values.
     snapshot = sanitizeSnapshot(snapshot);
 
+    if (identityMoved()) {
+      console.warn('[DatabaseEngine] Skipped snapshot hydrate because the signed-in subject changed.');
+      return rebindFromLocalStorage();
+    }
+    const snapOwner = snapshot && snapshot._meta && snapshot._meta.ownerUid;
+    const ownerNow = storageOwnerUid();
+    if (ownerNow && snapOwner && ownerNow !== snapOwner) {
+      console.warn('[DatabaseEngine] Skipped foreign IndexedDB snapshot.');
+      return rebindFromLocalStorage();
+    }
+    if (ownerNow && !snapOwner) {
+      console.warn('[DatabaseEngine] Skipped unowned snapshot because learner storage is already bound.');
+      return rebindFromLocalStorage();
+    }
+
     inMemoryCache = snapshot;
 
     // Hydrate synchronous localStorage so all legacy components read instantly
@@ -246,6 +310,11 @@
         if (localStorage.getItem(junk) !== null) localStorage.removeItem(junk);
       });
     } catch (_) {}
+
+    if (ownerNow) {
+      if (!inMemoryCache._meta || typeof inMemoryCache._meta !== 'object') inMemoryCache._meta = {};
+      inMemoryCache._meta.ownerUid = ownerNow;
+    }
 
     isEngineReady = true;
     scheduleFlush();
@@ -312,21 +381,30 @@
     return out;
   }
 
-  function snapshotByteLength(obj) {
-    try { return JSON.stringify(obj).length; } catch (_) { return 0; }
-  }
-
   /**
    * Debounced background persistence flush to all storage layers
    */
   function scheduleFlush() {
-    if (saveDebounceTimer) clearTimeout(saveDebounceTimer);
+    const now = Date.now();
+    if (!flushPendingSince) flushPendingSince = now;
+    if (saveDebounceTimer) {
+      // A steady stream of writes must not postpone persistence forever.
+      if (now - flushPendingSince >= MAX_FLUSH_WAIT_MS) return;
+      clearTimeout(saveDebounceTimer);
+    }
     saveDebounceTimer = setTimeout(async () => {
-      if (isSaving) return;
+      saveDebounceTimer = null;
+      flushPendingSince = 0;
+      if (isSaving) {
+        scheduleFlush();
+        return;
+      }
       isSaving = true;
       try {
         if (inMemoryCache._meta) {
           inMemoryCache._meta.updatedAt = new Date().toISOString();
+          const owner = storageOwnerUid();
+          if (owner) inMemoryCache._meta.ownerUid = owner;
         }
 
         // Defensive: never let the master key or junk keys re-enter the snapshot.
@@ -701,7 +779,8 @@
     flushSync: function () {
       scheduleFlush();
       renderDatabaseModalDetails();
-    }
+    },
+    rebindFromLocalStorage: rebindFromLocalStorage
   };
 
   // Auto-initialize when DOM is ready

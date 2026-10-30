@@ -291,6 +291,35 @@ if (!/\.strike-btn\s*\{[\s\S]*?width:\s*44px/.test(css)) fail('hit target: .stri
 if (!/\.timer-digits[\s\S]{0,300}?font-size:\s*20px/.test(css)) fail('timer: .timer-digits is not 20px');
 
 /* ---------------------------------------------------------------- */
+/* 8. Semantic color aliases (Phase 2a)                              */
+/* ---------------------------------------------------------------- */
+
+const SEMANTIC_ALIASES = [
+  '--color-primary',
+  '--color-success',
+  '--color-warning',
+  '--color-danger',
+  '--color-info',
+  '--foreground',
+  '--muted-foreground',
+  '--surface',
+  '--muted',
+  '--sk-base',
+  '--sk-shine'
+];
+
+THEMES.forEach(function (theme) {
+  const rawBlock = theme.name === 'dark' ? darkTokens : lightRaw;
+  SEMANTIC_ALIASES.forEach(function (name) {
+    if (!(name in rawBlock)) {
+      fail(theme.name + ': semantic alias ' + name + ' is missing from the theme block');
+    }
+  });
+});
+
+note('semantic aliases present in :root and [data-theme="light"]');
+
+/* ---------------------------------------------------------------- */
 /* Report                                                            */
 /* ---------------------------------------------------------------- */
 

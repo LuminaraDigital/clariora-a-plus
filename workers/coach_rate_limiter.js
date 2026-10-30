@@ -44,13 +44,20 @@ export class CoachRateLimiter {
       bucket.refillPerMs = refillPerMs;
     }
 
+    // Time until the bucket is full again, i.e. when the caller's allowance is
+    // fully restored. This is what X-RateLimit-Reset advertises.
+    const msToFull = Math.ceil(Math.max(0, capacity - bucket.tokens) / refillPerMs);
+    const resetAt = Math.ceil((now + msToFull) / 1000);
+
     if (bucket.tokens < cost) {
       const deficit = cost - bucket.tokens;
       const retryAfterMs = Math.ceil(deficit / refillPerMs);
       await this.state.storage.put('bucket', bucket);
       return json({
         allowed: false,
+        limit: capacity,
         remaining: Math.floor(bucket.tokens),
+        resetAt,
         retryAfterMs,
         retryAfter: Math.max(1, Math.ceil(retryAfterMs / 1000))
       }, 429);
@@ -61,7 +68,9 @@ export class CoachRateLimiter {
 
     return json({
       allowed: true,
+      limit: capacity,
       remaining: Math.floor(bucket.tokens),
+      resetAt: Math.ceil((now + Math.ceil(Math.max(0, capacity - bucket.tokens) / refillPerMs)) / 1000),
       retryAfterMs: 0,
       retryAfter: 0
     });
@@ -92,13 +101,34 @@ function json(body, status = 200) {
 
 /**
  * Helper used by the Worker fetch handler.
- * Missing DO binding (local/tests): fail-open so paywall/budget tests still run.
- * DO present but errors: fail-closed in production unless APLUS_RATE_LIMIT_FAIL_OPEN=1.
+ * Missing DO binding: fail-open only in non-production (local/tests).
+ * Production unbound or DO errors: fail-closed unless APLUS_RATE_LIMIT_FAIL_OPEN=1.
  */
 export async function enforceCoachRateLimit(env, key, capacityPerMinute) {
   const failOpen = !!(env && (env.APLUS_RATE_LIMIT_FAIL_OPEN === '1' || env.APLUS_RATE_LIMIT_FAIL_OPEN === true));
+  const isProd = !!(env && (env.ENVIRONMENT === 'production' || env.NODE_ENV === 'production'));
+  const nowSec = Math.ceil(Date.now() / 1000);
   if (!env || !env.COACH_RATE_LIMITER || !key) {
-    return { allowed: true, remaining: capacityPerMinute, degraded: true, reason: 'RATE_LIMITER_UNBOUND' };
+    if (isProd && !failOpen) {
+      return {
+        allowed: false,
+        limit: capacityPerMinute,
+        remaining: 0,
+        resetAt: nowSec + 30,
+        retryAfter: 30,
+        retryAfterMs: 30000,
+        degraded: true,
+        reason: 'RATE_LIMITER_UNBOUND'
+      };
+    }
+    return {
+      allowed: true,
+      limit: capacityPerMinute,
+      remaining: capacityPerMinute,
+      resetAt: nowSec + 60,
+      degraded: true,
+      reason: 'RATE_LIMITER_UNBOUND'
+    };
   }
   try {
     const id = env.COACH_RATE_LIMITER.idFromName(String(key));
@@ -112,28 +142,137 @@ export async function enforceCoachRateLimit(env, key, capacityPerMinute) {
     if (res.status === 429 || data.allowed === false) {
       return {
         allowed: false,
+        limit: data.limit != null ? data.limit : capacity,
         remaining: data.remaining || 0,
+        resetAt: data.resetAt || (nowSec + (data.retryAfter || 60)),
         retryAfter: data.retryAfter || 60,
         retryAfterMs: data.retryAfterMs || 60000
       };
     }
     return {
       allowed: true,
+      limit: data.limit != null ? data.limit : capacity,
       remaining: data.remaining != null ? data.remaining : capacity,
+      resetAt: data.resetAt || (nowSec + 60),
       retryAfter: 0
     };
   } catch (err) {
     console.warn('Rate limiter error:', err && err.message);
     if (failOpen) {
-      return { allowed: true, remaining: capacityPerMinute, degraded: true };
+      return {
+        allowed: true,
+        limit: capacityPerMinute,
+        remaining: capacityPerMinute,
+        resetAt: nowSec + 60,
+        degraded: true
+      };
     }
     return {
       allowed: false,
+      limit: capacityPerMinute,
       remaining: 0,
+      resetAt: nowSec + 30,
       retryAfter: 30,
       retryAfterMs: 30000,
       degraded: true,
       reason: 'RATE_LIMITER_ERROR'
     };
   }
+}
+
+/**
+ * Enforces both rate-limit dimensions for one request and returns a single
+ * verdict plus the standard response headers.
+ *
+ * Two keys, because either one alone is trivially defeated:
+ *  - UID only  -> one attacker rotates throwaway accounts from a single host.
+ *  - IP only   -> one attacker rotates VPN exits, and every learner behind a
+ *                 campus NAT shares one bucket.
+ *
+ * The IP allowance is deliberately several times the per-user allowance for the
+ * same reason: a shared ceiling turns one abusive user on a corporate NAT into
+ * an outage for everyone else behind it.
+ *
+ * Returns { allowed, headers, retryAfter, reason, uid, ip }.
+ */
+export async function enforceDualKeyLimit(env, request, action, opts = {}) {
+  const ip =
+    request.headers.get('cf-connecting-ip') ||
+    request.headers.get('x-forwarded-for') ||
+    'unknown';
+
+  const uidCapacity = Math.max(1, Number(opts.uidPerMinute) || 30);
+  // An explicit ipPerMinute is honoured as given. It must NOT be floored at the
+  // UID capacity: on an endpoint with no caller identity the UID number is just
+  // an unused default, and clamping against it silently widens the only ceiling
+  // that endpoint actually has. Where both dimensions are in play, callers are
+  // expected to set IP wider than UID so one noisy user cannot lock out a NAT;
+  // the derived default below does that automatically.
+  const ipCapacity = Math.max(1, Number(opts.ipPerMinute) || uidCapacity * 4);
+  const uid = opts.uid ? String(opts.uid) : null;
+
+  // The IP dimension is checked for everyone, authenticated or not. It is the
+  // only key an unauthenticated caller has.
+  const checks = [];
+  if (uid) checks.push({ dimension: 'uid', key: `${action}:uid:${uid}`, capacity: uidCapacity });
+  checks.push({ dimension: 'ip', key: `${action}:ip:${ip}`, capacity: ipCapacity });
+
+  let tightest = null;
+
+  for (const check of checks) {
+    const result = await enforceCoachRateLimit(env, check.key, check.capacity);
+
+    // Advertise whichever dimension the caller is closest to exhausting, so
+    // the headers describe the limit that will actually stop them next.
+    if (!tightest || result.remaining < tightest.result.remaining) {
+      tightest = { check, result };
+    }
+
+    if (!result.allowed) {
+      console.warn(JSON.stringify({
+        event: 'rate_limit_exceeded',
+        action,
+        dimension: check.dimension,
+        uid: check.dimension === 'uid' ? uid : undefined,
+        ip: check.dimension === 'ip' ? ip : undefined,
+        limit: result.limit,
+        retryAfter: result.retryAfter,
+        degraded: result.degraded || false,
+        reason: result.reason || 'THRESHOLD_EXCEEDED',
+        ts: new Date().toISOString()
+      }));
+
+      return {
+        allowed: false,
+        dimension: check.dimension,
+        retryAfter: result.retryAfter || 60,
+        reason: result.reason || (check.dimension === 'uid' ? 'UID_RATE_LIMITED' : 'IP_RATE_LIMITED'),
+        headers: rateLimitHeaders(result, result.retryAfter || 60),
+        uid,
+        ip
+      };
+    }
+  }
+
+  return {
+    allowed: true,
+    headers: rateLimitHeaders(tightest.result),
+    uid,
+    ip
+  };
+}
+
+/**
+ * Standard rate-limit headers. Reset is a UTC epoch in SECONDS; the client
+ * guard in js/request-guard.js parses it as such.
+ */
+export function rateLimitHeaders(result, retryAfterSeconds) {
+  if (!result) return {};
+  const headers = {
+    'X-RateLimit-Limit': String(result.limit != null ? result.limit : ''),
+    'X-RateLimit-Remaining': String(Math.max(0, result.remaining != null ? result.remaining : 0)),
+    'X-RateLimit-Reset': String(result.resetAt || Math.ceil(Date.now() / 1000) + 60)
+  };
+  if (retryAfterSeconds) headers['Retry-After'] = String(retryAfterSeconds);
+  return headers;
 }

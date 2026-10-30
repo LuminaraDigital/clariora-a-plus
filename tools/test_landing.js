@@ -138,6 +138,8 @@ for (const page of requiredPages) {
 const faqHtml = fs.readFileSync(path.join(SRC, 'faq.html'), 'utf8');
 const compareHtml = fs.readFileSync(path.join(SRC, 'compare.html'), 'utf8');
 check(/Is Clariora new\?/.test(faqHtml), 'FAQ page answers the early-product question honestly');
+check(/Sign in to open the study app/.test(faqHtml), 'FAQ says the web app requires sign-in');
+check(!/Progress is stored on your device/.test(faqHtml), 'FAQ does not describe device-only progress');
 check(/Competitor chart|side by side/i.test(compareHtml), 'compare page has competitor chart framing');
 check(/CertMaster|Professor Messer|Udemy/i.test(compareHtml), 'compare page names real competitors');
 
@@ -164,13 +166,46 @@ check(lazyMissing.length === 0, 'every image below the hero is lazy loaded', laz
 const pageFiles = ['index.html', ...requiredPages];
 for (const page of pageFiles) {
   const text = fs.readFileSync(path.join(SRC, page), 'utf8');
-  check(!/—|–/.test(text), `no em or en dash in ${page}`);
+  check(!/[\u2014\u2013]/.test(text), `no em or en dash in ${page}`);
   check(!/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(text), `no emoji in ${page}`);
   const hype = text.match(/\b(revolutionary|game-changing|unleash|supercharge|seamless|cutting-edge|world-class|elite)\b/gi) || [];
   check(hype.length === 0, `no hype vocabulary in ${page}`, hype.join(', '));
 }
-check(!/—|–/.test(css), 'no em or en dash in landing.css');
+check(!/[\u2014\u2013]/.test(css), 'no em or en dash in landing.css');
 check(!/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(css), 'no emoji in landing.css');
+
+// ---- Header stays on one line ---------------------------------------------
+// Wordmark, six links and both buttons measure about 1040px in Sora, inside
+// the 1120px container. A seventh link wraps the row and clips "Sign in".
+const hrefs = (html) => [...html.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map((x) => x[1]);
+for (const page of pageFiles) {
+  const text = fs.readFileSync(path.join(SRC, page), 'utf8');
+  const inline = text.match(/<nav class="nav-links"[^>]*>([\s\S]*?)<\/nav>/);
+  const inlineHrefs = inline ? hrefs(inline[1]) : [];
+  check(inlineHrefs.length > 0 && inlineHrefs.length <= 6,
+    `${page} header shows at most six inline links`, `found ${inlineHrefs.length}`);
+  const panel = text.match(/<div class="nav-menu-panel"[^>]*>([\s\S]*?)<\/div>/);
+  const panelHrefs = new Set(panel ? hrefs(panel[1]) : []);
+  const unreachable = inlineHrefs.filter((h) => !panelHrefs.has(h));
+  check(!!panel && unreachable.length === 0, `${page} menu holds every header link`, unreachable.join(', '));
+  const sectionPrefix = page === 'index.html' ? '' : 'index.html';
+  const missingSections = ['labs', 'pbq', 'innovations']
+    .map((id) => `${sectionPrefix}#${id}`)
+    .filter((h) => !panelHrefs.has(h));
+  check(missingSections.length === 0, `${page} menu links the home-page sections`, missingSections.join(', '));
+  check(/<span class="wordmark-text">/.test(text), `${page} wordmark text can collapse to the icon`);
+  check(/<script src="nav-fit\.js" defer><\/script>/.test(text), `${page} loads nav-fit.js`);
+}
+check(fs.existsSync(path.join(SRC, 'nav-fit.js')), 'nav-fit.js exists');
+check(/\.nav-menu-toggle:hover/.test(css) && /\.nav-menu\.is-open \.nav-menu-toggle/.test(css),
+  'menu button has distinct hover and open states');
+check(/\.wordmark\s*\{[^}]*white-space:\s*nowrap/.test(css), 'wordmark never wraps');
+check(/\.nav-links a\s*\{[^}]*white-space:\s*nowrap/.test(css), 'nav links never wrap');
+check(/@media \(max-width: 1199px\)\s*\{\s*\.nav-links\s*\{\s*display:\s*none/.test(css),
+  'header links move into the menu below 1200px');
+for (const tier of ['nav--compact', 'nav--tight', 'nav--mini']) {
+  check(new RegExp(`\\.${tier}\\b`).test(css), `landing.css styles the ${tier} fit tier`);
+}
 
 // ---- Built copy ---------------------------------------------------------
 if (!fs.existsSync(DIST)) {

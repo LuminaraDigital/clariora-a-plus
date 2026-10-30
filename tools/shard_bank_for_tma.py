@@ -106,8 +106,28 @@ def shard_bank(source_path="exam_data.json", output_dir="shards"):
         json.dump(meta, f, indent=2)
         f.write(";\n")
 
+    # 6. Generate free tier exam bank (diagnostic + free practice questions, ~40 questions total)
+    free_data = {
+        "version": meta["version"],
+        "title": data.get("title", "CompTIA A+ Master Question Bank") + " (Free Tier Edition)",
+        "description": "Free edition with 20 diagnostic questions and free daily practice questions. Pro pass required for full 1130+ questions.",
+        "passing_score_core1": meta["passing_score_core1"],
+        "passing_score_core2": meta["passing_score_core2"],
+        "max_time_minutes": meta["max_time_minutes"],
+        "max_questions_per_exam": 20,
+        "blueprint": meta["blueprint"],
+        "core1": diagnostic_c1[:20],
+        "core2": diagnostic_c2[:20]
+    }
+    with open("exam_data_free.js", "w", encoding="utf-8") as f:
+        f.write("// Auto-generated free tier exam bank (Pro pass required for full 1130+ questions)\n")
+        f.write("window.COMPTIA_EXAM_DATA = ")
+        json.dump(free_data, f, indent=2)
+        f.write(";\n")
+
     print(f"Sharding complete! Written to {output_dir}/")
     print(f"Diagnostic pack: {len(diagnostic_pack)} questions ({meta['shards']['diagnostic_pack']['size_kb']} KB)")
+    print(f"Free exam bank: {len(free_data['core1'])} Core 1 + {len(free_data['core2'])} Core 2 questions")
     print(f"Core 1 domain shards: {len(meta['shards']['core1'])}")
     print(f"Core 2 domain shards: {len(meta['shards']['core2'])}")
 

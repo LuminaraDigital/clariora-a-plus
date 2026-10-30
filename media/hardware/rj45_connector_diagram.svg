@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800">
+  <defs>
+    <linearGradient id="clear_plug" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b0d4f1" stop-opacity="0.5"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#6ea8d6" stop-opacity="0.4"/>
+    </linearGradient>
+    <linearGradient id="boot_grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#194b8c"/>
+      <stop offset="100%" stop-color="#0a1d38"/>
+    </linearGradient>
+    <linearGradient id="gold_pin" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffe066"/>
+      <stop offset="100%" stop-color="#cc9900"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="100%" height="100%" fill="#0a0d12"/>
+
+  <!-- Title -->
+  <text x="60" y="50" fill="#00ffcc" font-family="sans-serif" font-size="24" font-weight="bold">CompTIA A+ NETWORK CABLE — RJ45 (8P8C) T568B PINOUT</text>
+
+  <!-- Cable Outer Jacket -->
+  <rect x="80" y="320" width="220" height="160" rx="10" fill="#133d73" stroke="#2562b0" stroke-width="3"/>
+  <text x="110" y="410" fill="#88b5ec" font-family="sans-serif" font-size="18" font-weight="bold">Cat6 UTP CABLE</text>
+
+  <!-- Strain Relief Boot -->
+  <path d="M 270 290 L 460 310 L 460 490 L 270 510 Z" fill="url(#boot_grad)" stroke="#2b6cb0" stroke-width="4"/>
+  <!-- Anti-snag hood -->
+  <path d="M 430 310 L 580 250 L 590 280 L 460 330 Z" fill="#153e75" stroke="#2b6cb0" stroke-width="3"/>
+
+  <!-- Transparent Polycarbonate Housing (RJ45 Plug) -->
+  <rect x="460" y="270" width="460" height="260" rx="12" fill="url(#clear_plug)" stroke="#8bc4f5" stroke-width="3"/>
+
+  <!-- Locking Latch Clip -->
+  <polygon points="560,250 820,160 840,190 600,280" fill="url(#clear_plug)" stroke="#a1d2fa" stroke-width="3"/>
+  <rect x="790" y="150" width="60" height="40" rx="6" fill="#8bc4f5" stroke="#fff" stroke-width="2"/>
+
+  <!-- 8 Gold Contact Pins (8P8C Front) -->
+  <g transform="translate(810, 240)">
+    <rect x="0" y="0" width="12" height="55" rx="2" fill="url(#gold_pin)" stroke="#fff" stroke-width="1"/>
+    <rect x="14" y="0" width="12" height="55" rx="2" fill="url(#gold_pin)" stroke="#fff" stroke-width="1"/>
+    <rect x="28" y="0" width="12" height="55" rx="2" fill="url(#gold_pin)" stroke="#fff" stroke-width="1"/>
+    <rect x="42" y="0" width="12" height="55" rx="2" fill="url(#gold_pin)" stroke="#fff" stroke-width="1"/>
+    <rect x="56" y="0" width="12" height="55" rx="2" fill="url(#gold_pin)" stroke="#fff" stroke-width="1"/>
+    <rect x="70" y="0" width="12" height="55" rx="2" fill="url(#gold_pin)" stroke="#fff" stroke-width="1"/>
+    <rect x="84" y="0" width="12" height="55" rx="2" fill="url(#gold_pin)" stroke="#fff" stroke-width="1"/>
+    <rect x="98" y="0" width="12" height="55" rx="2" fill="url(#gold_pin)" stroke="#fff" stroke-width="1"/>
+  </g>
+
+  <!-- 8 Colored Conductor Wires (T568B Standard) -->
+  <g transform="translate(460, 310)">
+    <!-- Pin 1: White/Orange -->
+    <rect x="0" y="0" width="360" height="18" fill="#ffffff" stroke="#ff7f0e" stroke-width="3" stroke-dasharray="14,10"/>
+    <!-- Pin 2: Orange -->
+    <rect x="0" y="24" width="360" height="18" fill="#ff7f0e"/>
+    <!-- Pin 3: White/Green -->
+    <rect x="0" y="48" width="360" height="18" fill="#ffffff" stroke="#2ca02c" stroke-width="3" stroke-dasharray="14,10"/>
+    <!-- Pin 4: Blue -->
+    <rect x="0" y="72" width="360" height="18" fill="#1f77b4"/>
+    <!-- Pin 5: White/Blue -->
+    <rect x="0" y="96" width="360" height="18" fill="#ffffff" stroke="#1f77b4" stroke-width="3" stroke-dasharray="14,10"/>
+    <!-- Pin 6: Green -->
+    <rect x="0" y="120" width="360" height="18" fill="#2ca02c"/>
+    <!-- Pin 7: White/Brown -->
+    <rect x="0" y="144" width="360" height="18" fill="#ffffff" stroke="#8c564b" stroke-width="3" stroke-dasharray="14,10"/>
+    <!-- Pin 8: Brown -->
+    <rect x="0" y="168" width="360" height="18" fill="#8c564b"/>
+  </g>
+
+  <!-- Pinout Reference Labels -->
+  <g transform="translate(940, 310)" font-family="sans-serif" font-size="13" font-weight="bold">
+    <text x="0" y="15" fill="#ff7f0e">Pin 1: White / Orange (Tx+)</text>
+    <text x="0" y="39" fill="#ff7f0e">Pin 2: Orange (Tx-)</text>
+    <text x="0" y="63" fill="#2ca02c">Pin 3: White / Green (Rx+)</text>
+    <text x="0" y="87" fill="#1f77b4">Pin 4: Blue</text>
+    <text x="0" y="111" fill="#1f77b4">Pin 5: White / Blue</text>
+    <text x="0" y="135" fill="#2ca02c">Pin 6: Green (Rx-)</text>
+    <text x="0" y="159" fill="#8c564b">Pin 7: White / Brown</text>
+    <text x="0" y="183" fill="#8c564b">Pin 8: Brown</text>
+  </g>
+</svg>

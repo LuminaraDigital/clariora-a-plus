@@ -26,16 +26,28 @@ const DATA_SCRIPTS = ['exam_data.js', 'study_library.js'];
 // written into the cache (keeps the runtime cache small and predictable).
 const MAX_CACHEABLE_BYTES = 3 * 1024 * 1024;
 
-async function getPrecacheUrls() {
+async function getPrecacheEntries() {
   try {
     const res = await fetch(MANIFEST_URL, { cache: 'no-store' });
     if (!res.ok) throw new Error('manifest fetch failed');
-    const entries = await res.json();
-    return entries.map((e) => e.url);
+    return await res.json();
   } catch (err) {
     console.warn('[sw] precache-manifest.json unavailable, using fallback list:', err);
-    return FALLBACK_ASSETS;
+    return FALLBACK_ASSETS.map((url) => ({ url, revision: BUILD_ID }));
   }
+}
+
+// Cached entries are served cache-first for the life of BUILD_ID, so a stale byte
+// here sticks until the next build. Bypass the HTTP cache and tag the URL with the
+// file's revision so no browser or edge cache can answer with an older copy.
+async function precacheEntry(cache, entry) {
+  const sep = entry.url.indexOf('?') === -1 ? '?' : '&';
+  const request = new Request(entry.url + sep + '__rev=' + encodeURIComponent(entry.revision || BUILD_ID), {
+    cache: 'reload'
+  });
+  const response = await fetch(request);
+  if (!response.ok) throw new Error('HTTP ' + response.status);
+  await cache.put(entry.url, response);
 }
 
 // True only when this worker replaces one that already controlled the page.
@@ -47,11 +59,11 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
-      const urls = await getPrecacheUrls();
+      const entries = await getPrecacheEntries();
       await Promise.all(
-        urls.map((url) =>
-          cache.add(url).catch((err) => {
-            console.warn('[sw] precache miss for', url, err);
+        entries.map((entry) =>
+          precacheEntry(cache, entry).catch((err) => {
+            console.warn('[sw] precache miss for', entry.url, err);
           })
         )
       );
@@ -98,6 +110,30 @@ function cacheKeyFor(request) {
   return './' + url.pathname.replace(/^\//, '');
 }
 
+// Privacy and Terms are standalone documents, not app-shell routes.
+// html_handling also serves them at the extensionless path.
+function isLegalDocumentPath(pathname) {
+  return (
+    pathname === '/privacy' ||
+    pathname === '/privacy/' ||
+    pathname === '/privacy.html' ||
+    pathname === '/terms' ||
+    pathname === '/terms/' ||
+    pathname === '/terms.html'
+  );
+}
+
+function isAppShellPath(pathname) {
+  return (
+    pathname === '/' ||
+    pathname === '' ||
+    pathname === '/index.html' ||
+    pathname === '/app' ||
+    pathname === '/app/' ||
+    pathname === '/app/index.html'
+  );
+}
+
 async function cacheFirst(request) {
   const cache = await caches.open(CACHE_NAME);
   const key = cacheKeyFor(request);
@@ -118,10 +154,21 @@ async function navigationHandler(request) {
   const cached = await cache.match(NAV_CACHE_KEY);
 
   // Background revalidate regardless of cache hit/miss.
+  // Only an app-shell response may occupy NAV_CACHE_KEY. Writing the last
+  // navigation here stored privacy.html and terms.html in one slot, so the
+  // next open of either URL rendered the other document.
   const revalidate = fetch(request)
     .then((network) => {
       if (network && network.status === 200) {
-        cache.put(NAV_CACHE_KEY, network.clone());
+        let finalPath = '';
+        try {
+          finalPath = new URL(network.url).pathname;
+        } catch (err) {
+          finalPath = '';
+        }
+        if (isAppShellPath(finalPath)) {
+          cache.put(NAV_CACHE_KEY, network.clone());
+        }
       }
       return network;
     })
@@ -170,6 +217,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Never answer these from the shared shell cache. A prior navigation used
+  // to leave the other legal document in that slot.
+  if (isLegalDocumentPath(url.pathname)) {
+    event.respondWith(fetch(request));
+    return;
+  }
+
   if (request.mode === 'navigate') {
     // Root / and /landing navigations must reach the network so visitors
     // reach the live landing page instead of a cached app shell.
@@ -198,10 +252,13 @@ self.addEventListener('fetch', (event) => {
   var path = url.pathname;
   if (
     path.indexOf('/js/auth-gate.js') !== -1 ||
+    path.indexOf('/js/session-identity.js') !== -1 ||
     path.indexOf('/js/firebase-auth-ui.js') !== -1 ||
+    path.indexOf('/js/database_memory_engine.js') !== -1 ||
     path.indexOf('/js/firebase-service.js') !== -1 ||
     path.indexOf('/js/firebase-config.js') !== -1 ||
     path.indexOf('/js/stars_billing.js') !== -1 ||
+    path.indexOf('/js/ton_comment.js') !== -1 ||
     path.indexOf('/js/ton_credentials.js') !== -1 ||
     path.indexOf('/tonconnect-manifest.json') !== -1
   ) {

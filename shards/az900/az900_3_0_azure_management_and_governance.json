@@ -1,0 +1,444 @@
+[
+  {
+    "id": "AZ-201",
+    "exam": "az900",
+    "domain": "3.0 Describe Azure management and governance",
+    "objective": "3.1",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "An administrator wants to prevent accidental deletion or modification of a production database resource group. Which Azure mechanism should be applied?",
+    "options": [
+      "Azure Resource Lock (CanNotDelete / ReadOnly)",
+      "Azure Cost Management Alert",
+      "Azure Network Security Group",
+      "Azure Monitor Metric Rule"
+    ],
+    "answer": 0,
+    "explanation": "Azure Resource Locks (CanNotDelete and ReadOnly) prevent authorized users from accidentally deleting or altering critical Azure resources, independent of their Role-Based Access Control (RBAC) permissions.",
+    "distractor_analysis": {
+      "1": "Cost Management Alerts notify teams about spending thresholds; they do not block deletions.",
+      "2": "Network Security Groups (NSGs) filter IP traffic at the network subnet/NIC level.",
+      "3": "Azure Monitor Metric Rules trigger alerts or webhooks when metrics exceed thresholds."
+    },
+    "tags": [
+      "resource-locks",
+      "governance",
+      "accidental-deletion"
+    ]
+  },
+  {
+    "id": "AZ-202",
+    "exam": "az900",
+    "domain": "3.0 Describe Azure management and governance",
+    "objective": "3.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Which Azure governance service continuously evaluates your cloud resources against organizational standards and automatically enforces compliance rules (such as restricting VM deployment to specific geographic regions)?",
+    "options": [
+      "Azure Policy",
+      "Microsoft Defender for Cloud",
+      "Azure Service Health",
+      "Azure Arc"
+    ],
+    "answer": 0,
+    "explanation": "Azure Policy enforces organizational standards and assesses compliance at scale. Common use cases include enforcing resource tags, restricting allowed VM sizes, and mandating specific geographic deployment locations.",
+    "distractor_analysis": {
+      "1": "Microsoft Defender for Cloud is a Cloud Security Posture Management (CSPM) and workload protection tool.",
+      "2": "Azure Service Health provides customized notifications about Azure cloud service incidents and planned maintenance.",
+      "3": "Azure Arc extends Azure management and services to hybrid and multi-cloud environments."
+    },
+    "tags": [
+      "azure-policy",
+      "governance",
+      "compliance"
+    ]
+  },
+  {
+    "id": "AZ-203",
+    "exam": "az900",
+    "domain": "3.0 Describe Azure management and governance",
+    "objective": "3.1",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Which tool provides free recommendations on Reliability, Security, Performance, Operational Excellence, and Cost Optimization aligned with the Microsoft Azure Well-Architected Framework?",
+    "options": [
+      "Azure Advisor",
+      "Azure Cloud Shell",
+      "Azure Marketplace",
+      "Azure Bastion"
+    ],
+    "answer": 0,
+    "explanation": "Azure Advisor analyzes your configurations and telemetry, providing personalized, actionable recommendations across the five pillars of the Azure Well-Architected Framework: Reliability, Security, Performance, Cost, and Operational Excellence.",
+    "distractor_analysis": {
+      "1": "Azure Cloud Shell is an interactive, browser-accessible terminal for managing Azure resources.",
+      "2": "Azure Marketplace is an online catalog of certified third-party software and solutions.",
+      "3": "Azure Bastion is a managed PaaS service for secure browser-based RDP/SSH access to VMs without public IPs."
+    },
+    "tags": [
+      "azure-advisor",
+      "well-architected",
+      "optimization"
+    ]
+  },
+  {
+    "id": "AZ-204",
+    "exam": "az900",
+    "domain": "3.0 Describe Azure management and governance",
+    "objective": "3.3",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Under Microsoft Azure Role-Based Access Control (RBAC), which built-in role allows a user to manage all resources inside a resource group, including granting access permissions to other users?",
+    "options": [
+      "Owner",
+      "Contributor",
+      "Reader",
+      "User Access Administrator"
+    ],
+    "answer": 0,
+    "explanation": "The Owner role grants full management access to all resources, including the ability to assign roles and delegate permissions to other users. The Contributor role can manage all resources but cannot delegate access.",
+    "distractor_analysis": {
+      "1": "Contributor can create and manage resources, but CANNOT grant or delegate RBAC roles to others.",
+      "2": "Reader can only view existing resources without making any changes.",
+      "3": "User Access Administrator manages user access to Azure resources, but does not manage the resources themselves."
+    },
+    "tags": [
+      "rbac",
+      "identity-access",
+      "azure-roles"
+    ]
+  },
+  {
+    "id": "AZ-205",
+    "exam": "az900",
+    "domain": "3.0 Describe Azure management and governance",
+    "objective": "3.2",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "What is the primary identity and access management service that provides Single Sign-On (SSO), Multi-Factor Authentication (MFA), and conditional access across Azure and Microsoft 365?",
+    "options": [
+      "Microsoft Entra ID (formerly Azure Active Directory)",
+      "Azure Key Vault",
+      "Azure Dedicated HSM",
+      "Azure Information Protection"
+    ],
+    "answer": 0,
+    "explanation": "Microsoft Entra ID (formerly Azure Active Directory) is Microsoft's cloud-based identity and access management service providing SSO, MFA, identity governance, and Conditional Access.",
+    "distractor_analysis": {
+      "1": "Azure Key Vault securely stores cryptographic keys, secrets, and TLS certificates.",
+      "2": "Azure Dedicated HSM provides dedicated hardware security modules for FIPS 140-2 Level 3 compliance.",
+      "3": "Azure Information Protection classifies and protects documents and emails using labels."
+    },
+    "tags": [
+      "entra-id",
+      "identity",
+      "authentication"
+    ]
+  },
+  {
+    "id": "AZ-206",
+    "exam": "az900",
+    "domain": "3.0 Describe Azure management and governance",
+    "objective": "3.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "What are the three guiding principles of the Microsoft Zero Trust cybersecurity model?",
+    "options": [
+      "Verify explicitly, use least privilege access, and assume breach",
+      "Trust internal network, grant domain admin, and ignore alerts",
+      "Disable firewalls, allow guest users, and bypass MFA",
+      "Enforce passwords only, avoid encryption, and disable audits"
+    ],
+    "answer": 0,
+    "explanation": "The three core principles of Zero Trust are: 1) Verify explicitly, 2) Use least privileged access, and 3) Assume breach.",
+    "distractor_analysis": {
+      "1": "Zero Trust assumes threats exist both inside and outside the perimeter.",
+      "2": "Firewalls and MFA are fundamental controls of Zero Trust.",
+      "3": "Encryption in transit and at rest is mandatory under Zero Trust."
+    },
+    "tags": [
+      "zero-trust",
+      "cybersecurity",
+      "principles"
+    ]
+  },
+  {
+    "id": "AZ-207",
+    "exam": "az900",
+    "domain": "3.0 Describe Azure management and governance",
+    "objective": "3.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "What is the goal of a Defense in Depth security strategy?",
+    "options": [
+      "Employing a multi-layered series of defensive mechanisms to slow the advance of an attack that aims at unauthorized data access",
+      "Relying entirely on a single perimeter hardware firewall",
+      "Hiding server IP addresses behind secret DNS records",
+      "Storing user passwords in clear text in database comments"
+    ],
+    "answer": 0,
+    "explanation": "Defense in depth employs a layered approach to security across physical security, identity & access, perimeter, network, compute, application, and data layers.",
+    "distractor_analysis": {
+      "1": "Single perimeter models fail catastrophically if breached.",
+      "2": "Obscurity is not a recognized defensive security standard.",
+      "3": "Clear text passwords violate all cryptographic standards."
+    },
+    "tags": [
+      "defense-in-depth",
+      "layered-security"
+    ]
+  },
+  {
+    "id": "AZ-208",
+    "exam": "az900",
+    "domain": "3.0 Describe Azure management and governance",
+    "objective": "3.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Which Azure security management platform continuously monitors cloud resources, provides a unified Secure Score, and protects hybrid multi-cloud workloads from threats?",
+    "options": [
+      "Microsoft Defender for Cloud",
+      "Azure Bastion",
+      "Azure Key Vault",
+      "Azure Dedicated Host"
+    ],
+    "answer": 0,
+    "explanation": "Microsoft Defender for Cloud is a Cloud Security Posture Management (CSPM) and Cloud Workload Protection Platform (CWPP) that tracks your overall Secure Score and protects resources against vulnerabilities.",
+    "distractor_analysis": {
+      "1": "Azure Bastion is a secure browser-based remote desktop connection proxy.",
+      "2": "Azure Key Vault is a secret management store.",
+      "3": "Azure Dedicated Host provides single-tenant physical servers."
+    },
+    "tags": [
+      "defender-for-cloud",
+      "cspm",
+      "secure-score"
+    ]
+  },
+  {
+    "id": "AZ-209",
+    "exam": "az900",
+    "domain": "3.0 Describe Azure management and governance",
+    "objective": "3.2",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Which cloud-native service acts as Microsoft's scalable Security Information and Event Management (SIEM) and Security Orchestration, Automation, and Response (SOAR) solution?",
+    "options": [
+      "Microsoft Sentinel",
+      "Azure Service Health",
+      "Azure Front Door",
+      "Azure Traffic Manager"
+    ],
+    "answer": 0,
+    "explanation": "Microsoft Sentinel delivers intelligent security analytics and threat intelligence across the entire enterprise, providing a single solution for alert detection, threat visibility, proactive hunting, and threat response.",
+    "distractor_analysis": {
+      "1": "Service Health informs customers of cloud outages and maintenance.",
+      "2": "Front Door is a global web load balancer.",
+      "3": "Traffic Manager is a DNS load balancer."
+    },
+    "tags": [
+      "sentinel",
+      "siem",
+      "soar",
+      "security-analytics"
+    ]
+  },
+  {
+    "id": "AZ-210",
+    "exam": "az900",
+    "domain": "3.0 Describe Azure management and governance",
+    "objective": "3.2",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Where should developers securely store database connection strings, API tokens, and cryptographic keys rather than embedding them directly in source code?",
+    "options": [
+      "Azure Key Vault",
+      "Public Git repositories",
+      "Unencrypted text files on a shared desktop",
+      "Virtual Machine host hosts file"
+    ],
+    "answer": 0,
+    "explanation": "Azure Key Vault is a centralized cloud service for securely storing application secrets, encryption keys, and SSL/TLS certificates with strict hardware security module (HSM) backing and access auditing.",
+    "distractor_analysis": {
+      "1": "Hardcoding secrets into public Git repos leads to immediate credential compromise.",
+      "2": "Unencrypted desktop text files provide zero security or access auditing.",
+      "3": "The hosts file resolves hostnames to IPs; it cannot store secrets."
+    },
+    "tags": [
+      "key-vault",
+      "secrets-management",
+      "credentials"
+    ]
+  },
+  {
+    "id": "AZ-211",
+    "exam": "az900",
+    "domain": "3.0 Describe Azure management and governance",
+    "objective": "3.1",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "What is the key difference between the Azure Pricing Calculator and the Total Cost of Ownership (TCO) Calculator?",
+    "options": [
+      "The Pricing Calculator estimates upfront monthly Azure deployment costs; the TCO Calculator compares on-premises datacenter operational costs against migrating to Azure over time.",
+      "The Pricing Calculator calculates employee salaries; the TCO Calculator calculates electricity bills.",
+      "The Pricing Calculator is only for educational users; the TCO Calculator is for government agencies.",
+      "The Pricing Calculator generates legal invoices; the TCO Calculator orders physical servers."
+    ],
+    "answer": 0,
+    "explanation": "The Azure Pricing Calculator estimates estimated monthly costs for provisioned Azure services. The TCO Calculator helps you compare the cost of running on-premises infrastructure versus equivalent services in Azure.",
+    "distractor_analysis": {
+      "1": "Neither calculator calculates corporate staff salaries directly.",
+      "2": "Both calculators are free and public for all commercial and individual users.",
+      "3": "Neither calculator issues invoices or purchases hardware."
+    },
+    "tags": [
+      "pricing-calculator",
+      "tco-calculator",
+      "cost-management"
+    ]
+  },
+  {
+    "id": "AZ-212",
+    "exam": "az900",
+    "domain": "3.0 Describe Azure management and governance",
+    "objective": "3.1",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Which Azure suite allows finance teams to analyze cloud spending, configure budget alerts, and generate automated cost allocation reports?",
+    "options": [
+      "Microsoft Cost Management + Billing",
+      "Azure Marketplace",
+      "Azure DevTest Labs",
+      "Azure Service Bus"
+    ],
+    "answer": 0,
+    "explanation": "Microsoft Cost Management + Billing helps you monitor, allocate, and optimize cloud costs, enabling the configuration of budget thresholds with email notifications before spending limits are exceeded.",
+    "distractor_analysis": {
+      "1": "Marketplace is an application store for 3rd-party software.",
+      "2": "DevTest Labs manages rapid developer VM provisioning.",
+      "3": "Service Bus is a messaging broker."
+    },
+    "tags": [
+      "cost-management",
+      "budgets",
+      "billing"
+    ]
+  },
+  {
+    "id": "AZ-213",
+    "exam": "az900",
+    "domain": "3.0 Describe Azure management and governance",
+    "objective": "3.1",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "How do Resource Tags help enterprises organize and manage cloud resources across multiple resource groups?",
+    "options": [
+      "Tags provide metadata key-value pairs (e.g., Environment: Production, CostCenter: 104) to categorize resources for cost tracking and billing aggregation.",
+      "Tags encrypt virtual hard disks using AES-256.",
+      "Tags accelerate network speed across express lanes.",
+      "Tags grant administrative access without passwords."
+    ],
+    "answer": 0,
+    "explanation": "Tags are name/value pairs that enable you to categorize resources and view consolidated billing by applying the same tag to multiple resources and resource groups.",
+    "distractor_analysis": {
+      "1": "BitLocker and Azure Storage Encryption encrypt disks, not tags.",
+      "2": "Tags are metadata; they have no impact on network bandwidth.",
+      "3": "Tags do not grant access permissions; RBAC governs authorization."
+    },
+    "tags": [
+      "resource-tags",
+      "metadata",
+      "governance"
+    ]
+  },
+  {
+    "id": "AZ-214",
+    "exam": "az900",
+    "domain": "3.0 Describe Azure management and governance",
+    "objective": "3.3",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Which Azure Monitor feature specifically monitors live web application performance, detects anomalies, and diagnoses performance bottlenecks using telemetry hooks?",
+    "options": [
+      "Application Insights",
+      "Azure Service Health",
+      "Azure Event Grid",
+      "Azure Logic Apps"
+    ],
+    "answer": 0,
+    "explanation": "Application Insights is an extension of Azure Monitor that provides Application Performance Monitoring (APM) features, tracking live web app requests, exception rates, and response times.",
+    "distractor_analysis": {
+      "1": "Service Health monitors global Azure datacenter outages and incidents.",
+      "2": "Event Grid manages event routing across services.",
+      "3": "Logic Apps automates workflow integrations."
+    },
+    "tags": [
+      "application-insights",
+      "azure-monitor",
+      "telemetry"
+    ]
+  },
+  {
+    "id": "AZ-215",
+    "exam": "az900",
+    "domain": "3.0 Describe Azure management and governance",
+    "objective": "3.3",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Where should an administrator check to see if an unexpected virtual machine outage was caused by an active Microsoft Azure datacenter incident or planned host maintenance?",
+    "options": [
+      "Azure Service Health",
+      "Azure Pricing Calculator",
+      "Azure Marketplace",
+      "Azure Key Vault"
+    ],
+    "answer": 0,
+    "explanation": "Azure Service Health provides a personalized view of the health of Azure services and regions you are using, informing you about ongoing outages, planned maintenance, and health advisories.",
+    "distractor_analysis": {
+      "1": "The Pricing Calculator estimates prospective costs.",
+      "2": "The Marketplace is a software catalog.",
+      "3": "Key Vault stores cryptographic keys and secrets."
+    },
+    "tags": [
+      "service-health",
+      "outages",
+      "maintenance"
+    ]
+  },
+  {
+    "id": "AZ-M-05",
+    "exam": "az900",
+    "domain": "3.0 Describe Azure management and governance",
+    "objective": "3.1",
+    "type": "match",
+    "difficulty": "medium",
+    "question": "Match each management or governance goal to the corresponding Azure governance tool.",
+    "explanation": "Service Health alerts on regional outages and planned maintenance. Azure Advisor provides automated best practices across 5 pillars. Azure Monitor collects telemetry, logs, and triggers autoscale. Azure Policy enforces organizational compliance rules. Resource Locks prevent accidental deletion.",
+    "tags": [
+      "governance",
+      "management",
+      "match"
+    ],
+    "pairs": [
+      {
+        "left": "View upcoming planned datacenter maintenance and ongoing regional outages",
+        "right": "Azure Service Health"
+      },
+      {
+        "left": "Personalized best-practice recommendations on cost, security, and reliability",
+        "right": "Azure Advisor"
+      },
+      {
+        "left": "Collect operational telemetry, application performance logs, and smart metric alerts",
+        "right": "Azure Monitor"
+      },
+      {
+        "left": "Automatically enforce organizational compliance (e.g. restrict VM locations)",
+        "right": "Azure Policy"
+      },
+      {
+        "left": "Prevent accidental modification or deletion of critical production resources",
+        "right": "Azure Resource Locks"
+      }
+    ]
+  }
+]

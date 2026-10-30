@@ -12,21 +12,20 @@ Thank you for helping technicians pass their exams. This guide covers how the pr
 ## Getting set up
 
 ```bash
-git clone https://github.com/LuminaraDigital/comptia-a-plus-master.git
-cd comptia-a-plus-master
-git submodule update --init --recursive
+git clone https://github.com/LuminaraDigital/clariora-a-plus.git
+cd clariora-a-plus
 npm install
 pip install -r requirements-dev.txt
 ```
 
-Run the app with `npm start` (desktop) or serve the folder with any static server (web).
+Run the app with `npm start` (desktop) or serve the folder with any static server (web). Production lives at https://clariora.com.au.
 
 ## Where things live
 
 - Engine and UI modules are in `js/`. Each module is a plain IIFE that hangs off `window.APlus`. There is no bundler by design, so keep modules dependency-free and browser-safe.
 - Exam questions live in `_bank/shards/*.json` and are merged into `exam_data.json` by `tools/build_bank.py`. Do not edit `exam_data.json` directly.
 - The question schema, domain strings and quality bar are defined in [BUILD_SPEC.md](BUILD_SPEC.md). The validator enforces them.
-- Study notes are Markdown in `CompTIA_A_Plus_Mastery/` and `notes/`. They are compiled into `study_library.json` by `build_study_library.py`.
+- Study notes are Markdown in `notes/` (including `notes/guides/`). They are compiled into `study_library.json` by `build_study_library.py`.
 
 ## Adding or fixing questions
 
@@ -45,9 +44,16 @@ Questions must be original. Do not copy questions from commercial practice tests
 
 ## Code changes
 
-1. Branch from `main`.
+1. Branch from `staging` (preferred) or `main` only if `staging` does not exist yet.
+   Use `feature/<short-name>`.
 2. Make the change. Add or update a test in `tools/test_*.js` when you touch engine logic.
-3. Run the full check before you push:
+3. Run the pre-push smoke gate:
+
+```bash
+npm run smoke:prepush
+```
+
+   Or the long form:
 
 ```bash
 npm run check
@@ -55,7 +61,14 @@ npm test
 python tools/validate_bank.py --bank exam_data.json
 ```
 
-4. Open a pull request using the template. Describe what changed and why. Link the issue if there is one.
+4. Open a pull request into **`staging`** first. After staging validation, open a PR from `staging` into `main`.
+5. Never push straight to `main` or deploy production without a staging pass. See [docs/RELEASE_PIPELINE.md](docs/RELEASE_PIPELINE.md).
+
+## Environments
+
+- `.env.local` / `.env.staging` / `.env.production` are separate. Copy from the matching `*.example` files.
+- Staging uses `wrangler.staging.toml` and must not bind `clariora.com.au`.
+- Production uses `wrangler.toml`.
 
 ## Commit messages
 

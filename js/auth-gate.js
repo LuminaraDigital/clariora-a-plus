@@ -3,7 +3,7 @@
  * Login wall / gated product access for Clariora.
  * Browser users must sign in (Google, email, or Telegram Login).
  * Telegram Mini App users authenticate via native WebApp initData (no second login).
- * Unlock is internal-only; resume requires server verification.
+ * Unlock requires verified session exchange where possible; resume prefers server cookie.
  */
 (function (root, factory) {
   if (typeof define === 'function' && define.amd) {
@@ -24,14 +24,63 @@
   var STORAGE_SESSION = 'clariora_auth_session_v1';
   var GATE_ID = 'clarioraLoginWall';
 
+  /**
+   * Tier 1 request guard (js/request-guard.js). Auth endpoints are credential-
+   * stuffing targets and the edge limits them hard, so the client must not turn
+   * a rejection into a retry loop. Falls back to plain fetch when unloaded.
+   */
+  function guardedFetch(url, init, guardOpts) {
+    var g = (typeof window !== 'undefined' && window.APlus && window.APlus.guard) || null;
+    if (g) return g.fetch(url, init, guardOpts);
+    return fetch(url, init);
+  }
+
   var state = {
     ready: false,
-    unlocked: true,
+    unlocked: false,
     isTMA: false,
     session: null,
     waiters: [],
     lastReportKey: ''
   };
+
+  var lockDepth = 0;
+  var droppingForeign = false;
+  var suppressAuthLock = false;
+  var bootSettled = false;
+
+  function learnerIdentity() {
+    return (typeof window !== 'undefined' && window.ClarioraSessionIdentity) || null;
+  }
+
+  function firebaseServiceRef() {
+    return firebaseService || (typeof window !== 'undefined' && window.ClarioraFirebaseService) || null;
+  }
+
+  /** Profile-only cache. Never store idToken, initData, hashes, or login payloads. */
+  function sanitizeSessionForStorage(session) {
+    if (!session) return null;
+    return {
+      provider: session.provider || 'unknown',
+      uid: session.uid || '',
+      telegramId: session.telegramId != null ? session.telegramId : null,
+      displayName: session.displayName || '',
+      username: session.username || '',
+      photoURL: session.photoURL || '',
+      email: session.email || ''
+    };
+  }
+
+  function sanitizeTelegramProfile(user) {
+    if (!user || !user.id) return null;
+    return {
+      id: user.id,
+      first_name: user.first_name || '',
+      last_name: user.last_name || '',
+      username: user.username || '',
+      photo_url: user.photo_url || ''
+    };
+  }
 
   function isTelegramMiniApp() {
     try {
@@ -39,18 +88,6 @@
       return !!(tg && typeof tg.initData === 'string' && tg.initData.length > 0);
     } catch (_) {
       return false;
-    }
-  }
-
-  function readTelegramLoginPayload() {
-    try {
-      var raw = localStorage.getItem(STORAGE_TG_LOGIN);
-      if (!raw) return null;
-      var data = JSON.parse(raw);
-      if (!data || !data.id || !data.hash || !data.auth_date) return null;
-      return data;
-    } catch (_) {
-      return null;
     }
   }
 
@@ -85,16 +122,17 @@
     try {
       var raw = localStorage.getItem(STORAGE_SESSION);
       if (!raw) return null;
-      return JSON.parse(raw);
+      return sanitizeSessionForStorage(JSON.parse(raw));
     } catch (_) {
       return null;
     }
   }
 
   function writeCachedSession(session) {
-    state.session = session;
+    var safe = sanitizeSessionForStorage(session);
+    state.session = safe;
     try {
-      if (session) localStorage.setItem(STORAGE_SESSION, JSON.stringify(session));
+      if (safe) localStorage.setItem(STORAGE_SESSION, JSON.stringify(safe));
       else localStorage.removeItem(STORAGE_SESSION);
     } catch (_) {}
   }
@@ -114,18 +152,6 @@
     }
   }
 
-  function injectWallStyles() {
-    // Wall styles removed: Clariora operates value-first with guest access and single-layer auth modal.
-  }
-
-  function ensureWall() {
-    var existing = document.getElementById(GATE_ID);
-    if (existing && existing.parentNode) {
-      existing.parentNode.removeChild(existing);
-    }
-    return null;
-  }
-
   function wantsCreateAccount() {
     try {
       var q = new URLSearchParams(window.location.search || '');
@@ -140,31 +166,222 @@
   function openSignupIntentIfRequested() {
     if (!wantsCreateAccount()) return;
     if (authUI && authUI.openModal) {
-      authUI.openModal({ mode: 'signup' });
+      authUI.openModal({ mode: 'signup', wall: true });
     }
+  }
+
+  function injectWallStyles() {
+    if (document.getElementById('clarioraAuthGateStyles')) return;
+    var css = [
+      '#' + GATE_ID + ' {',
+      '  position: fixed; inset: 0; z-index: 10050;',
+      '  display: flex; align-items: center; justify-content: center;',
+      '  padding: 20px;',
+      '  background: rgba(5, 7, 11, 0.92);',
+      '  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);',
+      '}',
+      '#' + GATE_ID + '[hidden] { display: none !important; }',
+      '#' + GATE_ID + ' .gate-card {',
+      '  width: 100%; max-width: 420px;',
+      '  background: rgba(15, 19, 27, 0.96);',
+      '  border: 1px solid rgba(212, 175, 55, 0.32);',
+      '  border-radius: 16px;',
+      '  box-shadow: 0 24px 56px rgba(0,0,0,0.72), inset 0 1px 0 rgba(212,175,55,0.2);',
+      '  padding: 28px 24px 22px;',
+      '}',
+      '#' + GATE_ID + ' .gate-eyebrow {',
+      '  margin: 0 0 8px; font-size: 12px; letter-spacing: 0.08em;',
+      '  text-transform: uppercase; color: #D4AF37; font-weight: 700;',
+      '}',
+      '#' + GATE_ID + ' h1 {',
+      '  margin: 0 0 8px; font-size: 1.45rem; color: #F3F4F6; font-weight: 700;',
+      '}',
+      '#' + GATE_ID + ' .gate-lead {',
+      '  margin: 0 0 18px; font-size: 0.92rem; line-height: 1.45; color: #A3ADC2;',
+      '}',
+      '#' + GATE_ID + ' .gate-actions { display: grid; gap: 10px; }',
+      '#' + GATE_ID + ' .gate-actions button {',
+      '  display: inline-flex; align-items: center; justify-content: center; gap: 10px;',
+      '  min-height: 44px; width: 100%; border-radius: 8px; font-weight: 700;',
+      '  font-size: 0.92rem; cursor: pointer; font-family: inherit;',
+      '}',
+      '#' + GATE_ID + ' .btn-google {',
+      '  background: #fff; color: #1f2937; border: 1px solid rgba(0,0,0,0.08);',
+      '}',
+      '#' + GATE_ID + ' .btn-google:hover { background: #f3f4f6; }',
+      '#' + GATE_ID + ' .btn-telegram {',
+      '  background: #229ED9; color: #fff; border: 1px solid transparent;',
+      '}',
+      '#' + GATE_ID + ' .btn-telegram:hover { background: #1b8fc4; }',
+      '#' + GATE_ID + ' .btn-auth-submit {',
+      '  background: #D4AF37; color: #0B0B0F; border: 1px solid transparent;',
+      '}',
+      '#' + GATE_ID + ' .btn-auth-submit:hover { background: #E4C558; }',
+      '#' + GATE_ID + ' .btn-auth-secondary {',
+      '  background: transparent; border: 1px solid rgba(212,175,55,0.55); color: #D4AF37;',
+      '}',
+      '#' + GATE_ID + ' .btn-auth-secondary:hover { background: rgba(212,175,55,0.12); }',
+      '#' + GATE_ID + ' .gate-actions button:focus-visible {',
+      '  outline: 2px solid #D4AF37; outline-offset: 2px;',
+      '}',
+      '#' + GATE_ID + ' .gate-note {',
+      '  margin: 16px 0 0; font-size: 12px; color: #8B95A8; text-align: center; line-height: 1.45;',
+      '}',
+      '#' + GATE_ID + ' .gate-note a { color: #D4AF37; }',
+      '#' + GATE_ID + ' .gate-error {',
+      '  margin: 12px 0 0; font-size: 12px; line-height: 1.4; color: #FCA5A5; text-align: center;',
+      '}',
+      'html.clariora-auth-locked, html.clariora-auth-locked body {',
+      '  overflow: hidden !important;',
+      '}',
+      'html.clariora-auth-locked #aplusBootIntro { visibility: hidden !important; }',
+      'html.clariora-auth-locked #onboardingOverlay,',
+      'html.clariora-auth-locked .onboarding-overlay,',
+      'html.clariora-auth-locked [data-onboarding],',
+      'html.clariora-auth-locked #licenseKeyModal,',
+      'html.clariora-auth-locked .license-key-modal {',
+      '  visibility: hidden !important; pointer-events: none !important;',
+      '}'
+    ].join('\n');
+    var el = document.createElement('style');
+    el.id = 'clarioraAuthGateStyles';
+    el.textContent = css;
+    document.head.appendChild(el);
+  }
+
+  function ensureWall() {
+    injectWallStyles();
+    var existing = document.getElementById(GATE_ID);
+    if (existing) return existing;
+
+    // Desktop/Electron may study offline without cloud auth. Web stays hard-gated.
+    var isElectron = !!(window.electronAPI || (window.location && window.location.protocol === 'file:'));
+    var offlineBtnHtml = isElectron
+      ? '<button type="button" class="btn-auth-secondary" id="gateOfflineBtn">Continue offline on this device</button>'
+      : '';
+
+    var wall = document.createElement('div');
+    wall.id = GATE_ID;
+    wall.setAttribute('role', 'dialog');
+    wall.setAttribute('aria-modal', 'true');
+    wall.setAttribute('aria-labelledby', 'clarioraGateTitle');
+    wall.hidden = true;
+    wall.innerHTML = [
+      '<div class="gate-card">',
+      '  <p class="gate-eyebrow">Account required</p>',
+      '  <h1 id="clarioraGateTitle">Sign in to open Clariora</h1>',
+      '  <p class="gate-lead">Sign in to open the study app. Progress syncs to your account, and a copy can stay on this device. The free diagnostic stays free after sign-in.</p>',
+      '  <div class="gate-actions">',
+      '    <button type="button" class="btn-google" id="gateGoogleBtn">Continue with Google</button>',
+      '    <button type="button" class="btn-telegram" id="gateTelegramBtn">Continue with Telegram</button>',
+      '    <button type="button" class="btn-auth-submit" id="gateEmailBtn">Sign in with email</button>',
+      '    <button type="button" class="btn-auth-secondary" id="gateSignupBtn">Create account</button>',
+      offlineBtnHtml,
+      '  </div>',
+      '  <p class="gate-note" id="gateStatusNote">Prefer Telegram? <a href="https://t.me/ClarioraBot/app" target="_blank" rel="noopener">Open the Mini App</a>.</p>',
+      '  <p class="gate-error" id="gateErrorNote" hidden></p>',
+      '</div>'
+    ].join('\n');
+    document.body.appendChild(wall);
+
+    var offlineBtn = document.getElementById('gateOfflineBtn');
+    if (offlineBtn) {
+      offlineBtn.addEventListener('click', function () {
+        unlockInternal({
+          provider: 'offline',
+          uid: 'local_technician',
+          displayName: 'Local Technician',
+          email: 'offline@local'
+        });
+      });
+    }
+
+    document.getElementById('gateGoogleBtn').addEventListener('click', function () {
+      setGateError('');
+      if (authUI && authUI.handleGoogleSignIn) authUI.handleGoogleSignIn();
+      else if (authUI && authUI.openModal) authUI.openModal({ mode: 'signin', wall: true });
+    });
+    document.getElementById('gateTelegramBtn').addEventListener('click', function () {
+      setGateError('');
+      if (authUI && authUI.handleTelegramSignIn) authUI.handleTelegramSignIn();
+      else if (authUI && authUI.openModal) authUI.openModal({ mode: 'signin', wall: true });
+    });
+    document.getElementById('gateEmailBtn').addEventListener('click', function () {
+      setGateError('');
+      if (authUI && authUI.openModal) authUI.openModal({ mode: 'signin', wall: true });
+    });
+    document.getElementById('gateSignupBtn').addEventListener('click', function () {
+      setGateError('');
+      if (authUI && authUI.openModal) authUI.openModal({ mode: 'signup', wall: true });
+    });
+
+    return wall;
   }
 
   function setGateError(message) {
+    var el = document.getElementById('gateErrorNote');
     if (authUI && typeof authUI.showError === 'function' && message) {
       authUI.showError(message);
     }
+    if (!el) return;
+    if (!message) {
+      el.hidden = true;
+      el.textContent = '';
+      return;
+    }
+    el.hidden = false;
+    el.textContent = message;
   }
 
   function showWall() {
-    // Value-first architecture: Never block cold arrival with a login wall.
-    hideWall();
+    if (state.isTMA) return;
+    document.documentElement.classList.add('clariora-auth-locked');
+    var wall = ensureWall();
+    wall.hidden = false;
+    if (authUI && authUI.setWallMode) authUI.setWallMode(true);
   }
 
   function hideWall() {
     document.documentElement.classList.remove('clariora-auth-locked');
     var wall = document.getElementById(GATE_ID);
-    if (wall && wall.parentNode) wall.parentNode.removeChild(wall);
+    if (wall) wall.hidden = true;
     if (authUI && authUI.setWallMode) authUI.setWallMode(false);
+  }
+
+  function refreshLearnerSurfaces() {
+    try {
+      if (window.CompTIADatabase && typeof window.CompTIADatabase.rebindFromLocalStorage === 'function') {
+        window.CompTIADatabase.rebindFromLocalStorage();
+      }
+    } catch (err) {
+      console.warn('[AuthGate] storage rebind notice:', err);
+    }
+    try { if (typeof window.renderHistoryTable === 'function') window.renderHistoryTable(); } catch (_) {}
+    try { if (typeof window.updateMissedCountDisplay === 'function') window.updateMissedCountDisplay(); } catch (_) {}
+    try {
+      if (window.CompTIAProductTrust && typeof window.CompTIAProductTrust.refreshProfileSelect === 'function') {
+        window.CompTIAProductTrust.refreshProfileSelect();
+      }
+    } catch (_) {}
+  }
+
+  function bindSubjectSurfaces(session) {
+    var api = learnerIdentity();
+    if (api && session && session.uid && typeof api.adoptSubject === 'function') {
+      try { api.adoptSubject(localStorage, session); } catch (err) {
+        console.warn('[AuthGate] adopt subject notice:', err);
+      }
+    }
+    if (authUI && typeof authUI.bindSubject === 'function') {
+      try { authUI.bindSubject(session && session.uid ? session : null); } catch (_) {}
+    }
+    refreshLearnerSurfaces();
   }
 
   function unlockInternal(session) {
     state.unlocked = true;
     state.ready = true;
+    bindSubjectSurfaces(session);
     writeCachedSession(session);
     hideWall();
     try {
@@ -174,15 +391,54 @@
   }
 
   function lock() {
-    state.session = null;
-    state.unlocked = true; // Guest mode stays usable
-    state.lastReportKey = '';
-    writeCachedSession(null);
-    clearTelegramLocalAuth();
-    hideWall();
+    if (lockDepth) return;
+    lockDepth++;
     try {
-      window.dispatchEvent(new CustomEvent('clariora:auth-locked'));
-    } catch (_) {}
+      state.session = null;
+      state.unlocked = false;
+      state.lastReportKey = '';
+      writeCachedSession(null);
+      clearTelegramLocalAuth();
+      if (authUI && typeof authUI.bindSubject === 'function') authUI.bindSubject(null);
+      try {
+        if (typeof window !== 'undefined' && window.CompTIAProfiles && typeof window.CompTIAProfiles.unbindAccountProfile === 'function') {
+          window.CompTIAProfiles.unbindAccountProfile();
+          if (window.CompTIAProductTrust && typeof window.CompTIAProductTrust.afterProfileChange === 'function') {
+            window.CompTIAProductTrust.afterProfileChange();
+          }
+        }
+      } catch (profErr) {
+        console.warn('[AuthGate] Profile isolation unbind notice:', profErr);
+      }
+      logoutServerSession();
+      var service = firebaseServiceRef();
+      if (service && service.getCurrentUser && service.getCurrentUser() && service.signOutUser) {
+        suppressAuthLock = true;
+        service.signOutUser().then(function () {}, function () { suppressAuthLock = false; });
+      }
+      showWall();
+      try {
+        window.dispatchEvent(new CustomEvent('clariora:auth-locked'));
+      } catch (_) {}
+    } finally {
+      lockDepth--;
+    }
+  }
+
+  async function dropForeignFirebase() {
+    var service = firebaseServiceRef();
+    if (!service || !service.signOutUser || !service.getCurrentUser) return;
+    if (!service.getCurrentUser()) return;
+    droppingForeign = true;
+    suppressAuthLock = true;
+    try {
+      await service.signOutUser();
+    } catch (err) {
+      console.warn('[AuthGate] foreign Firebase sign-out notice:', err);
+      suppressAuthLock = false;
+    } finally {
+      droppingForeign = false;
+    }
   }
 
   async function reportSession(session, eventType) {
@@ -203,11 +459,12 @@
         initData: session.initData || null,
         telegramLogin: session.telegramLogin || null
       };
-      var res = await fetch('/api/v1/auth/session', {
+      var res = await guardedFetch('/api/v1/auth/session', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
-      });
+      }, { dedupeKey: 'auth:session:' + key, maxAttempts: 1 });
       if (!res.ok) {
         state.lastReportKey = '';
         return { ok: false, status: res.status };
@@ -220,14 +477,70 @@
     }
   }
 
+  async function fetchServerSession() {
+    try {
+      var res = await guardedFetch('/api/v1/auth/me', {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Accept': 'application/json' }
+      }, { dedupeKey: 'auth:me', maxAttempts: 2 });
+      if (!res.ok) return null;
+      var data = await res.json();
+      if (!data || !data.authenticated || !data.uid) return null;
+      return sanitizeSessionForStorage({
+        provider: data.provider,
+        uid: data.uid,
+        telegramId: data.telegramId,
+        displayName: data.displayName,
+        photoURL: data.photoURL,
+        email: data.email
+      });
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async function logoutServerSession() {
+    try {
+      await guardedFetch('/api/v1/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{}'
+      }, { dedupeKey: 'auth:logout', maxAttempts: 1 });
+    } catch (_) {}
+  }
+
   async function bindAccountMemory(session) {
     if (!session || !session.uid) return;
+    var api = learnerIdentity();
+    if (api && typeof api.adoptSubject === 'function') {
+      try { api.adoptSubject(localStorage, session); } catch (err) {
+        console.warn('[AuthGate] adopt subject notice:', err);
+      }
+    }
     try {
       localStorage.setItem('clariora_active_account_id', session.uid);
     } catch (_) {}
 
-    var service = firebaseService || window.ClarioraFirebaseService;
-    if (service && session.provider !== 'telegram' && session.provider !== 'telegram_tma' &&
+    // Profile-scoped study data (history, ledger, readiness) follows the signed-in subject.
+    if (typeof window !== 'undefined' && window.CompTIAProfiles && typeof window.CompTIAProfiles.bindAccountProfile === 'function') {
+      try {
+        var profileName = session.displayName || (session.email ? session.email.split('@')[0] : 'Learner');
+        window.CompTIAProfiles.bindAccountProfile(session.uid, profileName);
+        if (window.CompTIAProductTrust && typeof window.CompTIAProductTrust.afterProfileChange === 'function') {
+          await window.CompTIAProductTrust.afterProfileChange();
+        }
+      } catch (profErr) {
+        console.warn('[AuthGate] Profile isolation binding notice:', profErr);
+      }
+    }
+
+    var service = firebaseServiceRef();
+    var cloudUser = service && service.getCurrentUser ? service.getCurrentUser() : null;
+    var sameCloudUser = !!(cloudUser && cloudUser.uid === session.uid);
+    if (sameCloudUser && service && session.provider !== 'telegram' && session.provider !== 'telegram_tma' &&
+        session.provider !== 'offline' &&
         typeof service.ensureUserProfile === 'function') {
       try {
         await service.ensureUserProfile(session);
@@ -275,10 +588,25 @@
     };
   }
 
-  async function handleFirebaseUser(user) {
+  async function handleFirebaseUser(user, force) {
     if (!user) {
-      if (!state.isTMA) lock();
+      if (!state.isTMA && !suppressAuthLock && !droppingForeign) lock();
       return;
+    }
+    var api = learnerIdentity();
+    if (!force && api && typeof api.resolveBootIdentity === 'function') {
+      var explicit = api.consumeExplicitSignIn();
+      var decision = api.resolveBootIdentity(state.session, user, explicit);
+      if (decision.dropFirebase) {
+        await dropForeignFirebase();
+        if (state.session && authUI && typeof authUI.bindSubject === 'function') {
+          authUI.bindSubject(state.session);
+        }
+        return;
+      }
+      if (state.unlocked && state.session && state.session.uid === user.uid && !explicit) {
+        return;
+      }
     }
     var session = sessionFromFirebaseUser(user);
     if (session.isNewUser) session.event = 'signup';
@@ -286,13 +614,8 @@
       if (user.getIdToken) session.idToken = await user.getIdToken();
     } catch (_) {}
     var reported = await reportSession(session, session.event || 'signin');
+    delete session.idToken;
     if (!reported.ok) {
-      if (session.idToken) {
-        setGateError('Account sync is delayed. You can study; AI coach needs a healthy connection.');
-        await bindAccountMemory(session);
-        unlockInternal(session);
-        return;
-      }
       setGateError('Sign-in could not be verified. Check your connection and try again.');
       showWall();
       return;
@@ -306,6 +629,7 @@
     var tg = window.Telegram.WebApp;
     var u = (tg.initDataUnsafe && tg.initDataUnsafe.user) || null;
     if (!u || !u.id || !tg.initData) {
+      // Inside TMA without usable identity: do not force Google wall.
       unlockInternal(null);
       return;
     }
@@ -320,76 +644,55 @@
       initData: tg.initData || ''
     };
     try {
-      localStorage.setItem(STORAGE_TG, JSON.stringify(u));
+      localStorage.setItem(STORAGE_TG, JSON.stringify(sanitizeTelegramProfile(u)));
     } catch (_) {}
     var reported = await reportSession(session, 'signin');
+    delete session.initData;
+    // Fail closed: mirror Firebase path. Paid APIs already 401, but the product wall
+    // must not unlock on unverified / spoofed WebApp chrome.
     if (!reported.ok) {
-      console.warn('[AuthGate] Telegram session reporting notice; continuing with local TMA session.');
+      setGateError('Telegram sign-in could not be verified. Check your connection and try again.');
+      showWall();
+      return;
     }
     setGateError('');
+    await dropForeignFirebase();
     await bindAccountMemory(session);
     unlockInternal(session);
-  }
-
-  async function verifyTelegramWidgetPayload(payload) {
-    if (!payload || !payload.hash) return null;
-    try {
-      var res = await fetch('/api/v1/auth/telegram', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      var result = await res.json().catch(function () { return {}; });
-      if (!res.ok || !result.success || !result.user) return null;
-      if (result.entitlement) {
-        try {
-          window.__CLARIORA_SERVER_ENTITLEMENT__ = result.entitlement;
-          window.dispatchEvent(new CustomEvent('clariora:entitlement-updated'));
-        } catch (_) {}
-      }
-      return result.user;
-    } catch (_) {
-      return null;
-    }
   }
 
   async function resumeTelegramWidgetSession() {
-    var payload = readTelegramLoginPayload();
-    if (!payload) {
-      clearTelegramLocalAuth();
-      return false;
+    var serverSession = await fetchServerSession();
+    if (serverSession && (serverSession.provider === 'telegram' || serverSession.provider === 'telegram_tma')) {
+      try {
+        if (serverSession.telegramId) {
+          localStorage.setItem(STORAGE_TG, JSON.stringify({
+            id: serverSession.telegramId,
+            first_name: (serverSession.displayName || '').split(' ')[0] || '',
+            last_name: (serverSession.displayName || '').split(' ').slice(1).join(' ') || '',
+            username: (serverSession.email && serverSession.email.charAt(0) === '@')
+              ? serverSession.email.slice(1) : '',
+            photo_url: serverSession.photoURL || ''
+          }));
+        }
+      } catch (_) {}
+      await bindAccountMemory(serverSession);
+      unlockInternal(serverSession);
+      return true;
     }
-    var user = await verifyTelegramWidgetPayload(payload);
-    if (!user) {
-      clearTelegramLocalAuth();
-      return false;
-    }
-    try {
-      localStorage.setItem(STORAGE_TG, JSON.stringify(user));
-    } catch (_) {}
-    var session = {
-      provider: 'telegram',
-      uid: 'tg_' + user.id,
-      telegramId: user.id,
-      displayName: (user.first_name || '') + (user.last_name ? ' ' + user.last_name : ''),
-      username: user.username || '',
-      photoURL: user.photo_url || '',
-      email: user.username ? '@' + user.username : '',
-      telegramLogin: payload
-    };
-    var reported = await reportSession(session, 'signin');
-    if (!reported.ok) {
-      clearTelegramLocalAuth();
-      return false;
-    }
-    await bindAccountMemory(session);
-    unlockInternal(session);
-    return true;
+    clearTelegramLocalAuth();
+    writeTelegramLoginPayload();
+    return false;
   }
 
   function onTelegramWebLogin(user, rawLogin) {
     if (!user || !user.id) return;
-    if (rawLogin && rawLogin.hash) writeTelegramLoginPayload(rawLogin);
+    var api = learnerIdentity();
+    if (api && typeof api.consumeExplicitSignIn === 'function') api.consumeExplicitSignIn();
+    writeTelegramLoginPayload();
+    try {
+      localStorage.setItem(STORAGE_TG, JSON.stringify(sanitizeTelegramProfile(user)));
+    } catch (_) {}
     var session = {
       provider: 'telegram',
       uid: 'tg_' + user.id,
@@ -398,14 +701,18 @@
       username: user.username || '',
       photoURL: user.photo_url || '',
       email: user.username ? '@' + user.username : '',
-      telegramLogin: rawLogin || readTelegramLoginPayload()
+      telegramLogin: rawLogin || null
     };
     reportSession(session, 'signin').then(function (reported) {
+      delete session.telegramLogin;
       if (!reported.ok) {
+        setGateError('Telegram sign-in could not be verified. Try again.');
         showWall();
         return null;
       }
-      return bindAccountMemory(session);
+      return dropForeignFirebase().then(function () {
+        return bindAccountMemory(session);
+      });
     }).then(function (ok) {
       if (ok === null) return;
       unlockInternal(session);
@@ -441,36 +748,79 @@
 
     if (state.isTMA) {
       await handleTelegramNative();
+      state.ready = true;
+      bootSettled = true;
       return state;
     }
 
-    var resumedTg = await resumeTelegramWidgetSession();
-    if (!resumedTg) {
-      // Stale profile-only cache must not unlock the wall.
-      try { localStorage.removeItem(STORAGE_TG); } catch (_) {}
-    }
-
-    openSignupIntentIfRequested();
-
-    var service = firebaseService || window.ClarioraFirebaseService;
-    if (service) {
-      service.onAuthStateChanged(function (user) {
-        if (user) handleFirebaseUser(user);
-        else lock();
-      });
-      try {
-        await service.init();
-        var current = service.getCurrentUser && service.getCurrentUser();
-        if (current) {
-          await handleFirebaseUser(current);
+    // Cookie subject is resolved before any Firebase user is accepted.
+    // IndexedDB may still hold a different Google account from this browser.
+    var serverSession = await fetchServerSession();
+    if (!(state.unlocked && state.session && state.session.uid)) {
+      var api = learnerIdentity();
+      var service = firebaseServiceRef();
+      if (service && service.init) {
+        try { await service.init(); } catch (err) {
+          console.warn('[AuthGate] Firebase init notice:', err);
         }
-      } catch (err) {
-        console.warn('[AuthGate] Firebase init notice:', err);
+      }
+      var fbUser = service && service.getCurrentUser ? service.getCurrentUser() : null;
+      var redirectUser = null;
+      if (service && typeof service.consumeRedirectSignIn === 'function') {
+        try { redirectUser = await service.consumeRedirectSignIn(); } catch (_) { redirectUser = null; }
+      }
+      if (redirectUser && api && typeof api.markExplicitSignIn === 'function') {
+        api.markExplicitSignIn();
+        fbUser = redirectUser;
+      }
+      var explicit = api && typeof api.consumeExplicitSignIn === 'function'
+        ? api.consumeExplicitSignIn()
+        : false;
+      var decision = (api && typeof api.resolveBootIdentity === 'function')
+        ? api.resolveBootIdentity(serverSession, fbUser, explicit)
+        : {
+          subject: serverSession || null,
+          dropFirebase: false,
+          reason: serverSession && serverSession.uid ? 'server-session' : (fbUser ? 'firebase-resume' : 'anonymous')
+        };
+
+      if (decision.dropFirebase) {
+        await dropForeignFirebase();
+        fbUser = null;
+      }
+
+      if ((decision.reason === 'explicit-firebase' || decision.reason === 'firebase-resume') && fbUser) {
+        await handleFirebaseUser(fbUser, true);
+      } else if (decision.subject && decision.subject.uid) {
+        await bindAccountMemory(decision.subject);
+        unlockInternal(decision.subject);
+      } else {
+        var resumedTg = await resumeTelegramWidgetSession();
+        if (!resumedTg) {
+          try { localStorage.removeItem(STORAGE_TG); } catch (_) {}
+          showWall();
+          openSignupIntentIfRequested();
+        }
       }
     }
 
+    bootSettled = true;
+    var serviceListen = firebaseServiceRef();
+    if (serviceListen && typeof serviceListen.onAuthStateChanged === 'function') {
+      serviceListen.onAuthStateChanged(function (user) {
+        if (!bootSettled || droppingForeign) return;
+        if (user) return;
+        if (suppressAuthLock) {
+          suppressAuthLock = false;
+          return;
+        }
+        if (!state.unlocked) lock();
+      });
+    } else if (!state.unlocked) {
+      showWall();
+    }
+
     state.ready = true;
-    state.unlocked = true;
     return state;
   }
 
@@ -481,6 +831,8 @@
     getSession: function () { return state.session || readCachedSession(); },
     lock: lock,
     onTelegramWebLogin: onTelegramWebLogin,
-    storeTelegramLoginPayload: writeTelegramLoginPayload
+    storeTelegramLoginPayload: writeTelegramLoginPayload,
+    logoutServerSession: logoutServerSession,
+    fetchServerSession: fetchServerSession
   };
 });

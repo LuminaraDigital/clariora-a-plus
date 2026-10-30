@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "genesis": 100,
+  "examPracticeDailyCap": 120,
+  "globalDailyApxBudget": 160,
+  "memoryDailySoftCap": 40,
+  "repeatMultipliers": [1, 0.5, 0.2],
+  "stakeAmount": 30,
+  "stakeYieldRate": 0.15,
+  "stakeFailBurnsPrincipal": true,
+  "milestoneInsideGlobalBudget": true,
+  "achievementsOutsideBudget": true,
+  "proPassCost": 3800,
+  "sinks": {
+    "AI_BURST": 90,
+    "WEAK_SCAN": 150,
+    "STREAK_FREEZE": 200,
+    "CYBER_THEME": 600,
+    "HINT_PACK": 250,
+    "MOCK_UNLOCK": 450,
+    "CRAM_SHEET": 1800,
+    "PRO_PASS_30D": 3800
+  },
+  "bands": {
+    "daysToPro": [21, 25],
+    "practiceShareMin": 0.55,
+    "unspent30": [200, 1200],
+    "burnRatio": [0.35, 0.65],
+    "cheaterInflationMax": 1.5,
+    "grossInflation": [115, 170]
+  },
+  "personaMix": {
+    "casual": 0.4,
+    "daily": 0.45,
+    "grind": 0.12,
+    "cheater": 0.03
+  }
+}

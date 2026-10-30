@@ -586,11 +586,11 @@ function makeD1() {
 async function tier3Budget() {
   section('TIER 3b  atomic AI credit reservation (workers/token_budget.js)');
 
-  const { reserveBudget, settleBudget, readBudgetState, consumeBudget } =
+  const { reserveBudget, settleBudget, readBudgetState, consumeBudget, budgetWindows } =
     await import('../workers/token_budget.js');
 
   const today = new Date().toISOString().slice(0, 10);
-  const month = today.slice(0, 7);
+  const month = `${today.slice(0, 7)}:free`;
   const TG = 555001;
 
   const seed = (db, row = {}) => {
@@ -661,6 +661,48 @@ async function tier3Budget() {
     const r = await reserveBudget(db, TG, 'free', 1000);
     assert(!r.ok, 'reservation refused');
     assertEqual(r.error, 'MONTHLY_TOKEN_BUDGET_EXHAUSTED', 'correct reason');
+  });
+
+  await check('free usage this month does not eat a 24-hour pass bought later', async () => {
+    const db = makeD1();
+    seed(db, { tokensToday: 3900, tokensMonth: 39_000 });
+    const pass = { passExpiresAt: Date.now() + 86_400_000 };
+
+    const r = await reserveBudget(db, TG, 'daily_pass', 25_000, pass);
+    assert(r.ok, 'the pass gets its full 25000 tokens: ' + r.error);
+    const over = await reserveBudget(db, TG, 'daily_pass', 1, pass);
+    assertEqual(over.ok, false, 'and not one token more');
+  });
+
+  await check('each 24-hour pass gets its own budget', async () => {
+    const db = makeD1();
+    seed(db);
+    const first = { passExpiresAt: Date.now() - 1000 };
+    const second = { passExpiresAt: Date.now() + 86_400_000 };
+
+    assert((await reserveBudget(db, TG, 'daily_pass', 25_000, first)).ok, 'first pass spends its budget');
+    const r = await reserveBudget(db, TG, 'daily_pass', 25_000, second);
+    assert(r.ok, 'a second pass the same month starts fresh: ' + r.error);
+  });
+
+  await check('a pass cannot double its budget across UTC midnight', async () => {
+    const db = makeD1();
+    const pass = { passExpiresAt: Date.now() + 3_600_000 };
+    seed(db, { tokensToday: 20_000, tokensDate: `pass:${pass.passExpiresAt}`, tokensMonth: 20_000, monthKey: `pass:${pass.passExpiresAt}`, callsDate: '2020-01-01' });
+
+    const r = await reserveBudget(db, TG, 'daily_pass', 6000, pass);
+    assertEqual(r.ok, false, 'a new calendar day does not reset the pass window');
+    assert((await reserveBudget(db, TG, 'daily_pass', 5000, pass)).ok, 'the remaining 5000 is still usable');
+  });
+
+  await check('settlement reconciles against the pass window', async () => {
+    const db = makeD1();
+    seed(db);
+    const pass = { passExpiresAt: Date.now() + 86_400_000 };
+    const r = await reserveBudget(db, TG, 'daily_pass', 3000, pass);
+    assert(r.ok, 'reserved');
+    const s = await settleBudget(db, TG, 3000, 800, 'daily_pass', pass);
+    assertEqual(s.tokensMonth, 800, 'over-reservation handed back inside the pass window');
   });
 
   await check('a stale day rolls the window over inside the same statement', async () => {
@@ -757,6 +799,52 @@ async function tier3Budget() {
     const r = await reserveBudget(brokenDb, TG, 'pro_monthly', 1000);
     assert(!r.ok, 'denied when accounting is unavailable');
     assertEqual(r.error, 'BUDGET_STORE_ERROR', 'outage is distinguishable from a quota wall');
+  });
+
+  await check('a cached explanation costs a call but no tokens', async () => {
+    const { recordCachedCall } = await import('../workers/token_budget.js');
+    const db = makeD1();
+    seed(db, { tokensToday: 700, callsToday: 1 });
+    const r = await recordCachedCall(db, TG, 'free');
+    assert(r.ok, 'metered');
+    const s = await readBudgetState(db, TG, budgetWindows('free'));
+    assertEqual(s.callsToday, 2, 'call counted');
+    assertEqual(s.tokensToday, 700, 'tokens untouched');
+  });
+
+  await check('cached explanations still stop at the daily call cap', async () => {
+    const { recordCachedCall } = await import('../workers/token_budget.js');
+    const db = makeD1();
+    seed(db, { callsToday: 5 });
+    const r = await recordCachedCall(db, TG, 'free');
+    assert(!r.ok, 'refused at cap');
+    assertEqual(r.error, 'DAILY_CALL_BUDGET_EXHAUSTED');
+  });
+
+  await check('a cached explanation on a new day starts the call count at 1', async () => {
+    const { recordCachedCall } = await import('../workers/token_budget.js');
+    const db = makeD1();
+    seed(db, { callsToday: 5, callsDate: '2000-01-01', tokensDate: '2000-01-01' });
+    const r = await recordCachedCall(db, TG, 'free');
+    assert(r.ok, 'stale counter rolls over');
+    const s = await readBudgetState(db, TG, budgetWindows('free'));
+    assertEqual(s.callsToday, 1);
+  });
+
+  await check('a cached call fails CLOSED when the budget store is down', async () => {
+    const { recordCachedCall } = await import('../workers/token_budget.js');
+    const brokenDb = {
+      prepare() {
+        return {
+          bind() { return this; },
+          run() { throw new Error('D1_ERROR: connection lost'); },
+          first() { throw new Error('D1_ERROR: connection lost'); }
+        };
+      }
+    };
+    const r = await recordCachedCall(brokenDb, TG, 'free');
+    assert(!r.ok, 'denied');
+    assertEqual(r.error, 'BUDGET_STORE_ERROR');
   });
 
   await check('a missing DB is refused rather than silently unmetered', async () => {
@@ -922,7 +1010,7 @@ async function coverage() {
   await check('no unguarded fetch remains in any network-touching client module', () => {
     const modules = [
       'ghost-coach.js', 'groq-client.js', 'entitlements.js', 'telemetry.js',
-      'report-problem-modal.js', 'ton_credentials.js', 'stars_billing.js',
+      'report-problem-modal.js', 'ton_comment.js', 'ton_credentials.js', 'stars_billing.js',
       'auth-gate.js', 'tma_ghost_coach.js'
     ];
     const offenders = [];

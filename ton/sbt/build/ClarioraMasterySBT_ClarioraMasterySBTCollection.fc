@@ -1,0 +1,632 @@
+#pragma version =0.4.6;
+#pragma allow-post-modification;
+#pragma compute-asm-ltr;
+
+;; ClarioraMasterySBT_ClarioraMasterySBTCollection.headers.fc
+;;
+;; Header files for ClarioraMasterySBTCollection
+;; NOTE: declarations are sorted for optimal order
+;;
+
+;; __tact_context_get
+(int, slice, int, slice) __tact_context_get() inline;
+
+;; __tact_context_get_sender
+slice __tact_context_get_sender() inline;
+
+;; $DeployOk$_store
+builder $DeployOk$_store(builder build_0, (int) v) inline;
+
+;; $DeployOk$_store_cell
+cell $DeployOk$_store_cell((int) v, builder b) inline;
+
+;; $ClarioraMasterySBTCollection$_store
+builder $ClarioraMasterySBTCollection$_store(builder build_0, (slice, slice, int, cell) v) inline;
+
+;; $ClarioraMasterySBTCollection$_load
+(slice, ((slice, slice, int, cell))) $ClarioraMasterySBTCollection$_load(slice sc_0) inline;
+
+;; $Context$_get_value
+_ $Context$_get_value((int, slice, int, slice) v) inline;
+
+;; $CollectionData$_to_external
+(int, cell, slice) $CollectionData$_to_external(((int, cell, slice)) v) inline;
+
+;; $ClarioraMasterySBTCollection$init$_load
+(slice, ((slice, slice, cell))) $ClarioraMasterySBTCollection$init$_load(slice sc_0) inline;
+
+;; $ClarioraMasterySBTItem$init$_store
+builder $ClarioraMasterySBTItem$init$_store(builder build_0, (slice, int, slice, slice, slice, int, int) v) inline;
+
+;; $ClarioraMasterySBTCollection$_contract_init
+(slice, slice, int, cell) $ClarioraMasterySBTCollection$_contract_init(slice $owner, slice $oracle, cell $collectionContent) impure inline;
+
+;; $ClarioraMasterySBTCollection$_contract_load
+(slice, slice, int, cell) $ClarioraMasterySBTCollection$_contract_load() impure inline;
+
+;; $ClarioraMasterySBTCollection$_contract_store
+() $ClarioraMasterySBTCollection$_contract_store((slice, slice, int, cell) v) impure inline;
+
+;; $Cell$_fun_asSlice
+slice $Cell$_fun_asSlice(cell $self) impure inline;
+
+;; $global_newAddress
+slice $global_newAddress(int $chain, int $hash) impure inline;
+
+;; $global_contractAddressExt
+slice $global_contractAddressExt(int $chain, cell $code, cell $data) impure inline;
+
+;; $global_contractAddress
+slice $global_contractAddress((cell, cell) $s) impure inline;
+
+;; $CollectionData$_constructor_nextItemIndex_collectionContent_ownerAddress
+((int, cell, slice)) $CollectionData$_constructor_nextItemIndex_collectionContent_ownerAddress(int $nextItemIndex, cell $collectionContent, slice $ownerAddress) inline;
+
+;; $ClarioraMasterySBTCollection$_fun_get_collection_data
+((slice, slice, int, cell), (int, cell, slice)) $ClarioraMasterySBTCollection$_fun_get_collection_data((slice, slice, int, cell) $self) impure inline_ref;
+
+;; $ClarioraMasterySBTItem$_init_child
+(cell, cell) $ClarioraMasterySBTItem$_init_child(slice $collection, int $index, slice $owner, slice $authority, slice $examCode, int $scaledScore, int $ledgerHash) inline_ref;
+
+;; $ClarioraMasterySBTCollection$_fun_get_nft_address_by_index
+((slice, slice, int, cell), slice) $ClarioraMasterySBTCollection$_fun_get_nft_address_by_index((slice, slice, int, cell) $self, int $index) impure inline_ref;
+
+;; $ClarioraMasterySBTCollection$_fun_get_oracle_address
+((slice, slice, int, cell), slice) $ClarioraMasterySBTCollection$_fun_get_oracle_address((slice, slice, int, cell) $self) impure inline_ref;
+
+;; $MessageParameters$_constructor_bounce_to_value_mode_body
+((int, cell, int, slice, int)) $MessageParameters$_constructor_bounce_to_value_mode_body(int $bounce, slice $to, int $value, int $mode, cell $body) inline;
+
+;; $ClarioraMasterySBTCollection$_fun_notify
+((slice, slice, int, cell), ()) $ClarioraMasterySBTCollection$_fun_notify((slice, slice, int, cell) $self, cell $body) impure inline;
+
+;; $SendParameters$_constructor_to_value_mode_bounce_code_data_body
+((int, cell, cell, cell, int, slice, int)) $SendParameters$_constructor_to_value_mode_bounce_code_data_body(slice $to, int $value, int $mode, int $bounce, cell $code, cell $data, cell $body) inline;
+
+;; $DeployOk$_constructor_queryId
+((int)) $DeployOk$_constructor_queryId(int $queryId) inline;
+
+
+;; ClarioraMasterySBT_ClarioraMasterySBTCollection.stdlib.fc
+global (int, slice, int, slice) __tact_context;
+global slice __tact_context_sender;
+global cell __tact_child_contract_codes;
+global int __tact_randomized;
+
+(int, slice, int, slice) __tact_context_get() inline {
+    return __tact_context;
+}
+
+slice __tact_context_get_sender() inline {
+    return __tact_context_sender;
+}
+
+builder $global_beginCell() impure asm """
+    NEWC
+""";
+
+int $global_contractHash(cell $code, cell $data) impure asm """
+    s0 PUSH HASHCU // `data` hash
+    s2 PUSH HASHCU // `code` hash
+    SWAP2
+    CDEPTH         // `data` depth
+    SWAP
+    CDEPTH         // `code` depth
+    131380 INT     // (2 << 16) | (1 << 8) | 0x34
+
+    // Group 2: Composition of the Builder
+    NEWC
+    24 STU  // store refs_descriptor | bits_descriptor | data
+    16 STU  // store depth_descriptor for `code`
+    16 STU  // store depth_descriptor for `data`
+    256 STU // store `code` hash
+    256 STU // store `data` hash
+
+    // Group 3: SHA256 hash of the resulting Builder
+    ONE HASHEXT_SHA256
+""";
+
+slice $Slice$_fun_asAddressUnsafe(slice $self) impure asm "NOP";
+
+slice $Cell$_fun_beginParse(cell $self) impure asm """
+    CTOS
+""";
+
+slice $Cell$_fun_asSlice(cell $self) impure inline {
+    var ($self) = $self;
+    return $Cell$_fun_beginParse($self);
+}
+
+cell $Builder$_fun_endCell(builder $self) impure asm """
+    ENDC
+""";
+
+slice $global_newAddress(int $chain, int $hash) impure inline {
+    return $Slice$_fun_asAddressUnsafe($Cell$_fun_asSlice($Builder$_fun_endCell(store_uint(store_int(store_uint($global_beginCell(), 4, 3), $chain, 8), $hash, 256))));
+}
+
+slice $global_contractAddressExt(int $chain, cell $code, cell $data) impure inline {
+    int $hash = $global_contractHash($code, $data);
+    return $global_newAddress($chain, $hash);
+}
+
+slice $global_contractAddress((cell, cell) $s) impure inline {
+    var (($s'code, $s'data)) = $s;
+    return $global_contractAddressExt(0, $s'code, $s'data);
+}
+
+slice $global_myAddress() impure asm """
+    MYADDR
+""";
+
+int $global_myBalance() impure asm """
+    BALANCE FIRST
+""";
+
+() $global_nativeReserve(int $amount, int $mode) impure asm """
+    RAWRESERVE
+""";
+
+() $global_message((int, cell, int, slice, int) $params) impure asm """
+    NEWC
+    b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+    1 STI               // store `bounce`
+    b{000} STSLICECONST // store bounced = false and src = addr_none
+    STSLICE             // store `to`
+    SWAP
+    STGRAMS             // store `value`
+    106 PUSHINT         // 1 + 4 + 4 + 64 + 32 + 1
+    STZEROES
+    // → Stack state
+    // s0: Builder
+    // s1: `body`
+    // s2: `mode`
+    STDICT
+    ENDC
+    SWAP
+    SENDRAWMSG
+""";
+
+() $global_send((int, cell, cell, cell, int, slice, int) $params) impure asm """
+    NEWC
+    b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+    1 STI               // store `bounce`
+    b{000} STSLICECONST // store bounced = false and src = addr_none
+    STSLICE             // store `to`
+    SWAP
+    STGRAMS             // store `value`
+    105 PUSHINT         // 1 + 4 + 4 + 64 + 32
+    STZEROES            // store currency_collection, ihr_fee, fwd_fee, created_lt and created_at
+    // → Stack state
+    // s0: Builder
+    // s1: `data`
+    // s2: `code`
+    // s3: `body`
+    // s4: `mode`
+
+    // Group 2: Placing the Builder after code and data, then checking those for nullability
+    s2 XCHG0
+    DUP2
+    ISNULL
+    SWAP
+    ISNULL
+    AND
+    // → Stack state
+    // s0: -1 (true) if `data` and `code` are both null, 0 (false) otherwise
+    // s1: `code`
+    // s2: `data`
+    // s3: Builder
+    // s4: `body`
+    // s5: `mode`
+
+    // Group 3: Left branch of the IFELSE, executed if s0 is -1 (true)
+    <{
+        DROP2 // drop `data` and `code`, since either of those is null
+        b{0} STSLICECONST
+    }> PUSHCONT
+
+    // Group 3: Right branch of the IFELSE, executed if s0 is 0 (false)
+    <{
+        // _ split_depth:(Maybe (## 5))
+        //   special:(Maybe TickTock)
+        //   code:(Maybe ^Cell)
+        //   data:(Maybe ^Cell)
+        //   library:(Maybe ^Cell)
+        // = StateInit;
+        ROT                // place message Builder on top
+        b{10} STSLICECONST // store Maybe = true, Either = false
+        // Start composing inlined StateInit
+        b{00} STSLICECONST // store split_depth and special first
+        STDICT             // store code
+        STDICT             // store data
+        b{0} STSLICECONST  // store library
+    }> PUSHCONT
+
+    // Group 3: IFELSE that does the branching shown above
+    IFELSE
+    // → Stack state
+    // s0: Builder
+    // s1: null or StateInit
+    // s2: `body`
+    // s3: `mode`
+
+    // Group 4: Finalizing the message
+    STDICT // store `body` as ref with an extra Maybe bit, since `body` might be null
+    ENDC
+    // → Stack state
+    // s0: Cell
+    // s1: `mode`
+
+    // Group 5: Sending the message, with `mode` on top
+    SWAP
+    SENDRAWMSG // https://github.com/tact-lang/tact/issues/1558
+""";
+
+((slice, slice, int, cell), ()) $ClarioraMasterySBTCollection$_fun_notify((slice, slice, int, cell) $self, cell $body) impure inline {
+    var (($self'owner, $self'oracle, $self'nextItemIndex, $self'collectionContent)) = $self;
+    slice $to = __tact_context_get_sender();
+    int $bounce = false;
+    if (false) {
+        int $balance = $global_myBalance();
+        int $balanceBeforeMessage = ($balance - $Context$_get_value(__tact_context_get()));
+        if (($balanceBeforeMessage < 0)) {
+            $global_nativeReserve(0, 0);
+            $global_message($MessageParameters$_constructor_bounce_to_value_mode_body($bounce, $to, 0, 130, $body));
+            return (($self'owner, $self'oracle, $self'nextItemIndex, $self'collectionContent), ());
+        }
+    }
+    $global_message($MessageParameters$_constructor_bounce_to_value_mode_body($bounce, $to, 0, 66, $body));
+    return (($self'owner, $self'oracle, $self'nextItemIndex, $self'collectionContent), ());
+}
+
+;; ClarioraMasterySBT_ClarioraMasterySBTCollection.constants.fc
+;; String ""
+slice __gen_slice_string_96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7() asm """
+    B{b5ee9c724101010100020000004cacb9cd} B>boc <s PUSHSLICE
+""";
+
+;; Cell 3dMOF3Ysd6jxHZ6wCyp7aIhIYkl+XXEOJYpaA87rkX0=
+cell __gen_cell_cell_ddd30e17762c77a8f11d9eb00b2a7b68884862497e5d710e258a5a03ceeb917d() asm """
+    B{b5ee9c7241010101000a00001000000000696e69748005f29f} B>boc PUSHREF
+""";
+
+;; ClarioraMasterySBT_ClarioraMasterySBTCollection.storage.fc
+;;
+;; Type: Context
+;; TLB: _ bounceable:bool sender:address value:int257 raw:^slice = Context
+;;
+
+_ $Context$_get_value((int, slice, int, slice) v) inline {
+    var (v'bounceable, v'sender, v'value, v'raw) = v;
+    return v'value;
+}
+
+;;
+;; Type: SendParameters
+;; TLB: _ mode:int257 body:Maybe ^cell code:Maybe ^cell data:Maybe ^cell value:int257 to:address bounce:bool = SendParameters
+;;
+
+((int, cell, cell, cell, int, slice, int)) $SendParameters$_constructor_to_value_mode_bounce_code_data_body(slice $to, int $value, int $mode, int $bounce, cell $code, cell $data, cell $body) inline {
+    return ($mode, $body, $code, $data, $value, $to, $bounce);
+}
+
+;;
+;; Type: MessageParameters
+;; TLB: _ mode:int257 body:Maybe ^cell value:int257 to:address bounce:bool = MessageParameters
+;;
+
+((int, cell, int, slice, int)) $MessageParameters$_constructor_bounce_to_value_mode_body(int $bounce, slice $to, int $value, int $mode, cell $body) inline {
+    return ($mode, $body, $value, $to, $bounce);
+}
+
+;;
+;; Type: DeployOk
+;; Header: 0xaff90f57
+;; TLB: deploy_ok#aff90f57 queryId:uint64 = DeployOk
+;;
+
+builder $DeployOk$_store(builder build_0, (int) v) inline {
+    var (v'queryId) = v;
+    build_0 = store_uint(build_0, 2952335191, 32);
+    build_0 = build_0.store_uint(v'queryId, 64);
+    return build_0;
+}
+
+cell $DeployOk$_store_cell((int) v, builder b) inline {
+    return $DeployOk$_store(b, v).end_cell();
+}
+
+((int)) $DeployOk$_constructor_queryId(int $queryId) inline {
+    return ($queryId);
+}
+
+;;
+;; Type: CollectionData
+;; TLB: _ nextItemIndex:uint64 collectionContent:^cell ownerAddress:address = CollectionData
+;;
+
+(int, cell, slice) $CollectionData$_to_external(((int, cell, slice)) v) inline {
+    var (v'nextItemIndex, v'collectionContent, v'ownerAddress) = v; 
+    return (v'nextItemIndex, v'collectionContent, v'ownerAddress);
+}
+
+((int, cell, slice)) $CollectionData$_constructor_nextItemIndex_collectionContent_ownerAddress(int $nextItemIndex, cell $collectionContent, slice $ownerAddress) inline {
+    return ($nextItemIndex, $collectionContent, $ownerAddress);
+}
+
+;;
+;; Type: ClarioraMasterySBTCollection
+;; TLB: _ owner:address oracle:address nextItemIndex:uint64 collectionContent:^cell = ClarioraMasterySBTCollection
+;;
+
+builder $ClarioraMasterySBTCollection$_store(builder build_0, (slice, slice, int, cell) v) inline {
+    var (v'owner, v'oracle, v'nextItemIndex, v'collectionContent) = v;
+    build_0 = build_0.store_slice(v'owner);
+    build_0 = build_0.store_slice(v'oracle);
+    build_0 = build_0.store_uint(v'nextItemIndex, 64);
+    build_0 = build_0.store_ref(v'collectionContent);
+    return build_0;
+}
+
+(slice, ((slice, slice, int, cell))) $ClarioraMasterySBTCollection$_load(slice sc_0) inline {
+    var v'owner = sc_0~load_msg_addr();
+    var v'oracle = sc_0~load_msg_addr();
+    var v'nextItemIndex = sc_0~load_uint(64);
+    var v'collectionContent = sc_0~load_ref();
+    return (sc_0, (v'owner, v'oracle, v'nextItemIndex, v'collectionContent));
+}
+
+(slice, ((slice, slice, cell))) $ClarioraMasterySBTCollection$init$_load(slice sc_0) inline {
+    var v'owner = sc_0~load_msg_addr();
+    var v'oracle = sc_0~load_msg_addr();
+    var v'collectionContent = sc_0~load_ref();
+    return (sc_0, (v'owner, v'oracle, v'collectionContent));
+}
+
+(slice, slice, int, cell) $ClarioraMasterySBTCollection$_contract_load() impure inline {
+    slice $sc = get_data().begin_parse();
+    int $loaded = $sc~load_int(1);
+    if ($loaded) {
+        return $sc~$ClarioraMasterySBTCollection$_load();
+    }
+    else {
+        (slice $owner, slice $oracle, cell $collectionContent) = $sc~$ClarioraMasterySBTCollection$init$_load();
+        $sc.end_parse();
+        return $ClarioraMasterySBTCollection$_contract_init($owner, $oracle, $collectionContent);
+    }
+}
+
+() $ClarioraMasterySBTCollection$_contract_store((slice, slice, int, cell) v) impure inline {
+    builder b = begin_cell();
+    b = b.store_int(true, 1);
+    b = $ClarioraMasterySBTCollection$_store(b, v);
+    set_data(b.end_cell());
+}
+
+;;
+;; Type: ClarioraMasterySBTItem
+;; TLB: _ collection:address index:uint64 owner:address authority:address examCode:^string scaledScore:uint16 ledgerHash:uint256 revokedAt:uint64 = ClarioraMasterySBTItem
+;;
+
+builder $ClarioraMasterySBTItem$init$_store(builder build_0, (slice, int, slice, slice, slice, int, int) v) inline {
+    var (v'collection, v'index, v'owner, v'authority, v'examCode, v'scaledScore, v'ledgerHash) = v;
+    build_0 = build_0.store_slice(v'collection);
+    build_0 = build_0.store_uint(v'index, 64);
+    build_0 = build_0.store_slice(v'owner);
+    build_0 = build_0.store_slice(v'authority);
+    build_0 = build_0.store_builder_ref(begin_cell().store_slice(v'examCode));
+    build_0 = build_0.store_uint(v'scaledScore, 16);
+    var build_1 = begin_cell();
+    build_1 = build_1.store_uint(v'ledgerHash, 256);
+    build_0 = store_builder_ref(build_0, build_1);
+    return build_0;
+}
+
+cell $ClarioraMasterySBTItem$_child_get_code() impure asm """
+    B{b5ee9c720102140100041f000228ff008e88f4a413f4bcf2c80bed5320e303ed43d90102020271030402f430eda2edfb01d072d721d200d200fa4021103450666f04f86102f862ed44d0d200018e24fa40d33ffa40fa40d401d001d30fd401d0d3ffd33f301028102710261025102410236c188e1ffa40d33ffa40fa40d401d001d30fd401d0d3ff3017161514433007d1550570e209925f09e027d749c21fe30007f901200d0e0201580506020162090a01a9b5631da89a1a400031c49f481a67ff481f481a803a003a61fa803a1a7ffa67e602050204e204c204a20482046d8311c3ff481a67ff481f481a803a003a61fa803a1a7fe602e2c2a2886600fa2aa0ae1c5b678d90300701a9b7b07da89a1a400031c49f481a67ff481f481a803a003a61fa803a1a7ffa67e602050204e204c204a20482046d8311c3ff481a67ff481f481a803a003a61fa803a1a7fe602e2c2a2886600fa2aa0ae1c5b678d90300800022400022001a9b3f3fb513434800063893e9034cffe903e903500740074c3f5007434fff4cfcc040a0409c409840944090408db062387fe9034cffe903e903500740074c3f5007434ffcc05c5854510cc01f455415c38b6cf1b21600b01a9b1c23b513434800063893e9034cffe903e903500740074c3f5007434fff4cfcc040a0409c409840944090408db062387fe9034cffe903e903500740074c3f5007434ffcc05c5854510cc01f455415c38b6cf1b20e00c011220c000885468a0529010000654732101be07d31f218209c90965bae302018210d99e1ccaba8e4730f8416f245b8200e7c53224c705f2f4812aee08c00018f2f4f823105710461035443012c87f01ca0055705078ce15cb3f13cece01c8cecdcb0f01c8cbff12cb3fcdc9ed54db31e0070f01f282f07e2b1709e6236d745f5a973c89c690596a88dc4b5b35dd228d71a642a8291ff6ba8e2930f2c3e910575514c87f01ca0055705078ce15cb3f13cece01c8cecdcb0f01c8cbff12cb3fcdc9ed54e082f0bb82cd86b73dd91b29db6719d7f385bc87f9ca3e3c933ba0c3ddf37418ad8874bae3025f08f2c0821202ee31d33ffa4030f8416f245b82008c9e3227c705f2f470804088146d2a544a3052f0c85550821045a5a4db5007cb1f15cb3f13cb3fcecccb3ff400c941305a6d6d40037fc8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb0010575514101100000046c87f01ca0055705078ce15cb3f13cece01c8cecdcb0f01c8cbff12cb3fcdc9ed54db3101e2f8416f245b8108773225c705f2f4708100a0882655205a6d6d40037fc8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb0010575514c87f01ca0055705078ce15cb3f13cece01c8cecdcb0f01c8cbff12cb3fcdc9ed5413001a0000000064657374726f796564} B>boc PUSHREF
+""";
+
+(cell, cell) $ClarioraMasterySBTItem$_init_child(slice $collection, int $index, slice $owner, slice $authority, slice $examCode, int $scaledScore, int $ledgerHash) inline_ref {
+    ;; Build init code cell
+
+    ;; Contract Code: ClarioraMasterySBTItem
+    cell init_code = $ClarioraMasterySBTItem$_child_get_code();
+
+
+    builder b = begin_cell();
+    b = b.store_int(false, 1);
+    b = $ClarioraMasterySBTItem$init$_store(b, ($collection, $index, $owner, $authority, $examCode, $scaledScore, $ledgerHash));
+    return (init_code, b.end_cell());
+}
+
+;;
+;; Contract ClarioraMasterySBTCollection functions
+;;
+
+(slice, slice, int, cell) $ClarioraMasterySBTCollection$_contract_init(slice $owner, slice $oracle, cell $collectionContent) impure inline {
+    var (($self'owner, $self'oracle, $self'nextItemIndex, $self'collectionContent)) = (null(), null(), 0, null());
+    $self'owner = $owner;
+    $self'oracle = $oracle;
+    $self'collectionContent = $collectionContent;
+    return ($self'owner, $self'oracle, $self'nextItemIndex, $self'collectionContent);
+}
+
+((slice, slice, int, cell), (int, cell, slice)) $ClarioraMasterySBTCollection$_fun_get_collection_data((slice, slice, int, cell) $self) impure inline_ref {
+    var (($self'owner, $self'oracle, $self'nextItemIndex, $self'collectionContent)) = $self;
+    var $fresh$ret_7 = $CollectionData$_constructor_nextItemIndex_collectionContent_ownerAddress($self'nextItemIndex, $self'collectionContent, $self'owner);
+    return (($self'owner, $self'oracle, $self'nextItemIndex, $self'collectionContent), $fresh$ret_7);
+}
+
+((slice, slice, int, cell), slice) $ClarioraMasterySBTCollection$_fun_get_nft_address_by_index((slice, slice, int, cell) $self, int $index) impure inline_ref {
+    var (($self'owner, $self'oracle, $self'nextItemIndex, $self'collectionContent)) = $self;
+    var ($itemInit'code, $itemInit'data) = $ClarioraMasterySBTItem$_init_child($global_myAddress(), $index, $global_myAddress(), $self'oracle, __gen_slice_string_96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7(), 0, 0);
+    var $fresh$ret_8 = $global_contractAddress(($itemInit'code, $itemInit'data));
+    return (($self'owner, $self'oracle, $self'nextItemIndex, $self'collectionContent), $fresh$ret_8);
+}
+
+((slice, slice, int, cell), slice) $ClarioraMasterySBTCollection$_fun_get_oracle_address((slice, slice, int, cell) $self) impure inline_ref {
+    var (($self'owner, $self'oracle, $self'nextItemIndex, $self'collectionContent)) = $self;
+    var $fresh$ret_9 = $self'oracle;
+    return (($self'owner, $self'oracle, $self'nextItemIndex, $self'collectionContent), $fresh$ret_9);
+}
+
+;;
+;; Get methods of a Contract ClarioraMasterySBTCollection
+;;
+
+_ %get_collection_data() method_id(102491) {
+    var self = $ClarioraMasterySBTCollection$_contract_load();
+    var res = self~$ClarioraMasterySBTCollection$_fun_get_collection_data();
+    return $CollectionData$_to_external(res);
+}
+
+_ %get_nft_address_by_index(int $index) method_id(92067) {
+    int $index = $index;
+    var self = $ClarioraMasterySBTCollection$_contract_load();
+    var res = self~$ClarioraMasterySBTCollection$_fun_get_nft_address_by_index($index);
+    return res;
+}
+
+_ %get_oracle_address() method_id(91165) {
+    var self = $ClarioraMasterySBTCollection$_contract_load();
+    var res = self~$ClarioraMasterySBTCollection$_fun_get_oracle_address();
+    return res;
+}
+
+;;
+;; Routing of a Contract ClarioraMasterySBTCollection
+;;
+
+;; message opcode reader utility: only binary receivers
+;; Returns 32 bit message opcode, otherwise throws the "Invalid incoming message" exit code
+(slice, int) ~load_opcode_internal(slice s) asm( -> 1 0) "32 LDUQ 130 THROWIFNOT";
+
+() recv_internal(int msg_value, cell in_msg_cell, slice in_msg) impure {
+    
+    ;; Context
+    var cs = in_msg_cell.begin_parse();
+    cs~skip_bits(2);
+    var msg_bounceable = cs~load_int(1);
+    var msg_bounced = cs~load_int(1);
+    slice msg_sender_addr = cs~load_msg_addr();
+    __tact_context = (msg_bounceable, msg_sender_addr, msg_value, cs);
+    __tact_context_sender = msg_sender_addr;
+    
+    ;; Load contract data
+    var ($self'owner, $self'oracle, $self'nextItemIndex, $self'collectionContent) = $ClarioraMasterySBTCollection$_contract_load();
+    
+    ;; Handle bounced messages
+    if (msg_bounced) { return (); }
+    var op = in_msg~load_opcode_internal();
+    ;; Receive MintMasterySBT message
+    if (op == 2281128699) {
+        var $msg'queryId = in_msg~load_uint(64);
+        var $msg'recipient = in_msg~load_msg_addr();
+        var $msg'examCode = in_msg~load_ref().begin_parse();
+        var $msg'scaledScore = in_msg~load_uint(16);
+        var $msg'ledgerHash = in_msg~load_uint(256);
+        var $msg'metadataUri = in_msg~load_ref().begin_parse();
+        var ($ctx'bounceable, $ctx'sender, $ctx'value, $ctx'raw) = __tact_context_get();
+        throw_unless(39925, ( (( equal_slices_bits($ctx'sender, $self'oracle) )) ? (true) : (( equal_slices_bits($ctx'sender, $self'owner) )) ));
+        var ($itemInit'code, $itemInit'data) = $ClarioraMasterySBTItem$_init_child($global_myAddress(), $self'nextItemIndex, $msg'recipient, $self'oracle, $msg'examCode, $msg'scaledScore, $msg'ledgerHash);
+        slice $itemAddress = $global_contractAddress(($itemInit'code, $itemInit'data));
+        $global_send($SendParameters$_constructor_to_value_mode_bounce_code_data_body($itemAddress, 50000000, 2, false, $itemInit'code, $itemInit'data, __gen_cell_cell_ddd30e17762c77a8f11d9eb00b2a7b68884862497e5d710e258a5a03ceeb917d()));
+        $self'nextItemIndex = ($self'nextItemIndex + 1);
+        $ClarioraMasterySBTCollection$_contract_store(($self'owner, $self'oracle, $self'nextItemIndex, $self'collectionContent));
+        return ();
+    }
+    
+    ;; Receive Deploy message
+    if (op == 0x946a98b6) {
+        var $deploy'queryId = in_msg~load_uint(64);
+        ($self'owner, $self'oracle, $self'nextItemIndex, $self'collectionContent)~$ClarioraMasterySBTCollection$_fun_notify($DeployOk$_store_cell($DeployOk$_constructor_queryId($deploy'queryId), begin_cell()));
+        $ClarioraMasterySBTCollection$_contract_store(($self'owner, $self'oracle, $self'nextItemIndex, $self'collectionContent));
+        return ();
+    }
+    
+    ;; Throw if not handled
+    throw(130);
+}
+
+
+() __tact_selector_hack_asm() impure asm """
+@atend @ 1 {
+        execute current@ context@ current!
+        {
+            // The core idea of this function is to save gas by avoiding unnecessary dict jump, when recv_internal/recv_external is called
+            // We want to extract recv_internal/recv_external from the dict and select needed function
+            // not by jumping to the needed function by it's index, but by using usual IF statements.
+
+            }END> b> // Close previous builder, now we have a cell of previous code on top of the stack
+
+            <{ // Start of the new code builder
+                SETCP0
+                // Swap the new code builder with the previous code, now we have previous code on top of the stack
+                swap
+                // Transform cell to slice and load first ref from the previous code, now we have the dict on top of the stack
+                <s ref@
+
+                // Extract the recv_internal from the dict
+                dup 0 swap @procdictkeylen idict@ { "internal shortcut error" abort } ifnot
+                swap
+
+                // Delete the recv_internal from the dict
+                0 swap @procdictkeylen idict- drop
+                // Delete the recv_external from the dict (it's okay if it's not there)
+                -1 swap @procdictkeylen idict- drop
+                // Delete the __tact_selector_hack from the dict
+                65535 swap @procdictkeylen idict- drop
+
+                // Bring the code builder from the bottom of the stack
+                // because if recv_external extraction is optional, and the number of elements on the stack is not fixed
+                depth 1- roll
+                // Swap with the dict from which we extracted recv_internal and (maybe) recv_external
+                swap
+
+                // Check if the dict is empty
+                dup null?
+                // Store a copy of this flag in the bottom of the stack
+                dup depth 1- -roll
+                {
+                    // If the dict is empty, just drop it (it will be null if it's empty)
+                    drop
+                }
+                {
+                    // If the dict is not empty, prepare continuation to be stored in c3
+                    <{
+                        // Save this dict as first ref in this continuation, it will be pushed in runtime by DICTPUSHCONST
+                        swap @procdictkeylen DICTPUSHCONST
+                        // Jump to the needed function by it's index
+                        DICTIGETJMPZ
+                        // If such key is not found, throw 11 along with the key as an argument
+                        11 THROWARG
+                    }> PUSHCONT
+                    // Store the continuation in c3
+                    c3 POP
+                } cond
+
+                // Function id is on top of the (runtime) stack
+                DUP IFNOTJMP:<{
+                    // place recv_internal here
+                    DROP swap @addop
+                }>
+
+                // Bring back the flag, indicating if the dict is empty or not from the bottom of the stack
+                depth 1- roll
+                {
+                    // If the dict is empty, throw 11
+                    11 THROWARG
+                }
+                {
+                    // If the dict is not empty, jump to continuation from c3
+                    c3 PUSH JMPX
+                } cond
+            }> b>
+        } : }END>c
+        current@ context! current!
+    } does @atend !
+""";
+
+() __tact_selector_hack() method_id(65535) {
+    return __tact_selector_hack_asm();
+}

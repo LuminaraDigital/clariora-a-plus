@@ -299,17 +299,34 @@
     var stripHtml = hw.buildActivityStrip(hw.activityDays(stamps), { ariaLabel: 'Last 7 days' });
 
     // Daily Quest surface when gamification flag is on.
+    // renderInto may return null when Featured Campaign demotes competing CTAs.
     if (APlus.dailyQuest && typeof APlus.dailyQuest.isEnabled === 'function' &&
         APlus.dailyQuest.isEnabled() && typeof APlus.dailyQuest.renderInto === 'function') {
-      APlus.dailyQuest.renderInto(el, {
+      var questStatus = APlus.dailyQuest.renderInto(el, {
         cold: cold,
         focusHtml: focusHtml,
         stripHtml: stripHtml,
         result: result,
         sum: sum
       });
-      return;
+      if (questStatus) return;
     }
+
+    // When Featured Campaign is the primary path, keep today-plan as a quiet note
+    // (no second gold CTA competing with Learn → Quiz → Claim).
+    try {
+      if (
+        APlus.featuredCampaign &&
+        typeof APlus.featuredCampaign.shouldDemoteCompetitors === 'function' &&
+        APlus.featuredCampaign.shouldDemoteCompetitors()
+      ) {
+        el.innerHTML =
+          '<p class="tp-note" style="margin:0;">Featured campaign is your focus today. Finish Learn, Quiz, then Claim in Reward Center.</p>' +
+          focusHtml +
+          stripHtml;
+        return;
+      }
+    } catch (_) {}
 
     var mins = (APlus.onboarding && typeof APlus.onboarding.minutesPerDay === 'function')
       ? APlus.onboarding.minutesPerDay() : 25;

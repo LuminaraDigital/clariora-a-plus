@@ -808,3 +808,123 @@ export const syncLearnerState = onRequest(
     }
   }
 );
+
+// =============================================================================
+// ENDPOINT 5: VERIFIED EXAM ATTEMPT SUBMISSION
+// =============================================================================
+
+export const recordExamAttempt = onRequest(
+  { cors: true, maxInstances: 10 },
+  async (req, res) => {
+    if (req.method !== "POST") {
+      res.status(405).json({ error: "Method Not Allowed" });
+      return;
+    }
+
+    try {
+      const caller = await verifyZeroTrustCaller(req);
+      const rateLimit = await enforceDualKeyRateLimit(caller.uid, caller.ip, "recordExamAttempt");
+      applyRateLimitHeaders(res, rateLimit);
+      if (!rateLimit.allowed) {
+        logRateLimitBreach("recordExamAttempt", rateLimit, { uid: caller.uid, ip: caller.ip });
+        res.status(429).json({ error: "Too Many Requests", retryAfter: rateLimit.retryAfter });
+        return;
+      }
+
+      const parseResult = ExamAttemptSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        res.status(400).json({ error: "Validation Failed", details: parseResult.error.flatten().fieldErrors });
+        return;
+      }
+
+      const { examId, score, passed, totalQuestions, timeSpentSeconds } = parseResult.data;
+      const passingScore = examId === "core2" ? 700 : 675;
+      const verifiedPassed = score >= passingScore && passed;
+
+      const recordRef = db.collection("users").doc(caller.uid).collection("records").doc();
+      const attemptData = {
+        attemptId: recordRef.id,
+        examId,
+        score,
+        passed: verifiedPassed,
+        totalQuestions,
+        timeSpentSeconds,
+        passingScore,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      };
+
+      await recordRef.set(attemptData);
+
+      res.status(200).json({
+        success: true,
+        attemptId: recordRef.id,
+        examId,
+        score,
+        passed: verifiedPassed
+      });
+    } catch (err: any) {
+      const status = err instanceof HttpsError ? (err.httpErrorCode?.status || 401) : 500;
+      res.status(status).json({ error: err.message || "Failed to record attempt" });
+    }
+  }
+);
+
+// =============================================================================
+// ENDPOINT 6: ZERO-TRUST USER ACCOUNT DELETION (GDPR / RIGHT TO BE FORGOTTEN)
+// =============================================================================
+
+export const deleteUserAccount = onRequest(
+  { cors: true, maxInstances: 10 },
+  async (req, res) => {
+    if (req.method !== "POST") {
+      res.status(405).json({ error: "Method Not Allowed" });
+      return;
+    }
+
+    try {
+      const caller = await verifyZeroTrustCaller(req);
+      const rateLimit = await enforceDualKeyRateLimit(caller.uid, caller.ip, "deleteUserAccount");
+      applyRateLimitHeaders(res, rateLimit);
+      if (!rateLimit.allowed) {
+        logRateLimitBreach("deleteUserAccount", rateLimit, { uid: caller.uid, ip: caller.ip });
+        res.status(429).json({ error: "Too Many Requests", retryAfter: rateLimit.retryAfter });
+        return;
+      }
+
+      const userDocRef = db.collection("users").doc(caller.uid);
+
+      // Purge private_data subcollection
+      const privateDocs = await userDocRef.collection("private_data").get();
+      for (const d of privateDocs.docs) {
+        await d.ref.delete();
+      }
+
+      // Purge records subcollection
+      const recordDocs = await userDocRef.collection("records").get();
+      for (const d of recordDocs.docs) {
+        await d.ref.delete();
+      }
+
+      // Purge learning subcollection
+      const learningDocs = await userDocRef.collection("learning").get();
+      for (const d of learningDocs.docs) {
+        await d.ref.delete();
+      }
+
+      // Purge root user document
+      await userDocRef.delete();
+
+      // Delete Firebase Auth identity
+      try {
+        await auth.deleteUser(caller.uid);
+      } catch (authErr: any) {
+        console.warn(`[DeleteAccount] Firebase Auth deletion note: ${authErr?.message}`);
+      }
+
+      res.status(200).json({ success: true, message: "User account and data successfully purged." });
+    } catch (err: any) {
+      const status = err instanceof HttpsError ? (err.httpErrorCode?.status || 401) : 500;
+      res.status(status).json({ error: err.message || "Account deletion failed" });
+    }
+  }
+);

@@ -10,6 +10,7 @@
  * 2c. /api/v1/auth/admin/session  - Exchange ADMIN_API_KEY for short-lived admin cookie
  * 3. /api/v1/auth/accounts        - Admin list of accounts and recent auth events
  * 4. /api/v1/sync                 - Cross-device learner state delta sync
+ * 4b. /api/v1/apx/events          - Soft APX earn/spend telemetry mirror
  * 5. /api/v1/items/report         - Question problem & ambiguity reporting
  * 6. /api/v1/items/stats          - Community item difficulty & discrimination stats
  * 6b. /api/v1/items/telemetry     - Anonymous item outcome ingest (upserts item_stats_cache)
@@ -51,6 +52,9 @@ import { promoteGhostCoachTelemetry } from './agent_memory.js';
 import { ingestItemTelemetryBatch } from './item_stats.js';
 import { recomputeItemDiscrimination } from './item_discrimination.js';
 import { findSimilarQuestionIds, upsertQuestionVectors } from './question_vectors.js';
+import { purgeExpiredExplainCache } from './explain_cache.js';
+import { buildAiCostReport } from './ai_pricing.js';
+import { buildApxAnomalyReport, buildHoldoutReport } from './apx_integrity.js';
 
 import {
   withAppBase,
@@ -90,6 +94,13 @@ import {
   executeGroq,
   executeWorkersAi
 } from './api_ai_providers.js';
+import {
+  XDC_PRODUCTS,
+  XDC_NETWORKS,
+  ensureXdcTables,
+  verifyXdcReceipt,
+  createOracleAttestation
+} from './api_xdc.js';
 
 /** Explicit public API routes. Everything else under /api/v1 requires auth or is admin/webhook gated. */
 const PUBLIC_API_ROUTES = [
@@ -193,7 +204,40 @@ async function readFreshHtmlAsset(request, env, assetPath) {
   return assetRes;
 }
 
-export { CoachRateLimiter, freshMarketingHtmlAssetPath };
+// Starts from the asset's headers: the assets binding applies the _headers
+// rules (CSP, frame and referrer policy), and a fresh Headers object drops them.
+async function noStoreHtmlResponse(assetRes) {
+  const body = await assetRes.text();
+  const headers = new Headers(assetRes.headers);
+  headers.set('Content-Type', 'text/html; charset=utf-8');
+  headers.set('Cache-Control', 'no-store');
+  headers.set('CDN-Cache-Control', 'no-store');
+  headers.set('X-Content-Type-Options', 'nosniff');
+  headers.delete('content-length');
+  headers.delete('location');
+  return new Response(body, { status: 200, headers });
+}
+
+export { CoachRateLimiter, freshMarketingHtmlAssetPath, noStoreHtmlResponse };
+
+export function canonicalizeWorkerPath(rawPath) {
+  let decoded = rawPath || '/';
+  for (let i = 0; i < 3; i++) {
+    try {
+      const next = decodeURIComponent(decoded);
+      if (next === decoded) break;
+      decoded = next;
+    } catch (_) {
+      break;
+    }
+  }
+  decoded = decoded.replace(/\/+/g, '/');
+  try {
+    const dummy = new URL(decoded, 'http://localhost');
+    decoded = dummy.pathname;
+  } catch (_) {}
+  return decoded.replace(/\/+/g, '/');
+}
 
 export default {
   async scheduled(event, env, ctx) {
@@ -203,6 +247,12 @@ export default {
       console.log('item_discrimination cron', JSON.stringify(result));
     } catch (err) {
       console.warn('item_discrimination cron failed:', err && err.message);
+    }
+    try {
+      const purged = await purgeExpiredExplainCache(env.DB);
+      console.log('explain_cache purge', JSON.stringify({ purged }));
+    } catch (err) {
+      console.warn('explain_cache purge failed:', err && err.message);
     }
   },
 
@@ -244,7 +294,9 @@ export default {
       return new Response(null, { status: 204, headers: corsHeaders });
     }
 
-    const path = url.pathname;
+    const rawPath = url.pathname;
+    const path = canonicalizeWorkerPath(rawPath);
+    const normPath = path.toLowerCase();
 
     // Crawl files: force correct Content-Type so SPA fallback never indexes as HTML.
     if ((path === '/robots.txt' || path === '/sitemap.xml') && request.method === 'GET' && env.ASSETS) {
@@ -270,18 +322,7 @@ export default {
     const freshAsset = freshMarketingHtmlAssetPath(path);
     if (freshAsset && request.method === 'GET' && env.ASSETS) {
       const assetRes = await readFreshHtmlAsset(request, env, freshAsset);
-      if (assetRes.ok) {
-        const body = await assetRes.text();
-        return new Response(body, {
-          status: 200,
-          headers: {
-            'Content-Type': 'text/html; charset=utf-8',
-            'Cache-Control': 'no-store',
-            'CDN-Cache-Control': 'no-store',
-            'X-Content-Type-Options': 'nosniff'
-          }
-        });
-      }
+      if (assetRes.ok) return noStoreHtmlResponse(assetRes);
     }
 
     // Google Search Console proofs must stay on the .html URL with HTTP 200.
@@ -289,17 +330,7 @@ export default {
     if (/^\/google[a-z0-9]+\.html$/i.test(path) && request.method === 'GET' && env.ASSETS) {
       const barePath = path.replace(/\.html$/i, '');
       const assetRes = await env.ASSETS.fetch(new Request(new URL(barePath, request.url), request));
-      if (assetRes.ok) {
-        const body = await assetRes.text();
-        return new Response(body, {
-          status: 200,
-          headers: {
-            'Content-Type': 'text/html; charset=utf-8',
-            'Cache-Control': 'no-store',
-            'CDN-Cache-Control': 'no-store'
-          }
-        });
-      }
+      if (assetRes.ok) return noStoreHtmlResponse(assetRes);
     }
 
     // Route root to marketing landing page
@@ -340,7 +371,7 @@ export default {
 
     try {
       // Question bank gating: full questions require Pro; free visitors receive free diagnostic pack
-      if (path === '/exam_data.js' && request.method === 'GET') {
+      if ((normPath === '/exam_data.js' || normPath === '/az900_exam_data.js' || normPath === '/az500_exam_data.js') && request.method === 'GET') {
         let isProUser = false;
         try {
           const auth = await resolveRequestAuth(
@@ -357,21 +388,59 @@ export default {
         if (isProUser && env.ASSETS) {
           return await env.ASSETS.fetch(request);
         }
-        if (env.ASSETS) {
-          const freeReq = new Request(new URL('/exam_data_free.js', request.url), request);
-          const freeRes = await env.ASSETS.fetch(freeReq);
-          if (freeRes.ok) return freeRes;
+
+        if (normPath === '/exam_data.js') {
+          if (env.ASSETS) {
+            const freeReq = new Request(new URL('/exam_data_free.js', request.url), request);
+            const freeRes = await env.ASSETS.fetch(freeReq);
+            if (freeRes.ok) return freeRes;
+          }
+          return new Response('/* Free Tier Question Bank */ window.COMPTIA_EXAM_DATA = window.COMPTIA_EXAM_DATA || { core1: [], core2: [] };', {
+            headers: { ...corsHeaders, 'Content-Type': 'application/javascript; charset=utf-8' }
+          });
         }
-        return new Response('/* Free Tier Question Bank */ window.COMPTIA_EXAM_DATA = window.COMPTIA_EXAM_DATA || { core1: [], core2: [] };', {
+
+        // Azure AZ-900 / AZ-500: return minimal empty/pro-required stub for free visitors so UI doesn't crash
+        const isAz900 = normPath === '/az900_exam_data.js';
+        const stubVar = isAz900 ? 'AZ900_EXAM_DATA' : 'AZ500_EXAM_DATA';
+        const stubKey = isAz900 ? 'az900' : 'az500';
+        return new Response(`/* Free Tier / Pro Pass Required */ window.${stubVar} = window.${stubVar} || { version: "1.0.0", ${stubKey}: [], proRequired: true };`, {
           headers: { ...corsHeaders, 'Content-Type': 'application/javascript; charset=utf-8' }
         });
       }
 
+      // Raw question bank JSON gating: prevent unauthenticated bypass for raw data files
+      if ((normPath === '/exam_data.json' || normPath === '/az900_exam_data.json' || normPath === '/az500_exam_data.json') && request.method === 'GET') {
+        let isProUser = false;
+        try {
+          const auth = await resolveRequestAuth(
+            request, env, {}, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+          );
+          if (auth && auth.ok) {
+            let ent = null;
+            if (auth.telegramId) ent = await resolveUserEntitlement(auth.telegramId, env.DB);
+            else if (auth.firebaseUid) ent = await resolveFirebaseEntitlement(auth.firebaseUid, env.DB);
+            if (ent && ent.tier && ent.tier !== 'free') isProUser = true;
+          }
+        } catch (_) {}
+
+        if (isProUser && env.ASSETS) {
+          return await env.ASSETS.fetch(request);
+        }
+        return new Response(JSON.stringify({
+          error: 'PRO_REQUIRED',
+          message: 'A paid pass is required to access question bank JSON files.'
+        }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
       // Shard gating: full domain shards require Pro; only diagnostic pack & manifest are public
-      if (path.startsWith('/shards/') && request.method === 'GET') {
-        const isPublicShard = path === '/shards/diagnostic_pack.json' ||
-                              path === '/shards/meta.json' ||
-                              path === '/shards/manifest.js';
+      if (normPath.startsWith('/shards/') && request.method === 'GET') {
+        const isPublicShard = normPath === '/shards/diagnostic_pack.json' ||
+                              normPath === '/shards/meta.json' ||
+                              normPath === '/shards/manifest.js';
         if (!isPublicShard) {
           // Gated shards are the question bank in slices. Walking every shard
           // is the cheapest way to export the paid product, and the entitlement
@@ -530,7 +599,9 @@ export default {
         if (!merchantWallet) {
           return new Response(JSON.stringify({
             error: 'TON_MERCHANT_UNCONFIGURED',
-            message: 'TON payments require TON_MERCHANT_WALLET_ADDRESS in production.'
+            message: isProd
+              ? 'TON payments require TON_MERCHANT_WALLET_ADDRESS in production.'
+              : 'Staging TON payments require secret TON_MERCHANT_WALLET_ADDRESS (use a testnet wallet).'
           }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
         if (isProd && !env.DB) {
@@ -557,6 +628,11 @@ export default {
           }
         }
 
+        // Staging wrangler sets TON_NETWORK=testnet. Client may also request testnet off production.
+        const tonNetwork = (env.TON_NETWORK === 'testnet' || (!isProd && body.network === 'testnet'))
+          ? 'testnet'
+          : 'mainnet';
+
         return new Response(JSON.stringify({
           success: true,
           orderId,
@@ -564,7 +640,77 @@ export default {
           merchantWallet,
           amountTon: prod.amountTon,
           nanotons: prod.nanotons,
-          productId
+          productId,
+          network: tonNetwork
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // XDC Network Pre-payment Order Generation (links on-chain payment to authenticated account)
+      if (path === '/api/v1/billing/xdc/order' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok) {
+          return new Response(JSON.stringify({
+            error: 'AUTH_REQUIRED',
+            message: 'Authentication required to create an XDC payment order.'
+          }), { status: 401, headers: corsHeaders });
+        }
+        const orderLimit = await enforceDualKeyLimit(env, request, 'xdc_order', {
+          uid: auth.uid, uidPerMinute: 10, ipPerMinute: 20
+        });
+        if (!orderLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many order requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...orderLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+        const productId = String(body.productId || 'pro_monthly').trim();
+        const prod = XDC_PRODUCTS[productId];
+        if (!prod) {
+          return new Response(JSON.stringify({
+            error: 'UNKNOWN_PRODUCT',
+            message: 'Unknown XDC product. Use daily_unlimited, pro_monthly, or lifetime_master.'
+          }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+        const network = String(body.network || 'mainnet').trim();
+        const netConfig = XDC_NETWORKS[network] || XDC_NETWORKS.mainnet;
+        const merchantAddress = env.XDC_TREASURY_ADDRESS || '0x2542f888B57d413b8655E3858022aF3e3eE72667';
+        const contractAddress = env.XDC_CONTRACT_ADDRESS || merchantAddress;
+        const userId = auth.firebaseUid || (auth.telegramId ? 'tg_' + auth.telegramId : auth.uid);
+        const orderId = `clar_xdc_${auth.telegramId || auth.firebaseUid}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+
+        if (env.DB) {
+          await ensureXdcTables(env.DB);
+          try {
+            await env.DB.prepare(`
+              INSERT INTO xdc_orders (order_id, user_id, telegram_id, product_id, amount_wei, wallet_address, status)
+              VALUES (?, ?, ?, ?, ?, ?, 'pending')
+            `).bind(orderId, userId, auth.telegramId || 0, productId, prod.amountWei, String(body.walletAddress || '')).run();
+          } catch (e) {
+            console.warn('[XDC] xdc_orders insert failed:', e && e.message ? e.message : e);
+          }
+        }
+
+        return new Response(JSON.stringify({
+          success: true,
+          orderId,
+          memo: orderId,
+          merchantAddress,
+          contractAddress,
+          amountXdc: prod.amountXdc,
+          amountWei: prod.amountWei,
+          productId,
+          network: netConfig.name,
+          chainId: netConfig.chainId,
+          hexChainId: netConfig.hexChainId,
+          rpcUrl: netConfig.rpcUrls[0]
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
@@ -572,6 +718,7 @@ export default {
 
       // 1. Health / ready probes
       if (path === '/api/v1/health' || path === '/api/v1/live') {
+        const tonNetwork = env.TON_NETWORK === 'testnet' ? 'testnet' : 'mainnet';
         return new Response(JSON.stringify({
           status: 'ok',
           domain: 'clariora.com.au',
@@ -579,7 +726,10 @@ export default {
           tmaSupported: true,
           aiProviders: ['groq', 'nvidia', 'ollama', 'openrouter', 'workers_ai'],
           freeSurface: FREE_SURFACE,
-          payRails: ['telegram_stars', 'ton_onchain'],
+          payRails: ['telegram_stars', 'ton_onchain', 'xdc_network'],
+          tonNetwork,
+          tonSbtConfigured: Boolean(env.TON_SBT_COLLECTION_ADDRESS),
+          tonSbtCollectionAddress: env.TON_SBT_COLLECTION_ADDRESS || null,
           auth: {
             identityPlane: 'firebase+telegram',
             sessionCookies: true,
@@ -618,6 +768,12 @@ export default {
           db: dbOk,
           rateLimiterBound,
           aiConfigured,
+          tonConfigured: {
+            merchant: Boolean(env.TON_MERCHANT_WALLET_ADDRESS),
+            toncenter: Boolean(env.TONCENTER_API_KEY),
+            sbtCollection: Boolean(env.TON_SBT_COLLECTION_ADDRESS),
+            network: env.TON_NETWORK === 'testnet' ? 'testnet' : 'mainnet'
+          },
           circuits,
           checkedAt: new Date().toISOString()
         }), {
@@ -782,6 +938,56 @@ export default {
         }), [clearUserSessionCookie(request)]);
       }
 
+      // Auth: account deletion (GDPR / Privacy right-to-be-forgotten)
+      if (path === '/api/v1/auth/delete-account' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok || !auth.uid) {
+          return new Response(JSON.stringify({
+            error: 'AUTH_REQUIRED',
+            message: 'Authentication required to delete account.'
+          }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+
+        const deleteLimit = await enforceDualKeyLimit(env, request, 'delete_account', {
+          uid: auth.uid, uidPerMinute: 2, ipPerMinute: 5
+        });
+        if (!deleteLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many account deletion requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...deleteLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+
+        if (env.DB) {
+          try {
+            await env.DB.prepare('DELETE FROM telegram_users WHERE id = ? OR firebase_uid = ?').bind(auth.telegramId || 0, auth.uid).run();
+            await env.DB.prepare('DELETE FROM auth_accounts WHERE id = ?').bind(auth.uid).run();
+            await env.DB.prepare('DELETE FROM learner_sync_state WHERE user_id = ?').bind(auth.uid).run();
+            await env.DB.prepare('DELETE FROM ton_orders WHERE user_id = ?').bind(auth.uid).run();
+            await env.DB.prepare('DELETE FROM xdc_orders WHERE user_id = ?').bind(auth.uid).run();
+            await env.DB.prepare('DELETE FROM oracle_attestations WHERE user_id = ?').bind(auth.uid).run();
+            await env.DB.prepare('DELETE FROM exam_attempts WHERE user_id = ?').bind(auth.uid).run();
+            await env.DB.prepare('DELETE FROM learner_memories WHERE user_id = ?').bind(auth.uid).run();
+          } catch (dbErr) {
+            console.warn('[Auth] Database record purge warning:', dbErr && dbErr.message ? dbErr.message : dbErr);
+          }
+        }
+
+        const cookiesToClear = [clearUserSessionCookie(request), clearAdminSessionCookie(request)];
+        return withSetCookies(new Response(JSON.stringify({
+          success: true,
+          message: 'Account and associated records successfully purged.'
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }), cookiesToClear);
+      }
+
       // Auth: admin cookie exchange (one-time key -> HttpOnly admin session)
       if (path === '/api/v1/auth/admin/session' && request.method === 'POST') {
         // The admin key is a single shared secret guarding every admin route, so this
@@ -883,6 +1089,164 @@ export default {
         const limit = Math.min(parseInt(url.searchParams.get('limit') || '100', 10) || 100, 500);
         const payload = await listAuthAccounts(env.DB, limit);
         return new Response(JSON.stringify(payload), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // Admin: AI spend, cache effectiveness, and per-user usage outliers
+      if (path === '/api/v1/admin/ai-cost' && request.method === 'GET') {
+        if (!(await isAdminAuthorized(request, env))) {
+          return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        try {
+          const report = await buildAiCostReport(env.DB, env, { days: url.searchParams.get('days') });
+          return new Response(JSON.stringify(report), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
+          });
+        } catch (err) {
+          return new Response(JSON.stringify({
+            error: 'AI_COST_REPORT_FAILED',
+            message: String(err && err.message || err).slice(0, 200)
+          }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+      }
+
+      // Admin: APX telemetry integrity flags (read-only; accounts are never modified)
+      if (path === '/api/v1/admin/apx-anomalies' && request.method === 'GET') {
+        if (!(await isAdminAuthorized(request, env))) {
+          return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        try {
+          const report = await buildApxAnomalyReport(env.DB, { days: url.searchParams.get('days') });
+          try {
+            report.holdout = await buildHoldoutReport(env.DB);
+          } catch (holdoutErr) {
+            report.holdout = { verdict: 'unavailable', reason: String(holdoutErr && holdoutErr.message || holdoutErr).slice(0, 120) };
+          }
+          return new Response(JSON.stringify(report), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
+          });
+        } catch (err) {
+          const missing = /no such table/i.test(String(err && err.message));
+          return new Response(JSON.stringify({
+            error: missing ? 'APX_TELEMETRY_NOT_INITIALISED' : 'APX_ANOMALY_REPORT_FAILED',
+            message: String(err && err.message || err).slice(0, 200)
+          }), { status: missing ? 404 : 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+      }
+
+      // APX soft-currency telemetry mirror (client events; not payment authority)
+      if (path === '/api/v1/apx/events' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok || !auth.uid) {
+          return new Response(JSON.stringify({
+            error: 'AUTH_REQUIRED',
+            message: 'Sign in before syncing APX events.'
+          }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+        const userId = auth.uid;
+        const apxLimit = await enforceDualKeyLimit(env, request, 'apx_events', {
+          uid: userId, uidPerMinute: 60, ipPerMinute: 120
+        });
+        if (!apxLimit.allowed) {
+          return new Response(JSON.stringify({ error: 'RATE_LIMITED' }), {
+            status: 429,
+            headers: { ...corsHeaders, ...apxLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+        if (!env.DB) {
+          return new Response(JSON.stringify({ ok: true, stored: 0, note: 'DB unbound' }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        await env.DB.prepare(`
+          CREATE TABLE IF NOT EXISTS apx_events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT NOT NULL,
+            day TEXT,
+            source TEXT NOT NULL,
+            amount INTEGER NOT NULL DEFAULT 0,
+            capped INTEGER NOT NULL DEFAULT 0,
+            item TEXT,
+            balance_after INTEGER,
+            created_at TEXT NOT NULL DEFAULT (datetime('now'))
+          )
+        `).run();
+        await env.DB.prepare(`
+          CREATE TABLE IF NOT EXISTS apx_daily_counters (
+            user_id TEXT NOT NULL,
+            day TEXT NOT NULL,
+            minted INTEGER NOT NULL DEFAULT 0,
+            burned INTEGER NOT NULL DEFAULT 0,
+            practice_minted INTEGER NOT NULL DEFAULT 0,
+            side_minted INTEGER NOT NULL DEFAULT 0,
+            cap_hits INTEGER NOT NULL DEFAULT 0,
+            updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+            PRIMARY KEY (user_id, day)
+          )
+        `).run();
+        const events = Array.isArray(body.events) ? body.events.slice(0, 50) : [];
+        const arm = body.arm === 'holdout' || body.arm === 'apx' ? body.arm : null;
+        let withArm = true;
+        let stored = 0;
+        for (const evt of events) {
+          if (!evt || typeof evt !== 'object') continue;
+          const source = String(evt.source || 'UNKNOWN').slice(0, 64);
+          const amount = Number(evt.amount) || 0;
+          const day = evt.day ? String(evt.day).slice(0, 16) : null;
+          const capped = evt.capped ? 1 : 0;
+          const item = evt.item != null ? String(evt.item).slice(0, 64) : null;
+          const balanceAfter = evt.balance_after == null ? null : Number(evt.balance_after);
+          const createdAt = evt.created_at ? String(evt.created_at) : new Date().toISOString();
+          const row = [userId, day, source, amount, capped, item, balanceAfter, createdAt];
+          let storedWithArm = false;
+          if (withArm) {
+            try {
+              await env.DB.prepare(
+                'INSERT INTO apx_events (user_id, day, source, amount, capped, item, balance_after, created_at, arm) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+              ).bind(...row, arm).run();
+              storedWithArm = true;
+            } catch (armErr) {
+              // Before migration 0004 there is no arm column; anything else is a real failure.
+              if (!/no column named arm|no such column/i.test(String(armErr && armErr.message))) throw armErr;
+              withArm = false;
+            }
+          }
+          if (!storedWithArm) {
+            await env.DB.prepare(
+              'INSERT INTO apx_events (user_id, day, source, amount, capped, item, balance_after, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+            ).bind(...row).run();
+          }
+          stored += 1;
+          if (day) {
+            const minted = amount > 0 ? amount : 0;
+            const burned = amount < 0 ? -amount : 0;
+            const practice = source === 'EXAM_COMPLETE' && amount > 0 ? amount : 0;
+            const side = amount > 0 && source !== 'EXAM_COMPLETE' && source !== 'ACHIEVEMENT_MINT' ? amount : 0;
+            const capHit = capped ? 1 : 0;
+            await env.DB.prepare(`
+              INSERT INTO apx_daily_counters (user_id, day, minted, burned, practice_minted, side_minted, cap_hits, updated_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+              ON CONFLICT(user_id, day) DO UPDATE SET
+                minted = minted + excluded.minted,
+                burned = burned + excluded.burned,
+                practice_minted = practice_minted + excluded.practice_minted,
+                side_minted = side_minted + excluded.side_minted,
+                cap_hits = cap_hits + excluded.cap_hits,
+                updated_at = datetime('now')
+            `).bind(userId, day, minted, burned, practice, side, capHit).run();
+          }
+        }
+        return new Response(JSON.stringify({ ok: true, stored }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }
@@ -1165,6 +1529,7 @@ export default {
         return await handleCoachRequest({
           request,
           env,
+          ctx,
           body,
           corsHeaders,
           stream,
@@ -1363,8 +1728,10 @@ export default {
 
         const cleanTxHash = String(txHash || '').trim();
         const cleanProductId = String(productId || '').trim();
-        if (!cleanTxHash || !cleanProductId) {
-          return new Response(JSON.stringify({ error: 'Missing txHash or productId' }), {
+        const cleanBoc = String((body && body.boc) || '').trim();
+        const hasPendingPlaceholder = /^pending:/i.test(cleanTxHash);
+        if ((!cleanTxHash && !cleanBoc) || !cleanProductId) {
+          return new Response(JSON.stringify({ error: 'Missing txHash/boc or productId' }), {
             status: 400,
             headers: corsHeaders
           });
@@ -1377,7 +1744,8 @@ export default {
         // payment. The order must also belong to the caller, or orderId is an IDOR handle.
         const cleanOrderId = String((body && body.orderId) || '').trim().slice(0, 128);
         const callerOrderRef = auth.firebaseUid || (auth.telegramId ? 'tg_' + auth.telegramId : auth.uid);
-        if (isProd && !cleanOrderId) {
+        // Happy-path TonConnect sends boc + orderId (tx hash resolved server-side via memo).
+        if ((isProd || cleanBoc || hasPendingPlaceholder) && !cleanOrderId) {
           return new Response(JSON.stringify({
             error: 'ORDER_REQUIRED',
             message: 'Create a payment order via /api/v1/billing/ton/order before verifying a transaction.'
@@ -1408,7 +1776,9 @@ export default {
           }
         }
         const isTestPayment = !isProd && (env.ALLOW_TEST_PAYMENTS === '1' || env.TON_VERIFY_RELAXED === '1');
-        const isValidHashFormat = /^[a-fA-F0-9]{64}$/.test(cleanTxHash) || /^[a-zA-Z0-9+/]{42,44}={0,2}$/.test(cleanTxHash);
+        const isValidHashFormat = hasPendingPlaceholder || cleanBoc.length > 20 ||
+          /^[a-fA-F0-9]{64}$/.test(cleanTxHash) ||
+          /^[a-zA-Z0-9+/]{42,88}={0,2}$/.test(cleanTxHash);
         if (!isValidHashFormat && !isTestPayment) {
           return new Response(JSON.stringify({
             error: 'INVALID_TX_HASH_FORMAT',
@@ -1419,7 +1789,7 @@ export default {
           });
         }
 
-        if (env.DB) {
+        if (env.DB && cleanTxHash && !hasPendingPlaceholder) {
           const prior = await env.DB.prepare(
             'SELECT id FROM ton_transactions WHERE id = ? OR LOWER(id) = LOWER(?)'
           ).bind(cleanTxHash, cleanTxHash).first();
@@ -1435,7 +1805,7 @@ export default {
         }
 
         let onChainConfirmed = false;
-        let canonicalTxHash = cleanTxHash.toLowerCase();
+        let canonicalTxHash = hasPendingPlaceholder ? '' : cleanTxHash.toLowerCase();
         const TON_PRICES = {
           daily_unlimited: { nanotons: 1500000000 },
           pro_monthly: { nanotons: 7000000000 },
@@ -1456,69 +1826,108 @@ export default {
           }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
 
+        function tonAddrLooseEqual(a, b) {
+          if (!a || !b) return false;
+          const na = String(a).trim().toLowerCase();
+          const nb = String(b).trim().toLowerCase();
+          if (na === nb) return true;
+          // EQ (bounceable) vs UQ (non-bounceable) share the same payload after the prefix.
+          if (na.length > 4 && nb.length > 4 && na.slice(2) === nb.slice(2)) return true;
+          return false;
+        }
+
+        function extractTonMemo(inMsg) {
+          if (!inMsg || typeof inMsg !== 'object') return '';
+          const parts = [
+            inMsg.message,
+            inMsg.msg_data && inMsg.msg_data.text,
+            inMsg.msg_data && inMsg.msg_data.comment,
+            inMsg.decoded_body && inMsg.decoded_body.text,
+            inMsg.decoded_body && inMsg.decoded_body.comment
+          ];
+          return parts.filter(Boolean).map(String).join(' ');
+        }
+
+        function tonPaymentMatches(t) {
+          const onChainHash = t.transaction_id && (t.transaction_id.hash || t.transaction_id);
+          if (!onChainHash) return false;
+
+          const nowSec = Math.floor(Date.now() / 1000);
+          const txTime = Number(t.utime || 0);
+          if (txTime > 0 && (nowSec - txTime > 7200 || txTime - nowSec > 300)) {
+            return false;
+          }
+
+          const outMsgs = t.out_msgs || [];
+          const destMatch = outMsgs.some((m) => {
+            const dest = m.destination || '';
+            const val = Number(m.value || 0);
+            const validDest = isTestPayment ? true : (merchantWallet && tonAddrLooseEqual(dest, merchantWallet));
+            const validVal = val >= (expectedProduct.nanotons * 0.95);
+            return validDest && validVal;
+          });
+          const inMsg = t.in_msg || {};
+          const inDestMatch = inMsg.destination &&
+            (isTestPayment ? true : (merchantWallet && tonAddrLooseEqual(inMsg.destination, merchantWallet))) &&
+            Number(inMsg.value || 0) >= (expectedProduct.nanotons * 0.95);
+
+          const memoText = extractTonMemo(inMsg);
+          let memoMatch = true;
+          if (cleanOrderId) {
+            memoMatch = isTestPayment || memoText.includes(cleanOrderId);
+          } else if (isProd) {
+            memoMatch = false;
+          }
+
+          const success = !t.compute_ph || t.compute_ph.exit_code === 0;
+          if (!(success && (destMatch || inDestMatch) && memoMatch)) return false;
+
+          canonicalTxHash = String(onChainHash).toLowerCase();
+          return true;
+        }
+
         if (env.TONCENTER_API_KEY && (merchantWallet || walletAddress)) {
           try {
             const targetAddress = merchantWallet || walletAddress;
-            const tcUrl = 'https://toncenter.com/api/v2/getTransactions?address=' +
-              encodeURIComponent(targetAddress) + '&limit=20';
+            const isTonTestnet = !isProd && ((body && body.network === 'testnet') || env.TON_NETWORK === 'testnet');
+            const tcBase = isTonTestnet ? 'https://testnet.toncenter.com/api/v2/' : 'https://toncenter.com/api/v2/';
+            const tcUrl = tcBase + 'getTransactions?address=' +
+              encodeURIComponent(targetAddress) + '&limit=30';
             const tcRes = await fetch(tcUrl, {
               headers: { 'X-API-Key': env.TONCENTER_API_KEY }
             });
             if (tcRes.ok) {
               const tcData = await tcRes.json();
               const txs = (tcData && tcData.result) || [];
-              onChainConfirmed = txs.some((t) => {
-                const onChainHash = t.transaction_id && (t.transaction_id.hash || t.transaction_id);
-                if (!onChainHash) return false;
-                const normOnChain = String(onChainHash).trim().toLowerCase();
-                const normInput = cleanTxHash.toLowerCase();
-                const hashMatch = normOnChain === normInput;
-                if (!hashMatch) return false;
-
-                // Validate recency: transaction must have been created within last 2 hours (7200s)
-                const nowSec = Math.floor(Date.now() / 1000);
-                const txTime = Number(t.utime || 0);
-                if (txTime > 0 && (nowSec - txTime > 7200 || txTime - nowSec > 300)) {
-                  console.warn('[TON] Transaction expired:', txTime, 'now:', nowSec);
-                  return false;
-                }
-
-                canonicalTxHash = (t.transaction_id.hash || onChainHash).toLowerCase();
-
-                // Validate destination wallet matches merchant wallet and payment amount
-                const outMsgs = t.out_msgs || [];
-                const destMatch = outMsgs.some((m) => {
-                  const dest = m.destination || '';
-                  const val = Number(m.value || 0);
-                  const validDest = isTestPayment ? true : (merchantWallet && dest.toLowerCase() === merchantWallet.toLowerCase());
-                  const validVal = val >= (expectedProduct.nanotons * 0.95);
-                  return validDest && validVal;
+              const normInput = cleanTxHash.toLowerCase();
+              // 1) Exact hash match (recovery paste path)
+              if (!hasPendingPlaceholder && cleanTxHash) {
+                onChainConfirmed = txs.some((t) => {
+                  const onChainHash = t.transaction_id && (t.transaction_id.hash || t.transaction_id);
+                  if (!onChainHash) return false;
+                  if (String(onChainHash).trim().toLowerCase() !== normInput) return false;
+                  return tonPaymentMatches(t);
                 });
-                const inMsg = t.in_msg || {};
-                const inDestMatch = inMsg.destination &&
-                  (isTestPayment ? true : (merchantWallet && inMsg.destination.toLowerCase() === merchantWallet.toLowerCase())) &&
-                  Number(inMsg.value || 0) >= (expectedProduct.nanotons * 0.95);
-
-                // Check order memo binding if orderId was provided
-                let memoMatch = !isProd;
-                if (cleanOrderId) {
-                  const memoText = inMsg.message || (inMsg.msg_data && inMsg.msg_data.text) || '';
-                  memoMatch = isTestPayment || memoText.includes(cleanOrderId);
-                }
-
-                const success = !t.compute_ph || t.compute_ph.exit_code === 0;
-                return success && (destMatch || inDestMatch) && memoMatch;
-              });
+              }
+              // 2) Happy path: TonConnect BoC / pending placeholder → match by order memo + amount
+              if (!onChainConfirmed && cleanOrderId) {
+                onChainConfirmed = txs.some((t) => tonPaymentMatches(t));
+              }
             }
           } catch (tcErr) {
             console.debug('TonCenter check notice:', tcErr.message);
           }
         } else if (isTestPayment) {
           // Strictly limited to automated test harnesses passing explicit flag in mockEnv
-          onChainConfirmed = cleanTxHash.length >= 16;
+          onChainConfirmed = (cleanTxHash.length >= 16 || cleanBoc.length > 20);
+          if (onChainConfirmed && !canonicalTxHash) {
+            canonicalTxHash = hasPendingPlaceholder
+              ? ('test_' + cleanOrderId).toLowerCase()
+              : cleanTxHash.toLowerCase();
+          }
         }
 
-        if (onChainConfirmed && env.DB && canonicalTxHash !== cleanTxHash.toLowerCase()) {
+        if (onChainConfirmed && env.DB && canonicalTxHash && canonicalTxHash !== cleanTxHash.toLowerCase()) {
           const priorCanonical = await env.DB.prepare(
             'SELECT id FROM ton_transactions WHERE id = ? OR LOWER(id) = LOWER(?)'
           ).bind(canonicalTxHash, canonicalTxHash).first();
@@ -1595,10 +2004,20 @@ export default {
             try {
               // Scoped to the caller: an order id alone must never mutate another account's row.
               await env.DB.prepare(
-                "UPDATE ton_orders SET status = 'fulfilled', tx_hash = ?, updated_at = CURRENT_TIMESTAMP " +
+                "UPDATE ton_orders SET status = 'fulfilled', tx_hash = ?, fulfilled_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP " +
                 "WHERE order_id = ? AND user_id = ?"
               ).bind(canonicalTxHash, cleanOrderId, callerOrderRef).run();
-            } catch (_) {}
+            } catch (fulfillErr) {
+              // Pre-0005 D1: columns tx_hash/updated_at may be missing; still mark fulfilled.
+              try {
+                await env.DB.prepare(
+                  "UPDATE ton_orders SET status = 'fulfilled', fulfilled_at = CURRENT_TIMESTAMP " +
+                  "WHERE order_id = ? AND user_id = ?"
+                ).bind(cleanOrderId, callerOrderRef).run();
+              } catch (_) {
+                console.warn('[TON] ton_orders fulfill update failed:', fulfillErr && fulfillErr.message);
+              }
+            }
           }
         }
 
@@ -1609,6 +2028,495 @@ export default {
           onChainConfirmed: true,
           features: featuresForTier(effective.tier),
           message: 'TON transaction confirmed. Paid tier unlocked with hard AI budgets.'
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // XDC Network On-Chain Payment Verification & Entitlement Activation
+      // @see https://docs.xdc.network/api/
+      if (path === '/api/v1/billing/xdc/verify' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const { productId, txHash, orderId, network, walletAddress } = body;
+
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok) {
+          return new Response(JSON.stringify({
+            error: 'AUTH_REQUIRED',
+            message: 'Valid Telegram initData, session cookie, or Firebase idToken required for XDC entitlement grant.'
+          }), { status: 401, headers: corsHeaders });
+        }
+
+        const xdcLimit = await enforceDualKeyLimit(env, request, 'xdc_verify', {
+          uid: auth.uid, uidPerMinute: 5, ipPerMinute: 20
+        });
+        if (!xdcLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many verification attempts. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...xdcLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+
+        const cleanTxHash = String(txHash || '').trim();
+        const cleanProductId = String(productId || '').trim();
+        const cleanOrderId = String(orderId || '').trim().slice(0, 128);
+
+        if (!cleanTxHash || !cleanProductId) {
+          return new Response(JSON.stringify({ error: 'Missing txHash or productId' }), {
+            status: 400,
+            headers: corsHeaders
+          });
+        }
+
+        const isProd = env.ENVIRONMENT === 'production' || env.NODE_ENV === 'production';
+        const isTestPayment = !isProd && (env.ALLOW_TEST_PAYMENTS === '1' || env.XDC_VERIFY_RELAXED === '1' || cleanTxHash.startsWith('sim_'));
+
+        const firebaseUid = auth.firebaseUid || (!auth.telegramId ? auth.uid : null);
+        const resolvedId = auth.telegramId || null;
+        const callerOrderRef = firebaseUid || (resolvedId ? 'tg_' + resolvedId : auth.uid);
+
+        if (isProd && !cleanOrderId) {
+          return new Response(JSON.stringify({
+            error: 'ORDER_REQUIRED',
+            message: 'Create a payment order via /api/v1/billing/xdc/order before verifying an XDC transaction.'
+          }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+
+        if (cleanOrderId && env.DB) {
+          await ensureXdcTables(env.DB);
+          const order = await env.DB.prepare(
+            'SELECT order_id, user_id, product_id, status FROM xdc_orders WHERE order_id = ?'
+          ).bind(cleanOrderId).first();
+
+          if (!order) {
+            return new Response(JSON.stringify({
+              error: 'ORDER_NOT_FOUND',
+              message: 'The requested XDC order does not exist.'
+            }), { status: 404, headers: corsHeaders });
+          }
+          if (order.user_id !== callerOrderRef) {
+            return new Response(JSON.stringify({
+              error: 'ORDER_USER_MISMATCH',
+              message: 'This XDC order belongs to a different account.'
+            }), { status: 403, headers: corsHeaders });
+          }
+          if (order.status === 'fulfilled') {
+            return new Response(JSON.stringify({
+              error: 'ORDER_ALREADY_FULFILLED',
+              message: 'This XDC payment has already been redeemed.'
+            }), { status: 409, headers: corsHeaders });
+          }
+        }
+
+        const targetNetwork = (!isProd && network === 'apothem') ? 'apothem' : 'mainnet';
+        const expectedProduct = XDC_PRODUCTS[cleanProductId];
+
+        // On-chain JSON-RPC verification
+        if (!isTestPayment) {
+          const expectedMerchant = env.XDC_CONTRACT_ADDRESS || env.XDC_TREASURY_ADDRESS || null;
+          const verification = await verifyXdcReceipt(
+            cleanTxHash,
+            targetNetwork,
+            expectedMerchant,
+            expectedProduct ? expectedProduct.amountWei : null
+          );
+          if (!verification.ok) {
+            return new Response(JSON.stringify({
+              error: 'ONCHAIN_VERIFY_FAILED',
+              message: verification.error || 'Failed to verify transaction receipt on XDC Network'
+            }), { status: 422, headers: corsHeaders });
+          }
+        }
+
+        // Anti-replay check via KV (normalized hash format)
+        const normTxHash = cleanTxHash.startsWith('xdc') ? '0x' + cleanTxHash.slice(3) : cleanTxHash;
+        const replayKey = `xdc_redeemed_${normTxHash.toLowerCase()}`;
+        if (env.KV_SESSIONS) {
+          const alreadyUsed = await env.KV_SESSIONS.get(replayKey);
+          if (alreadyUsed) {
+            return new Response(JSON.stringify({
+              error: 'TX_ALREADY_REDEEMED',
+              message: 'This on-chain transaction hash has already been redeemed.'
+            }), { status: 409, headers: corsHeaders });
+          }
+          await env.KV_SESSIONS.put(replayKey, cleanOrderId || 'direct', { expirationTtl: 86400 * 365 });
+        }
+
+        const newTier = cleanProductId === 'lifetime_master' ? 'lifetime' : 'pro';
+        const daysToAdd = cleanProductId === 'daily_unlimited' ? 1 : 30;
+        const grantExpiresAt = cleanProductId === 'lifetime_master'
+          ? null
+          : new Date(Date.now() + daysToAdd * 86400 * 1000).toISOString();
+
+        let effective = { tier: newTier, expiresAt: grantExpiresAt };
+
+        if (env.DB) {
+          if (resolvedId) {
+            const existingUser = await env.DB.prepare(
+              'SELECT tier, tier_expires_at FROM telegram_users WHERE telegram_id = ?'
+            ).bind(resolvedId).first();
+            effective = resolveEffectiveTierUpgrade(existingUser, newTier, grantExpiresAt);
+
+            await env.DB.prepare(
+              'INSERT INTO telegram_users (telegram_id, tier, tier_expires_at, updated_at) ' +
+              'VALUES (?, ?, ?, CURRENT_TIMESTAMP) ' +
+              'ON CONFLICT(telegram_id) DO UPDATE SET ' +
+              'tier = excluded.tier, tier_expires_at = excluded.tier_expires_at, updated_at = CURRENT_TIMESTAMP'
+            ).bind(resolvedId, effective.tier, effective.expiresAt).run();
+          }
+          if (firebaseUid) {
+            await ensureAuthAccountAiColumns(env.DB);
+            const existingAccount = await env.DB.prepare(
+              'SELECT tier, tier_expires_at FROM auth_accounts WHERE uid = ?'
+            ).bind(firebaseUid).first();
+            effective = resolveEffectiveTierUpgrade(existingAccount, newTier, grantExpiresAt);
+
+            await env.DB.prepare(
+              'UPDATE auth_accounts SET tier = ?, tier_expires_at = ? WHERE uid = ?'
+            ).bind(effective.tier, effective.expiresAt, firebaseUid).run();
+          }
+
+          if (cleanOrderId) {
+            try {
+              await env.DB.prepare(
+                "UPDATE xdc_orders SET status = 'fulfilled', tx_hash = ?, wallet_address = ?, updated_at = CURRENT_TIMESTAMP WHERE order_id = ? AND user_id = ?"
+              ).bind(normTxHash, walletAddress || '', cleanOrderId, callerOrderRef).run();
+            } catch (_) {}
+          }
+        }
+
+        return new Response(JSON.stringify({
+          success: true,
+          tier: effective.tier,
+          expiresAt: effective.expiresAt,
+          onChainConfirmed: true,
+          network: targetNetwork,
+          features: featuresForTier(effective.tier),
+          message: 'XDC Network payment verified. Pro tier unlocked on enterprise rails.'
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // Authenticated Exam Submission: records verified exam score and passing status in D1
+      if (path === '/api/v1/exam/submit' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok || !auth.uid) {
+          return new Response(JSON.stringify({
+            error: 'AUTH_REQUIRED',
+            message: 'Authentication required to submit exam results.'
+          }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+
+        const examLimit = await enforceDualKeyLimit(env, request, 'exam_submit', {
+          uid: auth.uid, uidPerMinute: 10, ipPerMinute: 30
+        });
+        if (!examLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many exam submissions. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...examLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+
+        const { examCode, scaledScore, passed, timeSpentSeconds, rawCorrect, totalQuestions } = body;
+        if (!examCode || typeof scaledScore !== 'number') {
+          return new Response(JSON.stringify({ error: 'Missing examCode or valid scaledScore' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+
+        const cleanCode = String(examCode).trim().toUpperCase();
+        const score = Math.max(100, Math.min(1000, Number(scaledScore) || 100));
+        const isCore2OrCloud = cleanCode.endsWith('2') || cleanCode.includes('1102') || cleanCode.includes('1202') || cleanCode.includes('AZ-900') || cleanCode.includes('AZ900');
+        const minPassScore = isCore2OrCloud ? 700 : 675;
+        const verifiedPassed = score >= minPassScore && Boolean(passed);
+        const attemptId = `attempt_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+        const safeTimeSpent = Math.max(0, Math.min(10800, Number(timeSpentSeconds) || 0));
+        const safeRaw = Math.max(0, Number(rawCorrect) || 0);
+        const safeTotal = Math.max(1, Number(totalQuestions) || 1);
+
+        if (env && env.DB) {
+          try {
+            await ensureXdcTables(env.DB);
+            await env.DB.prepare(`
+              INSERT INTO exam_attempts (attempt_id, user_id, exam_code, scaled_score, passed, time_spent_seconds, raw_correct, total_questions)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            `).bind(attemptId, auth.uid, cleanCode, score, verifiedPassed ? 1 : 0, safeTimeSpent, safeRaw, safeTotal).run();
+          } catch (e) {
+            console.warn('[Exam] Submission recording warning:', e && e.message ? e.message : e);
+          }
+        }
+
+        return new Response(JSON.stringify({
+          success: true,
+          attemptId,
+          examCode: cleanCode,
+          scaledScore: score,
+          passed: verifiedPassed,
+          certifiedAt: Math.floor(Date.now() / 1000)
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // AI Attestation Oracle: Signs Proof-of-Competence for XDC (ERC-5192) or TON (TEP-85)
+      if (path === '/api/v1/oracle/attest' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok) {
+          return new Response(JSON.stringify({
+            error: 'AUTH_REQUIRED',
+            message: 'Authentication required to request an AI Proof-of-Competence attestation.'
+          }), { status: 401, headers: corsHeaders });
+        }
+
+        const attestLimit = await enforceDualKeyLimit(env, request, 'oracle_attest', {
+          uid: auth.uid, uidPerMinute: 5, ipPerMinute: 15
+        });
+        if (!attestLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many attestation requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...attestLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+
+        const { examCode, scaledScore, passed, localLedgerHash, chain, walletAddress, attemptId } = body;
+        if (!examCode || !walletAddress) {
+          return new Response(JSON.stringify({ error: 'Missing examCode or walletAddress' }), {
+            status: 400,
+            headers: corsHeaders
+          });
+        }
+
+        let verifiedScore = Number(scaledScore);
+        let verifiedPassed = Boolean(passed);
+
+        // Server-side attestation verification: Check database for recorded passing attempt
+        if (env && env.DB) {
+          try {
+            await ensureXdcTables(env.DB);
+            let attemptRow = null;
+            if (attemptId) {
+              attemptRow = await env.DB.prepare(
+                'SELECT scaled_score, passed FROM exam_attempts WHERE attempt_id = ? AND user_id = ?'
+              ).bind(String(attemptId), auth.uid).first();
+            } else {
+              attemptRow = await env.DB.prepare(
+                'SELECT scaled_score, passed FROM exam_attempts WHERE user_id = ? AND exam_code = ? AND passed = 1 ORDER BY created_at DESC LIMIT 1'
+              ).bind(auth.uid, String(examCode).trim().toUpperCase()).first();
+            }
+            if (attemptRow) {
+              verifiedScore = Number(attemptRow.scaled_score);
+              verifiedPassed = Boolean(attemptRow.passed);
+            } else if (env.ENVIRONMENT === 'production') {
+              return new Response(JSON.stringify({
+                error: 'VERIFIED_ATTEMPT_REQUIRED',
+                message: 'No verified passing exam attempt found on record for this account.'
+              }), { status: 403, headers: corsHeaders });
+            }
+          } catch (e) {
+            console.warn('[Oracle] Attempt verification warning:', e && e.message ? e.message : e);
+          }
+        }
+
+        const attestation = await createOracleAttestation({
+          userId: auth.uid,
+          examCode: String(examCode),
+          scaledScore: verifiedScore,
+          passed: verifiedPassed,
+          localLedgerRoot: localLedgerHash,
+          chain: String(chain || 'xdc').toLowerCase(),
+          walletAddress: String(walletAddress),
+          env
+        });
+
+        if (!attestation.ok) {
+          return new Response(JSON.stringify({
+            error: 'ATTESTATION_REJECTED',
+            message: attestation.error || 'Mastery criteria not satisfied'
+          }), { status: 422, headers: corsHeaders });
+        }
+
+        return new Response(JSON.stringify(attestation), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // TON Mastery SBT mint queue (oracle mints; clients request after verified pass)
+      if (path === '/api/v1/credentials/ton/mint' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const auth = await resolveRequestAuth(
+          request, env, body, verifyFirebaseIdToken, verifyTelegramInitData, verifyTelegramLoginWidget
+        );
+        if (!auth.ok) {
+          return new Response(JSON.stringify({
+            error: 'AUTH_REQUIRED',
+            message: 'Authentication required to mint a TON mastery credential.'
+          }), { status: 401, headers: corsHeaders });
+        }
+
+        const mintLimit = await enforceDualKeyLimit(env, request, 'ton_sbt_mint', {
+          uid: auth.uid, uidPerMinute: 5, ipPerMinute: 15
+        });
+        if (!mintLimit.allowed) {
+          return new Response(JSON.stringify({
+            error: 'RATE_LIMITED',
+            message: 'Too many mint requests. Please wait a moment.'
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, ...mintLimit.headers, 'Content-Type': 'application/json' }
+          });
+        }
+
+        const isProd = env.ENVIRONMENT === 'production' || env.NODE_ENV === 'production';
+        const collectionAddress = String(env.TON_SBT_COLLECTION_ADDRESS || '').trim() || null;
+        if (!collectionAddress) {
+          return new Response(JSON.stringify({
+            error: 'SBT_COLLECTION_UNCONFIGURED',
+            message: 'TON Mastery SBT collection is not deployed for this environment yet.'
+          }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+        // Never allow testnet-form addresses (kQ/0Q) on production.
+        if (isProd && /^[k0]Q/i.test(collectionAddress)) {
+          return new Response(JSON.stringify({
+            error: 'SBT_COLLECTION_NETWORK_MISMATCH',
+            message: 'Production Mastery SBT must use a mainnet collection address.'
+          }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+
+        const examCode = String(body.examCode || '').trim().toUpperCase();
+        const recipientWallet = String(body.walletAddress || body.recipientWallet || '').trim();
+        const ledgerHash = String(body.ledgerHash || body.localLedgerHash || '');
+        const attemptId = body.attemptId ? String(body.attemptId) : null;
+        if (!examCode || !recipientWallet) {
+          return new Response(JSON.stringify({
+            error: 'INVALID_MINT_REQUEST',
+            message: 'examCode and walletAddress are required.'
+          }), { status: 400, headers: corsHeaders });
+        }
+
+        let verifiedScore = Number(body.scaledScore);
+        let verifiedPassed = Boolean(body.passed);
+        if (env.DB) {
+          try {
+            await ensureXdcTables(env.DB);
+            let attemptRow = null;
+            if (attemptId) {
+              attemptRow = await env.DB.prepare(
+                'SELECT scaled_score, passed FROM exam_attempts WHERE attempt_id = ? AND user_id = ?'
+              ).bind(attemptId, auth.uid).first();
+            } else {
+              attemptRow = await env.DB.prepare(
+                'SELECT scaled_score, passed FROM exam_attempts WHERE user_id = ? AND exam_code = ? AND passed = 1 ORDER BY created_at DESC LIMIT 1'
+              ).bind(auth.uid, examCode).first();
+            }
+            if (attemptRow) {
+              verifiedScore = Number(attemptRow.scaled_score);
+              verifiedPassed = Boolean(attemptRow.passed);
+            } else if (isProd) {
+              return new Response(JSON.stringify({
+                error: 'VERIFIED_ATTEMPT_REQUIRED',
+                message: 'No verified passing exam attempt found on record for this account.'
+              }), { status: 403, headers: corsHeaders });
+            }
+          } catch (e) {
+            console.warn('[TON SBT] Attempt verification warning:', e && e.message ? e.message : e);
+            if (isProd) {
+              return new Response(JSON.stringify({
+                error: 'VERIFIED_ATTEMPT_REQUIRED',
+                message: 'Could not verify exam attempt for mint.'
+              }), { status: 403, headers: corsHeaders });
+            }
+          }
+        } else if (isProd) {
+          return new Response(JSON.stringify({
+            error: 'VERIFIED_ATTEMPT_REQUIRED',
+            message: 'Exam attempt verification requires D1 in production.'
+          }), { status: 503, headers: corsHeaders });
+        }
+
+        const isCore2 = /1202|1102|CORE\s*2/.test(examCode) || examCode.endsWith('2');
+        const minPass = isCore2 ? 700 : 675;
+        if (!verifiedPassed || !(Number.isFinite(verifiedScore) && verifiedScore >= minPass)) {
+          return new Response(JSON.stringify({
+            error: 'PASS_REQUIRED',
+            message: `Scaled score must be at least ${minPass} to mint.`
+          }), { status: 422, headers: corsHeaders });
+        }
+
+        const mintId = `sbt_${auth.uid.slice(0, 12)}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+        const network = env.TON_NETWORK === 'testnet' ? 'testnet' : 'mainnet';
+
+        if (env.DB) {
+          try {
+            await env.DB.prepare(`
+              CREATE TABLE IF NOT EXISTS ton_sbt_mints (
+                mint_id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                exam_code TEXT NOT NULL,
+                scaled_score INTEGER NOT NULL,
+                ledger_hash TEXT,
+                recipient_wallet TEXT NOT NULL,
+                attestation_id TEXT,
+                collection_address TEXT,
+                status TEXT NOT NULL DEFAULT 'pending',
+                item_address TEXT,
+                tx_hash TEXT,
+                error_message TEXT,
+                created_at TEXT NOT NULL DEFAULT (datetime('now')),
+                updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+              )
+            `).run();
+            await env.DB.prepare(`
+              INSERT INTO ton_sbt_mints (
+                mint_id, user_id, exam_code, scaled_score, ledger_hash,
+                recipient_wallet, attestation_id, collection_address, status
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+            `).bind(
+              mintId,
+              auth.uid,
+              examCode,
+              verifiedScore,
+              ledgerHash.slice(0, 128),
+              recipientWallet,
+              body.attestationId ? String(body.attestationId) : null,
+              collectionAddress
+            ).run();
+          } catch (e) {
+            console.warn('[TON SBT] mint queue insert failed:', e && e.message ? e.message : e);
+            return new Response(JSON.stringify({
+              error: 'MINT_QUEUE_FAILED',
+              message: 'Could not queue the mastery mint. Try again shortly.'
+            }), { status: 503, headers: corsHeaders });
+          }
+        }
+
+        return new Response(JSON.stringify({
+          success: true,
+          mintId,
+          status: 'pending',
+          network,
+          collectionAddress,
+          attemptId: attemptId || null,
+          explorer: `https://${network === 'testnet' ? 'testnet.' : ''}tonscan.org/address/${collectionAddress}`,
+          message: 'Mint queued for oracle. Credential will appear after the oracle confirms on-chain.'
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });

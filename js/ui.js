@@ -539,6 +539,17 @@
         flagBtn.innerText = isFlagged ? 'Flagged for review' : 'Flag for review';
       }
 
+      const hintBtn = document.getElementById('hintBtn');
+      if (hintBtn) {
+        const ledger = window.CompTIALedger;
+        const charges = ledger && typeof ledger.consumableChargesSync === 'function'
+          ? ledger.consumableChargesSync('HINT_PACK')
+          : 0;
+        const show = charges > 0 && typeof session.canUseHint === 'function' && session.canUseHint();
+        hintBtn.hidden = !show;
+        if (show) hintBtn.innerText = `Use hint (${charges})`;
+      }
+
       // Render options via qtypes
       const optContainer = document.getElementById('optionsList');
       if (optContainer) {
@@ -720,12 +731,73 @@
 
       // Render TON Blockchain Credential Card if TONCredentials module is active
       if (window.TONCredentials && document.getElementById('tonCredentialMount')) {
-        window.TONCredentials.renderCredentialCard(document.getElementById('tonCredentialMount'), {
+        const tonExamResult = {
           examCore: payload.examCore || (payload.passingScore === 700 ? '2' : '1'),
           scaledScore: payload.scaledScore,
           passed: isPassed,
           ledgerHash: (payload.ledgerEntry && payload.ledgerEntry.entryHash) || 'APX_' + Date.now().toString(16)
-        });
+        };
+        window.TONCredentials.renderCredentialCard(document.getElementById('tonCredentialMount'), tonExamResult);
+        // Wire mint-after-pass: oracle queue when collection is configured (best-effort).
+        if (isPassed && typeof window.TONCredentials.mintAfterPass === 'function') {
+          Promise.resolve(window.TONCredentials.mintAfterPass(tonExamResult)).catch(function () {});
+        }
+      }
+
+      // Render XDC Network Soulbound Credential Card if XDCProvider module is active
+      if (window.XDCProvider && document.getElementById('xdcCredentialMount')) {
+        const xdcMount = document.getElementById('xdcCredentialMount');
+        const examCore = payload.examCore || (payload.passingScore === 700 ? '2' : '1');
+        const examCode = examCore === '2' ? '220-1202' : '220-1201';
+        xdcMount.innerHTML = `
+          <div style="margin: 12px 0; padding: 14px; background: #0c1524; border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-weight: 700; color: #F1F5F9; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #38BDF8;"></span>
+                XDC Enterprise Credential
+              </span>
+              <span style="font-size: 0.72rem; padding: 2px 8px; background: rgba(56, 189, 248, 0.15); border-radius: 99px; color: #38BDF8; font-weight: 600;">
+                ERC-5192 SBT
+              </span>
+            </div>
+            <p style="font-size: 0.8rem; color: #94A3B8; margin: 0 0 12px 0;">
+              ${isPassed 
+                ? 'AI-Attested Proof of Competence. Mint an ISO-compliant, non-transferable Soulbound credential on XDC Network.' 
+                : 'Pass this exam to request an enterprise Soulbound attestation on XDC Network.'}
+            </p>
+            ${isPassed ? `
+              <button id="mint-xdc-btn" class="btn" style="width: 100%; padding: 10px; font-weight: 700; font-size: 0.85rem; border-radius: 8px; background: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%); color: #07090E; border: none; cursor: pointer;">
+                Mint Enterprise SBT on XDC
+              </button>
+            ` : `
+              <button disabled class="btn" style="width: 100%; padding: 10px; font-size: 0.85rem; border-radius: 8px; opacity: 0.5; cursor: not-allowed; background: #1e293b; color: #64748b; border: 1px solid rgba(255,255,255,0.1);">
+                Score below passing mark (Need ${payload.passingScore || 675})
+              </button>
+            `}
+          </div>
+        `;
+        const xdcMintBtn = xdcMount.querySelector('#mint-xdc-btn');
+        if (xdcMintBtn) {
+          xdcMintBtn.onclick = async () => {
+            xdcMintBtn.disabled = true;
+            xdcMintBtn.innerText = 'Connecting to XDC Network...';
+            try {
+              const res = await window.XDCProvider.requestAiAttestation({
+                examCode: examCode,
+                scaledScore: payload.scaledScore,
+                passed: isPassed,
+                localLedgerHash: (payload.ledgerEntry && payload.ledgerEntry.entryHash) || 'APX_' + Date.now().toString(16)
+              });
+              xdcMintBtn.innerText = 'AI Attestation Verified (SBT Ready)';
+              xdcMintBtn.style.background = '#10B981';
+              alert('AI Oracle Attestation Issued!\nAttestation ID: ' + res.attestationId + '\nChain: XDC Network (Chain ID: 50)\nStatus: Ready for on-chain anchoring.');
+            } catch (err) {
+              xdcMintBtn.disabled = false;
+              xdcMintBtn.innerText = 'Mint Enterprise SBT on XDC';
+              alert('XDC Attestation: ' + ((err && err.message) || err));
+            }
+          };
+        }
       }
 
       this.renderGhostCoachAutopsy(payload);

@@ -42,8 +42,9 @@ check(terms.includes('On the web, an account is required'), 'Terms source requir
 check(!terms.includes('without creating an account'), 'Terms source does not offer guest study');
 
 check(worker.includes('function freshMarketingHtmlAssetPath'), 'worker maps marketing HTML to a direct asset read');
-check(worker.includes("'Cache-Control': 'no-store'"), 'worker marks fresh HTML no-store');
-check(worker.includes("'CDN-Cache-Control': 'no-store'"), 'worker marks fresh HTML CDN no-store');
+check(worker.includes("headers.set('Cache-Control', 'no-store')"), 'worker marks fresh HTML no-store');
+check(worker.includes("headers.set('CDN-Cache-Control', 'no-store')"), 'worker marks fresh HTML CDN no-store');
+check(worker.includes('new Headers(assetRes.headers)'), 'worker keeps the _headers security headers on fresh HTML');
 check(/\/landing\/\*\.html[\s\S]*Cache-Control: no-store/.test(headers), '_headers no-store for landing HTML');
 check(/\/privacy\.html[\s\S]*Cache-Control: no-store/.test(headers), '_headers no-store for privacy.html');
 check(/\/terms\.html[\s\S]*Cache-Control: no-store/.test(headers), '_headers no-store for terms.html');

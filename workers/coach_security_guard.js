@@ -37,7 +37,10 @@ const SECRET_LEAK_PATTERNS = [
   /sk-or-v1-[a-zA-Z0-9]{20,}/g,
   /sk-[a-zA-Z0-9_\-]{24,}/g,
   /\b\d{8,11}:[a-zA-Z0-9_-]{35}\b/g,
-  /(?:api[_-]?key|bearer\s+token|secret[_-]?token)\s*[:=]\s*['"][a-zA-Z0-9_\-]{16,}['"]/gi
+  /(?:api[_-]?key|bearer\s+token|secret[_-]?token)\s*[:=]\s*['"][a-zA-Z0-9_\-]{16,}['"]/gi,
+  /\b(?:AKIA|ASIA)[0-9A-Z]{16}\b/g,
+  /\bgh[pousr]_[A-Za-z0-9]{36,}\b/g,
+  /-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----/g
 ];
 
 /** Potentially malicious or destructive shell/scripting payloads. */
@@ -201,15 +204,19 @@ export function validateModelOutput(outputText, options = {}) {
   let sanitized = outputText;
 
   // A. Check & scrub secret / credential leaks
+  // Global patterns keep lastIndex between .test() calls; reset or later replies slip through.
   for (const pattern of SECRET_LEAK_PATTERNS) {
+    pattern.lastIndex = 0;
     if (pattern.test(sanitized)) {
       violations.push('SECRET_CREDENTIAL_LEAK_DETECTED');
+      pattern.lastIndex = 0;
       sanitized = sanitized.replace(pattern, '[REDACTED_CREDENTIAL]');
     }
   }
 
   // B. Check for malicious code execution payloads
   for (const pattern of MALICIOUS_COMMAND_PATTERNS) {
+    pattern.lastIndex = 0;
     if (pattern.test(sanitized)) {
       violations.push('MALICIOUS_SCRIPT_PAYLOAD_DETECTED');
       sanitized = sanitized.replace(
@@ -231,6 +238,46 @@ export function validateModelOutput(outputText, options = {}) {
     text: sanitized,
     violations
   };
+}
+
+function escapeRegExp(s) {
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+const OFFICIAL_ANSWER_DISPUTED = [
+  /\b(?:official|provided|given|marked|keyed)\s+answer\s+(?:is|was|seems|appears)\s+(?:wrong|incorrect|a mistake|an error|mistaken)\b/i,
+  /\byou\s+were\s+(?:actually\s+)?(?:right|correct)\b/i,
+  /\byour\s+(?:answer|choice|selection)\s+(?:is|was)\s+(?:actually\s+)?(?:right|correct)\b/i
+];
+
+/**
+ * 5b. Answer-consistency guard.
+ *
+ * The bank's correct answer is ground truth. A reply that names any other
+ * option as correct, or disputes the official answer, is a hallucination the
+ * learner would study from, so it is rejected rather than shown.
+ */
+export function checkAnswerConsistency(text, { correctAnswer, chosenAnswer, options } = {}) {
+  const reply = String(text || '');
+  if (!reply || !correctAnswer) return { ok: true, reasons: [] };
+  const reasons = [];
+  for (const pattern of OFFICIAL_ANSWER_DISPUTED) {
+    if (pattern.test(reply)) reasons.push('OFFICIAL_ANSWER_DISPUTED');
+  }
+  const correct = String(correctAnswer).trim().toLowerCase();
+  const rivals = new Set((Array.isArray(options) ? options : []).map((o) => String(o).trim()));
+  if (chosenAnswer) rivals.add(String(chosenAnswer).trim());
+  for (const rival of rivals) {
+    if (rival.length < 2 || rival.toLowerCase() === correct) continue;
+    // Bounded so "SFTP" does not read as rival "FTP", nor "RAID 10" as "RAID 1".
+    const r = '(?<![A-Za-z0-9])' + escapeRegExp(rival).replace(/\s+/g, '\\s+') + '(?![A-Za-z0-9])';
+    const claims = [
+      new RegExp(`\\b(?:correct|right|best)\\s+(?:answer|option|choice)\\s+(?:is|would\\s+be)\\s*:?\\s*["'\\u201c]?${r}`, 'i'),
+      new RegExp(`["'\\u201c]?${r}["'\\u201d]?\\s+is\\s+(?:the\\s+)?(?:correct|right|best)\\s+(?:answer|option|choice)\\b`, 'i')
+    ];
+    if (claims.some((re) => re.test(reply))) reasons.push('RIVAL_CLAIMED_CORRECT');
+  }
+  return { ok: reasons.length === 0, reasons };
 }
 
 /**

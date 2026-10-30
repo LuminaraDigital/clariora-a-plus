@@ -400,6 +400,16 @@
       writeCachedSession(null);
       clearTelegramLocalAuth();
       if (authUI && typeof authUI.bindSubject === 'function') authUI.bindSubject(null);
+      try {
+        if (typeof window !== 'undefined' && window.CompTIAProfiles && typeof window.CompTIAProfiles.unbindAccountProfile === 'function') {
+          window.CompTIAProfiles.unbindAccountProfile();
+          if (window.CompTIAProductTrust && typeof window.CompTIAProductTrust.afterProfileChange === 'function') {
+            window.CompTIAProductTrust.afterProfileChange();
+          }
+        }
+      } catch (profErr) {
+        console.warn('[AuthGate] Profile isolation unbind notice:', profErr);
+      }
       logoutServerSession();
       var service = firebaseServiceRef();
       if (service && service.getCurrentUser && service.getCurrentUser() && service.signOutUser) {
@@ -512,6 +522,19 @@
     try {
       localStorage.setItem('clariora_active_account_id', session.uid);
     } catch (_) {}
+
+    // Profile-scoped study data (history, ledger, readiness) follows the signed-in subject.
+    if (typeof window !== 'undefined' && window.CompTIAProfiles && typeof window.CompTIAProfiles.bindAccountProfile === 'function') {
+      try {
+        var profileName = session.displayName || (session.email ? session.email.split('@')[0] : 'Learner');
+        window.CompTIAProfiles.bindAccountProfile(session.uid, profileName);
+        if (window.CompTIAProductTrust && typeof window.CompTIAProductTrust.afterProfileChange === 'function') {
+          await window.CompTIAProductTrust.afterProfileChange();
+        }
+      } catch (profErr) {
+        console.warn('[AuthGate] Profile isolation binding notice:', profErr);
+      }
+    }
 
     var service = firebaseServiceRef();
     var cloudUser = service && service.getCurrentUser ? service.getCurrentUser() : null;

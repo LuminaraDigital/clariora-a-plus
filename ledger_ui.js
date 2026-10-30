@@ -113,6 +113,54 @@
     const headerBal = $("apxHeaderBalanceBadge");
     if (headerBal) headerBal.textContent = w.balance;
 
+    // Degree + readiness beside APX (Achievement Wallet / L2E rule)
+    try {
+      const awCfg =
+        (global.APLUS_FEATURES_CONFIG && global.APLUS_FEATURES_CONFIG.achievementWallet) || {};
+      const showWallet = awCfg.enabled === true;
+      const degEl = $("apxDegreeBadge");
+      if (degEl) {
+        if (showWallet && awCfg.showDegree !== false && w.rank && w.rank.name) {
+          degEl.style.display = "inline";
+          degEl.textContent = w.rank.name;
+          degEl.title = "Degree from lifetime XP";
+        } else {
+          degEl.style.display = "none";
+          degEl.textContent = "";
+        }
+      }
+      const readyEl = $("apxReadinessNeighbor");
+      if (readyEl) {
+        let readyTxt = "";
+        if (showWallet && awCfg.showReadinessBesideApx !== false) {
+          try {
+            const a = global.APlus;
+            if (a && a.readiness2 && typeof a.readiness2.compute === "function") {
+              let history = [];
+              if (a.learner && typeof a.learner.getHistory === "function") {
+                history = a.learner.getHistory() || [];
+              }
+              const r = a.readiness2.compute({ history: history });
+              if (r && r.predicted != null) {
+                readyTxt =
+                  "Pred " +
+                  Math.round(r.predicted) +
+                  (r.readiness != null ? " · " + Math.round(r.readiness) + "%" : "");
+              }
+            }
+          } catch (_) {}
+        }
+        if (readyTxt) {
+          readyEl.style.display = "inline";
+          readyEl.textContent = readyTxt;
+          readyEl.title = "Predicted score and readiness beside APX";
+        } else {
+          readyEl.style.display = "none";
+          readyEl.textContent = "";
+        }
+      }
+    } catch (_) {}
+
     if (typeof document !== "undefined" && document.body) {
       document.body.classList.toggle("theme-cyber-terminal", CompTIALedger.checkWalletUnlock(w, "CYBER_THEME"));
     }
@@ -180,12 +228,23 @@
     $("ledgerModal").classList.remove("active");
   }
 
+  /** APX chip router: Reward Center when enabled, else Progress record / store. */
+  function openApxSurface() {
+    try {
+      if (global.APlus && APlus.rewardCenter && typeof APlus.rewardCenter.openApxSurface === "function") {
+        APlus.rewardCenter.openApxSurface();
+        return;
+      }
+    } catch (_) {}
+    openLedgerModal();
+  }
+
   async function renderLedgerModal() {
     const state = await CompTIALedger.getState();
     const w = state.wallet;
     $("ledgerWalletSummary").innerHTML = `
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.75rem;">
-        <div class="card" style="padding:0.85rem;"><div style="font-size:0.75rem;color:var(--text-secondary);">Balance</div><div style="font-size:1.4rem;font-weight:800;color:var(--gold-light);">${w.balance} ${state.tokenSymbol}</div></div>
+        <div class="card" style="padding:0.85rem;"><div style="font-size:0.75rem;color:var(--text-secondary);">Spendable on this device</div><div style="font-size:1.4rem;font-weight:800;color:var(--gold-light);">${w.balance} ${state.tokenSymbol}</div>${w.peerDeviceBonus ? `<div style="font-size:0.75rem;color:var(--text-secondary);">${w.totalAcrossDevices} ${state.tokenSymbol} across all devices</div>` : ""}</div>
         <div class="card" style="padding:0.85rem;"><div style="font-size:0.75rem;color:var(--text-secondary);">XP / Rank</div><div style="font-size:1.05rem;font-weight:700;">${w.xp} XP<br>${w.rank.badge} ${escapeSafe(w.rank.name)}</div></div>
         <div class="card" style="padding:0.85rem;"><div style="font-size:0.75rem;color:var(--text-secondary);">Streak</div><div style="font-size:1.4rem;font-weight:800;">${w.streak} days</div></div>
         <div class="card" style="padding:0.85rem;"><div style="font-size:0.75rem;color:var(--text-secondary);">Chain</div><div style="font-size:1.05rem;font-weight:700;">Height ${w.height}<br><span style="color:${state.integrity.valid ? "var(--accent-green)" : "var(--accent-red)"};">${state.integrity.valid ? "Valid" : "Broken"}</span></div></div>
@@ -454,7 +513,7 @@
     if (rewardEl) {
       rewardEl.style.display = "block";
       rewardEl.innerHTML = `
-        <strong style="color:var(--accent-cyan);">+${out.reward.apx} APX</strong> mined into block
+        <strong style="color:var(--accent-cyan);">+${out.reward.apx} APX</strong> earned
         <code>#${out.block.index}</code> (${shortHash(out.block.hash)})
         · +${out.reward.xp} XP
         ${out.minted.length ? ` · Achievements: ${out.minted.map((m) => m.payload.name).join(", ")}` : ""}
@@ -649,6 +708,14 @@
     } catch (err) {
       console.warn("Streak shield check failed:", err && err.message);
     }
+    try {
+      const pass = await CompTIALedger.activateProPassDay();
+      if (pass && pass.ok && !pass.alreadyActive) {
+        toast(`<strong>Pro Pass active today</strong><br>${pass.remaining} day${pass.remaining === 1 ? "" : "s"} left.`, "earn");
+      }
+    } catch (err) {
+      console.warn("Pro Pass activation failed:", err && err.message);
+    }
     updateDomainDropdown();
     try {
       const reg = (global.APlus && global.APlus.trackRegistry) ||
@@ -664,14 +731,25 @@
   const OWNED_ACTIONS = {
     CRAM_SHEET: { label: "Print sheet", run: () => global.APlus && APlus.cramSheet && APlus.cramSheet.printAll() },
     WEAK_SCAN: { label: "Run scan", run: () => openDeficitScan() },
+    HINT_PACK: {
+      label: "How to use",
+      run: () => {
+        const left = CompTIALedger.consumableChargesSync("HINT_PACK");
+        toast(`You have ${left} hint${left === 1 ? "" : "s"}. In a practice drill, tap <strong>Use hint</strong> to remove one wrong option. Hints are off in timed mocks.`, "earn");
+      }
+    },
+    MOCK_UNLOCK: {
+      label: "How to use",
+      run: () => {
+        const left = CompTIALedger.consumableChargesSync("MOCK_UNLOCK");
+        toast(`You have ${left} full mock${left === 1 ? "" : "s"}. Start any 90-question Core 1, Core 2 or mixed exam and one is used when it begins.`, "earn");
+      }
+    },
     PRO_PASS_30D: {
-      label: "Activate Pass",
-      run: async () => {
-        if (await CompTIALedger.hasActiveUnlock("PRO_PASS_30D")) {
-          await CompTIALedger.consumeUnlock("PRO_PASS_30D", 1);
-          toast("Activated 1 day of your 30-Day Pro Pass!", "earn");
-          await refreshWalletBadge();
-        }
+      label: "Days left",
+      run: () => {
+        const left = CompTIALedger.consumableChargesSync("PRO_PASS_30D");
+        toast(`Pro Pass: ${left} day${left === 1 ? "" : "s"} left after today. One day is used on each day you open the app.`, "earn");
       }
     }
   };
@@ -753,6 +831,8 @@
     refreshWalletBadge,
     openLedgerModal,
     closeLedgerModal,
+    openApxSurface,
+    spawnCoinShower,
     renderLedgerModal,
     onExamComplete,
     onStudyOpen,
@@ -777,6 +857,7 @@
   // Expose for inline onclick handlers
   global.openLedgerModal = openLedgerModal;
   global.closeLedgerModal = closeLedgerModal;
+  global.openApxSurface = openApxSurface;
   global.claimDailyApx = claimDaily;
   global.stakeSelectedDomain = stakeSelectedDomain;
   global.updateDomainDropdown = updateDomainDropdown;

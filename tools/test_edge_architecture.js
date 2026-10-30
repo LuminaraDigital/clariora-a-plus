@@ -24,7 +24,7 @@ const pbqEngine = require(path.join(ROOT, 'js', 'pbq-engine.js'));
 assert.ok(pbqEngine, 'pbq-engine module must export');
 assert.ok(pbqEngine.catalog, 'catalog must exist');
 
-const expectedLabs = ['sohoRouter', 'motherboardAssembly', 'windowsConsole', 'cablePinout', 'portMatcher', 'printerOrder', 'cliTerminal'];
+const expectedLabs = ['sohoRouter', 'motherboardAssembly', 'windowsConsole', 'cablePinout', 'portMatcher', 'printerOrder', 'cliTerminal', 'datacenterRack'];
 expectedLabs.forEach((labKey) => {
   assert.ok(pbqEngine.catalog[labKey], `Lab ${labKey} must exist in catalog`);
   assert.ok(pbqEngine.catalog[labKey].title, `Lab ${labKey} must have a title`);
@@ -68,6 +68,10 @@ assert.strictEqual(pbqEngine.score({ pbqType: 'windowsConsole' }, correctWinStat
 // Test Cable Pinout Scoring
 const correctCableState = { sequence: ['WO', 'O', 'WG', 'BL', 'WBL', 'G', 'WBR', 'BR'] };
 assert.strictEqual(pbqEngine.score({ pbqType: 'cablePinout' }, correctCableState), true, 'T568B sequence must score true');
+
+// Test Datacenter Rack Scoring
+const correctRackState = { slots: { ...pbqEngine.catalog.datacenterRack.solution } };
+assert.strictEqual(pbqEngine.score({ pbqType: 'datacenterRack' }, correctRackState), true, 'Correct Datacenter Rack deployment must score true');
 
 console.log('  ✔ All PBQ Simulation Labs & Scoring Validated.');
 

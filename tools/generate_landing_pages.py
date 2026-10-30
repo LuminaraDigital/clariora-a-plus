@@ -25,11 +25,22 @@ PAGES = [
     ("faq.html", "FAQ", "faq.html"),
 ]
 
+# Home-page sections listed in the menu only; the inline row fits six links.
+SECTIONS = [
+    ("labs", "Hardware Labs"),
+    ("pbq", "PBQ Simulators"),
+    ("innovations", "Innovations"),
+]
+
 
 def nav(active: str) -> str:
     home_href = "#top" if active == "index.html" else "index.html"
+    section_prefix = "" if active == "index.html" else "index.html"
     links = []
-    mobile = []
+    mobile = [
+        f'        <a href="{section_prefix}#{anchor}">{label}</a>'
+        for anchor, label in SECTIONS
+    ]
     for file, label, href in PAGES:
         if file == "index.html":
             continue
@@ -40,7 +51,7 @@ def nav(active: str) -> str:
   <div class="container">
     <a class="wordmark" href="{home_href}" aria-label="Clariora A+, home">
       <img class="wordmark-mark" src="../icons/icon-192.png" width="192" height="192" alt="" decoding="async">
-      Clariora A+
+      <span class="wordmark-text">Clariora A+</span>
     </a>
     <nav class="nav-links" aria-label="Site">
 {chr(10).join(links)}
@@ -49,16 +60,18 @@ def nav(active: str) -> str:
       <a class="btn btn-secondary" href="/app?signup=1" data-busy>Create account</a>
       <a class="btn btn-primary" href="/app" data-busy>Sign in</a>
     </div>
-    <details class="nav-menu">
-      <summary aria-label="Open menu">
+    <div class="nav-menu">
+      <button type="button" class="nav-menu-toggle" aria-expanded="false" aria-controls="navMenuPanel" aria-label="Open menu">
         <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      </summary>
-      <div class="nav-menu-panel">
+      </button>
+      <div class="nav-menu-panel" id="navMenuPanel" hidden>
 {chr(10).join(mobile)}
+        <a href="/app?signup=1" data-busy>Create account</a>
+        <a href="/app" data-busy>Sign in</a>
         <a href="https://t.me/ClarioraBot/app" target="_blank" rel="noopener">Launch on Telegram</a>
         <a href="https://github.com/LuminaraDigital/clariora-a-plus" rel="noopener">Source on GitHub</a>
       </div>
-    </details>
+    </div>
   </div>
 </header>"""
 
@@ -80,6 +93,7 @@ def footer() -> str:
     </p>
   </div>
 </footer>
+<script src="nav-fit.js" defer></script>
 <script src="hero-mesh.js" defer></script>
 <script>
 (function () {

@@ -30,6 +30,16 @@
         btn.focus();
       }
     });
+
+    panel.addEventListener('click', function (e) {
+      if (e.target.closest('a')) setOpen(false);
+    });
+
+    // Widening the window hides the button; an open panel would stay
+    // announced as expanded with nothing visible.
+    window.addEventListener('resize', function () {
+      if (menu.classList.contains('is-open') && !menu.offsetParent) setOpen(false);
+    });
   }
 
   initNavMenu();

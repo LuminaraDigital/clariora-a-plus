@@ -369,9 +369,10 @@
         if (user && user.getIdToken) idToken = await user.getIdToken();
       } catch (_) {}
 
-      var txHash = null;
       var amountTon = '0';
       var orderId = null;
+      var boc = null;
+      var payErr = null;
       if (typeof window.TONCredentials.sendTonPayment === 'function') {
         try {
           const sent = await window.TONCredentials.sendTonPayment(product.id, {
@@ -382,49 +383,97 @@
             alert('Simulated TON payments are disabled in production. Connect a wallet and pay the merchant address.');
             return { success: false, status: 'failed', error: 'SIMULATED_TON_BLOCKED' };
           }
-          if (sent && sent.txHash) {
-            txHash = sent.txHash;
+          if (sent && sent.boc && sent.orderId) {
+            boc = sent.boc;
             amountTon = sent.amountTon || '0';
-            orderId = sent.orderId || null;
+            orderId = sent.orderId;
+          } else if (sent && sent.orderId && !sent.boc) {
+            payErr = new Error('Wallet payment incomplete (missing signed BoC).');
           }
         } catch (sendErr) {
-          console.warn('[StarsBilling] Direct TON transaction prompt fallback:', sendErr.message);
+          payErr = sendErr;
+          console.warn('[StarsBilling] TON Connect payment failed:', sendErr && sendErr.message);
         }
       }
 
-      if (!txHash) {
-        txHash = window.prompt('Paste your confirmed TON transaction hash to unlock ' + product.title + ':');
+      // Happy path: one-tap TonConnect (boc + orderId). Paste-hash is recovery only.
+      var txHash = null;
+      if (!boc || !orderId) {
+        var useRecovery = window.confirm(
+          (payErr && payErr.message ? (payErr.message + '\n\n') : '') +
+          'Open wallet payment did not finish.\n\nUse recovery: paste a confirmed TON transaction hash?'
+        );
+        if (!useRecovery) {
+          return { success: false, status: payErr ? 'failed' : 'cancelled', error: payErr && String(payErr.message || payErr) };
+        }
+        txHash = window.prompt('Recovery: paste your confirmed TON transaction hash for ' + product.title + ':');
+        if (!txHash || String(txHash).trim().length < 10) {
+          return { success: false, status: 'cancelled' };
+        }
+        if (!orderId) {
+          alert('Create a TON order first (retry Pay with TON while signed in), then paste the hash.');
+          return { success: false, status: 'failed', error: 'ORDER_REQUIRED' };
+        }
       }
 
-      if (!txHash || String(txHash).trim().length < 10) {
-        return { success: false, status: 'cancelled' };
+      async function verifyTonOnce(body) {
+        const res = await guardedFetch('/api/v1/billing/ton/verify', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        }, { maxAttempts: 1 });
+        const data = await res.json().catch(function () { return {}; });
+        return { res: res, data: data };
       }
 
-      // On-chain verification hits TonCenter. Single attempt only; a retry
-      // re-bills an external API for a transaction we already submitted.
-      const res = await guardedFetch('/api/v1/billing/ton/verify', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          productId: product.id,
-          txHash: String(txHash).trim(),
-          walletAddress: wallet,
-          amountTon: amountTon,
-          orderId: orderId,
-          idToken: idToken
-        })
-      }, { maxAttempts: 1 });
-      const data = await res.json().catch(function () { return {}; });
-      if (!res.ok || !data.success) {
-        alert((data && data.message) || (data && data.error) || 'TON verification failed');
-        return { success: false, status: 'failed', error: data };
+      var network = (window.TONCredentials && window.TONCredentials.CONFIG && window.TONCredentials.CONFIG.network) || undefined;
+      var verifyBody = {
+        productId: product.id,
+        walletAddress: wallet,
+        amountTon: amountTon,
+        orderId: orderId,
+        network: network,
+        idToken: idToken
+      };
+      if (boc) {
+        verifyBody.boc = boc;
+        // Placeholder so legacy validators accept the body; server prefers order memo scan.
+        verifyBody.txHash = 'pending:' + String(orderId).slice(0, 48);
+      } else {
+        verifyBody.txHash = String(txHash).trim();
+      }
+
+      var verified = await verifyTonOnce(verifyBody);
+      // Brief retry: TonCenter indexing can lag a few seconds after wallet broadcast.
+      if ((!verified.res.ok || !verified.data.success) && verified.data && verified.data.error === 'TON_NOT_CONFIRMED' && boc) {
+        await new Promise(function (r) { setTimeout(r, 2500); });
+        verified = await verifyTonOnce(verifyBody);
+      }
+
+      if (!verified.res.ok || !verified.data.success) {
+        // Recovery paste only after one-tap verify failed
+        if (boc && verified.data && verified.data.error === 'TON_NOT_CONFIRMED') {
+          var pasted = window.prompt(
+            'Payment sent but not confirmed yet.\n\nRecovery: paste the confirmed transaction hash from your wallet explorer:'
+          );
+          if (pasted && String(pasted).trim().length >= 10) {
+            verifyBody.txHash = String(pasted).trim();
+            delete verifyBody.boc;
+            verified = await verifyTonOnce(verifyBody);
+          }
+        }
+      }
+
+      if (!verified.res.ok || !verified.data.success) {
+        alert((verified.data && verified.data.message) || (verified.data && verified.data.error) || 'TON verification failed');
+        return { success: false, status: 'failed', error: verified.data };
       }
       await applyProductGrant(product);
       const entitlement = await fetchServerEntitlement();
       if (entitlement) cacheEntitlement(entitlement);
       closeStarsUpgradeSheet();
-      return { success: true, status: 'paid', entitlement: entitlement || data, rail: 'ton_onchain' };
+      return { success: true, status: 'paid', entitlement: entitlement || verified.data, rail: 'ton_onchain' };
     } catch (err) {
       alert(String(err && err.message || err));
       return { success: false, status: 'failed', error: String(err && err.message || err) };
@@ -445,6 +494,50 @@
       TMABridge.mountUserPill();
     }
     return ent;
+  }
+
+  async function purchaseProductWithXdc(productId) {
+    const product = PRODUCTS.find((p) => p.id === productId);
+    if (!product) return { success: false, status: 'unknown_product' };
+
+    if (!window.XDCProvider || typeof window.XDCProvider.connectWallet !== 'function') {
+      alert('XDC Web3 Provider is not loaded. Refresh and try again.');
+      return { success: false, status: 'unavailable' };
+    }
+
+    try {
+      const conn = await window.XDCProvider.connectWallet();
+      if (!conn || !conn.account) {
+        alert('Please connect an EVM wallet (MetaMask or XDC Pay) first.');
+        return { success: false, status: 'wallet_required' };
+      }
+
+      var idToken = null;
+      try {
+        var svc = window.ClarioraFirebaseService;
+        var user = svc && svc.getCurrentUser && svc.getCurrentUser();
+        if (user && user.getIdToken) idToken = await user.getIdToken();
+      } catch (_) {}
+
+      const result = await window.XDCProvider.sendXdcPayment(product.id, {
+        idToken: idToken,
+        network: 'mainnet'
+      });
+
+      if (result && result.success) {
+        alert('Payment Verified! ' + product.title + ' unlocked via XDC Network.');
+        await applyProductGrant(product);
+        const entitlement = await fetchServerEntitlement();
+        if (entitlement) cacheEntitlement(entitlement);
+        closeStarsUpgradeSheet();
+        return { success: true, status: 'paid', entitlement: entitlement || result, rail: 'xdc_network', txHash: result.txHash };
+      }
+      return { success: false, status: 'failed' };
+    } catch (err) {
+      console.warn('[StarsBilling] XDC Payment error:', err && err.message ? err.message : err);
+      alert('XDC Payment error: ' + ((err && err.message) || err));
+      return { success: false, status: 'failed', error: String(err && err.message || err) };
+    }
   }
 
   function promptDevMockCheckout(product) {
@@ -473,14 +566,17 @@
     container.innerHTML = PRODUCTS.map(function (p) {
       var inTma = !!(getTelegramWebApp() && getTelegramWebApp().initData);
       var tonBtn = inTma ? '' : (
-        '<button type="button" class="btn" onclick="StarsBilling.purchaseProductWithTon(\'' + p.id + '\')" style="padding: 8px 12px; margin-top: 6px; font-size: 0.8rem; background: transparent; border: 1px solid rgba(212,175,55,0.45); color: #D4AF37; border-radius: 8px; cursor: pointer;">Unlock with TON</button>'
+        '<button type="button" class="btn" onclick="StarsBilling.purchaseProductWithTon(\'' + p.id + '\')" style="padding: 6px 10px; margin-top: 6px; font-size: 0.78rem; background: transparent; border: 1px solid rgba(212,175,55,0.45); color: #D4AF37; border-radius: 8px; cursor: pointer;">Pay with TON</button>'
+      );
+      var xdcBtn = inTma ? '' : (
+        '<button type="button" class="btn" onclick="StarsBilling.purchaseProductWithXdc(\'' + p.id + '\')" style="padding: 6px 10px; margin-top: 6px; margin-left: 6px; font-size: 0.78rem; background: transparent; border: 1px solid rgba(56,189,248,0.45); color: #38BDF8; border-radius: 8px; cursor: pointer;">Pay with XDC</button>'
       );
       return '' +
       '<div class="stars-card" style="display: flex; justify-content: space-between; align-items: center; background: #131722; border: 1px solid rgba(212, 175, 55, 0.25); border-radius: 12px; padding: 14px; margin-bottom: 10px;">' +
         '<div style="flex: 1; padding-right: 12px;">' +
           '<div style="font-weight: 700; color: #F3F4F6; font-size: 0.95rem; margin-bottom: 3px;">' + p.title + '</div>' +
           '<div style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4;">' + p.description + '</div>' +
-          tonBtn +
+          '<div style="display: flex; flex-wrap: wrap; gap: 4px;">' + tonBtn + xdcBtn + '</div>' +
         '</div>' +
         '<button type="button" class="btn btn-primary" onclick="StarsBilling.purchaseProduct(\'' + p.id + '\')" style="padding: 10px 16px; min-height: 42px; font-weight: 700; background: linear-gradient(135deg, #D4AF37 0%, #F5D061 100%); color: #07090E; border: none; border-radius: 8px; cursor: pointer; white-space: nowrap; font-size: 0.9rem;">' +
           p.stars + ' Stars' +
@@ -641,6 +737,17 @@
     }, { pendingText: 'Verifying...', cooldownMs: 1000 });
   }
 
+  function purchaseProductWithXdcGuarded(productId) {
+    var tg = getTelegramWebApp();
+    if (tg && tg.initData) {
+      alert('Inside Telegram, use Stars checkout for digital unlocks.');
+      return purchaseProductGuarded(productId);
+    }
+    return guardedAction('billing:purchase:xdc:' + productId, function () {
+      return purchaseProductWithXdc(productId);
+    }, { pendingText: 'Connecting XDC...', cooldownMs: 1000 });
+  }
+
   function activateLicenseGuarded() {
     return guardedAction('billing:activate-license', function () {
       return activateLicenseFromSheet();
@@ -653,6 +760,7 @@
     saveEntitlement: saveEntitlement,
     purchaseProduct: purchaseProductGuarded,
     purchaseProductWithTon: purchaseProductWithTonGuarded,
+    purchaseProductWithXdc: purchaseProductWithXdcGuarded,
     openStarsUpgradeSheet: openStarsUpgradeSheet,
     closeStarsUpgradeSheet: closeStarsUpgradeSheet,
     activateLicenseKey: activateLicenseGuarded,

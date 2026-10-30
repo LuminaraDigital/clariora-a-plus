@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800">
+  <defs>
+    <linearGradient id="rack_metal" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#14171a"/>
+      <stop offset="10%" stop-color="#22272e"/>
+      <stop offset="90%" stop-color="#22272e"/>
+      <stop offset="100%" stop-color="#14171a"/>
+    </linearGradient>
+    <linearGradient id="rail_zinc" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7a8288"/>
+      <stop offset="100%" stop-color="#4d5357"/>
+    </linearGradient>
+    <linearGradient id="lcd_glow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00ffff"/>
+      <stop offset="100%" stop-color="#0066cc"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="100%" height="100%" fill="#0a0d12"/>
+
+  <!-- Title -->
+  <text x="60" y="50" fill="#00ffcc" font-family="sans-serif" font-size="24" font-weight="bold">CompTIA A+ DATACENTER HARDWARE — 42U SERVER RACK INFRASTRUCTURE</text>
+
+  <!-- 42U Cabinet Outer Frame -->
+  <g transform="translate(340, 80)">
+    <!-- Roof & Base Plinths -->
+    <rect x="-30" y="0" width="520" height="24" rx="4" fill="#111" stroke="#333" stroke-width="2"/>
+    <rect x="-30" y="660" width="520" height="30" rx="4" fill="#111" stroke="#333" stroke-width="2"/>
+    <!-- Casters -->
+    <rect x="-20" y="690" width="30" height="20" rx="4" fill="#333"/>
+    <rect x="450" y="690" width="30" height="20" rx="4" fill="#333"/>
+
+    <!-- Left & Right Vertical Frame Posts -->
+    <rect x="-20" y="24" width="30" height="636" fill="url(#rack_metal)" stroke="#333" stroke-width="1.5"/>
+    <rect x="450" y="24" width="30" height="636" fill="url(#rack_metal)" stroke="#333" stroke-width="1.5"/>
+
+    <!-- Internal EIA-310 Mounting Rails -->
+    <rect x="20" y="24" width="22" height="636" fill="url(#rail_zinc)"/>
+    <rect x="418" y="24" width="22" height="636" fill="url(#rail_zinc)"/>
+
+    <!-- Rail U markings (Tick marks & numbers) -->
+    <g fill="#999" font-family="monospace" font-size="8">
+      <text x="23" y="110">42U</text><text x="23" y="230">30U</text>
+      <text x="23" y="370">20U</text><text x="23" y="510">10U</text><text x="23" y="640">1U</text>
+    </g>
+
+    <!-- 1U 48-Port Network Switch (at U30) -->
+    <g transform="translate(42, 210)">
+      <rect x="0" y="0" width="376" height="36" rx="3" fill="#1a1e24" stroke="#444" stroke-width="2"/>
+      <!-- Rack Ears -->
+      <rect x="-18" y="2" width="18" height="32" rx="2" fill="#888"/>
+      <rect x="376" y="2" width="18" height="32" rx="2" fill="#888"/>
+      <!-- Ports & LEDs -->
+      <g fill="#0b0e12" stroke="#222">
+        <rect x="15" y="8" width="180" height="10" rx="1"/>
+        <rect x="15" y="20" width="180" height="10" rx="1"/>
+      </g>
+      <circle cx="210" cy="18" r="3" fill="#00ff66"/>
+      <circle cx="220" cy="18" r="3" fill="#00ff66"/>
+      <circle cx="230" cy="18" r="3" fill="#ffaa00"/>
+      <text x="250" y="22" fill="#00d2ff" font-family="sans-serif" font-size="10" font-weight="bold">1U GIGABIT SWITCH</text>
+    </g>
+
+    <!-- 1U Horizontal Cable Management D-Rings (at U29) -->
+    <g transform="translate(42, 252)">
+      <rect x="0" y="0" width="376" height="32" rx="2" fill="#101216" stroke="#333" stroke-width="1.5"/>
+      <rect x="30" y="6" width="12" height="20" rx="3" fill="none" stroke="#666" stroke-width="3"/>
+      <rect x="110" y="6" width="12" height="20" rx="3" fill="none" stroke="#666" stroke-width="3"/>
+      <rect x="190" y="6" width="12" height="20" rx="3" fill="none" stroke="#666" stroke-width="3"/>
+      <rect x="270" y="6" width="12" height="20" rx="3" fill="none" stroke="#666" stroke-width="3"/>
+      <rect x="340" y="6" width="12" height="20" rx="3" fill="none" stroke="#666" stroke-width="3"/>
+    </g>
+
+    <!-- 2U Rackmount Enterprise Server (at U20-U21) -->
+    <g transform="translate(42, 350)">
+      <rect x="0" y="0" width="376" height="74" rx="4" fill="#2d333b" stroke="#555" stroke-width="2"/>
+      <!-- Rack Ears with Slam Latches -->
+      <rect x="-18" y="4" width="18" height="66" rx="2" fill="#999"/>
+      <rect x="376" y="4" width="18" height="66" rx="2" fill="#999"/>
+      <!-- 8 Hot-Swap Drive Caddies (2 rows of 4) -->
+      <g fill="#444d56" stroke="#222" stroke-width="1">
+        <rect x="15" y="8" width="60" height="26" rx="2"/><rect x="80" y="8" width="60" height="26" rx="2"/>
+        <rect x="145" y="8" width="60" height="26" rx="2"/><rect x="210" y="8" width="60" height="26" rx="2"/>
+        <rect x="15" y="38" width="60" height="26" rx="2"/><rect x="80" y="38" width="60" height="26" rx="2"/>
+        <rect x="145" y="38" width="60" height="26" rx="2"/><rect x="210" y="38" width="60" height="26" rx="2"/>
+      </g>
+      <!-- Drive Status LEDs -->
+      <circle cx="70" cy="14" r="2.5" fill="#00ff66"/><circle cx="135" cy="14" r="2.5" fill="#00ff66"/>
+      <circle cx="200" cy="14" r="2.5" fill="#ffaa00"/><circle cx="265" cy="14" r="2.5" fill="#00ff66"/>
+      <!-- Server Bezel: Power, UID Beacon -->
+      <circle cx="340" cy="22" r="5" fill="#00ff66"/>
+      <circle cx="340" cy="40" r="4" fill="#00aaff"/>
+      <text x="285" y="62" fill="#fff" font-family="sans-serif" font-size="9" font-weight="bold">2U SERVER</text>
+    </g>
+
+    <!-- 2U Blanking Airflow Panel (at U12-U13) -->
+    <rect x="42" y="470" width="376" height="68" rx="2" fill="#0e1014" stroke="#222" stroke-width="1.5"/>
+    <text x="160" y="510" fill="#444" font-family="sans-serif" font-size="12">2U BLANKING PANEL</text>
+
+    <!-- 3U Online Enterprise UPS (at U2-U4) -->
+    <g transform="translate(42, 550)">
+      <rect x="0" y="0" width="376" height="104" rx="4" fill="#1b1f24" stroke="#444" stroke-width="2"/>
+      <rect x="-18" y="4" width="18" height="96" rx="2" fill="#777"/>
+      <rect x="376" y="4" width="18" height="96" rx="2" fill="#777"/>
+      <!-- Blue Backlit LCD Screen -->
+      <rect x="220" y="16" width="135" height="52" rx="4" fill="url(#lcd_glow)" stroke="#fff" stroke-width="1.5"/>
+      <text x="235" y="36" fill="#000" font-family="monospace" font-size="10" font-weight="bold">LOAD: 48% [OK]</text>
+      <text x="235" y="54" fill="#000" font-family="monospace" font-size="10" font-weight="bold">BATT: 100% 230V</text>
+      <!-- Battery Bay Vented Door -->
+      <rect x="20" y="16" width="180" height="72" rx="2" fill="#282e36" stroke="#111" stroke-width="1"/>
+      <line x1="30" y1="32" x2="190" y2="32" stroke="#111" stroke-width="3"/>
+      <line x1="30" y1="52" x2="190" y2="52" stroke="#111" stroke-width="3"/>
+      <line x1="30" y1="72" x2="190" y2="72" stroke="#111" stroke-width="3"/>
+    </g>
+  </g>
+
+  <!-- Datacenter Annotations -->
+  <g transform="translate(860, 180)" font-family="sans-serif" font-size="14" fill="#e6edf3">
+    <text x="0" y="0" fill="#00ffcc" font-size="18" font-weight="bold">Key Datacenter Components:</text>
+    <text x="0" y="40">• <tspan fill="#fff" font-weight="bold">42U EIA-310 Standard:</tspan> 19-inch rack width</text>
+    <text x="0" y="70">• <tspan fill="#fff" font-weight="bold">1U Network Switch:</tspan> 48 Port GbE + SFP+ uplink</text>
+    <text x="0" y="100">• <tspan fill="#fff" font-weight="bold">1U Cable Management:</tspan> D-rings & patch routing</text>
+    <text x="0" y="130">• <tspan fill="#fff" font-weight="bold">2U Server:</tspan> Hot-swap SAS/SATA drive caddies</text>
+    <text x="0" y="160">• <tspan fill="#fff" font-weight="bold">Blanking Panels:</tspan> Hot/Cold aisle containment</text>
+    <text x="0" y="190">• <tspan fill="#fff" font-weight="bold">3U Online UPS:</tspan> Battery backup & LCD monitor</text>
+  </g>
+</svg>

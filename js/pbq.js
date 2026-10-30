@@ -28,8 +28,15 @@
   const _portFromCatalog = catalogLab('portMatcher');
   const _printerFromCatalog = catalogLab('printerOrder');
   const _cliFromCatalog = catalogLab('cliTerminal');
+  const _rackFromCatalog = catalogLab('datacenterRack');
 
   const PBQ_LABS = {
+    datacenterRack: {
+      id: (_rackFromCatalog && _rackFromCatalog.id) || 'pbq-datacenter-rack',
+      title: 'Lab 8: 42U Datacenter Rack Lab',
+      objective: (_rackFromCatalog && _rackFromCatalog.objective) || '3.3',
+      domain: (_rackFromCatalog && _rackFromCatalog.domain) || '3.0 Hardware'
+    },
     portMatcher: {
       id: (_portFromCatalog && _portFromCatalog.id) || 'pbq-port-matcher',
       title: 'Lab 1: Ticket DC-4471, port assignments for the new rack switch',
@@ -123,6 +130,12 @@
       where: 'Windows Storage Console',
       report: 'A new 2 TB NVMe drive has been installed and must be initialized with GPT and formatted with NTFS.',
       task: 'Initialize Disk 1 as GPT, create a New Simple Volume across full capacity, format as NTFS, and assign drive letter D:.'
+    },
+    8: {
+      ticket: 'Ticket DC-5130',
+      where: 'Datacenter Row B, Rack 04 (42U EIA-310 Enclosure)',
+      report: 'Deploy core networking, storage, compute, and backup power into an empty 42U enclosure following ASHRAE thermal standards and Datacentre Academy safety protocols.',
+      task: '1. Place 3U Smart-UPS at rack base (U1-U3) to maintain a low center of gravity.\n2. Install 1U ToR switch and Cat6A patch panel at top of rack (U40-U42) for short patch leads.\n3. Mount 2U compute server at U36-U37 and 1U NVMe storage at U34.'
     }
   };
 
@@ -147,17 +160,23 @@
 
     closeModal() {
       const modal = document.getElementById('pbqModal');
+      const wasOpen = !!(modal && modal.classList.contains('active'));
       if (modal) modal.classList.remove('active');
+      if (wasOpen && window.APlus && window.APlus.bus && typeof window.APlus.bus.emit === 'function') {
+        try {
+          window.APlus.bus.emit('pbq:abandoned', { source: 'closeModal' });
+        } catch (_) {}
+      }
     },
 
     /** Put the ticket brief at the top of each lab pane. Idempotent. */
     renderLabBriefs() {
-      [1, 2, 3, 4, 5, 6, 7].forEach((n) => {
+      [1, 2, 3, 4, 5, 6, 7, 8].forEach((n) => {
         const pane = document.getElementById(`pbqContent${n}`);
         const brief = LAB_BRIEFS[n];
         if (!pane || !brief) return;
 
-        // If the lab already renders its own pbq-sim-header (labs 4-7), hide legacy brief box to prevent duplication
+        // If the lab already renders its own pbq-sim-header (labs 4-8), hide legacy brief box to prevent duplication
         if (n >= 4 && pane.querySelector('.pbq-sim-header')) {
           const oldBox = document.getElementById(`pbqBrief${n}`);
           if (oldBox) oldBox.style.display = 'none';
@@ -191,7 +210,7 @@
 
     switchLab(labNum) {
       this.renderLabBriefs();
-      [1, 2, 3, 4, 5, 6, 7].forEach(n => {
+      [1, 2, 3, 4, 5, 6, 7, 8].forEach(n => {
         const content = document.getElementById(`pbqContent${n}`);
         const tab = document.getElementById(`pbqTab${n}`);
         if (content) content.style.display = (n === labNum) ? 'block' : 'none';
@@ -217,7 +236,7 @@
         }, 100);
       }
       if (labNum >= 4 && window.APlus && window.APlus.pbqEngine) {
-        const labKeys = { 4: 'sohoRouter', 5: 'cablePinout', 6: 'motherboardAssembly', 7: 'windowsConsole' };
+        const labKeys = { 4: 'sohoRouter', 5: 'cablePinout', 6: 'motherboardAssembly', 7: 'windowsConsole', 8: 'datacenterRack' };
         const labKey = labKeys[labNum];
         const cont = document.getElementById(`pbqContent${labNum}`);
         if (cont && labKey) {
@@ -232,6 +251,10 @@
                 if (res && res.passed) {
                   if (window.APlus && window.APlus.bus && typeof window.APlus.bus.emit === 'function') {
                     window.APlus.bus.emit('pbq:completed', { lab: labKey, correct: true, score: 100 });
+                  }
+                  if (window.CompTIALedgerUI && typeof window.CompTIALedgerUI.onPbqComplete === 'function') {
+                    const labTitle = (labKey === 'datacenterRack') ? '42U Datacenter Rack Lab' : ((window.APlus.pbqEngine && window.APlus.pbqEngine.getLab(labKey) && window.APlus.pbqEngine.getLab(labKey).title) || labKey);
+                    window.CompTIALedgerUI.onPbqComplete(labTitle);
                   }
                 }
               }

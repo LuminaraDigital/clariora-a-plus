@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://telegram.org https://unpkg.com https://www.gstatic.com https://apis.google.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://i.ytimg.com https://*.telegram.org https://lh3.googleusercontent.com https://*.googleusercontent.com; media-src 'self' https://comptia-a-plus-master.pages.dev https://clariora.com.au; connect-src 'self' https://api.telegram.org https://tonconnect.org https://tonapi.io https://*.ton.org https://toncenter.com https://clariora.com.au https://*.supabase.co https://cdn.jsdelivr.net https://unpkg.com https://comptia-a-plus-master.pages.dev https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://clariora.firebaseapp.com https://*.firebasestorage.app https://bridge.tonapi.io https://*.tonconnect.org; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://*.telegram.org https://clariora.firebaseapp.com https://accounts.google.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self' https://accounts.google.com; worker-src 'self'; manifest-src 'self'; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://telegram.org https://unpkg.com/@tonconnect/ https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://i.ytimg.com https://*.telegram.org https://lh3.googleusercontent.com https://*.googleusercontent.com; media-src 'self' https://comptia-a-plus-master.pages.dev https://clariora.com.au; connect-src 'self' https://api.telegram.org https://tonconnect.org https://tonapi.io https://*.ton.org https://toncenter.com https://clariora.com.au https://*.supabase.co https://unpkg.com/@tonconnect/ https://comptia-a-plus-master.pages.dev https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://clariora.firebaseapp.com https://*.firebasestorage.app https://bridge.tonapi.io https://*.tonconnect.org; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://*.telegram.org https://clariora.firebaseapp.com https://accounts.google.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self' https://accounts.google.com; worker-src 'self'; manifest-src 'self'">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Clariora A+</title>
   <meta name="robots" content="noindex,nofollow">
@@ -23,8 +23,9 @@
   <meta name="format-detection" content="telephone=no">
   <!-- APLUS_VERSION --><script>window.APLUS_VERSION = "3.1.5";</script><!-- /APLUS_VERSION -->
   <link rel="stylesheet" href="css/app-inline.css">
-  <link rel="stylesheet" href="css/brand-black-gold.css?v=4.3.4">
+  <link rel="stylesheet" href="css/brand-black-gold.css?v=4.3.5">
   <link rel="stylesheet" href="css/made-not-generated.css?v=1">
+  <link rel="stylesheet" href="css/featured-campaign.css?v=1.0.0">
   <style id="bootIntroCritical">
     /* First paint: hold a black intro stage so the dashboard never flashes first. */
     html.boot-intro-active,
@@ -63,6 +64,8 @@
   <script src="js/core.js"></script>
   <script src="js/request-guard.js"></script>
   <script src="ledger_engine.js"></script>
+  <script src="js/apx_telemetry.js"></script>
+  <script src="js/apx_holdout.js"></script>
   <script src="ledger_ui.js"></script>
   <script src="learner_state.js"></script>
   <script src="study_plan.js"></script>
@@ -80,6 +83,7 @@
   <script src="js/pbq-engine.js"></script>
   <script src="js/qtypes.js"></script>
   <script src="js/pbq.js"></script>
+  <script src="js/app-3d-stage.js"></script>
   <script src="js/mastery.js"></script>
   <script src="js/engine.js"></script>
   <script src="js/ui.js"></script>
@@ -120,6 +124,18 @@
   <script src="js/readiness2.js"></script>
   <script src="js/onboarding.js?v=4.3.0"></script>
   <script src="js/daily-quest.js"></script>
+  <script src="js/readiness-path.js"></script>
+  <script src="js/tiny-win.js"></script>
+  <script src="js/featured-campaign.js"></script>
+  <script src="js/reward-center.js"></script>
+  <script src="js/close-loop-ux.js"></script>
+  <script src="js/friction-coach.js"></script>
+  <script src="js/jit-survey.js"></script>
+  <script src="js/habit-66.js"></script>
+  <script src="js/feature-prune.js"></script>
+  <script src="js/social-proof.js"></script>
+  <script src="js/proof-of-readiness.js"></script>
+  <script src="js/telegram-buddy-client.js"></script>
   <script src="js/pearson-mode.js"></script>
   <script src="js/mastery-heatmap.js"></script>
   <script src="js/course-switch.js"></script>
@@ -134,7 +150,9 @@
   <script src="js/data_loader_tma.js"></script>
   <script src="js/tma_bridge.js"></script>
   <script src="js/stars_billing.js"></script>
+  <script src="js/ton_comment.js"></script>
   <script src="js/ton_credentials.js"></script>
+  <script src="js/xdc_provider.js"></script>
   <script src="js/tma_ghost_coach.js"></script>
   <!-- Firebase Authentication & Cloud Learning Backend -->
   <script src="js/firebase-config.js"></script>
@@ -235,12 +253,14 @@
         </select>
       </div>
       <div id="tmaUserPillMount" style="display: inline-flex; align-items: center;"></div>
-      <button type="button" class="streak-chip apx-header-chip" id="apxHeaderChip" onclick="openLedgerModal()" title="APX Balance & Superpowers Store" aria-label="APX Balance & Superpowers Store" style="border-color: rgba(245, 208, 97, 0.4); background: rgba(245, 208, 97, 0.08); cursor: pointer; display: inline-flex; align-items: center;">
+      <button type="button" class="streak-chip apx-header-chip" id="apxHeaderChip" onclick="(typeof openApxSurface==='function'?openApxSurface():openLedgerModal())" title="APX Balance, Achievement Wallet and Superpowers Store" aria-label="APX Balance, Achievement Wallet and Superpowers Store" style="border-color: rgba(245, 208, 97, 0.4); background: rgba(245, 208, 97, 0.08); cursor: pointer; display: inline-flex; align-items: center; flex-wrap: wrap; gap: 2px 4px;">
         <span style="color: #F5D061; display: inline-flex; align-items: center;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M15 9.5a3.5 3.5 0 0 0-7 0c0 2 2 3 3.5 3.5s3.5 1.5 3.5 3.5a3.5 3.5 0 0 1-7 0"/></svg>
         </span>
         <strong id="apxHeaderBalanceBadge" style="color: #F5D061; margin-left: 3px;">0</strong>
         <span class="streak-label" style="color: var(--text-secondary); font-size: 0.72rem; margin-left: 2px;">APX</span>
+        <span id="apxDegreeBadge" class="apx-degree-badge" style="display: none; color: var(--text-secondary); font-size: 0.68rem; margin-left: 4px;"></span>
+        <span id="apxReadinessNeighbor" class="apx-readiness-neighbor" style="display: none; color: var(--accent-cyan, #67e8f9); font-size: 0.68rem; margin-left: 4px;"></span>
       </button>
       <button type="button" class="streak-chip" id="streakChip" onclick="openMoreMenu()" title="Study streak" aria-label="Study streak">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3c.6 3 2.2 4.2 3.6 5.6A6.9 6.9 0 0 1 18 13.5a6 6 0 1 1-12 0c0-2 .9-3.4 2-4.6.3 1 .9 1.7 1.7 2 0-2.6.8-5.5 2.3-7.9Z"></path></svg>
@@ -298,6 +318,15 @@
                 <button type="button" class="btn btn-primary-lg" onclick="window.APlus &amp;&amp; APlus.onboarding ? APlus.onboarding.startToday() : startExam('both',25,25)">Start today's 25 minutes</button>
               </div>
             </section>
+
+            <!-- Featured Learn → Quiz → Claim campaign (primary next action when enabled). -->
+            <section id="featuredCampaignCard" class="featured-campaign-card" aria-label="Today's Mission" hidden></section>
+
+            <section id="readinessPathStrip" class="path-strip" aria-label="7-day readiness path"></section>
+
+            <!-- Next tiny win: smallest high-impact action from path / quest / weak objective. -->
+            <section id="tinyWinCard" class="tiny-win-card" aria-label="Next tiny win"></section>
+            <section id="proofExportRow" class="proof-export-row"><button type="button" class="btn btn-secondary" onclick="window.APlus&amp;&amp;APlus.proofOfReadiness&amp;&amp;APlus.proofOfReadiness.download((APlus.onboarding&amp;&amp;APlus.onboarding.profileExam&amp;&amp;APlus.onboarding.profileExam())||'core1')">Export Proof of Readiness</button></section>
 
             <!-- Superpower Goal Progress Card (L2E Motivation Engine) -->
             <section id="l2eGoalCard" class="card" style="padding: 1rem; border-color: rgba(245, 208, 97, 0.35); background: linear-gradient(180deg, rgba(245, 208, 97, 0.06) 0%, rgba(0,0,0,0.2) 100%); cursor: pointer;" onclick="openLedgerModal()" title="Open Superpowers Store">
@@ -450,6 +479,19 @@
       <!-- VIEW 2: STUDY LIBRARY -->
       <div id="homeViewStudy" class="home-view-pane" hidden>
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 0.5rem;">
+          <div class="card study-resource-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 1.25rem; border: 1px solid var(--border-gold); background: radial-gradient(circle at top right, rgba(212, 175, 55, 0.12), transparent 70%);">
+            <div>
+              <div style="font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-primary); font-weight: 700; margin-bottom: 6px;">Interactive 3D Stage</div>
+              <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0 0 8px;">3D Hardware Teardown Workbench</h4>
+              <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0 0 12px; line-height: 1.45;">Inspect photorealistic ATX Motherboard, RJ-45 Connector, and 42U Datacenter Rack with studio lighting, exploded views, and mechanical actions.</p>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+              <button type="button" class="btn btn-primary" style="font-size: 0.75rem; padding: 6px 4px;" onclick="if(window.APlus && window.APlus.App3DStage) window.APlus.App3DStage.openModal('mobo')">Motherboard</button>
+              <button type="button" class="btn btn-secondary" style="font-size: 0.75rem; padding: 6px 4px;" onclick="if(window.APlus && window.APlus.App3DStage) window.APlus.App3DStage.openModal('rj45')">RJ-45</button>
+              <button type="button" class="btn btn-secondary" style="font-size: 0.75rem; padding: 6px 4px;" onclick="if(window.APlus && window.APlus.App3DStage) window.APlus.App3DStage.openModal('rack')">42U Rack</button>
+            </div>
+          </div>
+
           <div class="card study-resource-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 1.25rem;">
             <div>
               <div style="font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-primary); font-weight: 700; margin-bottom: 6px;">Text and notes</div>
@@ -549,6 +591,7 @@
           <span id="examExplanationsNote" class="toolbar-note" hidden>Explanations after submit</span>
           <button type="button" id="flashcardExitBtn" class="btn btn-secondary toolbar-btn" hidden onclick="if (window.CompTIAMemoryMode &amp;&amp; CompTIAMemoryMode.abandonMemorySession) CompTIAMemoryMode.abandonMemorySession();">Exit flashcards</button>
           <button type="button" id="flagBtn" class="flag-btn toolbar-btn" onclick="toggleFlagCurrentQuestion()" aria-pressed="false">Flag</button>
+          <button type="button" id="hintBtn" class="btn btn-secondary toolbar-btn" onclick="useHintOnCurrentQuestion()" hidden>Use hint</button>
           <button type="button" class="btn btn-secondary toolbar-btn" onclick="openReviewModal()">Review</button>
           <button type="button" id="examScratchpadBtn" class="btn btn-secondary toolbar-btn" onclick="openScratchpadModal()" aria-label="Open exam whiteboard">Whiteboard</button>
           <div id="examHeaderControls" style="display: none;" role="group" aria-label="Exam timer and controls">
@@ -620,6 +663,7 @@
         </div>
         <div id="apxExamRewardBanner"></div>
         <div id="tonCredentialMount"></div>
+        <div id="xdcCredentialMount"></div>
         
         <div class="stats-row">
           <div class="stat-box">
@@ -725,6 +769,7 @@
         <button id="pbqTab5" onclick="switchPBQLab(5)" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">Lab 5: Cable Pinout</button>
         <button id="pbqTab6" onclick="switchPBQLab(6)" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">Lab 6: Motherboard</button>
         <button id="pbqTab7" onclick="switchPBQLab(7)" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">Lab 7: Disk Management</button>
+        <button id="pbqTab8" onclick="switchPBQLab(8)" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">Lab 8: 42U Server Rack</button>
       </div>
 
       <!-- LAB 1: Port Matcher -->
@@ -781,6 +826,9 @@
 
       <!-- LAB 7: Windows Console -->
       <div id="pbqContent7" style="display: none;"></div>
+
+      <!-- LAB 8: 42U Server Rack -->
+      <div id="pbqContent8" style="display: none;"></div>
 
       <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
         <button class="btn btn-secondary" onclick="closePBQModal()">Close</button>
@@ -850,6 +898,20 @@
     </div>
   </div>
 
+  <!-- MODAL: ACHIEVEMENT WALLET (mounted shell; body filled by js/reward-center.js) -->
+  <div id="rewardCenterModal" class="modal-overlay" role="dialog" aria-modal="true" aria-label="Achievement Wallet">
+    <div class="modal-card rc-modal-card">
+      <div class="modal-header">
+        <div>
+          <h3 class="rc-title">Achievement Wallet</h3>
+          <p class="rc-sub">Claims, Degree, and study evidence. Readiness stays the real score.</p>
+        </div>
+        <button type="button" class="rc-x" aria-label="Close Achievement Wallet" onclick="typeof closeRewardCenter==='function'&&closeRewardCenter()">&times;</button>
+      </div>
+      <div id="rewardCenterBody"></div>
+    </div>
+  </div>
+
   <!-- MODAL: PROGRESS RECORD -->
   <div id="ledgerModal" class="modal-overlay">
     <div class="modal-card" style="max-width: 980px;">
@@ -876,6 +938,8 @@
           <option value="PBQ_COMPLETE">PBQ_COMPLETE</option>
           <option value="ACHIEVEMENT_MINT">ACHIEVEMENT_MINT</option>
           <option value="DAILY_CHECKIN">DAILY_CHECKIN</option>
+          <option value="DAILY_QUEST_COMPLETE">DAILY_QUEST_COMPLETE</option>
+          <option value="FEATURED_OBJECTIVE_CLAIM">FEATURED_OBJECTIVE_CLAIM</option>
           <option value="DOMAIN_STAKE_LOCK">DOMAIN_STAKE_LOCK</option>
           <option value="DOMAIN_STAKE_RESOLVE">DOMAIN_STAKE_RESOLVE</option>
           <option value="STUDY_PLAN_TASK">STUDY_PLAN_TASK</option>
@@ -2356,7 +2420,7 @@
         window.APlus.pbq.switchLab(num);
         return;
       }
-      [1, 2, 3, 4, 5, 6, 7].forEach(n => {
+      [1, 2, 3, 4, 5, 6, 7, 8].forEach(n => {
         const el = document.getElementById(`pbqContent${n}`);
         if (el) el.style.display = (n === num) ? 'block' : 'none';
         const tab = document.getElementById(`pbqTab${n}`);
@@ -2376,7 +2440,7 @@
       if (num === 2) renderPrinterOrder();
       if (num === 3) setTimeout(() => document.getElementById('terminalInput').focus(), 100);
       if (num >= 4 && window.APlus && window.APlus.pbqEngine) {
-        const labKeys = { 4: 'sohoRouter', 5: 'cablePinout', 6: 'motherboardAssembly', 7: 'windowsConsole' };
+        const labKeys = { 4: 'sohoRouter', 5: 'cablePinout', 6: 'motherboardAssembly', 7: 'windowsConsole', 8: 'datacenterRack' };
         const labKey = labKeys[num];
         const cont = document.getElementById(`pbqContent${num}`);
         if (cont && labKey && !cont.querySelector('.pbq-sim-body')) {
@@ -2890,7 +2954,7 @@
         <p class="more-note">CompTIA A+ practice for 220-1201 Core 1 and 220-1202 Core 2.</p>
         <p class="more-note">Not affiliated with CompTIA.</p>
         <p class="more-note"><a href="privacy.html" style="color: #38BDF8; text-decoration: underline;">Privacy Policy</a> &bull; <a href="terms.html" style="color: #38BDF8; text-decoration: underline;">Terms of Service</a></p>
-        <p class="more-note about-version" id="aboutVersionLine">Version 3.1.4</p>
+        <p class="more-note about-version" id="aboutVersionLine">Version 3.1.5</p>
         <section id="appUpdateMount" class="app-update" hidden></section>
         <nav class="drawer-nav" aria-label="About actions">
           <ul>

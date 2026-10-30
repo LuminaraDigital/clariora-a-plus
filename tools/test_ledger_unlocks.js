@@ -118,7 +118,7 @@ async function run() {
     assert.equal(catalog.CYBER_THEME.type, 'permanent');
     assert.equal(catalog.CYBER_THEME.cost, 600);
     assert.equal(catalog.PRO_PASS_30D.type, 'consumable');
-    assert.equal(catalog.PRO_PASS_30D.cost, 2500);
+    assert.equal(catalog.PRO_PASS_30D.cost, 3800);
     assert.equal(catalog.PRO_PASS_30D.charges, 30);
   });
 
@@ -171,8 +171,11 @@ async function run() {
     assert.equal(res.reward.milestoneAwarded, 90);
     assert.equal(res.reward.apx, 210);
     assert.equal(res.reward.capped, true);
-    // 10 + 210 + one-time achievements FIRST_EXAM 20 + PASS_CORE1 60 + SCORE_850 80
-    assert.equal(res.wallet.balance, 380);
+    // Global daily budget clips the EXAM_COMPLETE mint to 160; achievements stay outside.
+    assert.equal(res.block.tokenDelta, 160);
+    assert.equal(res.block.payload.budgetCapped, true);
+    // prior balance 10 + 160 exam + FIRST_EXAM 20 + PASS_CORE1 60 + SCORE_850 80 = 330
+    assert.equal(res.wallet.balance, 330);
   });
 
   await test('Repeating the full exam the same day pays no APX but still grants XP', async () => {
@@ -189,7 +192,7 @@ async function run() {
     assert.equal(res.reward.milestoneAlreadyClaimed, true);
     assert.equal(res.reward.multiplier, 0.5);
     assert.ok(res.reward.xp > 0);
-    assert.equal(res.wallet.balance, 380);
+    assert.equal(res.wallet.balance, 330);
   });
 
   await test('Same quiz repeated on a new day decays 100% / 50% / 20% / 20%', async () => {
@@ -231,7 +234,7 @@ async function run() {
     clock.offsetMs += DAY_MS;
     const nextDay = await Ledger.recordExamComplete(quiz(10, 9, '3.0 Hardware'));
     assert.equal(nextDay.stakeBlocks.length, 1);
-    assert.equal(nextDay.stakeBlocks[0].tokenDelta, 42);
+    assert.equal(nextDay.stakeBlocks[0].tokenDelta, 35);
     assert.equal(nextDay.wallet.stakes[lock.stakeId].status, 'yielded');
   });
 
